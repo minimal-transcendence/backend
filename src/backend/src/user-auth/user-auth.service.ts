@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { User, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import * as bcrypt from 'bcrypt';
 
@@ -19,18 +19,22 @@ export class UserAuthService {
         return user
     }
 
-    async addNewUser(data: any): Promise<User> {
-        const target = await this.findUserById(data.id);
-        if (target) {
-            return target;
-        }
-        const user = await this.prisma.user.create({
-            data: {
-                id: data.id,
-                email: data.email,
-            }
-        })
-        return user;
+	//upsert
+    async addNewUser(data: Prisma.UserCreateInput): Promise<User> {
+		if (!data.nickname){
+			data.nickname = `user_${Math.floor(Math.random() * 1000)}`;
+		}
+		return await this.prisma.user.upsert({
+			where : {
+				id : data.id,
+			},
+			update : {},
+			create: {
+				id : data.id,
+				nickname: data.nickname,
+				email : data.email
+			}
+		})
     }
 
     async getUserIfRefreshTokenMatches(refreshToken: string, userId: number): Promise<User>
@@ -53,7 +57,6 @@ export class UserAuthService {
     }
 
     async setRefreshToken(userId: number, refreshToken: string): Promise<void> {
-
         await this.prisma.user.update({
             where: {
                 id: userId,
@@ -64,18 +67,18 @@ export class UserAuthService {
         })
     }
 
-    async removeRefreshToken(userId: number): Promise<any> {
-        await this.prisma.user.update({
-            where: {
-                id: userId,
-            },
-            data: {
-                refreshToken: null,
-            },
-        })
+    // async removeRefreshToken(userId: number): Promise<any> {
+    //     await this.prisma.user.update({
+    //         where: {
+    //             id: userId,
+    //         },
+    //         data: {
+    //             refreshToken: null,
+    //         },
+    //     })
 
-        return true;
-    }
+    //     return true;
+    // }
 
     async setTwoFactorAuthSecret(userId: number, secret: string): Promise<void> {
         await this.prisma.user.update({

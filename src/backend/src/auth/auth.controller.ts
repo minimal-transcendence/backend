@@ -4,12 +4,14 @@ import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { UserAuthService } from 'src/user-auth/user-auth.service';
+import { UserService } from 'src/user-service/user.service';
 
 @Controller('auth')
 export class AuthController {
     constructor(
         private authService: AuthService,
         private UserAuthService: UserAuthService,
+		private userService: UserService
     ) {}
 
     @Get('login')
@@ -82,7 +84,9 @@ export class AuthController {
     @UseGuards(JwtRefreshGuard)
     @Post('logout')
     async logout(@Req() req: any, @Res() res: Response): Promise<any> {
-        await this.UserAuthService.removeRefreshToken(req.user.id);
+		await this.userService.updateUserById(req.user.id, {
+				refreshToken : null,
+		})
         res.clearCookie('access_token');
         res.clearCookie('refresh_token');
         return res.send({

@@ -1,16 +1,17 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
-import { Prisma, User } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 // import { isDataView } from 'util/types'; ?
 
 /*
 	TODO : ERROR CASE - CUSTOM ERROR MSG
 	*** CHECK AUTHORITY ***
-*/
+	*/
+type UpdateUserData = Pick<Prisma.UserUpdateInput, Exclude<keyof Prisma.UserUpdateInput, 'id'>>;
+
 @Injectable()
 export class UserService {
 	constructor(private prisma: PrismaService){}
-
 	/*
 		[ TODO ] 
 	1. id, nickname, score 등 화면에 뿌릴 column 목록 정하기
@@ -42,6 +43,12 @@ export class UserService {
 				avatar : true,
 				score : true,
 				lastLogin : true,
+				_count: {
+					select : {
+						asWinner : true,
+						asLoser : true,
+					}
+				}
 			}}).then((res) => {
 				return (res);
 			})
@@ -56,7 +63,10 @@ export class UserService {
 		) : Promise<object> {
 		return await this.prisma.user.update({
 			where : { id : id },
-			data,
+			data : {
+				...data,
+				id : id,
+			}
 		}).catch((error) => {
 			if (error instanceof Prisma.PrismaClientValidationError){
 				return { error : "Validation Error" };
@@ -65,6 +75,13 @@ export class UserService {
 				return { code : error.code, error : error.message };
 		});
 	}
+
+	// async deleteUserById(id : number){
+	// 	// should remove user & all related matchhistory
+	// 	// return await this.prisma.user.delete({
+	// 	// 	where : { id }
+	// 	// })
+	// }
 
 	//만약 Id list 뿐만 아니라 친구들의 정보값이 필요하면 friend[] 로 설정해야 -> 이 경우 새 테이블 필요
 	async getUserFriendsById(id : number) : Promise<object> {
@@ -85,30 +102,30 @@ export class UserService {
 		friend: number ;
 		isAdd : boolean ;
 	}) : Promise<object>{
-		try {
+		// try {
 			if (id == data.friend)
 				throw new HttpException(
 					"I am a good friend of myself...",
           			HttpStatus.BAD_REQUEST
 				);
-				const user = await this.prisma.user.findUniqueOrThrow({
-					where : {id},
-					select : { friends : true }
-				});
-				if (data.isAdd == true) {
-					if (user.friends.includes(data.friend))
-						throw new HttpException(
-							"Already In!",
-							HttpStatus.BAD_REQUEST
-						);
-					return this.prisma.user.update({
-					where : { id },
-					data : {
-						friends : {
-							push : data.friend,
-						}
+			const user = await this.prisma.user.findUniqueOrThrow({
+				where : { id },
+				select : { friends : true }
+			});
+			if (data.isAdd == true) {
+				if (user.friends.includes(data.friend))
+					throw new HttpException(
+						"Already In!",
+						HttpStatus.BAD_REQUEST
+					);
+				return this.prisma.user.update({
+				where : { id },
+				data : {
+					friends : {
+						push : data.friend,
 					}
-				})
+				}
+			})
 			}
 			else {
 			if (!user.friends.includes(data.friend))
@@ -123,11 +140,11 @@ export class UserService {
 						set : user.friends.filter((num) => num !== data.friend ),
 					}
 				}
-			})
+			});
 			}
-		} catch (error) {
-			return { message : "", error : error.message };
-		}
+		// } catch (error) {
+		// 	return { message : "", error : error.message };
+		// }
 	}
 
 	//반환값을 Promise<object[] | null> 로 하든 아니든 결과는 같다
