@@ -1,7 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { FortyTwoStrategy } from './42.strategy';
 import { HttpModule } from '@nestjs/axios';
 import { JwtModule } from '@nestjs/jwt';
 import { UserAuthModule } from 'src/user-auth/user-auth.module';
@@ -40,7 +39,6 @@ import { PrismaService } from 'src/prisma.service';
     // ConfigService,
     AuthService,
     TwoFactorAuthService,
-    FortyTwoStrategy,
     JwtStrategy,
     JwtRefreshStrategy,
     PrismaService,

@@ -12,45 +12,6 @@ export class AuthController {
         private UserAuthService: UserAuthService,
     ) {}
 
-    // @UseGuards(FortyTwoAuthGuard)
-    // @Get('login')
-    // async getLogin(@Next() next: NextFunction) {
-    //     next();
-    // }
-
-    // @UseGuards(FortyTwoAuthGuard)
-    // @Get('callback')
-    // async getCallback(@Req() req: any, @Res() res: Response) {
-    //     const user: User = req.user;
-        
-    //     if (user.is2faEnabled) {
-    //         res.cookie('id', user.id)
-    //         return res.send({
-    //             message: 'finish 2fa to get jwt token'
-    //         });
-    //     }
-
-    //     const access_token = await this.authService.generateAccessToken(user);
-    //     const refresh_token = await this.authService.generateRefreshToken(user);
-
-    //     // hashing refresh token
-    //     const hashedRefreshToken = await this.authService.getHashedRefreshToken(refresh_token);
-    //     // store hashed refresh token
-    //     this.UserAuthService.setRefreshToken(user.id, hashedRefreshToken);
-
-    //     res.setHeader('Authorization', 'Bearer '+ [access_token, refresh_token]);
-    //     res.cookie('access_token', access_token, {
-    //         httpOnly: true,
-    //     });
-    //     res.cookie('refresh_token', refresh_token, {
-    //         httpOnly: true,
-    //     });
-
-    //     return res.send({
-    //         message: 'new jwt generated'
-    //     });
-    // }
-
     @Get('login')
     async login(@Query() params: any, @Res() res: Response) {
         const code = params?.code;
@@ -71,6 +32,10 @@ export class AuthController {
             return res.send({
                 message: 'finish 2fa to get jwt token',
                 is2faEnabled: true,
+<<<<<<< Updated upstream
+=======
+                nickname: user.nickname,
+>>>>>>> Stashed changes
                 id: user.id,
                 nickname: user.nickname,
             });
@@ -95,7 +60,6 @@ export class AuthController {
         return res.send({
             message: 'new jwt generated',
             is2faEnabled: false,
-            id: user.id,
             nickname: user.nickname,
         });
     }
