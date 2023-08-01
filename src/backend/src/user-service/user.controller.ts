@@ -1,9 +1,11 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, ParseIntPipe, Patch } from '@nestjs/common';
+import { Body, Controller, Get, UseGuards, HttpException, HttpStatus, Param, ParseIntPipe, Patch } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Prisma } from '@prisma/client';
+import { JwtGuard } from 'src/auth/guards/jwt.guard';
 // import { UpdateFriendDto } from 'src/dto/update-friend.dto'; why can't import this?
 
 @Controller('user')
+@UseGuards(JwtGuard)
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
@@ -44,13 +46,13 @@ export class UserController {
 			isAdd : boolean ;
 		}
 		) : Promise<object> {
-			try {
+			// try {
 				return this.userService.updateFriendsById(id, data);
-			} catch (error) {
-				if (error instanceof HttpException)
-					throw new HttpException("Not in the list", HttpStatus.BAD_REQUEST);
-					// throw error;
-			}
+			// } catch (error) {
+			// 	if (error instanceof HttpException)
+			// 		throw new HttpException("Not in the list", HttpStatus.BAD_REQUEST);
+			// 		// throw error;
+			// }
 	}
 
 	@Get(':id/matchhistory')

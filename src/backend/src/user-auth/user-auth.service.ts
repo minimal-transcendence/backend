@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { User, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -37,16 +37,16 @@ export class UserAuthService {
 		})
     }
 
-    async getUserIfRefreshTokenMatches(refreshToken: string, userId: number): Promise<User | null>
+    async getUserIfRefreshTokenMatches(refreshToken: string, userId: number): Promise<User>
     {
         const user = await this.findUserById(userId);
 
         if (!user) {
-            return null;
+            throw new UnauthorizedException("no such user in database");
         }
 
         if (!user.refreshToken) {
-            return null;
+            throw new UnauthorizedException("no refresh token on user");
         }
 
         const isMatched = await bcrypt.compare(refreshToken, user.refreshToken);

@@ -21,11 +21,7 @@ export class TwoFactorAuthController {
         @Res() res: Response,
         @Body() twoFactorAuthCode: TwoFactorAuthCodeDto
     ) {
-        if (!req.cookies?.id) {
-            throw new UnauthorizedException('No id in cookie');
-        }
-
-        const user = await this.UserAuthService.findUserById(parseInt(req.cookies.id));
+        const user = await this.UserAuthService.findUserById(twoFactorAuthCode.id);
         if (!user) {
             throw new UnauthorizedException('No user in database');
         }
@@ -56,7 +52,9 @@ export class TwoFactorAuthController {
         });
 
         return res.send({
-            message: 'new jwt generated'
+            message: 'new jwt generated',
+            access_token: access_token,
+            access_token_exp: process.env.JWT_ACCESS_EXPIRATION_TIME,
         });
     }
 

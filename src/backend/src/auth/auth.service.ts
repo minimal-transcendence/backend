@@ -67,8 +67,6 @@ export class AuthService {
             id: user.id
         }
         return await this.jwtService.signAsync({id: payload.id}, {
-            // secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
-            // expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION_TIME'),
             secret: process.env.JWT_REFRESH_TOKEN_SECRET,
             expiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME,
         });
@@ -82,32 +80,22 @@ export class AuthService {
         return hashedRefreshToken;
       }
 
-    // async refresh(refreshTokenDto: RefreshTokenDto): Promise<{ accessToken: string }> {
     async refreshJwtToken(refreshTokenDto: any): Promise<{ accessToken: string }> {
         const { refresh_token } = refreshTokenDto;
     
         // Verify refresh token
         // JWT Refresh Token 검증 로직
-        // const decodedRefreshToken = this.jwtService.verify(refresh_token, { secret: process.env.JWT_REFRESH_SECRET });
         const decodedRefreshToken = await this.jwtService.verifyAsync(
             refresh_token,
             {
                 secret: process.env.JWT_REFRESH_TOKEN_SECRET,
-                // secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
             });
     
         // Check if user exists
         const userId = decodedRefreshToken.id;
         
         // Get user information by refresh_token and userId
-        // const payload = await this.userService.getUserIfRefreshTokenMatches(refresh_token, userId);
-
-        // FOR TEST
         const user = await this.UserAuthService.getUserIfRefreshTokenMatches(refresh_token, userId);
-
-        if (!user) {
-          throw new UnauthorizedException('Invalid user!');
-        }
     
         // Generate new access token
         const accessToken = await this.generateAccessToken(user);
