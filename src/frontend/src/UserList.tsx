@@ -11,7 +11,7 @@ function UserList() {
 	const [imageUrl, setImageUrl] = useState<string | null>(null);
 
 	const {isLoggedIn, setIsLoggedIn} = useContext(AuthContext);
-	const {nickName, setNickName} = useContext(AuthContext);
+	const {userNickname, setUserNickname} = useContext(AuthContext);
 	const {profileURL, setProfileURL} = useContext(AuthContext);
 
 	// id번호 수정해야함
@@ -140,11 +140,11 @@ function UserList() {
 				<p>
 					{/* 전적 받아와서 들어갈곳 */}
 				</p>
-					{userData[index].nickname !== nickName && userData[index].isFriend === 1 && (
+					{userData[index].nickname !== userNickname && userData[index].isFriend === 1 && (
 					<button onClick={() => {unFollow(index)}}>언팔로우</button>)}
-					{userData[index].nickname !== nickName && userData[index].isFriend === 0 && (
+					{userData[index].nickname !== userNickname && userData[index].isFriend === 0 && (
 					<button onClick={() => {follow(index)}}>팔로우</button>)}
-					{userData[index].nickname !== nickName && (
+					{userData[index].nickname !== userNickname && (
 					<button>게임 신청</button>)}
 				<p>
 				<button onClick={() => profilePopdown(index)}>닫기</button>
@@ -162,7 +162,7 @@ function UserList() {
 					<h2>내 프로필</h2>
 					<div className='register-inside'>
 						<div>
-							닉네임 <input className='account' placeholder={nickName} type="text" value={newNickname} onChange={(e) => setNickname(e.target.value)} />
+							닉네임 <input className='account' placeholder={userNickname} type="text" value={newNickname} onChange={(e) => setNickname(e.target.value)} />
 							<p>
 								프로필 사진
 								<br />

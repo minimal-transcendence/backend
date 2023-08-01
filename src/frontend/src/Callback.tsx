@@ -12,7 +12,7 @@ function Callback() {
     const [searchParams] = useSearchParams();
 
     const {isLoggedIn, setIsLoggedIn} = useContext(AuthContext);
-    const {nickName, setNickName} = useContext(AuthContext);
+    const {userNickname, setUserNickname} = useContext(AuthContext);
     const {jwt, setJwt} = useContext(AuthContext);
     const code = searchParams.get('code');
 
@@ -22,11 +22,13 @@ function Callback() {
             navigate('/Home');
         }
         const response = await(await fetch('http://localhost/api/auth/login?code=' + code)).json();
-        console.log(response.message);
         setLogin(response.message);
-        setNickName(response.nickname);
+        if (login == 'Internal server error'){
+            navigate('/');
+        }
+        localStorage.setItem("nickname", response.nickname);
+        localStorage.setItem("id", response.id);
         if (response.is2faEnabled === false){
-            setNickName(response.nickname);
             navigate('/Home');
             localStorage.setItem('isLoggedIn', 'true');
             setIsLoggedIn(true);
@@ -40,47 +42,50 @@ function Callback() {
         authLogin();
     },[]);
 
-function sendAuthCode(code:string) {
-    const authcode = code;
-    setVerCode('');
-    if (authcode.length != 6) { // 코드 길이 확인
-        alert("Error: Code length error");
+    function sendAuthCode(code:string) {
+        const authcode = code;
         setVerCode('');
-        return ;
-    }
-
-    const sendOption: RequestInit = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/text',
-        },
-        body: authcode,
-        };
-
-    fetch('URL', sendOption)
-    .then((response) => {
-        if (!response.ok) { // response가 제대로 오지않았을때
-            throw new Error('Network response was not ok');
+        if (authcode.length != 6) { // 코드 길이 확인
+            alert("Error: Code length error");
+            setVerCode('');
+            return ;
         }
-        return response.text();
-    })
-    .then((responseData) => { // 결과를 받음
-        //결과 받아서 nickname, profileURL, isLoggedIn 넣어주기
-        console.log('Response from server:', responseData);
-    })
-    .catch((error) => { // 에러시
-        console.error('Error sending data:', error);
-        setVerCode('');
-        setLogin(error);
-    });
-};
+
+        fetch('http://localhost/api/2fa/authenticate', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                twoFactorAuthCode: authcode,
+                id: localStorage.getItem("id"),
+            }),
+            })
+        .then((response) => {
+            if (!response.ok) { // response가 제대로 오지않았을때
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then((responseData) => { // 결과를 받음
+            //결과 받아서 nickname, profileURL, isLoggedIn 넣어주기
+            console.log('Response from server:', responseData);
+            localStorage.setItem('isLoggedIn', 'true');
+            navigate('/Home');
+        })
+        .catch((error) => { // 에러시
+            console.error('Error sending data:', error);
+            setVerCode('');
+            setLogin(error);
+        });
+    };
 
     // redirect
     if (code) {
         return (
             <>
             <div>
-                login message: {login};
+                login = {login}
             </div>
             <div>
             {showCodeInput && (
