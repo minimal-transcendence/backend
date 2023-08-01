@@ -32,10 +32,6 @@ export class AuthController {
             return res.send({
                 message: 'finish 2fa to get jwt token',
                 is2faEnabled: true,
-<<<<<<< Updated upstream
-=======
-                nickname: user.nickname,
->>>>>>> Stashed changes
                 id: user.id,
                 nickname: user.nickname,
             });
@@ -60,7 +56,10 @@ export class AuthController {
         return res.send({
             message: 'new jwt generated',
             is2faEnabled: false,
+            id: user.id,
             nickname: user.nickname,
+            access_token: access_token,
+            access_token_exp: process.env.JWT_ACCESS_EXPIRATION_TIME,
         });
     }
 
@@ -74,13 +73,14 @@ export class AuthController {
             httpOnly: true,
         });
         return res.send({
-            message: 'generate new access token'
+            message: 'generate new access token',
+            access_token: access_token,
+            access_token_exp: process.env.JWT_ACCESS_EXPIRATION_TIME,
         });
     }
 
     @UseGuards(JwtRefreshGuard)
     @Post('logout')
-    // @Get('logout')
     async logout(@Req() req: any, @Res() res: Response): Promise<any> {
         await this.UserAuthService.removeRefreshToken(req.user.id);
         res.clearCookie('access_token');
