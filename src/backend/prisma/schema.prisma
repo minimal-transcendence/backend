@@ -12,7 +12,7 @@ datasource db {
 
 model User {
   id           Int            @id
-  nickname     String?        @unique @default(dbgenerated("gen_random_uuid()"))
+  nickname     String?        @unique
   email        String?        @unique
   avatar       String         @default("path")
   score        Int            @default(0)

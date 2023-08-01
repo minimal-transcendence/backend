@@ -59,13 +59,14 @@ export class UserService {
 
 	/* 다른 모듈에서 재사용 가능 : 체크해보기 */
 	async updateUserById(
-		id : number, data : UpdateUserData
+		id : number, data : Prisma.UserUpdateInput
 		) : Promise<object> {
-		console.log(id, data);
-		// console.log(data.id);	//이건 없는데 왜 id가 업글되지...?
 		return await this.prisma.user.update({
 			where : { id : id },
-			data,
+			data : {
+				...data,
+				id : id,
+			}
 		}).catch((error) => {
 			if (error instanceof Prisma.PrismaClientValidationError){
 				return { error : "Validation Error" };
@@ -74,6 +75,13 @@ export class UserService {
 				return { code : error.code, error : error.message };
 		});
 	}
+
+	// async deleteUserById(id : number){
+	// 	// should remove user & all related matchhistory
+	// 	// return await this.prisma.user.delete({
+	// 	// 	where : { id }
+	// 	// })
+	// }
 
 	//만약 Id list 뿐만 아니라 친구들의 정보값이 필요하면 friend[] 로 설정해야 -> 이 경우 새 테이블 필요
 	async getUserFriendsById(id : number) : Promise<object> {
