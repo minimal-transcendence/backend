@@ -36,7 +36,7 @@ COPY --from=builder /app/dist ./dist
 RUN npm install --only-production
 
 # prisma
-COPY --from=builder ./prisma ./prisma
+COPY ./prisma ./prisma
 
 CMD ["npm", "run", "start:migrate:prod"]
 
