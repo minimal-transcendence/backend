@@ -7,24 +7,24 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id                     Int            @id
-  nickname               String?        @unique
-  email                  String?        @unique
-  avatar                 String         @default("path")
-  score                  Int            @default(0)
-  createdAt              DateTime       @default(now())
-  lastLogin              DateTime       @updatedAt
-  friends                Int[]
-  refreshToken           String?
-  tokenExp               Int?
-  otpSecret              String?
-  is2faEnabled           Boolean        @default(false)
-  matchHistoriesAsWinner MatchHistory[] @relation("WinnerMatchHistory")
-  matchHistoriesAsLoser  MatchHistory[] @relation("LoserMatchHistory")
+  id           Int            @id
+  nickname     String?        @unique @default(dbgenerated("gen_random_uuid()"))
+  email        String?        @unique
+  avatar       String         @default("path")
+  score        Int            @default(0)
+  createdAt    DateTime       @default(now())
+  lastLogin    DateTime       @updatedAt
+  friends      Int[]
+  refreshToken String?
+  tokenExp     Int?
+  otpSecret    String?
+  is2faEnabled Boolean        @default(false)
+  asWinner     MatchHistory[] @relation("WinnerMatchHistory")
+  asLoser      MatchHistory[] @relation("LoserMatchHistory")
 }
 
 model MatchHistory {
