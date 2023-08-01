@@ -70,7 +70,9 @@ export class AuthController {
         if (user.is2faEnabled) {
             return res.send({
                 message: 'finish 2fa to get jwt token',
+                is2faEnabled: true,
                 id: user.id,
+                nickname: user.nickname,
             });
         }
 
@@ -91,7 +93,10 @@ export class AuthController {
         });
 
         return res.send({
-            message: 'new jwt generated'
+            message: 'new jwt generated',
+            is2faEnabled: false,
+            id: user.id,
+            nickname: user.nickname,
         });
     }
 
