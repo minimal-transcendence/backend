@@ -4,7 +4,7 @@ import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { UserAuthService } from 'src/user-auth/user-auth.service';
-import { UserService } from 'src/user-service/user.service';
+import { UserService } from 'src/user/user.service';
 
 @Controller('auth')
 export class AuthController {

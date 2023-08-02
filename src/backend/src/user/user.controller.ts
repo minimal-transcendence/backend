@@ -1,9 +1,11 @@
-import { Body, Controller, Get, UseGuards, HttpException, HttpStatus, Param, ParseIntPipe, Patch, Post, Req, UseInterceptors, UploadedFile, ParseFilePipeBuilder } from '@nestjs/common';
+import { Body, Controller, Get, UseGuards, HttpException, HttpStatus, Param, ParseIntPipe, Patch, Post, Req, UseInterceptors, UploadedFile, ParseFilePipeBuilder, Res, StreamableFile } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Prisma } from '@prisma/client';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { join } from 'path';
+import { createReadStream } from 'fs';
 
 @Controller('user')
 @UseGuards(JwtGuard)
@@ -24,7 +26,11 @@ export class UserController {
 	//TODO : error code & error msg customize
 	//TODO : catch HttpException
 	//TODO : file upload & file validation
-	@UseInterceptors(FileInterceptor('avatar', { dest : '/root'}))	//
+	@UseInterceptors(FileInterceptor('avatar', {
+		dest: '/app/photo',	//없는 폴더면 자동 생성
+		// dest: '/root',
+		})
+	)	//
 	//@ApiConsumes('multipart/form-data')
 	@Post(':id')
 	async updateUserAvatar(
@@ -33,18 +39,19 @@ export class UserController {
 		@UploadedFile(
 			new ParseFilePipeBuilder()
 			.addFileTypeValidator({
-				fileType: '.(png|jpeg|jpg|png|gif)',
+				fileType: '.(jpeg|jpg|png|gif)',
 			})
-			// .addMaxSizeValidator({ maxSize: 600 * 600 * 4 })	// * 4 는 왜?
+			// .addMaxSizeValidator({ maxSize: 1024 * 1024 * 4 })	// 4mb?
 			.build({
 				fileIsRequired: true
 			})
 		) file : Express.Multer.File,
 		@Body() data : Prisma.UserUpdateInput,
 		) : Promise<any>{
-		// if (req.user.id != id)
-		// 	throw new HttpException("unauthorized action", HttpStatus.BAD_REQUEST);
-		console.log(file);
+		if (req.user.id != id)
+		 throw new HttpException("unauthorized action", HttpStatus.BAD_REQUEST);
+		console.log(`filename: ${file.filename}, fieldname: ${file.fieldname}, MIMEtype: ${file.mimetype}`);
+		return this.userService.updateUserByIdWithAvatar(id, data, file);
 	}
 
 	@Patch(':id')
@@ -87,5 +94,18 @@ export class UserController {
 		async getUserMatchHistory(@Param('id', ParseIntPipe) id : number)
 		 : Promise<object[]> {
 			return this.userService.getUserMatchHistoryById(id);
+	}
+}
+
+//TODO : discuss router & authorization
+@Controller('photo/:img')
+export class avatarController {
+	constructor(private readonly userService: UserService) {}
+
+	@Get()
+	getAvatar(@Param('img') img : string) : StreamableFile {
+		const file = createReadStream(join('/app/photo/' + img));
+		console.log("ici");
+		return new StreamableFile(file);
 	}
 }

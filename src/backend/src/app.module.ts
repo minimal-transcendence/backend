@@ -6,17 +6,15 @@ import { AuthModule } from './auth/auth.module';
 import { UserAuthModule } from './user-auth/user-auth.module';
 import { TwoFactorAuthModule } from './two-factor-auth/two-factor-auth.module';
 import { PrismaService } from './prisma.service';
-import { UserServiceModule } from './user-service/user.module';
+import { UserServiceModule } from './user/user.module';
 import { MatchModule } from './match/match.module';
-import { ChatGateway } from './chat/chat.gateway';
-import { ChatModule } from './chat/chat.module';
+
 
 @Module({
   imports: [
 		AuthModule, TwoFactorAuthModule,
 		UserAuthModule, UserServiceModule,
 		MatchModule,
-		ChatModule
 	],
   // imports: [ConfigModule.forRoot(), AuthModule, UserAuthModule, TwoFactorAuthModule],
   controllers: [AppController],

@@ -1,6 +1,8 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, StreamableFile } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { Prisma } from '@prisma/client';
+import path, { join } from 'path';
+import { createReadStream } from 'fs';
 // import { isDataView } from 'util/types'; ?
 
 /*
@@ -57,10 +59,33 @@ export class UserService {
 			});
 	}
 
+	async updateUserByIdWithAvatar(
+		id: number, 
+		data : Prisma.UserUpdateInput, 
+		file : Express.Multer.File)
+	{
+		return await this.prisma.user.update({
+			where : { id : id },
+			data : {
+				...data,
+				id : id,
+				avatar : file.path.toString()
+				// avatar : file.filename.toString() + file.f
+			}
+		}).catch((error) => {
+			if (error instanceof Prisma.PrismaClientValidationError){
+				return { error : "Validation Error" };
+			}
+			else
+				return { code : error.code, error : error.message };
+		});
+	}
+
 	/* 다른 모듈에서 재사용 가능 : 체크해보기 */
 	//avatar file upload : patch 에서는 오류가 난다는 이야기도 있고 post 에서 실행되도록 설계했다는 이야기도 있음 체크 필요
 	async updateUserById(
-		id : number, data : Prisma.UserUpdateInput
+		id : number,
+		data : Prisma.UserUpdateInput
 		) : Promise<object> {
 		//
 		return await this.prisma.user.update({
@@ -86,7 +111,7 @@ export class UserService {
 	// }
 
 	//만약 Id list 뿐만 아니라 친구들의 정보값이 필요하면 friend[] 로 설정해야 -> 이 경우 새 테이블 필요
-	async getUserFriendsById(id : number) : Promise<object> {
+	async getUserFriendsListById(id : number) : Promise<object> {
 		return await this.prisma.user.findUniqueOrThrow({
 			where : { id : id }
 		})
@@ -95,6 +120,43 @@ export class UserService {
 			return { message: '', error: error.message };
 		})
 	}
+
+	//고유한 field값이 필요한지 확인
+	async getUserFriendsById(id : number) : Promise<object> {
+		const user =  await this.prisma.user.findUniqueOrThrow({
+			where : { id : id }
+		})
+	
+		return await Promise.all(
+			user.friends.map(async (element) : Promise<object> => {
+				return await this.getUserById(element);
+			})
+		)
+		.then ((res) => {
+			return (res);	//왜 여기서 return 하지 않는지...?
+		})
+		.catch((error) => {
+			return { message: '', error: error.message };
+		})
+	}
+	
+	// async getUserFriendsById(id: number): Promise<object> {
+	// 	try {
+	// 	  const user = await this.prisma.user.findUniqueOrThrow({
+	// 		where: { id: id },
+	// 	  });
+
+	// 	  const friendList = await Promise.all(
+	// 		user.friends.map(async (element) => {
+	// 		  return await this.getUserById(element);
+	// 		})
+	// 	  );
+	  
+	// 	  return { friendList };
+	// 	} catch (error) {
+	// 	  return { message: '', error: error.message };
+	// 	}
+	//   }
 
 	// 이런 문법 괜찮은가...?
 	// 이이런 구조 괜찮은가....?
@@ -164,6 +226,18 @@ export class UserService {
 			},
 			orderBy : { createdTime : 'desc' }
 		})
+	}
+
+	async getUserImageById(id : number) {
+		const fileName = await this.prisma.user.findUnique({
+			where : { id },
+			select : { avatar : true },
+		}).then((res) => {return res.avatar});
+		if (!fileName)
+			return null;
+		console.log('/app/photo/' + fileName);
+		const file = createReadStream(join('/app/photo/' + fileName));
+		return new StreamableFile(file);
 	}
 }
 
