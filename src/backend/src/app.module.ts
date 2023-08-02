@@ -8,12 +8,15 @@ import { TwoFactorAuthModule } from './two-factor-auth/two-factor-auth.module';
 import { PrismaService } from './prisma.service';
 import { UserServiceModule } from './user-service/user.module';
 import { MatchModule } from './match/match.module';
+import { ChatGateway } from './chat/chat.gateway';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
 		AuthModule, TwoFactorAuthModule,
 		UserAuthModule, UserServiceModule,
-		MatchModule
+		MatchModule,
+		ChatModule
 	],
   // imports: [ConfigModule.forRoot(), AuthModule, UserAuthModule, TwoFactorAuthModule],
   controllers: [AppController],

@@ -58,9 +58,11 @@ export class UserService {
 	}
 
 	/* 다른 모듈에서 재사용 가능 : 체크해보기 */
+	//avatar file upload : patch 에서는 오류가 난다는 이야기도 있고 post 에서 실행되도록 설계했다는 이야기도 있음 체크 필요
 	async updateUserById(
 		id : number, data : Prisma.UserUpdateInput
 		) : Promise<object> {
+		//
 		return await this.prisma.user.update({
 			where : { id : id },
 			data : {
@@ -94,57 +96,54 @@ export class UserService {
 		})
 	}
 
-	//이런 문법 괜찮은가...?
-	//이이런 구조 괜찮은가....?
-	//권한 체크!
-	//HTTP EXCEPTION
+	// 이런 문법 괜찮은가...?
+	// 이이런 구조 괜찮은가....?
+	// 권한 체크! -> 완료
+	// HTTP EXCEPTION -> 완료
+	// validation 필요//
 	async updateFriendsById(id : number, data : {
 		friend: number ;
 		isAdd : boolean ;
 	}) : Promise<object>{
-		// try {
-			if (id == data.friend)
+		if (id == data.friend)
+			throw new HttpException(
+				"I am a good friend of myself...",
+				HttpStatus.BAD_REQUEST
+			);
+		const user = await this.prisma.user.findUniqueOrThrow({
+			where : { id },
+			select : { friends : true }
+		});
+		if (data.isAdd == true) {
+			if (user.friends.includes(data.friend))
 				throw new HttpException(
-					"I am a good friend of myself...",
-          			HttpStatus.BAD_REQUEST
+					"Already In!",
+					HttpStatus.BAD_REQUEST
 				);
-			const user = await this.prisma.user.findUniqueOrThrow({
-				where : { id },
-				select : { friends : true }
-			});
-			if (data.isAdd == true) {
-				if (user.friends.includes(data.friend))
-					throw new HttpException(
-						"Already In!",
-						HttpStatus.BAD_REQUEST
-					);
-				return this.prisma.user.update({
-				where : { id },
-				data : {
-					friends : {
-						push : data.friend,
-					}
+			return this.prisma.user.update({
+			where : { id },
+			data : {
+				friends : {
+					push : data.friend,
 				}
-			})
 			}
-			else {
-			if (!user.friends.includes(data.friend))
-				throw new HttpException(
-					"Not in the list",
-					HttpStatus.BAD_REQUEST,
-				);
-			return await this.prisma.user.update({
-				where : { id },
-				data : {
-					friends : {
-						set : user.friends.filter((num) => num !== data.friend ),
-					}
+		})
+		}
+		else {
+		if (!user.friends.includes(data.friend))
+			throw new HttpException(
+				"Not in the list",
+				HttpStatus.BAD_REQUEST,
+			);
+		return await this.prisma.user.update({
+			where : { id },
+			data : {
+				friends : {
+					set : user.friends.filter((num) => num !== data.friend ),
 				}
-			});
 			}
-		// } catch (error) {
-		// 	return { message : "", error : error.message };
-		// }
+		});
+		}
 	}
 
 	//반환값을 Promise<object[] | null> 로 하든 아니든 결과는 같다

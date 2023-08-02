@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { User, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { networkInterfaces } from 'os';
 
 @Injectable()
 export class UserAuthService {
@@ -21,9 +22,17 @@ export class UserAuthService {
 
 	//upsert
     async addNewUser(data: Prisma.UserCreateInput): Promise<User> {
-		if (!data.nickname){
+		//while phrase?
+		while (!data.nickname){
 			data.nickname = `user_${Math.floor(Math.random() * 1000)}`;
+			const isUnique = await this.prisma.user.findUnique({	//
+				where : { nickname : data.nickname },
+				select : { nickname : true }
+			});
+			if (isUnique)
+				data.nickname = null;
 		}
+		console.log("here");
 		return await this.prisma.user.upsert({
 			where : {
 				id : data.id,
