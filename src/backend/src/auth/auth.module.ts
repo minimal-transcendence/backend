@@ -3,7 +3,6 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { HttpModule } from '@nestjs/axios';
 import { JwtModule } from '@nestjs/jwt';
-import { UserAuthModule } from 'src/user-auth/user-auth.module';
 import { JwtStrategy } from './jwt.strategy';
 import { JwtRefreshStrategy } from './jwt-refresh.strategy';
 import { TwoFactorAuthService } from 'src/two-factor-auth/two-factor-auth.service';
@@ -13,7 +12,6 @@ import { UserServiceModule } from 'src/user/user.module';
 
 @Module({
   imports: [
-    UserAuthModule,
 	UserServiceModule,
     forwardRef(()=>TwoFactorAuthModule),
     HttpModule,

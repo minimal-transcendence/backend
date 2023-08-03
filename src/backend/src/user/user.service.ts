@@ -1,17 +1,47 @@
 import { Injectable, HttpException, HttpStatus, StreamableFile } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { join } from 'path';
 import { createReadStream } from 'fs';
-// import { isDataView } from 'util/types'; ?
 
-/*
-	TODO : ERROR CASE - CUSTOM ERROR MSG
-	*** CHECK AUTHORITY ***
-	*/
 @Injectable()
 export class UserService {
 	constructor(private prisma: PrismaService){}
+
+	//upsert
+	async createUser(data: Prisma.UserCreateInput): Promise<User> {
+		while (!data.nickname){
+			data.nickname = `user_${Math.floor(Math.random() * 1000)}`;
+			const isUnique = await this.prisma.user.findUnique({
+				where : { nickname : data.nickname },
+				select : { nickname : true }
+			});
+			if (isUnique)
+				data.nickname = null;
+		}
+		return await this.prisma.user.upsert({
+			where : {
+				id : data.id,
+			},
+			update : {},
+			create: {
+				id : data.id,
+				nickname: data.nickname,
+				email : data.email
+			}
+		})
+	}
+
+	async findUserById(userId: number): Promise<any | undefined> {
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: userId,
+            },
+        })
+
+        return user
+    }
+
 	/*
 		[ TODO ] 
 	1. id, nickname, score 등 화면에 뿌릴 column 목록 정하기
@@ -57,6 +87,9 @@ export class UserService {
 			});
 	}
 
+	//합칠 수 있는지?
+	//현재 문법 가능한지 check
+	//https://www.prisma.io/docs/concepts/components/prisma-client/null-and-undefined
 	async updateUserByIdWithAvatar(
 		id: number, 
 		data : Prisma.UserUpdateInput, 
@@ -67,8 +100,7 @@ export class UserService {
 			data : {
 				...data,
 				id : id,
-				avatar : file.path.toString()
-				// avatar : file.filename.toString()
+				avatar : file != null ? file.path.toString() : undefined,
 			}
 		}).catch((error) => {
 			if (error instanceof Prisma.PrismaClientValidationError){
@@ -79,7 +111,6 @@ export class UserService {
 		});
 	}
 
-	/* 다른 모듈에서 재사용 가능 : 체크해보기 */
 	//avatar file upload : patch 에서는 오류가 난다는 이야기도 있고 post 에서 실행되도록 설계했다는 이야기도 있음 체크 필요
 	async updateUserById(
 		id : number,
@@ -101,13 +132,6 @@ export class UserService {
 		});
 	}
 
-	// async deleteUserById(id : number){
-	// 	// should remove user & all related matchhistory
-	// 	// return await this.prisma.user.delete({
-	// 	// 	where : { id }
-	// 	// })
-	// }
-
 	//만약 Id list 뿐만 아니라 친구들의 정보값이 필요하면 friend[] 로 설정해야
 	async getUserFriendsListById(id : number) : Promise<object> {
 		return await this.prisma.user.findUniqueOrThrow({
@@ -119,26 +143,6 @@ export class UserService {
 		})
 	}
 
-	//고유한 field값이 필요한지 확인 //Promise chaining 쓰고 싶음
-	/*
-	async getUserFriendsById(id : number) : Promise<object> {
-		const user =  await this.prisma.user.findUniqueOrThrow({
-			where : { id : id }
-		})
-
-		return await Promise.all(
-			user.friends.map(async (element) : Promise<object> => {
-				return await this.getUserById(element);
-			})
-		)
-		.then ((res) => {
-			return (res);	//왜 여기서 return 하지 않는지...?
-		})
-		.catch((error) => {
-			return { message: '', error: error.message };
-		})
-	}
-	*/
 	async getUserFriendsById(id: number): Promise<object> {
 		return this.prisma.user.findUniqueOrThrow({
 			where: { id: id },
@@ -157,24 +161,6 @@ export class UserService {
 			return { message: '', error: error.message };
 		  });
 	  }
-	
-	// async getUserFriendsById(id: number): Promise<object> {
-	// 	try {
-	// 	  const user = await this.prisma.user.findUniqueOrThrow({
-	// 		where: { id: id },
-	// 	  });
-
-	// 	  const friendList = await Promise.all(
-	// 		user.friends.map(async (element) => {
-	// 		  return await this.getUserById(element);
-	// 		})
-	// 	  );
-	  
-	// 	  return { friendList };
-	// 	} catch (error) {
-	// 	  return { message: '', error: error.message };
-	// 	}
-	//   }
 
 	// 이런 문법 괜찮은가...?
 	// 이이런 구조 괜찮은가....?
@@ -190,44 +176,50 @@ export class UserService {
 				"I am a good friend of myself...",
 				HttpStatus.BAD_REQUEST
 			);
+		//find user
 		const user = await this.prisma.user.findUniqueOrThrow({
 			where : { id },
 			select : { friends : true }
 		});
+	
 		if (data.isAdd == true) {
+			//friend validatity check
+			await this.prisma.user.findUniqueOrThrow({
+				where : { id : data.friend },
+			});
 			if (user.friends.includes(data.friend))
 				throw new HttpException(
 					"Already In!",
 					HttpStatus.BAD_REQUEST
 				);
 			return this.prisma.user.update({
-			where : { id },
-			data : {
-				friends : {
-					push : data.friend,
+				where : { id },
+				data : {
+					friends : {
+						push : data.friend,
+					}
 				}
-			}
-		})
+			})
 		}
 		else {
-		if (!user.friends.includes(data.friend))
-			throw new HttpException(
-				"Not in the list",
-				HttpStatus.BAD_REQUEST,
-			);
-		return await this.prisma.user.update({
-			where : { id },
-			data : {
-				friends : {
-					set : user.friends.filter((num) => num !== data.friend ),
+			if (!user.friends.includes(data.friend))
+				throw new HttpException(
+					"Not in the list",
+					HttpStatus.BAD_REQUEST,
+				);
+			return await this.prisma.user.update({
+				where : { id },
+				data : {
+					friends : {
+						set : user.friends.filter((num) => num !== data.friend ),
+					}
 				}
-			}
-		});
+			});
 		}
 	}
 
-	//반환값을 Promise<object[] | null> 로 하든 아니든 결과는 같다
 	//CreatedTime 출력법 어떻게?
+	//TODO : 여기 useful information 필요하다고 되어있음... score 필요할까?
 	async getUserMatchHistoryById(id : number) : Promise<object[]>{
 		return this.prisma.matchHistory.findMany({
 			where : {
@@ -240,7 +232,7 @@ export class UserService {
 				loser : {
 					select : { nickname : true }
 				},
-				createdTime : true	//1분 전 30분 전 이런거 할말...?
+				createdTime : true
 			},
 			orderBy : { createdTime : 'desc' }
 		})
