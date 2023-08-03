@@ -87,41 +87,19 @@ export class UserService {
 			});
 	}
 
-	//합칠 수 있는지?
 	//현재 문법 가능한지 check
-	//https://www.prisma.io/docs/concepts/components/prisma-client/null-and-undefined
-	async updateUserByIdWithAvatar(
+	async updateUserById(
 		id: number, 
 		data : Prisma.UserUpdateInput, 
-		file : Express.Multer.File)
+		file? : Express.Multer.File)
 	{
 		return await this.prisma.user.update({
 			where : { id : id },
 			data : {
 				...data,
-				id : id,
+				id : undefined,
+				friends : undefined,
 				avatar : file != null ? file.path.toString() : undefined,
-			}
-		}).catch((error) => {
-			if (error instanceof Prisma.PrismaClientValidationError){
-				return { error : "Validation Error" };
-			}
-			else
-				return { code : error.code, error : error.message };
-		});
-	}
-
-	//avatar file upload : patch 에서는 오류가 난다는 이야기도 있고 post 에서 실행되도록 설계했다는 이야기도 있음 체크 필요
-	async updateUserById(
-		id : number,
-		data : Prisma.UserUpdateInput
-		) : Promise<object> {
-		//
-		return await this.prisma.user.update({
-			where : { id : id },
-			data : {
-				...data,
-				id : id,
 			}
 		}).catch((error) => {
 			if (error instanceof Prisma.PrismaClientValidationError){

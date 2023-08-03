@@ -48,7 +48,7 @@ export class UserController {
 		) : Promise<any>{
 		if (req.user.id != id)
 			throw new HttpException("unauthorized action", HttpStatus.BAD_REQUEST);
-		return this.userService.updateUserByIdWithAvatar(id, data, file);
+		return this.userService.updateUserById(id, data, file);
 	}
 
 	@Patch(':id')
