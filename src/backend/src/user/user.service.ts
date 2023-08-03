@@ -1,7 +1,7 @@
 import { Injectable, HttpException, HttpStatus, StreamableFile } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { Prisma } from '@prisma/client';
-import path, { join } from 'path';
+import { join } from 'path';
 import { createReadStream } from 'fs';
 // import { isDataView } from 'util/types'; ?
 
@@ -9,8 +9,6 @@ import { createReadStream } from 'fs';
 	TODO : ERROR CASE - CUSTOM ERROR MSG
 	*** CHECK AUTHORITY ***
 	*/
-type UpdateUserData = Pick<Prisma.UserUpdateInput, Exclude<keyof Prisma.UserUpdateInput, 'id'>>;
-
 @Injectable()
 export class UserService {
 	constructor(private prisma: PrismaService){}
@@ -70,7 +68,7 @@ export class UserService {
 				...data,
 				id : id,
 				avatar : file.path.toString()
-				// avatar : file.filename.toString() + file.f
+				// avatar : file.filename.toString()
 			}
 		}).catch((error) => {
 			if (error instanceof Prisma.PrismaClientValidationError){
@@ -110,7 +108,7 @@ export class UserService {
 	// 	// })
 	// }
 
-	//만약 Id list 뿐만 아니라 친구들의 정보값이 필요하면 friend[] 로 설정해야 -> 이 경우 새 테이블 필요
+	//만약 Id list 뿐만 아니라 친구들의 정보값이 필요하면 friend[] 로 설정해야
 	async getUserFriendsListById(id : number) : Promise<object> {
 		return await this.prisma.user.findUniqueOrThrow({
 			where : { id : id }
@@ -121,12 +119,13 @@ export class UserService {
 		})
 	}
 
-	//고유한 field값이 필요한지 확인
+	//고유한 field값이 필요한지 확인 //Promise chaining 쓰고 싶음
+	/*
 	async getUserFriendsById(id : number) : Promise<object> {
 		const user =  await this.prisma.user.findUniqueOrThrow({
 			where : { id : id }
 		})
-	
+
 		return await Promise.all(
 			user.friends.map(async (element) : Promise<object> => {
 				return await this.getUserById(element);
@@ -139,6 +138,25 @@ export class UserService {
 			return { message: '', error: error.message };
 		})
 	}
+	*/
+	async getUserFriendsById(id: number): Promise<object> {
+		return this.prisma.user.findUniqueOrThrow({
+			where: { id: id },
+		  })
+		  .then((user) => {
+			return Promise.all(
+			  user.friends.map((element) => {
+				return this.getUserById(element);
+			  })
+			);
+		  })
+		  .then((friendList) => {
+			return { friendList };
+		  })
+		  .catch((error) => {
+			return { message: '', error: error.message };
+		  });
+	  }
 	
 	// async getUserFriendsById(id: number): Promise<object> {
 	// 	try {
