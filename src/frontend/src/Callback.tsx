@@ -12,8 +12,6 @@ function Callback() {
     const [searchParams] = useSearchParams();
 
     const {isLoggedIn, setIsLoggedIn} = useContext(AuthContext);
-    const {userNickname, setUserNickname} = useContext(AuthContext);
-    const {jwt, setJwt} = useContext(AuthContext);
     const code = searchParams.get('code');
 
 	const authLogin = async () => {
@@ -22,16 +20,17 @@ function Callback() {
             navigate('/Home');
         }
         const response = await(await fetch('http://localhost/api/auth/login?code=' + code)).json();
-        setLogin(response.message);
-        if (login == 'Internal server error'){
-            navigate('/');
+        console.log(response);
+        if (response.statusCode === 500){
+            window.location.href = 'http://localhost:80/';
         }
+        setLogin(response.message);
         localStorage.setItem("nickname", response.nickname);
         localStorage.setItem("id", response.id);
         if (response.is2faEnabled === false){
-            navigate('/Home');
             localStorage.setItem('isLoggedIn', 'true');
             setIsLoggedIn(true);
+            navigate('/Home');
         }
         else {
             setShowCodeInput(true);
@@ -85,7 +84,7 @@ function Callback() {
         return (
             <>
             <div>
-                login = {login}
+                로딩중...
             </div>
             <div>
             {showCodeInput && (

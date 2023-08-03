@@ -27,9 +27,11 @@ function UserList() {
 	// "닉네임 프로필주소 승 패 친구여부|닉네임 프로필주소 승 패 친구여부|닉네임 프로필주소 승 패 친구여부" 형태로 받아오기
 	// API에서 문자열 하나로 쭉 받아와서 반복문 돌리기
 
-	function reloadData(){
+	const reloadData = async() => {
 		setData([]);
 		setUserCount(0);
+		const response = await(await fetch('http://localhost/api/user')).json();
+		console.log(response);
 	}
 
 	const AddData = (dataString:string) => {
@@ -194,7 +196,7 @@ function UserList() {
 		{showprofileOption === true && (
 			<button onClick={() => setShowprofileOption(false)}>친구만 보기</button>
 		)}
-		<button>새로 고침</button>
+		<button onClick={() => reloadData()}>새로 고침</button>
 		<div className='friend-wrapper'>
 			{userData.map((item, index) => (
 			<div key={index}>
