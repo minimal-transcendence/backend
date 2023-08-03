@@ -70,28 +70,98 @@ function UserList() {
 		//매치신청 보내기
 	}
 
-	function follow(index:number){
-		//DB에 있는 isFriend 1로 바꿔달라고 하기
-		let copiedData = [...userData];
-		copiedData[index].isFriend = 1;
-		setData(copiedData);
+	async function follow(index:number){ // 맞는지 확인 필요
+		const apiUrl = 'http://localhost/api/user/:' + userId + '/friend';
+		const dataToUpdate = {
+			// 업데이트하고자 하는 데이터 객체
+			isAdd: true,
+			friend: userData[index].id,
+		};
+		try {	
+			const response = await fetch(apiUrl, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(dataToUpdate),
+			});
+
+			if (!response.ok) {
+			throw new Error('API 요청이 실패하였습니다.');
+			}
+			const responseData = await response.json();
+			setUserNickname(newNickname);
+			localStorage.setItem("nickname", newNickname);
+			console.log('응답 데이터:', responseData);
+			reloadData();
+		} catch (error) {
+			alert("Follow에 실패했습니다");
+			console.error('에러 발생:', error);
+		}
 	}
 
-	function unFollow(index:number){
-		//DB에 있는 isFriend 0으로 바꿔달라고 하기
-		let copiedData = [...userData];
-		copiedData[index].isFriend = 0;
-		setData(copiedData);
+	async function unFollow(index:number){ // 맞는지 확인 필요
+		const apiUrl = 'http://localhost/api/user/:' + userId + '/friend';
+		const dataToUpdate = {
+			// 업데이트하고자 하는 데이터 객체
+			isAdd: false,
+			friend: userData[index].id,
+		};
+		try {	
+			const response = await fetch(apiUrl, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(dataToUpdate),
+			});
+
+			if (!response.ok) {
+			throw new Error('API 요청이 실패하였습니다.');
+			}
+			const responseData = await response.json();
+			setUserNickname(newNickname);
+			localStorage.setItem("nickname", newNickname);
+			console.log('응답 데이터:', responseData);
+			reloadData();
+		} catch (error) {
+			alert("Follow에 실패했습니다");
+			console.error('에러 발생:', error);
+		}
 	}
 
-	function fixProfile(){
+	async function fixProfile(){
 		if (newNickname !== userNickname){
-			// 닉네임 변경요청하기
+			const apiUrl = 'http://localhost/api/user/:' + userId;
+			const dataToUpdate = {
+				// 업데이트하고자 하는 데이터 객체
+				name: newNickname,
+			};
+			try {
+				const response = await fetch(apiUrl, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(dataToUpdate),
+				});
+
+				if (!response.ok) {
+				throw new Error('API 요청이 실패하였습니다.');
+				}
+				const responseData = await response.json();
+				setUserNickname(newNickname);
+				localStorage.setItem("nickname", newNickname);
+				console.log('응답 데이터:', responseData);
+			} catch (error) {
+				alert("닉네임 변경에 실패했습니다");
+				console.error('에러 발생:', error);
+			}
 		}
 		if (selectedFile) {
 			const formData = new FormData();
 			formData.append('file', selectedFile);
-			//fetch -> formData를 body로 fatch
+			//fetch -> formData를 body로 post하기
 			//setProfileURL(내 프로필이미지 경로)해주기
 		}
 	}
@@ -104,7 +174,7 @@ function UserList() {
 			setImageUrl(URL.createObjectURL(file));
 		}
 	};
-	
+
 	useEffect (() => {
 		reloadData();
 		}, []);
