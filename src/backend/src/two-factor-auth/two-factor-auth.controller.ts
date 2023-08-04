@@ -4,15 +4,15 @@ import { AuthService } from 'src/auth/auth.service';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { TwoFactorAuthCodeDto } from 'src/dto/2fa-code.dto';
 import { User } from '@prisma/client';
-import { UserAuthService } from 'src/user-auth/user-auth.service';
 import { TwoFactorAuthService } from './two-factor-auth.service';
+import { UserService } from 'src/user/user.service';
 
 @Controller('2fa')
 export class TwoFactorAuthController {
     constructor(
         private authService: AuthService,
         private twoFactorAuthService: TwoFactorAuthService,
-        private UserAuthService: UserAuthService
+		private userService : UserService
     ) {}
 
     @Post('authenticate')
@@ -21,7 +21,7 @@ export class TwoFactorAuthController {
         @Res() res: Response,
         @Body() twoFactorAuthCode: TwoFactorAuthCodeDto
     ) {
-        const user = await this.UserAuthService.findUserById(twoFactorAuthCode.id);
+        const user = await this.userService.findUserById(twoFactorAuthCode.id);
         if (!user) {
             throw new UnauthorizedException('No user in database');
         }
@@ -40,7 +40,10 @@ export class TwoFactorAuthController {
         // hashing refresh token
         const hashedRefreshToken = await this.authService.getHashedRefreshToken(refresh_token);
         // store hashed refresh token
-        this.UserAuthService.setRefreshToken(user.id, hashedRefreshToken);
+		this.userService.updateUserById(user.id, {
+			refreshToken : hashedRefreshToken
+		});
+
 
         res.setHeader('Authorization', 'Bearer '+ [access_token, refresh_token]);
         res.clearCookie('id');
@@ -71,7 +74,9 @@ export class TwoFactorAuthController {
         @Req() req: any
     ) {
         const user = req.user;
-        this.UserAuthService.setTwoFactorAuth(user.id, true);
+		this.userService.updateUserById(user.id, {
+			is2faEnabled : true,
+		})
         return { message: '2fa turn on' }
     }
 
@@ -91,7 +96,9 @@ export class TwoFactorAuthController {
             throw new UnauthorizedException('Invalid otp code');
         }
 
-        this.UserAuthService.setTwoFactorAuth(user.id, true);
+		this.userService.updateUserById(user.id, {
+			is2faEnabled : true,
+		})
         return { message: '2fa turn on' }
     }
 
@@ -111,7 +118,9 @@ export class TwoFactorAuthController {
             throw new UnauthorizedException('Invalid otp code');
         }
 
-        this.UserAuthService.setTwoFactorAuth(user.id, false);
+		this.userService.updateUserById(user.id, {
+			is2faEnabled : false,
+		})
         return { message: '2fa turn off' }
     }
 }
