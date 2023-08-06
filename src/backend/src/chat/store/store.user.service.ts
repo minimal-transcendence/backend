@@ -15,7 +15,7 @@ export class User {
 	constructor(nickname : string){
 		this.nickname = nickname;
 		this.blocklist = new Set();
-		this.connected = true;
+		this.connected = false;
 		this.joinlist = new Set();
 	}
 
@@ -68,5 +68,9 @@ export class ChatUserStoreService implements UserStore{
 	}
 	findAllUser(): User[] {
 		return [...this.users.values()];
+	}
+
+	getNicknameById(id : number) : string {
+		return this.users.get(id).nickname;
 	}
 }

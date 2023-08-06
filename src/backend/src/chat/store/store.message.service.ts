@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 
 class Message {
 	//속성 괜찮...?
-	private readonly from : number;
-	private readonly to : number;	//이러면 방도 숫자가 있긴 있어야하는데ㅠㅠ
-	private readonly body : string;
-	private readonly at : number;
+	readonly from : number;
+	readonly to : number;	//이러면 방도 숫자가 있긴 있어야하는데ㅠㅠ
+	readonly body : string;
+	readonly at : number;
 
 	constructor(
 		from : number,
