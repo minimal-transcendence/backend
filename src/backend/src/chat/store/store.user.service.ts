@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-class User {
+export class User {
 	//속성 private?
 	// id : number;	//어차피 map에 있을건데 여기 있을 필요있...?
 	nickname : string;	//as nickname? or will you give me a chance to change nickname?
@@ -17,11 +17,11 @@ class User {
 		this.blocklist = new Set();
 		this.connected = true;
 		this.joinlist = new Set();
-	};
+	}
 
 	addUserToBlocklist(userid : number){
 		this.blocklist.add(userid);
-	};
+	}
 
 	deleteUserFromBlockList(userid : number){
 		this.blocklist.delete(userid);	//없는 경우 뭔가 조치 필요?
@@ -36,29 +36,34 @@ class User {
 	}
 
 	//getter는 필요없음
-	clearBlocklist(){
+	clearSets(){
 		this.blocklist.clear();
+		this.joinlist.clear();
 	}
 
-	clearJoinlist(){
-		this.joinlist.clear();
+	//prevent memory leaks ... 맞을까...? chatGPT 신뢰 가능...?
+	clearUser(){
+		this.blocklist = null;
+		this.joinlist = null;
 	}
 }
 
 interface UserStore {
 	users: Map<number, User>;
-	findUser(id : string) : User;
-	saveUser(id : string, user : User): void;
+	findUser(id : number) : User;
+	saveUser(id : number, user : User): void;
 	findAllUser() : User[];
 }
 
 @Injectable()
 export class ChatUserStoreService implements UserStore{
 	users = new Map();
-	findUser(id: string): User {
+	findUser(id: number): User | undefined {
+		//못 찾으면 undefined
 		return this.users.get(id);
 	}
-	saveUser(id: string, user: User): void {
+	saveUser(id: number, user: User): void {
+		//만약 원래 있던 아이디를 넣으면 update 된다
 		this.users.set(id, user);
 	}
 	findAllUser(): User[] {
