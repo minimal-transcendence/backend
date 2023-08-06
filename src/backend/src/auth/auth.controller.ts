@@ -3,27 +3,29 @@ import { JwtGuard } from './guards/jwt.guard';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
-import { UserAuthService } from 'src/user-auth/user-auth.service';
+import { UserService } from 'src/user/user.service';
 
 @Controller('auth')
 export class AuthController {
     constructor(
         private authService: AuthService,
-        private UserAuthService: UserAuthService,
+		private userService: UserService
     ) {}
 
     @Get('login')
-    async login(@Query() params: any, @Res() res: Response) {
+    async login(@Req() req: any, @Query() params: any, @Res() res: Response) {
         const code = params?.code;
 
         if (!code) {
             throw new UnauthorizedException('No code in query string');
         }
 
+        console.log("Nest code:", code);
+
         // get user data from api
         const apiData = await this.authService.getUserFromApi(code);
 
-        const user = await this.UserAuthService.addNewUser({
+        const user = await this.userService.createUser({
             id: apiData.id,
             email: apiData.email,
         });
@@ -43,7 +45,9 @@ export class AuthController {
         // hashing refresh token
         const hashedRefreshToken = await this.authService.getHashedRefreshToken(refresh_token);
         // store hashed refresh token
-        this.UserAuthService.setRefreshToken(user.id, hashedRefreshToken);
+		this.userService.updateUserById(user.id, {
+			refreshToken : hashedRefreshToken
+		});
 
         res.setHeader('Authorization', 'Bearer '+ [access_token, refresh_token]);
         res.cookie('access_token', access_token, {
@@ -82,7 +86,9 @@ export class AuthController {
     @UseGuards(JwtRefreshGuard)
     @Post('logout')
     async logout(@Req() req: any, @Res() res: Response): Promise<any> {
-        await this.UserAuthService.removeRefreshToken(req.user.id);
+		await this.userService.updateUserById(req.user.id, {
+				refreshToken : null,
+		})
         res.clearCookie('access_token');
         res.clearCookie('refresh_token');
         return res.send({

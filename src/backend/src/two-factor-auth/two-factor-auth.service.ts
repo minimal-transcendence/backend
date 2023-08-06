@@ -1,17 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { authenticator } from 'otplib';
-import { UserAuthService } from 'src/user-auth/user-auth.service';
 import { toFileStream } from 'qrcode';
 import { Response } from 'express';
-import { PrismaService } from 'src/prisma.service';
 import { User } from '@prisma/client';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class TwoFactorAuthService {
-    constructor(
-        private UserAuthService: UserAuthService,
-        private prisma: PrismaService
-    ) {}
+    constructor( private userService : UserService ) {}
 
     async generateQrCode(stream: Response, user: User): Promise<any> {
         if (user.otpSecret) {
@@ -21,8 +17,10 @@ export class TwoFactorAuthService {
         }
         const secret = authenticator.generateSecret();
 
-        this.UserAuthService.setTwoFactorAuthSecret(user.id, secret);
-
+		this.userService.updateUserById(user.id, {
+			otpSecret : secret,
+		})
+		
         const otpAuthUrl = authenticator.keyuri(user.email, 'seunchoi-2fa', secret);
         return toFileStream(stream, otpAuthUrl);
     }

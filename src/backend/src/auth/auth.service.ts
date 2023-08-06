@@ -1,16 +1,17 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserAuthService } from 'src/user-auth/user-auth.service';
 import * as bcrypt from 'bcrypt';
 import { lastValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
+import { UserService } from 'src/user/user.service';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
     constructor(
         // private configService: ConfigService,
         private jwtService: JwtService,
-        private UserAuthService: UserAuthService,
+		private userService : UserService,
         private httpService: HttpService,
     ) {}
 
@@ -78,7 +79,26 @@ export class AuthService {
         const saltOrRounds = 10;
         const hashedRefreshToken = await bcrypt.hash(refreshToken, saltOrRounds);
         return hashedRefreshToken;
-      }
+    }
+
+	async getUserIfRefreshTokenMatches(refreshToken: string, userId: number): Promise<User>
+    {
+        const user = await this.userService.findUserById(userId);
+
+        if (!user) {
+            throw new UnauthorizedException("no such user in database");
+        }
+
+        if (!user.refreshToken) {
+            throw new UnauthorizedException("no refresh token on user");
+        }
+
+        const isMatched = await bcrypt.compare(refreshToken, user.refreshToken);
+
+        if (isMatched) {
+            return user;
+        }
+    }
 
     async refreshJwtToken(refreshTokenDto: any): Promise<{ accessToken: string }> {
         const { refresh_token } = refreshTokenDto;
@@ -95,7 +115,7 @@ export class AuthService {
         const userId = decodedRefreshToken.id;
         
         // Get user information by refresh_token and userId
-        const user = await this.UserAuthService.getUserIfRefreshTokenMatches(refresh_token, userId);
+        const user = await this.getUserIfRefreshTokenMatches(refresh_token, userId);
     
         // Generate new access token
         const accessToken = await this.generateAccessToken(user);

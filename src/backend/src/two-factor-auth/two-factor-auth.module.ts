@@ -1,10 +1,10 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TwoFactorAuthService } from './two-factor-auth.service';
 import { TwoFactorAuthController } from './two-factor-auth.controller';
-import { UserAuthModule } from 'src/user-auth/user-auth.module';
 import { AuthService } from 'src/auth/auth.service';
 import { AuthModule } from 'src/auth/auth.module';
 import { PrismaService } from 'src/prisma.service';
+import { UserService } from 'src/user/user.service';
 import { JwtModule } from '@nestjs/jwt';
 import { HttpModule } from '@nestjs/axios';
 // import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -13,7 +13,6 @@ import { HttpModule } from '@nestjs/axios';
   imports: [
     forwardRef(()=>AuthModule),
     HttpModule,
-    UserAuthModule,
     // JwtModule.registerAsync({
     //   imports: [ConfigModule],
     //   useFactory: async (configService: ConfigService) => ({
@@ -35,6 +34,7 @@ import { HttpModule } from '@nestjs/axios';
     // ConfigService,
     TwoFactorAuthService,
     AuthService,
+	UserService,
     PrismaService,
   ],
   controllers: [TwoFactorAuthController],
