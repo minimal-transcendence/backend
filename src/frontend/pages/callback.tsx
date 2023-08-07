@@ -43,8 +43,10 @@ function Callback() {
         localStorage.setItem("id", data.id);
         if (data.is2faEnabled === false) {
             localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('is2fa', 'false');
             router.push('Home');
         } else {
+            localStorage.setItem('is2fa', 'true');
             setShowCodeInput(true);
         }
     }
@@ -56,41 +58,26 @@ function Callback() {
         console.log("Callback Page");
     }, [router.isReady]);
 
-    function sendAuthCode(code: string) {
+    async function sendAuthCode(code: string) {
         const authcode = code;
         setVerCode('');
         if (authcode.length !== 6) { // 코드 길이 확인
             alert("Error: Code length error");
             return;
         }
-
-        fetch('http://localhost/api/2fa/authenticate', {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                twoFactorAuthCode: authcode,
-                id: localStorage.getItem("id"),
-            }),
-        })
-            .then((response) => {
-                if (!response.ok) { // response가 제대로 오지않았을때
-                    throw new Error('Network response was not ok');
-                }
-                return response.text();
-            })
-            .then((responseData) => { // 결과를 받음
-                //결과 받아서 nickname, profileURL, isLoggedIn 넣어주기
-                console.log('Response from server:', responseData);
-                localStorage.setItem('isLoggedIn', 'true');
-                router.push('/Home');
-            })
-            .catch((error) => { // 에러시
-                console.error('Error sending data:', error);
-                setVerCode('');
-                setLogin(error);
-            });
+        const apiUrl = 'http://localhost/api/2fa/authenticate/' + localStorage.getItem("id");
+        const dataToUpdate = {
+			// 업데이트하고자 하는 데이터 객체
+            twoFactorAuthCode: authcode,
+            id: localStorage.getItem("id"),
+		};
+        const response = await fetch(apiUrl, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(dataToUpdate),
+			});
     };
 
     // redirect

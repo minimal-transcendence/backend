@@ -1,10 +1,12 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { useRouter } from 'next/router';
 import UserList from '../srcs/UserList';
+import MyProfile from '../srcs/MyProfile';
 
 function Home() {
   const router = useRouter();
   const [greeting, setGreeting] = useState<string[]>(["hihi", "hello", "안녕"]);
+  const [myProfileModal, setMyProfileModal] = useState<boolean>(false);
   const [number, setNumber] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -16,6 +18,7 @@ function Home() {
     localStorage.setItem('isLoggedIn', 'false');
     localStorage.removeItem('id');
     localStorage.removeItem('nickname');
+    localStorage.removeItem('is2fa');
     setIsLoggedIn(false);
     // 로그아웃 post하기
   };
@@ -41,6 +44,7 @@ function Home() {
     return (
       <div>
         <div>
+          <button onClick={() => setMyProfileModal(true)}>내 프로필</button>
           <button onClick={onIncrease}>인사 바꾸기</button>
           <button onClick={logout}>로그 아웃</button>
           <h1>홈</h1>
@@ -49,6 +53,14 @@ function Home() {
         </div>
         <div>
           <UserList />
+        </div>
+        <div>
+        {myProfileModal && (
+          <>
+          <button onClick={() => setMyProfileModal(false)}>닫기</button>
+          <MyProfile />
+          </>
+        )}
         </div>
       </div>
     );
