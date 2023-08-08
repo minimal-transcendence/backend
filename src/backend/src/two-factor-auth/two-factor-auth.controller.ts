@@ -98,6 +98,7 @@ export class TwoFactorAuthController {
 
 		this.userService.updateUserById(user.id, {
 			is2faEnabled : true,
+            isOtpVerified : true,
 		})
         return { message: '2fa turn on' }
     }
