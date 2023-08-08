@@ -86,7 +86,6 @@ export class UserService {
 				return { message: 'An error occurred', error: error.message};
 			});
 	}
-
 	//현재 문법 가능한지 check
 	async updateUserById(
 		id: number, 

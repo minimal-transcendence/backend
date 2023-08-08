@@ -9,7 +9,6 @@ import { UserServiceModule } from './user/user.module';
 import { MatchModule } from './match/match.module';
 import { ChatModule } from './chat/chat.module';
 
-
 @Module({
   imports: [
 		AuthModule, TwoFactorAuthModule,
