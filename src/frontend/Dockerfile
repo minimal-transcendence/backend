@@ -13,12 +13,22 @@ RUN npm run build
 
 # prod stage
 
-FROM nginx:1.24
+FROM node:18-alpine
+
+RUN apk update && \
+    apk add --no-cache nginx
 
 WORKDIR /app
 
-COPY default.conf /etc/nginx/conf.d/default.conf
-COPY --from=builder /app/build ./build
+ENV NODE_ENV=production
+
+COPY default.conf /etc/nginx/http.d/default.conf
+COPY ./run.sh ./run.sh
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+CMD ["sh", "run.sh"]
 
 #----------------------------------------#
 

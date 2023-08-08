@@ -7,6 +7,8 @@ import { TwoFactorAuthModule } from './two-factor-auth/two-factor-auth.module';
 import { PrismaService } from './prisma.service';
 import { UserServiceModule } from './user/user.module';
 import { MatchModule } from './match/match.module';
+// import { ServeStaticModule } from '@nestjs/serve-static';
+// import { join } from 'path';
 
 
 @Module({

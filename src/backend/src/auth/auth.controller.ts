@@ -13,12 +13,14 @@ export class AuthController {
     ) {}
 
     @Get('login')
-    async login(@Query() params: any, @Res() res: Response) {
+    async login(@Req() req: any, @Query() params: any, @Res() res: Response) {
         const code = params?.code;
 
         if (!code) {
             throw new UnauthorizedException('No code in query string');
         }
+
+        console.log("Nest code:", code);
 
         // get user data from api
         const apiData = await this.authService.getUserFromApi(code);
