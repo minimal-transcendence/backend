@@ -27,7 +27,7 @@ export class UserController {
 	@UseInterceptors(FileInterceptor(
 		'avatar',
 		{
-			dest: '/photo',	//없는 폴더면 자동 생성
+			dest: 'app/photo',	//없는 폴더면 자동 생성
 		})
 	)
 	@Post(':id')
@@ -48,7 +48,7 @@ export class UserController {
 		) : Promise<any>{
 		if (req.user.id != id)
 			throw new HttpException("unauthorized action", HttpStatus.BAD_REQUEST);
-		return this.userService.updateUserByIdWithAvatar(id, data, file);
+		return this.userService.updateUserById(id, data, file);
 	}
 
 	@Patch(':id')
@@ -93,14 +93,7 @@ export class avatarController {
 
 	@Get()
 	getAvatar(@Param('img') img : string) : StreamableFile {
-		const file = createReadStream(join('/photo/' + img));
+		const file = createReadStream(join('app/photo/' + img));
 		return new StreamableFile(file);
 	}
-
-	// @Get()
-	// display(
-	// 	@Param('img') img : string,
-	// 	@Res() res: any){
-	// 	res.sendFile(img, { root: '/app/photo' })
-	// }
 }

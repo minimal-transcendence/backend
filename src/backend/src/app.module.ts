@@ -10,15 +10,12 @@ import { MatchModule } from './match/match.module';
 // import { ServeStaticModule } from '@nestjs/serve-static';
 // import { join } from 'path';
 
+
 @Module({
   imports: [
 		AuthModule, TwoFactorAuthModule,
 		UserServiceModule,
 		MatchModule,
-    // ServeStaticModule.forRoot({
-    //   rootPath: join(__dirname, '..', 'client'),
-    // }),
-
 	],
   // imports: [ConfigModule.forRoot(), AuthModule, UserAuthModule, TwoFactorAuthModule],
   controllers: [AppController],

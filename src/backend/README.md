@@ -55,8 +55,10 @@ $ npm run test:cov
 |/user|GET|User[]|||
 |/user/:id|GET|User|id||
 |/user/:id|Patch|User|id|score, etc|
+|/user/:id|Post|User|id|score, etc with Avatar|
 |/user/:id/friend|GET|int[]|userid||
-|/user/:id/friend|PATCH|int[]|userid|isAdd: boolean\nfriend: number|
+|/user/:id/friend|PATCH|int[]|userid|isAdd: boolean
+friend: number|
 |/user/:id/matchhistory|GET|Matchhistory[]|userid||
 |/matchhistory|GET|Matchhistory[]|||
 |/matchhistory|POST|Matchhistory[]||winnerId: number\nloserId: number|
