@@ -65,9 +65,11 @@ export class ChatGateway
 	//message 리스트 갱신
 	//socket.on
 		//sendMessage
-		//sendRoomPass	<- 이거 한 번에 처리하면 좋을 것 같은데... join room으로다가... 안 되나...?
-		//sendRoomLeave 
+		//sendRoomPass
+		//sendRoomLeave
+
 		//join(Room)
+		//switchRoom <- 근본적으로 enterRoom이랑 뭐가 다르지...? 하지만 enter_room은 예약어가 있었던 것 같다
 
 		//changeNick
 		//blockOnUser
@@ -77,15 +79,14 @@ export class ChatGateway
 		//muteUser
 		//unmuteUser
 	//socket.emit
-		///init
+		//init
 		//userConnect
 		//userDisconnect
+		//requireRoomPass
 		
-		//userUpdate	-> 유저 상태 변경(온라인, 게임 중, 오프라인)
-		//updateWindow <- 누군가 정보 바뀌었을 때 <- 이거 하나로 가능?
-		//usersUpdate?	-> 유저 목록 변경?
-		//roomUpdate -> 방 내부에 owner 이나 operator 등 바뀌었을때
-		//roomsUpdate -> 방 목록 바뀌었을때?
+		//updateUsers
+		//updateRooms -> 방 리스트 업데이트
+		//updateRoom -> 방 내부에 owner 이나 operator 등 바뀌었을때
 	// async handleConnection(@ConnectedSocket() client: Socket) {
 	async handleConnection(@ConnectedSocket() client: Socket, userId : string) {
 		// const userId = client.handshake.auth.userID;	//근데 근본적으로 조작(?) 하면 이런 식으로 인증하는 의미가 없다
@@ -134,12 +135,63 @@ export class ChatGateway
 		//그리고 데이터 전달
 		//와 낭비다...!
 /*		//아니면 currentRoom만 할까?	*/
+		//이 경우 방 리스트 & 유저 리스트만 보내고 (block미리 거르기) currRoom 생길 때 그 방 메세지만 모아서 보내면 될 듯
 		//이렇게 다 했을 때 좋은 점이 뭐가 있지? 새로운 메세지 알람....?
 		//만약 다 안 보내도 된다면 -> userlist, roomlist, currMessagelist 만 보내면 된다.
-		client.emit("init", data);
+		client.emit("init", { data : data , myinfo : this.storeUser.findUser(clientId) });
+
 		client.broadcast.emit("userConnect", {
-			//userid, nickname, connected!, messages?
+			//userid, nickname, connected! <  그냥 on off 하라고 들여보내는 것일 뿐
+			//환영 메세지도 저장하고 싶으면 저장하는게 좋은가...? 싶으면서도 잘 모르겠다.
+			//만약 저장할거라면 from client / to -> joinlist의 모든 방 pM은 화면 변동 없음
 		})
+
+		client.on("enter_room", (roomname) => {
+			//이미 client가 들어가 있는 방인지 check -> 이미 들어간 방이면 방만 rendering. rendering 할 수 있게 방 객체와 message더미를 전달
+
+			//안 들어간 방
+				// 존재하는 가?
+					// 비밀번호가 있는가?
+						// pass하면 join	//여기서 client.on 한 번 더 가능? or emit require_pass?
+						// pass못하면 emit("wrong_password")
+				// 존재하지 않으면 방을 만든다 (비번 x가 default)
+			//방을 들어간 방 목록에 추가한다
+			//rendering할 수 있게 방 객체와 message더미 전달
+		})
+
+		client.on("send_message", (to, msg) => {
+			//to가 존재하는지
+				// 사람인지 방인지 <- 감지 가능? 1. roomname검색 -> 없으면 2. user검색
+					//방이라면 들어가 있는지
+						//전부 사실이라면 message기록하고 해당 방에 있는 유저들에게 emit(new_message)
+					//사람이라면
+						//to().to()로 emit
+			//존재하지 않는다면? -> ignore? or throw error?
+		})
+
+		client.on("leave_room", (roomname) => {
+			//방 찾기 (방이 아닌 사람이면 못 떠남!)->pM방은 handleDisconnect에서 처리
+				//그 방의 유일한 한 사람인지? -> 맞으면 방 자체를 없앤다
+					// owner인지? -> 맞으면 다른 사람을 owner & op로 임명하고 해당 유저는 해제
+						//in(roomname).emit("userDisconnect")	//disconnect 가 맞겠지? ㅇㅇㅇ님이 방을 나가셨습니다 <- 이것도 message로 처리해야하나? 만약 message로 처리해야하면 저장도 하자
+		})
+
+		client.on("change_nick", (newnick) => {
+			//모든 방에서 닉넴 업뎃 흑흑 이게 말이 됩니까....? client.broadcast.("updateWindow") <- 현재 창 업데이트 : user창, currRoom...
+		})
+
+		client.on("block_on", (target) => {
+			//target이 blocklist 에 있는지
+			//없으면 추가
+				//(화면상으로는 회색 표시로 비활성화 하면 좋을 듯?) updateWindow가 아닐까?
+		})
+
+		client.on("block_off", (target) => {
+			//target이 블랙리스트에 있는지
+			//있으면 삭제
+				//화면 업데이트
+		})
+
 	}
 	
 	async handleDisconnect(@ConnectedSocket() client: Socket) {
@@ -174,3 +226,5 @@ export class ChatGateway
 		client.emit("hihi");
 	}
 }
+
+//복잡도... 너무 높은 것 같은데 이게 맞나....?
