@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-class Message {
+export class Message {
 	//속성 괜찮...?
 	readonly from : number;
 	readonly to : number;	//이러면 방도 숫자가 있긴 있어야하는데ㅠㅠ

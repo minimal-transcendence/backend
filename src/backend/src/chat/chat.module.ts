@@ -5,14 +5,14 @@ import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { ChatUserStoreService } from './store/store.user.service';
 import { ChatMessageStoreService } from './store/store.message.service';
 import { PrismaService } from 'src/prisma.service';
-// import { ChatRoomStoreService } from './store/store.room.service';
+import { ChatRoomStoreService } from './store/store.room.service';
 
 @Module({
 	providers: [
 		ChatService,
 		ChatGateway, 
 		JwtGuard,
-		// ChatRoomStoreService,
+		ChatRoomStoreService,
 		ChatUserStoreService,
 		ChatMessageStoreService,
 		PrismaService
