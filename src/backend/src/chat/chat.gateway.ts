@@ -197,7 +197,7 @@ export class ChatGateway
 	// async handleConnection(@ConnectedSocket() client: Socket) {
 	async handleConnection(@ConnectedSocket() client: Socket, userId : string, ) {
 		this.logger.log(`Client Connected : ${client.id}`);
-		client.emit("ytest", 'hi');
+		client.emit("ytest", client.id);
 		client.emit("welcomeMessage", `Hello~ ${client.id}`);
 		client.on("requestAllRoomList", () => {
 			this.logger.log(`i got EVENT <requestAllRoomList> from ${client.id}`);

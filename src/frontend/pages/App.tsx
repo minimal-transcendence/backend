@@ -2,16 +2,6 @@ import { useEffect, useState } from "react";
 import "./index.css";
 import * as io from "socket.io-client";
 
-const socket = io.connect("http://localhost", {
-  path: "/socket.io",
-});
-
-// console.log("here");
-
-socket.on("ytest", (message: any) => {
-  console.log("message is ", message);
-  socket.emit("message", "hello from NEXT");
-});
 const NO_SEARCH_RESULT_ERROR = "There is no room! : ";
 const NO_JOINNED_RESULT_ERROR = "No Joinned???! : ";
 const CLIENTNAME = "ysungwon";
@@ -48,6 +38,18 @@ export default function App() {
   useEffect(() => {
     setUserId(() => localStorage.getItem("id"));
   }, []);
+  const socket = io.connect("http://localhost", {
+    path: "/socket.io",
+    query: {
+      id: userId,
+    },
+  });
+  // console.log("here");
+
+  socket.on("ytest", (message: any) => {
+    console.log("message is ", message);
+    socket.emit("message", "hello from NEXT");
+  });
 
   console.log("userid, nickname ", userId);
   useEffect(() => {
