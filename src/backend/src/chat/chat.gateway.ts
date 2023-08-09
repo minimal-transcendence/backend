@@ -21,9 +21,12 @@ import { PrismaService } from 'src/prisma.service';
 
 @UseGuards(JwtGuard)	//guard해도 연결 자체가 막히지는 않는 듯... ㄸㄹㄹ
 @WebSocketGateway({
+
 	cors: {
-		origin: ['http://localhost:80'],
+		origin: '*',
+    methods: ['GET', 'POST']
 	},
+	
 	pingInterval : 5000,
 	pingTimeout : 3000,
 })
@@ -38,9 +41,10 @@ export class ChatGateway
 		private prisma : PrismaService
 	){}
 
-	@WebSocketServer()
+	@WebSocketServer() 
 	server : Server;
 	private logger: Logger = new Logger('EventsGateway');
+
 	//아니면 여기서 prisma 써서 userlist 다 가져오게 할까...?
 	//여기서 async써도 괜찮은가...?
 	async afterInit(){
@@ -92,7 +96,7 @@ export class ChatGateway
 	// async handleConnection(@ConnectedSocket() client: Socket) {
 	async handleConnection(@ConnectedSocket() client: Socket, userId : string) {
 		this.logger.log(`Client Connected : ${client.id}`);
-		
+		client.emit("ytest", 'hi');
 		// const userId = client.handshake.auth.userID;	//근데 근본적으로 조작(?) 하면 이런 식으로 인증하는 의미가 없다
 						//최종적으로는 jwtToken으로 connection도 guard해야됨
 		// if (!userId || this.storeUser.findUser(userId) === undefined)	//이게 valid한지는 어떻게 체크?
