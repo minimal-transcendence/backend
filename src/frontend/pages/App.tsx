@@ -3,9 +3,9 @@ import "./index.css";
 import * as io from "socket.io-client";
 
 const socket = io.connect("http://localhost", {
-		path : "/socket.io",
+  path: "/socket.io",
 });
-console.log("ehre ", socket);
+
 // console.log("here");
 
 socket.on("ytest", (message: any) => {
@@ -13,6 +13,7 @@ socket.on("ytest", (message: any) => {
   socket.emit("message", "hello from NEXT");
 });
 const NO_SEARCH_RESULT_ERROR = "There is no room! : ";
+const NO_JOINNED_RESULT_ERROR = "No Joinned???! : ";
 const CLIENTNAME = "ysungwon";
 
 export type UserOnChat = {
@@ -28,129 +29,6 @@ export type TempSearch = {
   users: UserOnChat[];
 };
 
-const tempSearchList = [
-  {
-    roomName: "과연 반영될까23322?",
-    messageShort:
-      "전체채팅 ㅅㅅㅅㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ채팅이 기니까 화면도 길어지는 거 같다. 몇글자만 짤라서, 화면에는 2줄만 보이도록 설정을 해야 될 거 같다.",
-    messageNew: true,
-    users: [
-      {
-        id: "God",
-        isCreator: true,
-        isOp: true,
-      },
-      {
-        id: "ysungwon",
-        isCreator: false,
-        isOp: false,
-      },
-      {
-        id: "jaeyjeon",
-        isCreator: false,
-        isOp: false,
-      },
-      {
-        id: "namkim",
-        isCreator: false,
-        isOp: false,
-      },
-      {
-        id: "seunchoi",
-        isCreator: false,
-        isOp: false,
-      },
-      { id: "ProGamer", isCreator: false, isOp: false },
-    ],
-  },
-  {
-    roomName: "게임채팅방",
-    messageShort: "게임해야지 히히히",
-    messageNew: true,
-    users: [
-      { id: "ProGamer", isCreator: true, isOp: true },
-      {
-        id: "ysungwon",
-        isCreator: false,
-        isOp: true,
-      },
-      {
-        id: "seunchoi",
-        isCreator: false,
-        isOp: true,
-      },
-    ],
-  },
-  {
-    roomName: "프론트엔드 방",
-    messageShort: "프론트는 메세지 읽었다. JavaScript, 채팅,React,Pong",
-    messageNew: false,
-    users: [
-      {
-        id: "jaeyjeon",
-        isCreator: true,
-        isOp: true,
-      },
-      {
-        id: "ysungwon",
-        isCreator: false,
-        isOp: true,
-      },
-    ],
-  },
-  {
-    roomName: "백엔드 방",
-    messageShort: "백엔드는 메세지를 안 읽었다..",
-    messageNew: true,
-    users: [
-      {
-        id: "namkim",
-        isCreator: false,
-        isOp: false,
-      },
-      {
-        id: "seunchoi",
-        isCreator: false,
-        isOp: true,
-      },
-    ],
-  },
-  {
-    roomName: "안식처",
-    messageShort: "에어컨...조아..",
-    messageNew: false,
-    users: [
-      {
-        id: "ysungwon",
-        isCreator: true,
-        isOp: true,
-      },
-    ],
-  },
-];
-// const tempRoomUserList = [
-//   {
-//     id: "ysungwon",
-//     isCreator: true,
-//     isOp: true,
-//   },
-//   {
-//     id: "jaeyjeon",
-//     isCreator: false,
-//     isOp: false,
-//   },
-//   {
-//     id: "namkim",
-//     isCreator: false,
-//     isOp: false,
-//   },
-//   {
-//     id: "seunchoi",
-//     isCreator: false,
-//     isOp: true,
-//   },
-// ];
-
 export default function App() {
   const [results, setTempSearchList] = useState<TempSearch[]>([]);
   // const [users, setTempRoomUserList] = useState(tempRoomUserList);
@@ -159,13 +37,44 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
   const [curOpen, setCurOpen] = useState<number>(-1);
-
+  const [userId, setUserId] = useState<any>(null);
   isLoading;
   function handleSelectRoom(room: any) {
     setSelectedRoom(room);
     setCurOpen(-1);
-    console.log("in handleSelectRoom ", room);
+    console.log("in SelectRoomName ", room.roomName);
   }
+
+  useEffect(() => {
+    setUserId(() => localStorage.getItem("id"));
+  }, []);
+
+  console.log("userid, nickname ", userId);
+  useEffect(() => {
+    function requestAllRoomList(result: any) {
+      console.log("in useEffect allroom");
+      setTempSearchList(() => result);
+    }
+
+    function requestMyRoomList(result: any) {
+      console.log("in useEffect myroom", result);
+      setTempSearchList(() => result);
+    }
+    function requestSearchResultRoomList(result: any) {
+      console.log("in useEffect searchResult", result);
+      setTempSearchList(() => result);
+    }
+
+    socket.on("requestAllRoomList", requestAllRoomList);
+    socket.on("requestMyRoomList", requestMyRoomList);
+    socket.on("requestSearchResultRoomList", requestSearchResultRoomList);
+
+    return () => {
+      socket.off("requestAllRoomList", requestAllRoomList);
+      socket.off("requestMyRoomList", requestMyRoomList);
+      socket.off("requestSearchResultRoomList", requestSearchResultRoomList);
+    };
+  }, []);
 
   useEffect(
     function () {
@@ -174,35 +83,31 @@ export default function App() {
           setIsLoading(true);
 
           if (query === "#all") {
-            setTempSearchList(tempSearchList);
+            socket.emit("requestAllRoomList");
             setSelectedRoom(null);
             setError("");
           } else if (!query) {
             // throw new Error(SEARCH_REQUIRE_ERROR);
-            const tempResults = tempSearchList.filter((result) => {
-              return (
-                result.users.filter((user) => user.id === CLIENTNAME).length ===
-                1
-              );
-            });
 
-            if (tempResults.length === 0) {
+            socket.emit("requestMyRoomList");
+
+            if (results.length === 0) {
               setSelectedRoom(null);
-              throw new Error(NO_SEARCH_RESULT_ERROR + query);
+
+              throw new Error(NO_JOINNED_RESULT_ERROR + query);
             }
+
             setSelectedRoom(null);
-            setTempSearchList(() => tempResults);
+            setTempSearchList(() => results);
             setError("");
           } else {
-            const tempResults = tempSearchList.filter((result) =>
-              result.roomName.includes(query)
-            );
-            if (tempResults.length === 0) {
+            socket.emit("requestSearchResultRoomList", query);
+            if (results.length === 0) {
               setSelectedRoom(null);
               throw new Error(NO_SEARCH_RESULT_ERROR + query);
             }
             setSelectedRoom(null);
-            setTempSearchList(() => tempResults);
+            setTempSearchList(() => results);
             setError("");
           }
         } catch (err: any) {
@@ -435,7 +340,7 @@ function ChatRoomUserInfo({
       <p className="icon">{isOpen ? "-" : "+"}</p>
 
       {isOpen && (
-        <div className="content-box">
+        <span className="content-box">
           <>
             <div>
               <p>
@@ -455,7 +360,7 @@ function ChatRoomUserInfo({
               <span>mute</span>
             </div>
           </>
-        </div>
+        </span>
       )}
     </li>
   );

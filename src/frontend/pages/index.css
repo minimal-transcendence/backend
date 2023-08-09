@@ -214,7 +214,9 @@ body {
   cursor: pointer;
   transition: all 0.3s;
 }
-
+.list.list-users li {
+  padding: 0.4rem 3.2rem;
+}
 .list.list-rooms li:hover,
 .list.list-users li:hover {
   background-color: var(--color-background-100);
@@ -497,8 +499,7 @@ label:active:after {
 }
 
 .content-box {
-  grid-column: 2 / -1;
-  display: grid;
+  grid-column: 1 / 4;
   grid-template-rows: 1fr 1fr 1fr 1fr;
   padding-bottom: 16px;
   line-height: 1.6;
