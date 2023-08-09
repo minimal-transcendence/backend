@@ -1,13 +1,10 @@
 import { useEffect, useState } from "react";
 import "./index.css";
 import * as io from "socket.io-client";
-const socket = io.connect("http://localhost:3001");
-// const socket = io.connect("http://localhost:3001", {
-//   withCredentials: true,
-//   extraHeaders: {
-//     "my-custom-header": "abcd",
-//   },
-// });
+
+const socket = io.connect("http://localhost:3001", {
+		path : "/socket.io",
+});
 console.log("ehre ", socket);
 
 socket.on("ytest", (message: any) => {
