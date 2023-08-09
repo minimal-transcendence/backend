@@ -20,7 +20,7 @@ import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { PrismaService } from 'src/prisma.service';
 
 @UseGuards(JwtGuard)	//guard해도 연결 자체가 막히지는 않는 듯... ㄸㄹㄹ
-@WebSocketGateway({
+@WebSocketGateway(3002, {
 	// cors: {
 	// 	origin: ['http://localhost:80'],
 	// },
