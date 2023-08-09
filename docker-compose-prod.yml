@@ -29,6 +29,7 @@ services:
     restart: always
     ports:
       - 3001:3001
+      - 3002:3002
       - 5555:5555
     env_file:
       - .env

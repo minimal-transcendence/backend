@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "./index.css";
 import * as io from "socket.io-client";
 
-const socket = io.connect("http://localhost:3001", {
+const socket = io.connect("http://localhost", {
 		path : "/socket.io",
 });
 console.log("ehre ", socket);
@@ -10,6 +10,7 @@ console.log("ehre ", socket);
 
 socket.on("ytest", (message: any) => {
   console.log("message is ", message);
+  socket.emit("message", "hello from NEXT");
 });
 const NO_SEARCH_RESULT_ERROR = "There is no room! : ";
 const CLIENTNAME = "ysungwon";
