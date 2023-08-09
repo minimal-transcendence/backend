@@ -12,9 +12,9 @@ import {
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { Server } from 'socket.io';
-// import { ChatRoomStoreService } from './store/store.room.service';
+import { ChatRoomStoreService, Room } from './store/store.room.service';
 import { ChatUserStoreService, User } from './store/store.user.service';
-import { ChatMessageStoreService } from './store/store.message.service';
+import { ChatMessageStoreService, Message } from './store/store.message.service';
 import { ChatService } from './chat.service';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { PrismaService } from 'src/prisma.service';
@@ -31,7 +31,7 @@ export class ChatGateway
 	implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
 {
 	constructor(
-		// private storeRoom : ChatRoomStoreService,
+		private storeRoom : ChatRoomStoreService,
 		private storeUser : ChatUserStoreService,
 		private storeMessage : ChatMessageStoreService,
 		private chatService : ChatService,
@@ -47,20 +47,19 @@ export class ChatGateway
 	async afterInit(){
 		this.logger.log('웹소켓 서버 초기화 ✅');
 
-		// const users = await this.prisma.user.findMany({
-		// 	select : { 
-		// 		id : true,
-		// 		nickname : true
-		// 	}
-		// });
-		// users.forEach((user) => {
-		// 	//아아니 흑흑... 메모리 릭 체크하자... map에 든 User를 어떻게 제거하는게 원래는 맞는지...
-		// 	//일단 우리 시스템에서는 탈퇴는 없지만...!
-		// 	this.storeUser.saveUser(
-		// 		user.id, 
-		// 		new User(user.nickname)
-		// 	);
-		// })
+		//DB의 모든 유저를 등록한다
+		const users = await this.prisma.user.findMany({
+			select : { 
+				id : true,
+				nickname : true
+			}
+		});
+		users.forEach((user) => {
+			this.storeUser.saveUser(
+				user.id, 
+				new User(user.nickname)
+			);
+		})
 	}
 
 	//socket 연결 시 -> user, room list 갱신
@@ -91,9 +90,12 @@ export class ChatGateway
 		//updateRooms -> 방 리스트 업데이트
 		//updateRoom -> 방 내부에 owner 이나 operator 등 바뀌었을때
 	// async handleConnection(@ConnectedSocket() client: Socket) {
-	async handleConnection(@ConnectedSocket() client: Socket, userId : string, ) {
+	async handleConnection(@ConnectedSocket() client: Socket) {
 		this.logger.log(`Client Connected : ${client.id}`);
+		console.log(this.storeUser.findAllUser());
 		client.emit("ytest", 'hi');
+		
+		/* TODO: Auth Check */
 		// const userId = client.handshake.auth.userID;	//근데 근본적으로 조작(?) 하면 이런 식으로 인증하는 의미가 없다
 						//최종적으로는 jwtToken으로 connection도 guard해야됨
 		// if (!userId || this.storeUser.findUser(userId) === undefined)	//이게 valid한지는 어떻게 체크?
@@ -101,41 +103,108 @@ export class ChatGateway
 		// 	client.emit("unauthorized", "You are Unauthorized");
 		// 	client.disconnect();
 		// }
-		//모두 너무 길다... 슬픔
 
-		// const clientId = parseInt(userId); 
-		// this.storeUser.findUser(parseInt(userId)).connected = true;		
-		// client.join(`$${userId}`);
-		// //persist session 필요함...? 안 필요한 것 같은데...!
+		console.log("new connection");
+		//유저를 찾는다! (만약 없는 유저라면 만들어야....)
+		const userId = parseInt(client.handshake.query.id as string);
+		const thisUser = this.storeUser.findUser(userId);
+		thisUser.connected = true;
+		console.log(`found user : ${JSON.stringify(thisUser)}`);
 
-		// //connected -> true
-		// //방 리스트 불러오기 / 전달 -> this.storeRoom에 있겠지?
+		//원래는 defaultRoom에도 들어가야 함 -> 방 만들거나 들어가게 하는 method storeRoom 혹은 chatService에 따로 만들 예정
+		//자기 이름을 가진 방에 들어간다 (PM용)
+		client.join(`${thisUser.nickname}`);	//이 방을... 이 방의 아이디를 어떻게 관리하지...?
+
+		//ERASE: test방 만들기
+		client.join("test");
+		this.storeRoom.saveRoom(
+			"test", 
+			new Room(
+				this.storeRoom.rooms.size,
+				"test",
+				userId
+			)
+		);
+
+		//ERASE: test message 만들기
+		this.storeMessage.saveMessage(
+			new Message(
+				userId,
+				this.storeRoom.getRoomId("test"),
+				`I am the user of this room!`
+			)
+		);
+		this.storeMessage.saveMessage(
+			new Message(
+				userId,
+				this.storeRoom.getRoomId("test"),
+				`my id is ${userId}`
+			)
+		);
+		this.storeMessage.saveMessage(
+			new Message(
+				userId,
+				this.storeRoom.getRoomId("test"),
+				`and my name is ${thisUser.nickname}`
+			)
+		);
+
+		//ERASE : test 상대방이 나에게 , 그리고 test 방에 보내는 메세지 generate
+		this.storeMessage.saveMessage(
+			new Message(
+				1234,
+				this.storeRoom.getRoomId("test"),
+				`I am your opponent`
+			)
+		);
+
+		//TODO : PM을 message로 저장하는 method가 하나 더 필요함...!
+		this.storeMessage.saveMessage(
+			new Message(
+				1234,
+				userId,
+				`I am your opponent`
+			)
+		);
+
+		// //방 리스트 불러오기
+		// const roomList = this.storeRoom.findAllRoom();
+		// console.log(roomList);
+
+		//모든 메세지
+		// const messageList = this.storeMessage.messages;
+		// console.log(messageList);
+
 		// //유저 리스트 불러오기 / 전달 -> this.storeUser 에 있음...
 		// //챗 리스트 불러오기 / 전달...?
-		// const messagesPerUser = new Map();	//굳이 추가로 user에 저장할 필요 있...?
-		// this.storeMessage
-		// .findMessagesForUser(clientId)
-		// .forEach((message) => {
-		// 	const { from , to } = message;	//private이면 이렇게 접근 못함
-		// 	const otherUser = clientId === from ? to : from;
-		// 	if (messagesPerUser.has(otherUser))
-		// 		messagesPerUser.get(otherUser).push(message);
-		// 	else
-		// 		messagesPerUser.set(otherUser, [message]);
-		// });
+		const messagesPerUser = new Map();	//굳이 추가로 user에 저장할 필요 있...?
+		this.storeMessage
+		.findMessagesForUser(userId)
+		.forEach((message) => {
+			const { from , to } = message;	//private이면 이렇게 접근 못함
+			//현재 from이랑 to 가 전부 number로 저장 된다 -> 구조 변경 필요
+			const otherUser = userId === from ? to : from;
+			if (messagesPerUser.has(otherUser))
+				messagesPerUser.get(otherUser).push(message);
+			else
+				messagesPerUser.set(otherUser, [message]);
+		});
+
+		console.log("내 메세지");
+		console.log(messagesPerUser);
 
 		//모든 방 리스트와 각 방의 메세지 정보들을 줘야 함....
-		//결국 다시 원점인데... 방이랑 PM을 어떻게 분리하지? enum을 써야함?
-		// const data = [];
+		// const userdata = [];
 		// this.storeUser.users.forEach((user, id) => {
-		// 	data.push({
-		// 		type: "user",
+		// 	userdata.push({
 		// 		id : id,
 		// 		nickname : user.nickname,
 		// 		connected : user.connected,
-		// 		messages : messagesPerUser.get(id) || [],
+		// 		messages : messagesPerUser.get(id) || [],	//이 부분 작동 안함
 		// 	})
 		// })
+
+		// console.log(userdata);
 		//여기 storeRoom도 해줘야 함
 		//그리고 데이터 전달
 		//와 낭비다...!

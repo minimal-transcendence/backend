@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 
 //방도 number 로 관리해야한다 -> message from / to format
-class Room {
+export class Room {
 	//readonly 랑 const 차이?
 	readonly roomId : number;
 	readonly roomname : string;
@@ -15,11 +15,12 @@ class Room {
 	constructor(
 		roomId: number,
 		roomname : string,
-		owner : number
+		owner : number,
+		password? : string
 	){
 		this.roomId = roomId;
 		this.roomname = roomname;
-		this.password = null;	//or ''?
+		this.password = password? password : null;	//or ''?
 		this.owner = owner;
 		this.operators = new Set();
 		this.mutelist = new Set();
@@ -98,6 +99,8 @@ export class ChatRoomStoreService implements RoomStore{
 		return this.rooms.get(roomname);
 	}
 
+	//존재하는 방은 정보 그대로 받을 수 있도록 조정 필요....
+	//gateway에서 logic? 아니면 여기서 별도 method로 logic 처리?
 	saveRoom(roomname: string, room: Room): void {
 		this.rooms.set(roomname, room);
 	}
@@ -108,7 +111,7 @@ export class ChatRoomStoreService implements RoomStore{
 
 	getRoomId(roomname : string) : number {
 		// return this.findRoom.id; 는 왜 안 될까?
-		return this.rooms.get(roomname).id;
+		return (this.findRoom(roomname).roomId);
 	}
 
 	//이게 맞나...?
