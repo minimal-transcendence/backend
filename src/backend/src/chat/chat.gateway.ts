@@ -19,6 +19,110 @@ import { ChatService } from './chat.service';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { PrismaService } from 'src/prisma.service';
 
+
+const CLIENTNAME = "ysungwon";
+
+const tempSearchList = [
+  {
+    roomName: "전체채팅방",
+    messageShort:
+      "전체채팅 ㅅㅅㅅㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ채팅이 기니까 화면도 길어지는 거 같다. 몇글자만 짤라서, 화면에는 2줄만 보이도록 설정을 해야 될 거 같다.",
+    messageNew: true,
+    users: [
+      {
+        id: "God",
+        isCreator: true,
+        isOp: true,
+      },
+      {
+        id: "ysungwon",
+        isCreator: false,
+        isOp: false,
+      },
+      {
+        id: "jaeyjeon",
+        isCreator: false,
+        isOp: false,
+      },
+      {
+        id: "namkim",
+        isCreator: false,
+        isOp: false,
+      },
+      {
+        id: "seunchoi",
+        isCreator: false,
+        isOp: false,
+      },
+      { id: "ProGamer", isCreator: false, isOp: false },
+    ],
+  },
+  {
+    roomName: "게임채팅방",
+    messageShort: "게임해야지 히히히",
+    messageNew: true,
+    users: [
+      { id: "ProGamer", isCreator: true, isOp: true },
+      {
+        id: "ysungwon",
+        isCreator: false,
+        isOp: true,
+      },
+      {
+        id: "seunchoi",
+        isCreator: false,
+        isOp: true,
+      },
+    ],
+  },
+  {
+    roomName: "프론트엔드 방",
+    messageShort: "프론트는 메세지 읽었다. JavaScript, 채팅,React,Pong",
+    messageNew: false,
+    users: [
+      {
+        id: "jaeyjeon",
+        isCreator: true,
+        isOp: true,
+      },
+      {
+        id: "ysungwon",
+        isCreator: false,
+        isOp: true,
+      },
+    ],
+  },
+  {
+    roomName: "백엔드 방",
+    messageShort: "백엔드는 메세지를 안 읽었다..",
+    messageNew: true,
+    users: [
+      {
+        id: "namkim",
+        isCreator: false,
+        isOp: false,
+      },
+      {
+        id: "seunchoi",
+        isCreator: false,
+        isOp: true,
+      },
+    ],
+  },
+  {
+    roomName: "안식처",
+    messageShort: "에어컨...조아..",
+    messageNew: false,
+    users: [
+      {
+        id: "ysungwon",
+        isCreator: true,
+        isOp: true,
+      },
+    ],
+  },
+];
+
 @UseGuards(JwtGuard)	//guard해도 연결 자체가 막히지는 않는 듯... ㄸㄹㄹ
 @WebSocketGateway(3002, {
 	// cors: {
@@ -92,10 +196,27 @@ export class ChatGateway
 	// async handleConnection(@ConnectedSocket() client: Socket) {
 	async handleConnection(@ConnectedSocket() client: Socket) {
 		this.logger.log(`Client Connected : ${client.id}`);
-		console.log(this.storeUser.findAllUser());
-		client.emit("ytest", 'hi');
-		
-		/* TODO: Auth Check */
+		client.emit("ytest", client.id);
+		client.emit("welcomeMessage", `Hello~ ${client.id}`);
+		client.on("requestAllRoomList", () => {
+			this.logger.log(`i got EVENT <requestAllRoomList> from ${client.id}`);
+			client.emit("requestAllRoomList", tempSearchList);
+		});
+		client.on("requestMyRoomList", () => {
+			this.logger.log(`i got EVNET <requestMyRoomList> from ${client.id}`);
+			const tempResults = tempSearchList.filter((result) => {
+				return result.users.filter((user) => user.id === CLIENTNAME).length === 1;
+			});
+			client.emit("requestMyRoomList", tempResults);
+		});
+	
+		client.on("requestSearchResultRoomList", (query) => {
+			this.logger.log(`i got EVNET <requestSearchResultRoomList> from ${client.id}`);
+			const tempResults = tempSearchList.filter((result) =>
+				result.roomName.includes(query)
+			);
+			client.emit("requestSearchResultRoomList", tempResults);
+		});		
 		// const userId = client.handshake.auth.userID;	//근데 근본적으로 조작(?) 하면 이런 식으로 인증하는 의미가 없다
 						//최종적으로는 jwtToken으로 connection도 guard해야됨
 		// if (!userId || this.storeUser.findUser(userId) === undefined)	//이게 valid한지는 어떻게 체크?
