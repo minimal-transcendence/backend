@@ -8,6 +8,7 @@ export class User {
 		//아니면 이전까지 기록을 싹 갈아치운 다음에 이걸 가는 것도 가능할 것 같기도?
 	// blocklist : Set<number>;	//이건 client Local 에서 관리한다...!
 	connected : boolean;
+	isGaming : boolean;
 	//들어간 방 모두 가지고 있어야 하나?
 	joinlist : Set<string>;
 	// currentRoom : string; <- message 전부 store하는 시점에서 필요없는 것 같음
@@ -15,7 +16,8 @@ export class User {
 	constructor(nickname : string){
 		this.nickname = nickname;
 		// this.blocklist = new Set();
-		this.connected = false;
+		this.isGaming = false;
+		this.connected = true;	//접속했을 때 불러오니까!
 		this.joinlist = new Set();
 	}
 

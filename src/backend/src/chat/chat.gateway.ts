@@ -125,9 +125,6 @@ const tempSearchList = [
 
 @UseGuards(JwtGuard)	//guard해도 연결 자체가 막히지는 않는 듯... ㄸㄹㄹ
 @WebSocketGateway(3002, {
-	// cors: {
-	// 	origin: ['http://localhost'],
-	// },
 	pingInterval : 5000,
 	pingTimeout : 3000,
 })
@@ -217,6 +214,10 @@ export class ChatGateway
 			);
 			client.emit("requestSearchResultRoomList", tempResults);
 		});		
+		console.log(this.storeUser.findAllUser());
+		const cookies = client.handshake.headers.cookie;
+		console.log(cookies);
+		/* TODO: Auth Check */
 		// const userId = client.handshake.auth.userID;	//근데 근본적으로 조작(?) 하면 이런 식으로 인증하는 의미가 없다
 						//최종적으로는 jwtToken으로 connection도 guard해야됨
 		// if (!userId || this.storeUser.findUser(userId) === undefined)	//이게 valid한지는 어떻게 체크?
@@ -225,11 +226,11 @@ export class ChatGateway
 		// 	client.disconnect();
 		// }
 
+		/*
 		console.log("new connection");
 		//유저를 찾는다! (만약 없는 유저라면 만들어야....)
 		const userId = parseInt(client.handshake.query.id as string);
 		const thisUser = this.storeUser.findUser(userId);
-		thisUser.connected = true;
 		console.log(`found user : ${JSON.stringify(thisUser)}`);
 
 		//원래는 defaultRoom에도 들어가야 함 -> 방 만들거나 들어가게 하는 method storeRoom 혹은 chatService에 따로 만들 예정
@@ -311,31 +312,43 @@ export class ChatGateway
 				messagesPerUser.set(otherUser, [message]);
 		});
 
-		console.log("내 메세지");
-		console.log(messagesPerUser);
+		// console.log("내 메세지");
+		// console.log(messagesPerUser);
 
-		//모든 방 리스트와 각 방의 메세지 정보들을 줘야 함....
-		// const userdata = [];
-		// this.storeUser.users.forEach((user, id) => {
-		// 	userdata.push({
-		// 		id : id,
-		// 		nickname : user.nickname,
-		// 		connected : user.connected,
-		// 		messages : messagesPerUser.get(id) || [],	//이 부분 작동 안함
-		// 	})
-		// })
+		//TODO : 유저 데이터 정리	//이 단계에서 유저별 과거 메세지가 필요할까?
+		//TODO : blocked user 는 client단에서 처치 -> 확인할 것
+		const userdata = [];
+		this.storeUser.users.forEach((user, id) => {
+			userdata.push({
+				id : id,
+				nickname : user.nickname,
+				connected : user.isGaming,
+				messages : messagesPerUser.get(id) || [],	//이 부분 작동 안함
+			})
+		})
 
-		// console.log(userdata);
-		//여기 storeRoom도 해줘야 함
-		//그리고 데이터 전달
-		//와 낭비다...!
-/*		//아니면 currentRoom만 할까?	*/
-		//이 경우 방 리스트 & 유저 리스트만 보내고 (block미리 거르기) currRoom 생길 때 그 방 메세지만 모아서 보내면 될 듯
-		//이렇게 다 했을 때 좋은 점이 뭐가 있지? 새로운 메세지 알람....?
-		//만약 다 안 보내도 된다면 -> userlist, roomlist, currMessagelist 만 보내면 된다.
-		// client.emit("init", { data : data , myinfo : this.storeUser.findUser(clientId) });
+		console.log(userdata);	//유저별로 메세지 잘 들어오는지 확인할 것
 
-		// client.broadcast.emit("userConnect", {
+		//방 데이터 정리
+		const roomdata = [];	//방 이름과 각 방의 메세지	//제일 끝 정보만 있으면 되는데...
+		this.storeRoom.rooms.forEach((room, roomname) => {
+			const roomId = this.storeRoom.findRoom(roomname);
+			roomdata.push({
+				roomname : roomname,
+				lastMessage : messagesPerUser.get(roomId).findLast()
+			})
+		})
+
+		console.log(roomdata);
+
+		//TODO : default 방의 messages들 모으기
+		client.emit("init", userdata, roomdata);
+
+		/*		//아니면 currentRoom만 할까?	*/
+
+		//TODO : 원래 유저가 들어있는 방에 보내주기 (여기서는 default 방에 보내주는 것)
+		this.server.adapter
+
 		// 	//userid, nickname, connected! <  그냥 on off 하라고 들여보내는 것일 뿐
 		// 	//환영 메세지도 저장하고 싶으면 저장하는게 좋은가...? 싶으면서도 잘 모르겠다.
 		// 	//만약 저장할거라면 from client / to -> joinlist의 모든 방 pM은 화면 변동 없음
