@@ -20,10 +20,10 @@ import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { PrismaService } from 'src/prisma.service';
 
 @UseGuards(JwtGuard)	//guard해도 연결 자체가 막히지는 않는 듯... ㄸㄹㄹ
-@WebSocketGateway({
-	cors: {
-		origin: ['http://localhost'],
-	},
+@WebSocketGateway(3002, {
+	// cors: {
+	// 	origin: ['http://localhost'],
+	// },
 	pingInterval : 5000,
 	pingTimeout : 3000,
 })
@@ -35,9 +35,9 @@ export class ChatGateway
 		private storeUser : ChatUserStoreService,
 		private storeMessage : ChatMessageStoreService,
 		private chatService : ChatService,
-		private prisma : PrismaService
+		private prisma : PrismaService,
 	){}
-
+	
 	@WebSocketServer() 
 	server : Server;
 	private logger: Logger = new Logger('EventsGateway');
@@ -224,6 +224,12 @@ export class ChatGateway
 	// async getConnect(client: Socket, payload : any){
 	// 	console.log(payload);
 	// 	client.emit("confirm", "you are connected");
+	// }
+
+	// TEST SEUNCHOI TEST
+	// @SubscribeMessage('message')
+	// async echoMessage(client: Socket) {
+	// 	client.emit('ytest', 'hello again');
 	// }
 }
 
