@@ -6,12 +6,14 @@ import { ChatUserStoreService } from './store/store.user.service';
 import { ChatMessageStoreService } from './store/store.message.service';
 import { PrismaService } from 'src/prisma.service';
 import { ChatRoomStoreService } from './store/store.room.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
 	providers: [
 		ChatService,
 		ChatGateway, 
 		JwtGuard,
+		JwtService,
 		ChatRoomStoreService,
 		ChatUserStoreService,
 		ChatMessageStoreService,

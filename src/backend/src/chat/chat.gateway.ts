@@ -18,6 +18,7 @@ import { ChatMessageStoreService, Message } from './store/store.message.service'
 import { ChatService } from './chat.service';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { PrismaService } from 'src/prisma.service';
+import { JwtService } from '@nestjs/jwt';
 
 
 const CLIENTNAME = "ysungwon";
@@ -137,6 +138,7 @@ export class ChatGateway
 		private storeMessage : ChatMessageStoreService,
 		private chatService : ChatService,
 		private prisma : PrismaService,
+		private jwtService : JwtService,
 	){}
 	
 	@WebSocketServer() 
@@ -193,46 +195,38 @@ export class ChatGateway
 	// async handleConnection(@ConnectedSocket() client: Socket) {
 	async handleConnection(@ConnectedSocket() client: Socket) {
 		this.logger.log(`Client Connected : ${client.id}`);
-		client.emit("ytest", client.id);
-		client.emit("welcomeMessage", `Hello~ ${client.id}`);
-		client.on("requestAllRoomList", () => {
-			this.logger.log(`i got EVENT <requestAllRoomList> from ${client.id}`);
-			client.emit("requestAllRoomList", tempSearchList);
-		});
-		client.on("requestMyRoomList", () => {
-			this.logger.log(`i got EVNET <requestMyRoomList> from ${client.id}`);
-			const tempResults = tempSearchList.filter((result) => {
-				return result.users.filter((user) => user.id === CLIENTNAME).length === 1;
-			});
-			client.emit("requestMyRoomList", tempResults);
-		});
+		// client.emit("ytest", client.id);
+		// client.emit("welcomeMessage", `Hello~ ${client.id}`);
+		// client.on("requestAllRoomList", () => {
+		// 	this.logger.log(`i got EVENT <requestAllRoomList> from ${client.id}`);
+		// 	client.emit("requestAllRoomList", tempSearchList);
+		// });
+		// client.on("requestMyRoomList", () => {
+		// 	this.logger.log(`i got EVNET <requestMyRoomList> from ${client.id}`);
+		// 	const tempResults = tempSearchList.filter((result) => {
+		// 		return result.users.filter((user) => user.id === CLIENTNAME).length === 1;
+		// 	});
+		// 	client.emit("requestMyRoomList", tempResults);
+		// });
 	
-		client.on("requestSearchResultRoomList", (query) => {
-			this.logger.log(`i got EVNET <requestSearchResultRoomList> from ${client.id}`);
-			const tempResults = tempSearchList.filter((result) =>
-				result.roomName.includes(query)
-			);
-			client.emit("requestSearchResultRoomList", tempResults);
-		});		
+		// client.on("requestSearchResultRoomList", (query) => {
+		// 	this.logger.log(`i got EVNET <requestSearchResultRoomList> from ${client.id}`);
+		// 	const tempResults = tempSearchList.filter((result) =>
+		// 		result.roomName.includes(query)
+		//  	);
+		// 	client.emit("requestSearchResultRoomList", tempResults);
+		// });		
 		console.log(this.storeUser.findAllUser());
-		const cookies = client.handshake.headers.cookie;
-		console.log(cookies);
-		/* TODO: Auth Check */
-		// const userId = client.handshake.auth.userID;	//근데 근본적으로 조작(?) 하면 이런 식으로 인증하는 의미가 없다
-						//최종적으로는 jwtToken으로 connection도 guard해야됨
-		// if (!userId || this.storeUser.findUser(userId) === undefined)	//이게 valid한지는 어떻게 체크?
-		// {
-		// 	client.emit("unauthorized", "You are Unauthorized");
-		// 	client.disconnect();
-		// }
+		const userId = await this.chatService.clientAuthentification(client);
 
-		/*
+		
 		console.log("new connection");
 		//유저를 찾는다! (만약 없는 유저라면 만들어야....)
-		const userId = parseInt(client.handshake.query.id as string);
 		const thisUser = this.storeUser.findUser(userId);
 		console.log(`found user : ${JSON.stringify(thisUser)}`);
+		console.log(client.id);
 
+		/*
 		//원래는 defaultRoom에도 들어가야 함 -> 방 만들거나 들어가게 하는 method storeRoom 혹은 chatService에 따로 만들 예정
 		//자기 이름을 가진 방에 들어간다 (PM용)
 		client.join(`${thisUser.nickname}`);	//이 방을... 이 방의 아이디를 어떻게 관리하지...?
@@ -335,7 +329,7 @@ export class ChatGateway
 			const roomId = this.storeRoom.findRoom(roomname);
 			roomdata.push({
 				roomname : roomname,
-				lastMessage : messagesPerUser.get(roomId).findLast()
+				lastMessage : messagesPerUser.get(roomId)
 			})
 		})
 
@@ -347,7 +341,6 @@ export class ChatGateway
 		/*		//아니면 currentRoom만 할까?	*/
 
 		//TODO : 원래 유저가 들어있는 방에 보내주기 (여기서는 default 방에 보내주는 것)
-		this.server.adapter
 
 		// 	//userid, nickname, connected! <  그냥 on off 하라고 들여보내는 것일 뿐
 		// 	//환영 메세지도 저장하고 싶으면 저장하는게 좋은가...? 싶으면서도 잘 모르겠다.
