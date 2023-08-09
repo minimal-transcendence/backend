@@ -6,6 +6,7 @@ const socket = io.connect("http://localhost:3001", {
 		path : "/socket.io",
 });
 console.log("ehre ", socket);
+// console.log("here");
 
 socket.on("ytest", (message: any) => {
   console.log("message is ", message);
@@ -28,7 +29,7 @@ export type TempSearch = {
 
 const tempSearchList = [
   {
-    roomName: "전체채팅방test2",
+    roomName: "과연 반영될까23322?",
     messageShort:
       "전체채팅 ㅅㅅㅅㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ채팅이 기니까 화면도 길어지는 거 같다. 몇글자만 짤라서, 화면에는 2줄만 보이도록 설정을 해야 될 거 같다.",
     messageNew: true,
