@@ -183,9 +183,25 @@ export class ChatService {
 		}
 	
 	}
+
 	//userLeaveRoom
-	//userLeaveRooms -- userLeaveRoom 순회
-	//userSendChat
+		//없는 방, 방에 속한 유저가 아닐 때 --> 이것도 체크하는 메소드 만들 수 있을 듯? : TODO --> 에러처리
+		//적합한 경우
+			// 유저가 유일한가?
+				// 예 : 걍 방을 삭제한다
+				// 아니
+					// 유저가 owner인지 operator인지 확인
+						// 승계하고 set에서 지우기
+					// 방에 "유저가 나간다! 알림"
+					// 해당 알림을 서버에 저장... <
+				// 유저의 joinlist에서 방을 삭제
+	userLeaveRoom(client : Socket, roomname : string){
+
+	}
+	//userLeaveRooms -- userLeaveRoom 순회 / Set으로 충분? 아님 Array도 포함?
+	userLeaveRooms(client : Socket, roomlist : Set<string>){
+
+	}
 	//kickUser
 	//banUser
 	//muteUser
