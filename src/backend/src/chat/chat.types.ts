@@ -1,0 +1,25 @@
+//type이랑 interface 차이?
+export type userInfo = {
+	id : number;
+	nickname : string;
+	isGaming : boolean;
+}
+
+export type roomInfo = {
+	roomname : string;
+	lastMessage : string;
+}
+
+export type currRoomInfo = {
+	roomname : string;
+	owner : string;
+	operators : string[];	//or json형식?
+	joinedUsers : string[];
+	messages : formedMessage[];	// TODO & CHECK : 그냥 이렇게만 적어도 되나...?
+}
+
+//여기는 export 굳이 필요한지?
+export type formedMessage = {
+	from : string;
+	body : string;
+}

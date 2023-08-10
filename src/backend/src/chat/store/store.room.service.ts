@@ -1,29 +1,37 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
+import { Message } from './store.message.service';
 
 //방도 number 로 관리해야한다 -> message from / to format
 export class Room {
 	//readonly 랑 const 차이?
-	readonly roomId : number;
-	readonly roomname : string;
-	password : string;
+	//room을 private이랑 분리하게 되면 roomId 필요없는 듯
+	// readonly roomId : number;
+	// readonly roomname : string;
+	password : string | null;
 	owner : number;
 	operators : Set<number>;
+	userlist : Set<number>;	//있긴 있어야할듯... socket은 모든 접속에 id를 부여하니까ㅠ
+	//kick, ban, mute	//kicklist banlist 분리?
 	mutelist : Set<number>;
-	//should i have userlists? while socket.io observe it?
+	banlist : Set<number>;
+	messages : Message[];
 
 	constructor(
-		roomId: number,
-		roomname : string,
+		// roomId: number,
 		owner : number,
 		password? : string
 	){
-		this.roomId = roomId;
-		this.roomname = roomname;
+		// this.roomId = roomId;
+		// this.roomname = roomname;
 		this.password = password? password : null;	//or ''?
 		this.owner = owner;
 		this.operators = new Set();
+		// this.operators.add(owner);
+		this.userlist = new Set();
 		this.mutelist = new Set();
+		this.banlist = new Set();
+		this.messages = [];
 	}
 
 	isPassword(input : string) : boolean {
@@ -41,15 +49,28 @@ export class Room {
 	isMuted(userid : number) : boolean {
 		return (this.mutelist.has(userid));
 	}
+	
+	isBanned(userid : number) : boolean {
+		return (this.banlist.has(userid));
+	}
 
 	updatePassword(newPassword : string){
 		this.password = newPassword;
 	}
 
-	//이전 owner가 valid 한지 체크 -> service에서 하자
-	//에러 시 throw?
-	updateOwner(oldOwner : number, newOwner : number){
+	updateOwner(newOwner : number){
 		this.owner = newOwner;
+		// this.operators.delete(oldOwner);
+		// this.operators.add(newOwner);
+	}
+
+	//후... 이거 묶을 걸 그랬나ㅠ
+	addUserToUserlist(userId : number){
+		this.userlist.add(userId);
+	}
+
+	deleteUserFromUserlist(userId : number){
+		this.userlist.delete(userId);
 	}
 
 	addUserToOperators(userid : number){
@@ -67,23 +88,28 @@ export class Room {
 	deleteUserFromMutelist(userid : number){
 		this.mutelist.delete(userid);
 	}
-
-	clearSets(){
+	private clearSets(){
+		this.userlist.clear();
 		this.operators.clear();
 		this.mutelist.clear();
+		this.banlist.clear();
 	}
 
 	clearRoom(){
+		this.clearSets();
 		this.operators = null;
 		this.mutelist = null;
+		this.banlist = null;
+		this.userlist = null;
+	}
+
+	storeMessage(from : number, body : string){
+		this.messages.push(new Message(from, body));
 	}
 }
 
 interface RoomStore{
-	//답이 없다... ㄸㄹㄹ... key를 roomname으로 쓰고 message쉽게 찾기 가능...?ㅠㅠ
-	//string으로 찾는게 좋을까.... int로 찾는게 좋을까...?ㅠㅠ
-	//찾을 땐 string으로 찾는게 맞는 것 같은데...!
-	//근데 또 room객체에 roomname 조회할 일도 많을 것 같음 ㄸㄹㄹ
+	//방을 DM이랑 분리하게 되면 아이디는 필요없다!
 	rooms : Map<string, Room>;
 	
 	findRoom(roomname : string) : Room;
@@ -99,8 +125,6 @@ export class ChatRoomStoreService implements RoomStore{
 		return this.rooms.get(roomname);
 	}
 
-	//존재하는 방은 정보 그대로 받을 수 있도록 조정 필요....
-	//gateway에서 logic? 아니면 여기서 별도 method로 logic 처리?
 	saveRoom(roomname: string, room: Room): void {
 		this.rooms.set(roomname, room);
 	}
@@ -109,12 +133,18 @@ export class ChatRoomStoreService implements RoomStore{
 		return [...this.rooms.values()];
 	}
 
-	getRoomId(roomname : string) : number {
-		// return this.findRoom.id; 는 왜 안 될까?
-		return (this.findRoom(roomname).roomId);
+	deleteRoom(roomname: string) : void {
+		const target = this.rooms.get(roomname);
+		if (target !== undefined)
+			target.clearRoom();
+		this.rooms.delete(roomname);
 	}
+	// 이제 필요 없다!
+	// getRoomId(roomname : string) : number {
+	// 	return (this.findRoom(roomname).roomId);
+	// }
 
-	//이게 맞나...?
+	//이하의 내용은 chatService 에다가....
 	//이 서비스에다가 socket 전달 가능...? javascript는 소켓을 복사하는지 가리키는지 뭔지 진짜 모르겠다 흑흑
 	//memory leaks 어떻게 체크하나요...
 	// joinRoom(client: Socket, roomname : string, password : string | null){

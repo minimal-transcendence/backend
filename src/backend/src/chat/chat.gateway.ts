@@ -14,7 +14,7 @@ import { Socket } from 'socket.io';
 import { Server } from 'socket.io';
 import { ChatRoomStoreService, Room } from './store/store.room.service';
 import { ChatUserStoreService, User } from './store/store.user.service';
-import { ChatMessageStoreService, Message } from './store/store.message.service';
+// import { Message } from './store/store.message.service';
 import { ChatService } from './chat.service';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { PrismaService } from 'src/prisma.service';
@@ -135,7 +135,7 @@ export class ChatGateway
 	constructor(
 		private storeRoom : ChatRoomStoreService,
 		private storeUser : ChatUserStoreService,
-		private storeMessage : ChatMessageStoreService,
+		// private storeMessage : ChatMessageStoreService,
 		private chatService : ChatService,
 		private prisma : PrismaService,
 		private jwtService : JwtService,
@@ -160,9 +160,10 @@ export class ChatGateway
 		users.forEach((user) => {
 			this.storeUser.saveUser(
 				user.id, 
-				new User(user.nickname)
+				new User(user.id, user.nickname)
 			);
 		})
+		this.storeRoom.saveRoom("DEFAULT", new Room(-1));	//owner를 -1으로 설정했다...
 	}
 
 	//socket 연결 시 -> user, room list 갱신
@@ -218,11 +219,11 @@ export class ChatGateway
 		// });		
 		console.log(this.storeUser.findAllUser());
 		const userId = await this.chatService.clientAuthentification(client);
-
+		client.data.userId = userId;
 		
 		console.log("new connection");
 		//유저를 찾는다! (만약 없는 유저라면 만들어야....)
-		const thisUser = this.storeUser.findUser(userId);
+		const thisUser = this.storeUser.findUserById(userId);
 		console.log(`found user : ${JSON.stringify(thisUser)}`);
 		console.log(client.id);
 
