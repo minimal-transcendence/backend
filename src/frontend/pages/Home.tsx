@@ -1,26 +1,23 @@
-import React, { useState, useContext, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router';
 import UserList from '../srcs/UserList';
 import MyProfile from '../srcs/MyProfile';
 
 function Home() {
   const router = useRouter();
-  const [greeting, setGreeting] = useState<string[]>(["hihi", "hello", "안녕"]);
   const [myProfileModal, setMyProfileModal] = useState<boolean>(false);
-  const [number, setNumber] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  function onIncrease() {
-    setNumber(number + 1);
-  }
 
   const logout = () => {
     localStorage.setItem('isLoggedIn', 'false');
     localStorage.removeItem('id');
     localStorage.removeItem('nickname');
     localStorage.removeItem('is2fa');
+    localStorage.removeItem('access_token');
+    const ApiUrl = 'http://localhost/api/auth/logout';
+		fetch(ApiUrl,{
+			method: 'POST'});
     setIsLoggedIn(false);
-    // 로그아웃 post하기
   };
 
   // 이미 로그인되었는지 확인
@@ -45,11 +42,8 @@ function Home() {
       <div>
         <div>
           <button onClick={() => setMyProfileModal(true)}>내 프로필</button>
-          <button onClick={onIncrease}>인사 바꾸기</button>
           <button onClick={logout}>로그 아웃</button>
           <h1>홈</h1>
-          <p>이곳은 홈이에요, 가장 먼저 보여주는 페이지임</p>
-          <p>{greeting[number % 3]}</p>
         </div>
         <div>
           <UserList />
