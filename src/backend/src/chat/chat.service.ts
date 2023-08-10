@@ -5,7 +5,8 @@ import { ChatUserStoreService, User } from './store/store.user.service';
 import { PrismaService } from 'src/prisma.service';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { userInfo } from './chat.types';
+import { currRoomInfo, formedMessage, roomInfo, userInfo } from './chat.types';
+import { Message } from './store/store.message.service';
 
 @Injectable()
 export class ChatService {
@@ -67,44 +68,11 @@ export class ChatService {
 		this.userJoinRoomSuccess(io, client, user, "DEFAULT");
 		user.currentRoom = "DEFAULT";
 		
-		const roomInfo = [];
-		user.joinlist.forEach((room) => {
-			const messages = this.storeRoom.findRoom(room).messages;
-			roomInfo.push({
-				roomname : room,
-				lastMessage : `${messages[messages.length - 1]}`	//되는지 확인할 것
-			})
-		})
-		const userInfo = [];
-		const defaultRoom = this.storeRoom.findRoom("DEFAULT");
-		//이거 method필요함
-		defaultRoom.userlist.forEach((user) => {
-			const target = this.storeUser.findUserById(user);
-			userInfo.push({
-				id : user,
-				nickname : target.nickname,
-				isGaming : target.isGaming
-			});
-		})
-		//currRoomInfo는 뭐가 필요하지...?
 		//datarace... 괜찮을까
-		const operatorsList = [];
-		const joineduserList = [];
-		defaultRoom.userlist.forEach((user) => {
-			joineduserList.push(this.storeUser.getNicknameById(user));
-		})
-		defaultRoom.operators.forEach((user) => {
-			operatorsList.push(this.storeUser.getNicknameById(user));
-		})
-		const currRoomInfo = {
-			roomname : "DEFAULT",
-			owner :`${this.storeUser.findUserById(defaultRoom.owner).nickname}`,
-			operators : operatorsList,
-			joinedUsers : joineduserList,
-			messages : defaultRoom.messages
-				// TODO : id - username mapping	
-				// TODO : pagination
-		}
+		//TODO: 전체방은 챗방 목록에 뜨게 할건지?(안하면 전체방 다시 돌아가고 싶을 때 어떻게 할지!)
+		const roomInfo = this.makeRoomInfo(user.joinlist);
+		const userInfo = this.makeRoomUserInfo("DEFAULT");
+		const currRoomInfo = this.makeCurrRoomInfo("DEFAULT");
 		client.emit("init", userInfo, roomInfo, currRoomInfo);
 	}
 
@@ -170,8 +138,20 @@ export class ChatService {
 	//muteUser
 	//blockUser?
 
-	//TODO : datarace 등 에러처리 어떻게 할지
-	getRoomUserList(roomname : string) : userInfo[] {
+	//TODO : 이하 util함수들 datarace 등 에러처리 어떻게 할지
+	//TODO : array나 set... 이렇게 되나...? error check
+	makeRoomInfo(roomlist : string[] | Set<string>) : roomInfo[] {
+		const res = [];
+		roomlist.forEach((room : string) => {
+			const messages = this.storeRoom.findRoom(room).messages;
+			res.push({
+				roomname : room,
+				lastMessage : `${messages[messages.length - 1]}`
+			})
+		})
+		return res;
+	}
+	makeRoomUserInfo(roomname : string) : userInfo[] {
 		const userInfo = [];
 		//만약 여기서 못 찾으면?
 		const room = this.storeRoom.findRoom(roomname);
@@ -187,4 +167,35 @@ export class ChatService {
 		return (userInfo);
 	}
 
+	//CHECK : at을 과연 쓸지...?
+	mappingMessagesUserIdToNickname(messages : Message[]) : formedMessage[] {
+		const res = [];
+		messages.forEach((msg) => {
+			res.push({
+				from : `${this.storeUser.getNicknameById(msg.from)}`,
+				body : msg.body
+			})
+		})
+		return (res);
+	}
+
+	makeCurrRoomInfo(roomname : string) : currRoomInfo {
+		const room = this.storeRoom.findRoom(roomname);
+		const operatorList = [];
+		const joineduserList = [];
+		room.userlist.forEach((user) => {
+			joineduserList.push(this.storeUser.getNicknameById(user));
+		})
+		room.operators.forEach((user) => {
+			operatorList.push(this.storeUser.getNicknameById(user));
+		})
+		const res = {
+			roomname : roomname,
+			owner : `${this.storeUser.findUserById(room.owner).nickname}`,
+			operators : operatorList,
+			joinedUsers : joineduserList,
+			messages : this.mappingMessagesUserIdToNickname(room.messages)
+		}
+		return (res)
+	}
 }
