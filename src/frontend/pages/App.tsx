@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import "./index.css";
 import * as io from "socket.io-client";
-
+const socket = io.connect("http://localhost", {
+  path: "/socket.io",
+  // query: {
+  //   id: userId,
+  // },
+});
 const NO_SEARCH_RESULT_ERROR = "There is no room! : ";
 const NO_JOINNED_RESULT_ERROR = "No Joinned???! : ";
 const CLIENTNAME = "ysungwon";
@@ -14,7 +19,7 @@ export type UserOnChat = {
 
 export type TempSearch = {
   roomName: string;
-  messageShort: string;
+  messageRecent: string;
   messageNew: boolean;
   users: UserOnChat[];
 };
@@ -27,34 +32,27 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
   const [curOpen, setCurOpen] = useState<number>(-1);
-  const [userId, setUserId] = useState<any>(null);
-  isLoading;
+  const [roomUserList, setRoomUserList] = useState<any>(null);
+
+  // isLoading;
+  // selectedRoom;
   function handleSelectRoom(room: any) {
     setSelectedRoom(room);
     setCurOpen(-1);
     console.log("in SelectRoomName ", room.roomName);
+    socket.emit("requestRoomMembers", room.roomName);
   }
 
   useEffect(() => {
-    setUserId(() => localStorage.getItem("id"));
-  }, []);
-  const socket = io.connect("http://localhost", {
-    path: "/socket.io",
-    query: {
-      id: userId,
-    },
-  });
-  // console.log("here");
-
-  socket.on("ytest", (message: any) => {
-    console.log("message is ", message);
-    socket.emit("message", "hello from NEXT");
-  });
-
-  console.log("userid, nickname ", userId);
-  useEffect(() => {
+    function requestRoomMembers(result: any) {
+      console.log(
+        "in useEffect roomMembers",
+        JSON.stringify(result[0], null, 2)
+      );
+      setRoomUserList(() => result[0]);
+    }
     function requestAllRoomList(result: any) {
-      console.log("in useEffect allroom");
+      console.log("in useEffect allromo");
       setTempSearchList(() => result);
     }
 
@@ -70,17 +68,18 @@ export default function App() {
     socket.on("requestAllRoomList", requestAllRoomList);
     socket.on("requestMyRoomList", requestMyRoomList);
     socket.on("requestSearchResultRoomList", requestSearchResultRoomList);
-
+    socket.on("requestRoomMembers", requestRoomMembers);
     return () => {
       socket.off("requestAllRoomList", requestAllRoomList);
       socket.off("requestMyRoomList", requestMyRoomList);
       socket.off("requestSearchResultRoomList", requestSearchResultRoomList);
+      socket.off("requestRoomMembers", requestRoomMembers);
     };
   }, []);
 
   useEffect(
     function () {
-      async function fetchResults() {
+      function fetchResults() {
         try {
           setIsLoading(true);
 
@@ -90,24 +89,22 @@ export default function App() {
             setError("");
           } else if (!query) {
             // throw new Error(SEARCH_REQUIRE_ERROR);
-
             socket.emit("requestMyRoomList");
-
-            if (results.length === 0) {
-              setSelectedRoom(null);
-
-              throw new Error(NO_JOINNED_RESULT_ERROR + query);
-            }
+            console.log("in requestMyRoomList if");
+            // if (results.length === 0) {
+            //   setSelectedRoom(null);
+            //   throw new Error(NO_JOINNED_RESULT_ERROR + query);
+            // }
 
             setSelectedRoom(null);
             setTempSearchList(() => results);
             setError("");
           } else {
             socket.emit("requestSearchResultRoomList", query);
-            if (results.length === 0) {
-              setSelectedRoom(null);
-              throw new Error(NO_SEARCH_RESULT_ERROR + query);
-            }
+            // if (results.length === 0) {
+            //   setSelectedRoom(null);
+            //   throw new Error(NO_SEARCH_RESULT_ERROR + query);
+            // }
             setSelectedRoom(null);
             setTempSearchList(() => results);
             setError("");
@@ -129,22 +126,24 @@ export default function App() {
       <NavBar query={query} setQuery={setQuery} />
       <Main>
         <Box>
-          {!error && (
+          {results.length !== 0 && (
             <SearchList
               results={results}
               query={query}
               onSelectRoom={handleSelectRoom}
             />
           )}
-          {error && <ErrorMessage message={error} />}
+          {results.length === 0 && (
+            <ErrorMessage message={NO_SEARCH_RESULT_ERROR} />
+          )}
         </Box>
         <CenterBox />
         <Box>
           <ChatRoomUser
             curOpen={curOpen}
             setCurOpen={setCurOpen}
-            users={selectedRoom?.users}
-            title={selectedRoom?.roomName}
+            users={roomUserList?.users}
+            title={roomUserList?.roomName}
           />
         </Box>
       </Main>
@@ -153,6 +152,7 @@ export default function App() {
 }
 
 function ErrorMessage({ message }: { message: string }) {
+  console.log("errmessga called");
   return (
     <p className="error">
       <span>📛</span>
@@ -226,6 +226,44 @@ function Box({ children }: { children: any }) {
   );
 }
 
+function SearchListCreateRoom() {
+  const [roomName, setRoomName] = useState("");
+  const [disabled, setDisabled] = useState(false);
+
+  const handleSubmit = async (event: any) => {
+    setDisabled(true);
+    event.preventDefault();
+    if (roomName.length < 1) {
+      alert("채팅창 이름 입력해라");
+    } else {
+      await new Promise((r) => setTimeout(r, 1000));
+      alert(`입력된 채팅창 이름: ${roomName}`);
+    }
+
+    setDisabled(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="div-form">
+        <span>
+          {" "}
+          <input
+            type="text"
+            value={roomName}
+            onChange={(e) => setRoomName(e.target.value)}
+          />
+        </span>
+        <span>
+          <button className="btn-add" type="submit" disabled={disabled}>
+            채팅장 입장
+          </button>
+        </span>
+      </div>
+    </form>
+  );
+}
+
 function SearchList({
   results,
   query,
@@ -235,6 +273,10 @@ function SearchList({
   query: string;
   onSelectRoom: any;
 }) {
+  console.log(
+    `in SearchList query : <${query}>
+    results : <${results}>`
+  );
   if (!results) return;
   return (
     <>
@@ -242,10 +284,23 @@ function SearchList({
         <h2>{query ? "검색결과" : "참여목록"}</h2>
       </div>
       <ul className="list list-rooms">
+        <SearchListCreateRoom />
+      </ul>
+
+      <ul className="list list-rooms">
         {results?.map((el: any) => (
           <SearchResult el={el} key={el.roomName} onSelectRoom={onSelectRoom} />
         ))}
       </ul>
+      <div className="pageBar">
+        <span>
+          <button className="btn-back">&larr;</button>
+        </span>
+        <span>1/1</span>
+        <span>
+          <button className="btn-back">&rarr;</button>
+        </span>
+      </div>
     </>
   );
 }
@@ -257,7 +312,7 @@ function SearchResult({ el, onSelectRoom }: { el: any; onSelectRoom: any }) {
       <div>
         <p>
           <span>{el.messageNew ? "🆕" : "☑️"}</span>
-          <span>{el.messageShort}</span>
+          <span>{el.messageRecent}</span>
         </p>
       </div>
     </li>
@@ -317,7 +372,7 @@ function ChatRoomUserInfo({
   const isOpen = num === curOpen;
 
   function handleToggle() {
-    console.log(isOpen, num, curOpen);
+    // console.log(isOpen, num, curOpen);
 
     onOpen(() => {
       if (isOpen) return null;
@@ -360,6 +415,9 @@ function ChatRoomUserInfo({
             </div>
             <div>
               <span>mute</span>
+            </div>
+            <div>
+              <span>testsetsetsetasdgasdgs</span>
             </div>
           </>
         </span>

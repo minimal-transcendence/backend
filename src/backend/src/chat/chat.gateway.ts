@@ -21,13 +21,9 @@ import { PrismaService } from 'src/prisma.service';
 
 
 const CLIENTNAME = "ysungwon";
-
-const tempSearchList = [
+const UserListPerRoom = [
   {
     roomName: "전체채팅방",
-    messageShort:
-      "전체채팅 ㅅㅅㅅㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ채팅이 기니까 화면도 길어지는 거 같다. 몇글자만 짤라서, 화면에는 2줄만 보이도록 설정을 해야 될 거 같다.",
-    messageNew: true,
     users: [
       {
         id: "God",
@@ -59,8 +55,6 @@ const tempSearchList = [
   },
   {
     roomName: "게임채팅방",
-    messageShort: "게임해야지 히히히",
-    messageNew: true,
     users: [
       { id: "ProGamer", isCreator: true, isOp: true },
       {
@@ -77,8 +71,6 @@ const tempSearchList = [
   },
   {
     roomName: "프론트엔드 방",
-    messageShort: "프론트는 메세지 읽었다. JavaScript, 채팅,React,Pong",
-    messageNew: false,
     users: [
       {
         id: "jaeyjeon",
@@ -94,8 +86,6 @@ const tempSearchList = [
   },
   {
     roomName: "백엔드 방",
-    messageShort: "백엔드는 메세지를 안 읽었다..",
-    messageNew: true,
     users: [
       {
         id: "namkim",
@@ -111,8 +101,6 @@ const tempSearchList = [
   },
   {
     roomName: "안식처",
-    messageShort: "에어컨...조아..",
-    messageNew: false,
     users: [
       {
         id: "ysungwon",
@@ -122,6 +110,108 @@ const tempSearchList = [
     ],
   },
 ];
+// const tempSearchList = [
+//   {
+//     roomName: "전체채팅방",
+//     messageRecent:
+//       "전체채팅 ㅅㅅㅅㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ채팅이 기니까 화면도 길어지는 거 같다. 몇글자만 짤라서, 화면에는 2줄만 보이도록 설정을 해야 될 거 같다.",
+//     messageNew: true,
+//     users: [
+//       {
+//         id: "God",
+//         isCreator: true,
+//         isOp: true,
+//       },
+//       {
+//         id: "ysungwon",
+//         isCreator: false,
+//         isOp: false,
+//       },
+//       {
+//         id: "jaeyjeon",
+//         isCreator: false,
+//         isOp: false,
+//       },
+//       {
+//         id: "namkim",
+//         isCreator: false,
+//         isOp: false,
+//       },
+//       {
+//         id: "seunchoi",
+//         isCreator: false,
+//         isOp: false,
+//       },
+//       { id: "ProGamer", isCreator: false, isOp: false },
+//     ],
+//   },
+//   {
+//     roomName: "게임채팅방",
+//     messageRecent: "게임해야지 히히히",
+//     messageNew: true,
+//     users: [
+//       { id: "ProGamer", isCreator: true, isOp: true },
+//       {
+//         id: "ysungwon",
+//         isCreator: false,
+//         isOp: true,
+//       },
+//       {
+//         id: "seunchoi",
+//         isCreator: false,
+//         isOp: true,
+//       },
+//     ],
+//   },
+//   {
+//     roomName: "프론트엔드 방",
+//     messageRecent: "프론트는 메세지 읽었다. JavaScript, 채팅,React,Pong",
+//     messageNew: false,
+//     users: [
+//       {
+//         id: "jaeyjeon",
+//         isCreator: true,
+//         isOp: true,
+//       },
+//       {
+//         id: "ysungwon",
+//         isCreator: false,
+//         isOp: true,
+//       },
+//     ],
+//   },
+//   {
+//     roomName: "백엔드 방",
+//     messageRecent: "백엔드는 메세지를 안 읽었다..",
+//     messageNew: true,
+//     users: [
+//       {
+//         id: "namkim",
+//         isCreator: false,
+//         isOp: false,
+//       },
+//       {
+//         id: "seunchoi",
+//         isCreator: false,
+//         isOp: true,
+//       },
+//     ],
+//   },
+//   {
+//     roomName: "안식처",
+//     messageRecent: "에어컨...조아..",
+//     messageNew: false,
+//     users: [
+//       {
+//         id: "ysungwon",
+//         isCreator: true,
+//         isOp: true,
+//       },
+//     ],
+//   },
+// ];
+
+
 
 @UseGuards(JwtGuard)	//guard해도 연결 자체가 막히지는 않는 듯... ㄸㄹㄹ
 @WebSocketGateway(3002, {
@@ -149,19 +239,44 @@ export class ChatGateway
 		this.logger.log('웹소켓 서버 초기화 ✅');
 
 		//DB의 모든 유저를 등록한다
-		const users = await this.prisma.user.findMany({
-			select : { 
-				id : true,
-				nickname : true
-			}
-		});
-		users.forEach((user) => {
-			this.storeUser.saveUser(
-				user.id, 
-				new User(user.nickname)
-			);
-		})
+		// const users = await this.prisma.user.findMany({
+		// 	select : { 
+		// 		id : true,
+		// 		nickname : true
+		// 	}
+		// });
+		// users.forEach((user) => {
+		// 	this.storeUser.saveUser(
+		// 		user.id, 
+		// 		new User(user.nickname)
+		// 	);
+		// })
+
+	///테스트용 자료
+	const room1 = new Room(1, '전체채팅방', 99,true,'1234',"저언체 채팅방이쥬?");
+	const room2 = new Room(2, '게임채팅방', 98,true,'1234',"게임해야지 히히");
+	const room3 = new Room(3, '프론트엔드 방', 97,false,'1234',"프론트는 메세지 읽었다. JavaScript, 채팅,React,Pong");
+	const room4 = new Room(4, '백엔드 방', 96,true,'1234',"백엔드는 메세지를 안 읽었다..");
+	const room5 = new Room(5, '안식처', 96,true,'1234',"바깥은 너무 더워");
+	this.storeRoom.saveRoom('전체채팅방', room1)
+	this.storeRoom.saveRoom('게임채팅방', room2)
+	this.storeRoom.saveRoom('프론트엔드 방', room3)
+	this.storeRoom.saveRoom('백엔드 방', room4)
+	this.storeRoom.saveRoom('안식처', room5)
+	const user1 = new User(1111,'hanmool')
+	const user2 = new User(2222,'hanmool2')
+	const user3 = new User(3333,'ysungwon')
+	const user4 = new User(4444,'jaeyjeon')
+	const user5 = new User(5555,'namkim')
+	this.storeUser.saveUser(1111, user1)
+	this.storeUser.saveUser(2222, user2)
+	this.storeUser.saveUser(3333, user3)
+	this.storeUser.saveUser(4444, user4)
+	this.storeUser.saveUser(5555, user5)
+	//console.log(`rooms : ${JSON.stringify(this.storeRoom.findAllRoom(), null, 2)}  user1 : ${JSON.stringify(this.storeUser.findAllUser(), null, 2)}`);		
+	
 	}
+
 
 	//socket 연결 시 -> user, room list 갱신
 	//session연결
@@ -195,26 +310,47 @@ export class ChatGateway
 		this.logger.log(`Client Connected : ${client.id}`);
 		client.emit("ytest", client.id);
 		client.emit("welcomeMessage", `Hello~ ${client.id}`);
-		client.on("requestAllRoomList", () => {
-			this.logger.log(`i got EVENT <requestAllRoomList> from ${client.id}`);
-			client.emit("requestAllRoomList", tempSearchList);
-		});
-		client.on("requestMyRoomList", () => {
-			this.logger.log(`i got EVNET <requestMyRoomList> from ${client.id}`);
-			const tempResults = tempSearchList.filter((result) => {
-				return result.users.filter((user) => user.id === CLIENTNAME).length === 1;
-			});
-			client.emit("requestMyRoomList", tempResults);
-		});
-	
-		client.on("requestSearchResultRoomList", (query) => {
-			this.logger.log(`i got EVNET <requestSearchResultRoomList> from ${client.id}`);
-			const tempResults = tempSearchList.filter((result) =>
-				result.roomName.includes(query)
-			);
-			client.emit("requestSearchResultRoomList", tempResults);
-		});		
-		console.log(this.storeUser.findAllUser());
+  //socket on
+  client.on("requestAllRoomList", () => {
+    console.log(`i got EVENT <requestAllRoomList> from ${client.id}`);
+    console.log("requestAllRoomList", this.storeRoom.findAllRoom());
+    client.emit("requestAllRoomList", this.storeRoom.findAllRoom());
+  });
+  client.on("requestMyRoomList", () => {
+    console.log(`i got EVNET <requestMyRoomList> from ${client.id}`);
+    const tempResults = UserListPerRoom.filter((result) => {
+      return result.users.filter((user) => user.id === CLIENTNAME).length === 1;
+    });
+    // console.log("requestMyRoomList", tempResults);
+    const tempResults2 = this.storeRoom.findAllRoom().filter((result) => {
+      return (
+        tempResults.filter((room) => room.roomName === result.roomName)
+          .length === 1
+      );
+    });
+    console.log("requestMyRoomList", tempResults2);
+    client.emit("requestMyRoomList", tempResults2);
+  });
+
+  client.on("requestSearchResultRoomList", (query) => {
+    console.log(`EVNET <requestSearchResultRoomList> from <${query}>`);
+    const tempResults = this.storeRoom.findAllRoom().filter((result) =>
+      result.roomName.includes(query)
+    );
+    console.log("requestSearchResultRoomList,", tempResults);
+    client.emit("requestSearchResultRoomList", tempResults);
+  });
+
+  client.on("requestRoomMembers", (roomName) => {
+    console.log(`EVNET <requestRoomMembers> from <${roomName}>`);
+
+    const tempResults = UserListPerRoom.filter(
+      (room) => room.roomName === roomName
+    );
+
+    client.emit("requestRoomMembers", tempResults);
+  });		
+		// console.log(this.storeUser.findAllUser());
 		const cookies = client.handshake.headers.cookie;
 		console.log(cookies);
 		/* TODO: Auth Check */

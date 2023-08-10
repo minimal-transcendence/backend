@@ -5,8 +5,10 @@ import { Socket } from 'socket.io';
 export class Room {
 	//readonly 랑 const 차이?
 	readonly roomId : number;
-	readonly roomname : string;
+	readonly roomName : string;
 	password : string;
+	messageRecent : string;
+	messageNew : boolean;
 	owner : number;
 	operators : Set<number>;
 	mutelist : Set<number>;
@@ -14,13 +16,19 @@ export class Room {
 
 	constructor(
 		roomId: number,
-		roomname : string,
+		roomName : string,
 		owner : number,
-		password? : string
+		messageNew : boolean,
+		password? : string,
+		messageRecent? : string,
+		
 	){
 		this.roomId = roomId;
-		this.roomname = roomname;
+		this.roomName = roomName;
+		this.messageNew = messageNew;
 		this.password = password? password : null;	//or ''?
+		this.messageRecent = messageRecent? messageRecent : '테스트 최근메세지';
+		
 		this.owner = owner;
 		this.operators = new Set();
 		this.mutelist = new Set();
@@ -86,8 +94,8 @@ interface RoomStore{
 	//근데 또 room객체에 roomname 조회할 일도 많을 것 같음 ㄸㄹㄹ
 	rooms : Map<string, Room>;
 	
-	findRoom(roomname : string) : Room;
-	saveRoom(roomname : string, room : Room) : void;
+	findRoom(roomName : string) : Room;
+	saveRoom(roomName : string, room : Room) : void;
 	findAllRoom() : Room[];
 }
 
@@ -95,23 +103,23 @@ interface RoomStore{
 export class ChatRoomStoreService implements RoomStore{
 	rooms = new Map();
 
-	findRoom(roomname: string): Room {
-		return this.rooms.get(roomname);
+	findRoom(roomName: string): Room {
+		return this.rooms.get(roomName);
 	}
 
 	//존재하는 방은 정보 그대로 받을 수 있도록 조정 필요....
 	//gateway에서 logic? 아니면 여기서 별도 method로 logic 처리?
-	saveRoom(roomname: string, room: Room): void {
-		this.rooms.set(roomname, room);
+	saveRoom(roomName: string, room: Room): void {
+		this.rooms.set(roomName, room);
 	}
 
 	findAllRoom(): Room[] {
 		return [...this.rooms.values()];
 	}
 
-	getRoomId(roomname : string) : number {
+	getRoomId(roomName : string) : number {
 		// return this.findRoom.id; 는 왜 안 될까?
-		return (this.findRoom(roomname).roomId);
+		return (this.findRoom(roomName).roomId);
 	}
 
 	//이게 맞나...?
