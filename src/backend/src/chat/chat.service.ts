@@ -19,9 +19,10 @@ export class ChatService {
 		private jwtService : JwtService
 	){}
 
-	//이렇게 사용 가능?
-	@WebSocketServer()
-	server : Server;
+	//이렇게 사용 가능? -> 불가
+	//????
+	// @WebSocketServer()
+	// server : Server;
 
 	async clientAuthentification(client : Socket) : Promise<number> {
 		
@@ -66,6 +67,7 @@ export class ChatService {
 		let user = this.storeUser.findUserById(userId);
 		if (user === undefined)
 			user = this.storeUser.saveUser(userId, new User(userId, nickname));
+		//success
 		this.userJoinRoomSuccess(io, client, user, "DEFAULT");
 		user.currentRoom = "DEFAULT";
 		
@@ -75,6 +77,11 @@ export class ChatService {
 		const userInfo = this.makeRoomUserInfo("DEFAULT");
 		const currRoomInfo = this.makeCurrRoomInfo("DEFAULT");
 		client.emit("init", userInfo, roomInfo, currRoomInfo);
+
+		//LOG : //
+		console.log(roomInfo);
+		console.log(userInfo);
+		console.log(currRoomInfo);
 	}
 
 	//유저가 나갈 때
@@ -107,14 +114,18 @@ export class ChatService {
 		if (!user.joinlist.has(roomname))
 		{
 			user.joinlist.add(roomname);
-			this.storeRoom.findRoom(roomname).addUserToUserlist(user.id);
-			io.to(roomname).emit(`Welcome ${user.nickname} !`);
+			const room = this.storeRoom.findRoom(roomname);
+			room.addUserToUserlist(user.id);
+			//CHECK : 이런 welcome message도 저장할 것인가?
+			const body = `Welcome ${user.nickname} !`;
+			io.to(roomname).emit(body);
+			room.messages.push(new Message(-1, body));
 		}
 		user.currentRoom = roomname;
 	}
 
 	//userJoinRoom
-	// 방이 이미 존재하는 방인지 확인
+	// 방이 이미 존재하는 방인지 확인  
 		// 안 존재하는 방이라면
 			//1. 방을 storeRoom에 등록한다.
 			//2. 유저를 join 을 이용해서 그 방으로 연결해준다. (userlist에 등록한다)
@@ -127,13 +138,13 @@ export class ChatService {
 				// 리스트에 있으면 -> 일정시간동안 ban되었다는 이벤트를 emit
 			//3. 유저를 join을 이용해서 그 방으로 연결(유저리스트 등록하고 welcome message)
 	//if 3중 중첩문.... 이대로 괜찮은가.......	
-	async userJoinRoom(client:Socket, userId : number, roomname : string, password? : string) {
+	async userJoinRoom(io : Server, client:Socket, userId : number, roomname : string, password? : string) {
 		let room = this.storeRoom.findRoom(roomname);
 		if (room === undefined){
 			this.storeRoom.saveRoom(roomname, new Room(userId, password? password : null));
 			room = this.storeRoom.findRoom(roomname);
 			//TODO: 이렇게 server선언 되는지 확인해야함...!
-			this.userJoinRoomSuccess(this.server, client, this.storeUser.findUserById(userId), roomname);
+			this.userJoinRoomSuccess(io, client, this.storeUser.findUserById(userId), roomname);
 		}
 		else {
 			const pwExist = password? true : false;
@@ -142,7 +153,7 @@ export class ChatService {
 					if (room.isBanned(userId))
 						client.emit("youAreBanned", roomname);
 					else
-						this.userJoinRoomSuccess(this.server, client, this.storeUser.findUserById(userId), roomname);
+						this.userJoinRoomSuccess(io, client, this.storeUser.findUserById(userId), roomname);
 				}
 				else
 					client.emit("wrongPassword", roomname);
@@ -153,13 +164,32 @@ export class ChatService {
 
 	}
 
+	//만약 없는 방일 때 -> throw Error
+	//만약 방에 속한 유저가 아닐 때 -> throw Error? or ignore?
+	//성공 시 message를 emit 하고 방의 message에 저장
+	sendChat(io : Server, client: Socket, to : string, body : string){
+		const room = this.storeRoom.findRoom(to);
+		if (room === undefined){
+			console.log("no such room");
+			return ;
+		}
+		if (room.userlist.has(client.data.id)){	//이렇게 아이디를 잘 가져올 수 있는지 생각해보자(auth 올라가면 그냥 client.id로 꺼내도 됨 (이건 사실 nickname도 그렇다))
+			client.in(to).emit("sendMessage", this.storeUser.getNicknameById(client.data.id), body);	//방에 emit(본인은 안 받아야)
+			room.messages.push(new Message(client.data.id, body));
+		}
+		else {
+			console.log(room.userlist);
+			console.log("you are not joining in this room");
+		}
+	
+	}
 	//userLeaveRoom
 	//userLeaveRooms -- userLeaveRoom 순회
-	//userSendDM
 	//userSendChat
 	//kickUser
 	//banUser
 	//muteUser
+	//userSendDM
 	//blockUser?
 
 	//TODO : 이하 util함수들 datarace 등 에러처리 어떻게 할지
@@ -175,13 +205,14 @@ export class ChatService {
 		})
 		return res;
 	}
+
 	makeRoomUserInfo(roomname : string) : userInfo[] {
 		const userInfo = [];
 		//만약 여기서 못 찾으면?
-		const room = this.storeRoom.findRoom(roomname);
+		const room : Room = this.storeRoom.findRoom(roomname);
 		//or 만약 방에 아무 유저도 없으면? <- datarace일 때 가능성 있다.
 		room.userlist.forEach((user) => {
-			const target = this.storeUser.findUserById(user);
+			const target : User = this.storeUser.findUserById(user);
 			userInfo.push({
 				id : user,
 				nickname : target.nickname,
@@ -205,6 +236,7 @@ export class ChatService {
 
 	makeCurrRoomInfo(roomname : string) : currRoomInfo {
 		const room = this.storeRoom.findRoom(roomname);
+		const owner = this.storeUser.getNicknameById(room.owner);
 		const operatorList = [];
 		const joineduserList = [];
 		room.userlist.forEach((user) => {
@@ -215,7 +247,7 @@ export class ChatService {
 		})
 		const res = {
 			roomname : roomname,
-			owner : `${this.storeUser.findUserById(room.owner).nickname}`,
+			owner : owner,
 			operators : operatorList,
 			joinedUsers : joineduserList,
 			messages : this.mappingMessagesUserIdToNickname(room.messages)

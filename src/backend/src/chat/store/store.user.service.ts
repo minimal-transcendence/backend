@@ -89,7 +89,11 @@ export class ChatUserStoreService implements UserStore{
 		return [...this.users.values()];
 	}
 
-	getNicknameById(id : number) : string {
-		return this.users.get(id).nickname;
+	getNicknameById(id : number) : string | null {
+		const user = this.findUserById(id);
+		if (user === undefined)
+			return (null);
+		else
+			return (user.nickname);
 	}
 }

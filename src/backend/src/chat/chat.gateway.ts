@@ -20,110 +20,7 @@ import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { PrismaService } from 'src/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 
-
-const CLIENTNAME = "ysungwon";
-
-const tempSearchList = [
-  {
-    roomName: "전체채팅방",
-    messageShort:
-      "전체채팅 ㅅㅅㅅㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ채팅이 기니까 화면도 길어지는 거 같다. 몇글자만 짤라서, 화면에는 2줄만 보이도록 설정을 해야 될 거 같다.",
-    messageNew: true,
-    users: [
-      {
-        id: "God",
-        isCreator: true,
-        isOp: true,
-      },
-      {
-        id: "ysungwon",
-        isCreator: false,
-        isOp: false,
-      },
-      {
-        id: "jaeyjeon",
-        isCreator: false,
-        isOp: false,
-      },
-      {
-        id: "namkim",
-        isCreator: false,
-        isOp: false,
-      },
-      {
-        id: "seunchoi",
-        isCreator: false,
-        isOp: false,
-      },
-      { id: "ProGamer", isCreator: false, isOp: false },
-    ],
-  },
-  {
-    roomName: "게임채팅방",
-    messageShort: "게임해야지 히히히",
-    messageNew: true,
-    users: [
-      { id: "ProGamer", isCreator: true, isOp: true },
-      {
-        id: "ysungwon",
-        isCreator: false,
-        isOp: true,
-      },
-      {
-        id: "seunchoi",
-        isCreator: false,
-        isOp: true,
-      },
-    ],
-  },
-  {
-    roomName: "프론트엔드 방",
-    messageShort: "프론트는 메세지 읽었다. JavaScript, 채팅,React,Pong",
-    messageNew: false,
-    users: [
-      {
-        id: "jaeyjeon",
-        isCreator: true,
-        isOp: true,
-      },
-      {
-        id: "ysungwon",
-        isCreator: false,
-        isOp: true,
-      },
-    ],
-  },
-  {
-    roomName: "백엔드 방",
-    messageShort: "백엔드는 메세지를 안 읽었다..",
-    messageNew: true,
-    users: [
-      {
-        id: "namkim",
-        isCreator: false,
-        isOp: false,
-      },
-      {
-        id: "seunchoi",
-        isCreator: false,
-        isOp: true,
-      },
-    ],
-  },
-  {
-    roomName: "안식처",
-    messageShort: "에어컨...조아..",
-    messageNew: false,
-    users: [
-      {
-        id: "ysungwon",
-        isCreator: true,
-        isOp: true,
-      },
-    ],
-  },
-];
-
+//TODO : 아직 인증 처리가 완전하지 않아서 새로고침을 했을 때, 혹은 jwtToken이 만료 되었을때... 같은 유저가 하나는 user99, 하나는 null로 찍힌다ㅠ 인증이 정상적으로 이루어지고 나서도 이렇게 되는지 확인할 것
 @UseGuards(JwtGuard)	//guard해도 연결 자체가 막히지는 않는 듯... ㄸㄹㄹ
 @WebSocketGateway(3002, {
 	pingInterval : 5000,
@@ -164,6 +61,7 @@ export class ChatGateway
 				new User(user.id, user.nickname)
 			);
 		})
+		this.storeUser.saveUser(-1, new User(-1, "Server_Admin"));
 		this.storeRoom.saveRoom("DEFAULT", new Room(-1));	//owner를 -1으로 설정했다...
 	}
 
@@ -197,36 +95,23 @@ export class ChatGateway
 	// async handleConnection(@ConnectedSocket() client: Socket) {
 	async handleConnection(@ConnectedSocket() client: Socket) {
 		this.logger.log(`Client Connected : ${client.id}`);
-		// client.emit("ytest", client.id);
-		// client.emit("welcomeMessage", `Hello~ ${client.id}`);
-		// client.on("requestAllRoomList", () => {
-		// 	this.logger.log(`i got EVENT <requestAllRoomList> from ${client.id}`);
-		// 	client.emit("requestAllRoomList", tempSearchList);
-		// });
-		// client.on("requestMyRoomList", () => {
-		// 	this.logger.log(`i got EVNET <requestMyRoomList> from ${client.id}`);
-		// 	const tempResults = tempSearchList.filter((result) => {
-		// 		return result.users.filter((user) => user.id === CLIENTNAME).length === 1;
-		// 	});
-		// 	client.emit("requestMyRoomList", tempResults);
-		// });
-	
-		// client.on("requestSearchResultRoomList", (query) => {
-		// 	this.logger.log(`i got EVNET <requestSearchResultRoomList> from ${client.id}`);
-		// 	const tempResults = tempSearchList.filter((result) =>
-		// 		result.roomName.includes(query)
-		//  	);
-		// 	client.emit("requestSearchResultRoomList", tempResults);
-		// });		
+		
 		console.log(this.storeUser.findAllUser());
 		const userId = await this.chatService.clientAuthentification(client);
-		client.data.userId = userId;
+		client.data.id = userId;
 		
 		console.log("new connection");
 		//유저를 찾는다! (만약 없는 유저라면 만들어야....)
 		const thisUser = this.storeUser.findUserById(userId);
 		console.log(`found user : ${JSON.stringify(thisUser)}`);
 		console.log(client.id);
+
+		await this.chatService.newUserConnected(this.server, client, userId, this.storeUser.getNicknameById(userId));
+		
+		// client.on("sendChatMessage", (to, body) => {})
+		//
+		this.chatService.sendChat(this.server, client, "DEFAULT", "I'm coming");
+		this.chatService.makeCurrRoomInfo("DEFAULT");
 
 		/*
 		//원래는 defaultRoom에도 들어가야 함 -> 방 만들거나 들어가게 하는 method storeRoom 혹은 chatService에 따로 만들 예정
