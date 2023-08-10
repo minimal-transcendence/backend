@@ -27,8 +27,8 @@ export class Room {
 		this.password = password? password : null;	//or ''?
 		this.owner = owner;
 		this.operators = new Set();
-		// this.operators.add(owner);
 		this.userlist = new Set();
+		this.userlist.add(owner);
 		this.mutelist = new Set();
 		this.banlist = new Set();
 		this.messages = [];
@@ -125,6 +125,7 @@ export class ChatRoomStoreService implements RoomStore{
 		return this.rooms.get(roomname);
 	}
 
+	//여기는 password가 필요하다
 	saveRoom(roomname: string, room: Room): void {
 		this.rooms.set(roomname, room);
 	}
@@ -139,24 +140,5 @@ export class ChatRoomStoreService implements RoomStore{
 			target.clearRoom();
 		this.rooms.delete(roomname);
 	}
-	// 이제 필요 없다!
-	// getRoomId(roomname : string) : number {
-	// 	return (this.findRoom(roomname).roomId);
-	// }
-
-	//이하의 내용은 chatService 에다가....
-	//이 서비스에다가 socket 전달 가능...? javascript는 소켓을 복사하는지 가리키는지 뭔지 진짜 모르겠다 흑흑
-	//memory leaks 어떻게 체크하나요...
-	// joinRoom(client: Socket, roomname : string, password : string | null){
-	// 	//방이 안 존재하면 -> 방을 만들고
-	// 	if (this.findRoom(roomname) === undefined){
-
-	// 	}
-
-	// 	if (!this.rooms.get(roomname).isPassword(password))
-	// 		throw new Error("Wrong password");
-	// 	//존재하면 -> 있는 방을 찾아서 들어간다
-	// }
-	//차차 하자...
 }
 

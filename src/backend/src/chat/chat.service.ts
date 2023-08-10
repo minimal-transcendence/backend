@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ChatRoomStoreService } from './store/store.room.service';
+import { ChatRoomStoreService, Room } from './store/store.room.service';
 import { ChatUserStoreService, User } from './store/store.user.service';
 // import { ChatMessageStoreService } from './store/store.message.service';
 import { PrismaService } from 'src/prisma.service';
@@ -7,6 +7,7 @@ import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { currRoomInfo, formedMessage, roomInfo, userInfo } from './chat.types';
 import { Message } from './store/store.message.service';
+import { WebSocketServer } from '@nestjs/websockets';
 
 @Injectable()
 export class ChatService {
@@ -18,9 +19,9 @@ export class ChatService {
 		private jwtService : JwtService
 	){}
 
-	//TODO : 유저 접속
-	//-> 존재하는 유저일 때는 유저 아이디(혹은 유저 자체?)
-	//존재하지 않을 때는 유저를 유저리스트에 넣는다 (혹은 유저리스트를 업데이트하는 유틸을 만들고 호출하는 것도 괜찮을 듯?)
+	//이렇게 사용 가능?
+	@WebSocketServer()
+	server : Server;
 
 	async clientAuthentification(client : Socket) : Promise<number> {
 		
@@ -125,7 +126,30 @@ export class ChatService {
 			//2. banlist 를 확인
 				// 리스트에 있으면 -> 일정시간동안 ban되었다는 이벤트를 emit
 			//3. 유저를 join을 이용해서 그 방으로 연결(유저리스트 등록하고 welcome message)
-	async userJoinRoom(client:Socket, userId : number, roomname : string, password : string | null) {
+	//if 3중 중첩문.... 이대로 괜찮은가.......	
+	async userJoinRoom(client:Socket, userId : number, roomname : string, password? : string) {
+		let room = this.storeRoom.findRoom(roomname);
+		if (room === undefined){
+			this.storeRoom.saveRoom(roomname, new Room(userId, password? password : null));
+			room = this.storeRoom.findRoom(roomname);
+			//TODO: 이렇게 server선언 되는지 확인해야함...!
+			this.userJoinRoomSuccess(this.server, client, this.storeUser.findUserById(userId), roomname);
+		}
+		else {
+			const pwExist = password? true : false;
+			if (pwExist) {
+				if (room.isPassword(password)){
+					if (room.isBanned(userId))
+						client.emit("youAreBanned", roomname);
+					else
+						this.userJoinRoomSuccess(this.server, client, this.storeUser.findUserById(userId), roomname);
+				}
+				else
+					client.emit("wrongPassword", roomname);
+			}
+			else
+				client.emit("requestPassword", roomname);
+		}
 
 	}
 

@@ -147,6 +147,7 @@ export class ChatGateway
 
 	//아니면 여기서 prisma 써서 userlist 다 가져오게 할까...?
 	//여기서 async써도 괜찮은가...?
+	//TODO : 아니 생각해보니.... 이거 validation 어떻게...?
 	async afterInit(){
 		this.logger.log('웹소켓 서버 초기화 ✅');
 
