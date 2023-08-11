@@ -122,6 +122,7 @@ export class ChatService {
 			room.messages.push(new Message(-1, body));
 		}
 		user.currentRoom = roomname;
+		//TODO & CHECK: 생각해보니 이 단계에서 방 정보와 방의 유저 정보를 보내는게 좋을 것 같다
 	}
 
 	//userJoinRoom
@@ -195,13 +196,42 @@ export class ChatService {
 					// 방에 "유저가 나간다! 알림"
 					// 해당 알림을 서버에 저장... <
 				// 유저의 joinlist에서 방을 삭제
-	userLeaveRoom(client : Socket, roomname : string){
-
+	userLeaveRoom(io : Server, client : Socket, roomname : string){
+		const room = this.storeRoom.findRoom(roomname);
+		const userId = client.data.id;
+		if (room === undefined){
+			console.log("Room does not exist");
+			return ;
+		}
+		if (room.userlist.has(userId)){
+			if (room.userlist.size == 1)
+			{
+				room.clearRoom();
+				this.storeRoom.deleteRoom(roomname);
+				return ;
+			}
+			room.deleteUserFromUserlist(userId);
+			if (room.isOwner(userId))
+			{
+				const newOwner = room.userlist.values().next().value;
+				room.updateOwner(newOwner);	//되는지 체크 : 아무나 owner로 올림!
+			}
+			if (room.isOperator(userId))
+				room.deleteUserFromOperators(userId);	//처음에는 owner는 owner역할만 하지만, 첫 owner가 나갈 때  새로  들어오는  newOwner는 중복일 수  있음
+			const body = `Good bye ${this.storeUser.getNicknameById(userId)}`
+			io.to("roomname").emit(body);
+			room.messages.push(new Message(-1, body));
+		}
+		else
+			console.log("you are not joining in this room : try leave");
 	}
 	//userLeaveRooms -- userLeaveRoom 순회 / Set으로 충분? 아님 Array도 포함?
-	userLeaveRooms(client : Socket, roomlist : Set<string>){
-
+	userLeaveRooms(io : Server, client : Socket, roomlist : Set<string>){
+		roomlist.forEach((room) => {
+			this.userLeaveRoom(io, client, room);
+		})
 	}
+	
 	//kickUser
 	//banUser
 	//muteUser
@@ -216,7 +246,7 @@ export class ChatService {
 			const messages = this.storeRoom.findRoom(room).messages;
 			res.push({
 				roomname : room,
-				lastMessage : `${messages[messages.length - 1]}`
+				lastMessage : messages[messages.length - 1].body	//body만 보내도록
 			})
 		})
 		return res;
@@ -238,13 +268,14 @@ export class ChatService {
 		return (userInfo);
 	}
 
-	//CHECK : at을 과연 쓸지...?
+	//CHECK : at을 과연 쓸지...? -> 쓴다
 	mappingMessagesUserIdToNickname(messages : Message[]) : formedMessage[] {
 		const res = [];
 		messages.forEach((msg) => {
 			res.push({
 				from : `${this.storeUser.getNicknameById(msg.from)}`,
-				body : msg.body
+				body : msg.body,
+				at : msg.at
 			})
 		})
 		return (res);

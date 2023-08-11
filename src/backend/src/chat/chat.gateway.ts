@@ -113,6 +113,9 @@ export class ChatGateway
 		this.chatService.sendChat(this.server, client, "DEFAULT", "I'm coming");
 		this.chatService.makeCurrRoomInfo("DEFAULT");
 
+		// client.on("selectRoom", (roomname) => {
+		// 	this.chatService.userJoinRoom(this.server, client, client.data.id, roomname);
+		// })
 		/*
 		//원래는 defaultRoom에도 들어가야 함 -> 방 만들거나 들어가게 하는 method storeRoom 혹은 chatService에 따로 만들 예정
 		//자기 이름을 가진 방에 들어간다 (PM용)
