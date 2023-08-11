@@ -49,6 +49,10 @@ export class Room {
 	isMuted(userid : number) : boolean {
 		return (this.mutelist.has(userid));
 	}
+
+	isJoinning(userid : number) : boolean {
+		return (this.userlist.has(userid));
+	}
 	
 	isBanned(userid : number) : boolean {
 		return (this.banlist.has(userid));

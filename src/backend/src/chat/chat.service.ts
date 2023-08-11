@@ -221,6 +221,8 @@ export class ChatService {
 			const body = `Good bye ${this.storeUser.getNicknameById(userId)}`
 			io.to("roomname").emit(body);
 			room.messages.push(new Message(-1, body));
+			//TODO : 여기서 유저리스트도 한 번 업뎃해야함 -> currRoom인 유저들만 업뎃하면 됨 //서버 단계에서 얘네만 업뎃 해줄건가?
+			//사실 이 경우에는 userUpdate를 하면 되는 것 같다 -> 프론트에서 그 모듈만 날리는 식으로 : CHECK & DISCUSS
 		}
 		else
 			console.log("you are not joining in this room : try leave");
@@ -231,14 +233,54 @@ export class ChatService {
 			this.userLeaveRoom(io, client, room);
 		})
 	}
-	
+
+	//operation : either kick / mute / ban	--> DISCUSS : 받으면 모듈창으로 메세지를 띄워주는게 좋을 것 같다
+
 	//kickUser
-	//banUser
+	async kickUser(io : Server, client : Socket, roomname : string, target : string){
+		const targetId = this.storeUser.getIdByNickname(target);
+		const room = this.storeRoom.findRoom(roomname);
+		if (this.checkActValidity(roomname, client.data.id, targetId)){
+			//여기서 target한테 emit을 해야하는데... 어떻게...? 이게 문제네 흑흑 < DM방으로 실현하자...! 와 DM만만세!
+			if (room.isOperator(targetId))
+				room.deleteUserFromOperators(targetId);
+			room.deleteUserFromUserlist(targetId);
+			const targetUser = this.storeUser.findUserById(targetId);
+			targetUser.joinlist.delete(roomname);	//쫓겨나면 default 방으로?
+			targetUser.currentRoom = "DEFAULT";
+
+			const body = `${client.data.nickname} is Kicked Out`;
+			io.to(roomname).emit("sendMessage", "server", body);	//여기 nickname필요
+			room.storeMessage(-1, body);
+
+			//아니 이건 알겠는데... 특정 방에서 어떻게 강제로 연결을 끊지???
+			const sockets = await io.in(`$${target}`).fetchSockets();
+			sockets.forEach((socket) => {
+				socket.leave(roomname);
+			})
+			//아... 이거 validity check gateway 에서 해야하네...
+		}
+		//TODO : checkValidity실패했을때 어떻게 할지
+	}
+	
+	//banUser ... ban 기능을 생각해보자...
+	banUser(io : Server, client : Socket, roomname : string, target : string){
+		const targetId = this.storeUser.getIdByNickname(target);
+		const room = this.storeRoom.findRoom(roomname);
+		if (this.checkActValidity(roomname, client.data.id, targetId)){
+			if (room.isOperator(targetId))
+				room.deleteUserFromOperators(targetId);
+			room.deleteUserFromUserlist(targetId);
+			//여기서 특정 시간동안 banlist에 올리고
+			//kick하고
+			//message를 보낸다
+		}
+	}
 	//muteUser
 	//userSendDM
 	//blockUser?
 
-	//TODO : 이하 util함수들 datarace 등 에러처리 어떻게 할지
+	//TODO : 이하 util함수들 datarace 등 에러처리 어떻게 할지 // 아니 애초에 datarace가 나나...? 노드는 싱글 스레드(...) 소켓은 멀티플렉싱 으으으으
 	//TODO : array나 set... 이렇게 되나...? error check
 	makeRoomInfo(roomlist : string[] | Set<string>) : roomInfo[] {
 		const res = [];
@@ -300,5 +342,55 @@ export class ChatService {
 			messages : this.mappingMessagesUserIdToNickname(room.messages)
 		}
 		return (res)
+	}
+
+	async sendActResultToTarget(io : Server, roomname : string, target : number, operation: string){
+		let notice : string;
+		if (operation === "kick")
+			notice = "Kicked out";
+		else if (operation === "ban")
+			notice = "Banned";
+		else if (operation === "mute")
+			notice = "Muted";
+		const body = `You are ${notice} from Room "${roomname}"`
+		const sockets = await io.in(`$${target}`).fetchSockets();
+		sockets.forEach((socket) => {
+			socket.emit("sendMessage", "server", body);
+		})
+	}
+
+	//채팅방에서 어떤 행동을 할 때 가능한지 모두 체크 : 권한, 유효성, etc.
+	checkActValidity(roomname : string, actor : number, target : number) : boolean {
+		const room = this.storeRoom.findRoom(roomname);
+		if (room === undefined){
+			console.log("[ ACT ERROR ] Room does not exist")
+			return (false);
+		}
+		const user = this.storeUser.findUserById(actor);
+		if (user === undefined || !user.joinlist.has(roomname)){
+			console.log("[ ACT ERROR ] invalid Actor");
+			return (false);
+		}
+		if (!room.isOwner(user.id) && !room.isOperator(user.id)){
+			console.log("[ ACT ERROR ] Actor is not authorized");
+			return (false);
+		}
+		if (target === -1){
+			console.log("[ ACT ERROR ] Target does not exist")
+			return (false);
+		}
+		else if (!room.isJoinning(target)){
+			console.log("[ ACT ERROR ] Target is not joining this room");
+			return (false);
+		}
+		else if (room.isOwner(target)){	//가능하면 owner랑 operator를 enum으로 만들어서 값 비교로 권한 우위 확인하면 더 좋았을듯.... 지금은 귀찮아...
+			console.log("[ ACT ERROR ] Target is the Owner");
+			return (false);
+		}
+		else if (room.isOperator(target) && !room.isOwner(actor)){
+			console.log("[ ACT ERROR ] Only owner can do sth to Operator");
+			return (false);
+		}
+		return (true);
 	}
 }
