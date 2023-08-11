@@ -1,17 +1,19 @@
 import { Module } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
-import { JwtGuard } from 'src/auth/guards/jwt.guard';
+// import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { ChatUserStoreService } from './store/store.user.service';
 import { ChatMessageStoreService } from './store/store.message.service';
 import { PrismaService } from 'src/prisma.service';
+import { JwtModule } from '@nestjs/jwt';
 // import { ChatRoomStoreService } from './store/store.room.service';
 
 @Module({
+	imports: [JwtModule],
 	providers: [
 		ChatService,
 		ChatGateway, 
-		JwtGuard,
+		// JwtGuard,
 		// ChatRoomStoreService,
 		ChatUserStoreService,
 		ChatMessageStoreService,

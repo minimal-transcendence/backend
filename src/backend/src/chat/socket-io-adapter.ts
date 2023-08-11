@@ -26,22 +26,8 @@ export class SocketIOAdapter extends IoAdapter {
 
 const createJwtMiddleware = (jwtService: JwtService, logger: Logger) =>
 (socket: SocketWithAuth, next) => {
-    // header에 담는 건 테스트용
-    /*
-    const io = require("socket.io-client");
-
-    const socket = io("ws://example.com/my-namespace", {
-    reconnectionDelayMax: 10000,
-    auth: {           <========================
-        token: "123"  <========================
-    },
-    query: {
-        "my-key": "my-value"
-    }
-    });
-    */
     const token =
-        socket.handshake.auth.token || socket.handshake.headers['token'];
+        socket.handshake.auth.token;
 
     logger.debug(`Validating jwt token before connection: ${token}`);
 
@@ -50,8 +36,15 @@ const createJwtMiddleware = (jwtService: JwtService, logger: Logger) =>
             secret: process.env.JWT_ACCESS_TOKEN_SECRET
         });
         socket.userId = payload.id;
+        socket.email = payload.email;
         next();
     } catch {
         next(new Error('FORBIDDEN'));
     }
 };
+
+const add = function(x) {
+    return function(y) {
+        return x + y;
+    }
+}

@@ -13,9 +13,7 @@ export class AuthController {
     ) {}
 
     @Get('login')
-    async login(@Req() req: any, @Query() params: any, @Res() res: Response) {
-        const code = params?.code;
-
+    async login(@Req() req: any, @Query('code') code: string, @Res() res: Response) {
         if (!code) {
             throw new UnauthorizedException('No code in query string');
         }
@@ -32,15 +30,22 @@ export class AuthController {
 
         if (user.is2faEnabled) {
             return res.send({
-                message: 'finish 2fa to get jwt token',
-                is2faEnabled: true,
+                message: 'you must authenticate 2fa to get jwt token.',
                 id: user.id,
+                email: user.email,
                 nickname: user.nickname,
+                is2faEnabled: true,
             });
         }
 
-        const access_token = await this.authService.generateAccessToken(user);
-        const refresh_token = await this.authService.generateRefreshToken(user);
+        const access_token = await this.authService.generateAccessToken({
+            id: user.id,
+            email: user.email,
+        });
+        const refresh_token = await this.authService.generateRefreshToken({
+            id: user.id,
+            email: user.email,
+        });
 
         // hashing refresh token
         const hashedRefreshToken = await this.authService.getHashedRefreshToken(refresh_token);
@@ -59,9 +64,10 @@ export class AuthController {
 
         return res.send({
             message: 'new jwt generated',
-            is2faEnabled: false,
             id: user.id,
+            email: user.email,
             nickname: user.nickname,
+            is2faEnabled: false,
             access_token: access_token,
             access_token_exp: process.env.JWT_ACCESS_EXPIRATION_TIME,
         });
@@ -70,8 +76,13 @@ export class AuthController {
     @UseGuards(JwtRefreshGuard)
     @Get('refresh')
     async refresh(@Req() req: any, @Res() res: Response) {
-        const user = req.user;
-        const access_token = await this.authService.generateAccessToken(user);
+        console.log(req);
+        const user = await this.userService.findUserById(req.user.id);
+
+        const access_token = await this.authService.generateAccessToken({
+            id: user.id,
+            email: user.email,
+        });
         res.setHeader('Authorization', 'Bearer '+ access_token);
         res.cookie('access_token', access_token, {
             httpOnly: true,
@@ -85,9 +96,10 @@ export class AuthController {
 
     @UseGuards(JwtRefreshGuard)
     @Post('logout')
-    async logout(@Req() req: any, @Res() res: Response): Promise<any> {
+    // @Get('logout')
+    async logout(@Req() req: any, @Res() res: Response) {
 		await this.userService.updateUserById(req.user.id, {
-				refreshToken : null,
+			refreshToken : null,
 		})
         res.clearCookie('access_token');
         res.clearCookie('refresh_token');

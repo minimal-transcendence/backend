@@ -4,6 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Request } from 'express';
 import { User } from '@prisma/client';
 import { AuthService } from './auth.service';
+import { JwtPayload } from './types';
 // import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -24,11 +25,23 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
     });
   }
 
-  async validate(req: Request, payload: any): Promise<User> {
+  async validate(req: Request, payload: any): Promise<JwtPayload> {
     const refreshToken = req.cookies?.refresh_token;
-    return await this.authService.getUserIfRefreshTokenMatches(
-        refreshToken,
-        payload.id,
+    // return await this.authService.getUserIfRefreshTokenMatches(
+    //     refreshToken,
+    //     payload.id,
+    // );
+
+    const user = await this.authService.getUserIfRefreshTokenMatches(
+      refreshToken,
+      payload.id,
     );
+
+    if (user) {
+      return ({
+        id: payload.id,
+        email: payload.email,
+      });
+    }
   }
 }

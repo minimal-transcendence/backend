@@ -5,6 +5,7 @@ import { lastValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { UserService } from 'src/user/user.service';
 import { User } from '@prisma/client';
+import { JwtPayload } from './types';
 
 @Injectable()
 export class AuthService {
@@ -55,22 +56,25 @@ export class AuthService {
         return userData.data;
     }
 
-    async generateAccessToken(user: any): Promise<string> {
-        const payload = {
-            id: user.id,
-            username: user.username,
-        }
-        return await this.jwtService.signAsync(payload);
+    async generateAccessToken(payload: JwtPayload): Promise<string> {
+
+        return await this.jwtService.signAsync({
+            id: payload.id,
+            email: payload.email,
+        });
     }
 
-    async generateRefreshToken(user: any): Promise<string> {
-        const payload = {
-            id: user.id
-        }
-        return await this.jwtService.signAsync({id: payload.id}, {
+    async generateRefreshToken(payload: JwtPayload): Promise<string> {
+        return await this.jwtService.signAsync(
+            {
+                id: payload.id,
+                email: payload.email
+            },
+            {
             secret: process.env.JWT_REFRESH_TOKEN_SECRET,
             expiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME,
-        });
+            }
+        );
     }
 
     async getHashedRefreshToken(refreshToken: string) {
@@ -100,28 +104,32 @@ export class AuthService {
         }
     }
 
-    async refreshJwtToken(refreshTokenDto: any): Promise<{ accessToken: string }> {
-        const { refresh_token } = refreshTokenDto;
+    // async refreshJwtToken(refreshTokenDto: any): Promise<{ accessToken: string }> {
+    //     const { refresh_token } = refreshTokenDto;
     
-        // Verify refresh token
-        // JWT Refresh Token 검증 로직
-        const decodedRefreshToken = await this.jwtService.verifyAsync(
-            refresh_token,
-            {
-                secret: process.env.JWT_REFRESH_TOKEN_SECRET,
-            });
+    //     // Verify refresh token
+    //     // JWT Refresh Token 검증 로직
+    //     const decodedRefreshToken = await this.jwtService.verifyAsync(
+    //         refresh_token,
+    //         {
+    //             secret: process.env.JWT_REFRESH_TOKEN_SECRET,
+    //         });
     
-        // Check if user exists
-        const userId = decodedRefreshToken.id;
+    //     // Check if user exists
+    //     const userId = decodedRefreshToken.id;
         
-        // Get user information by refresh_token and userId
-        const user = await this.getUserIfRefreshTokenMatches(refresh_token, userId);
+    //     // Get user information by refresh_token and userId
+    //     const user = await this.getUserIfRefreshTokenMatches(refresh_token, userId);
     
-        // Generate new access token
-        const accessToken = await this.generateAccessToken(user);
+    //     // Generate new access token
+        
+    //     const accessToken = await this.generateAccessToken({
+    //         id: user.id,
+    //         email: user.email,
+    //     });
     
-        return {accessToken};
-    }
+    //     return {accessToken};
+    // }
 
     
 }
