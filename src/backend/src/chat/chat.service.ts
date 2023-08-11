@@ -68,7 +68,7 @@ export class ChatService {
 		if (user === undefined)
 			user = this.storeUser.saveUser(userId, new User(userId, nickname));
 		//success
-		this.userJoinRoomSuccess(io, client, user, "DEFAULT");
+		this.userJoinRoomSuccess(io, user, "DEFAULT");
 		user.currentRoom = "DEFAULT";
 		
 		//datarace... 괜찮을까
@@ -103,9 +103,12 @@ export class ChatService {
 
 	// client.join("DEFAULT");
 	// client.join(`$${user.id}`);
-	userJoinRoomSuccess(io: Server, client:Socket, user : User, roomname : string) {
-		//유저 소켓을 방으로 join 해주고
-		client.join(roomname);
+	async userJoinRoomSuccess(io: Server, user : User, roomname : string) {
+		//유저 소켓을 모두 찾아서 방으로 join 해주고
+		const sockets = await io.in(`$${user.id}`).fetchSockets();
+		sockets.forEach((socket) => {
+			socket.join(roomname);
+		})
 		//이미 유저의 joinlist에 방이 있는지 확인
 		//없으면
 		//유저 객체 joinlist add, 방 객체 userlist add
@@ -138,14 +141,17 @@ export class ChatService {
 			//2. banlist 를 확인
 				// 리스트에 있으면 -> 일정시간동안 ban되었다는 이벤트를 emit
 			//3. 유저를 join을 이용해서 그 방으로 연결(유저리스트 등록하고 welcome message)
-	//if 3중 중첩문.... 이대로 괜찮은가.......	
+	//if 3중 중첩문.... 이대로 괜찮은가.......
+
+	//CHECK & DISCUSS : 한 유저가 여러 소켓을 가진 경우에 대해 : 모든 창에 경고를 띄울 필요 있을까?
+	//하지만 join은 전부 처리해줘야 (완료)
 	async userJoinRoom(io : Server, client:Socket, userId : number, roomname : string, password? : string) {
 		let room = this.storeRoom.findRoom(roomname);
 		if (room === undefined){
 			this.storeRoom.saveRoom(roomname, new Room(userId, password? password : null));
 			room = this.storeRoom.findRoom(roomname);
 			//TODO: 이렇게 server선언 되는지 확인해야함...!
-			this.userJoinRoomSuccess(io, client, this.storeUser.findUserById(userId), roomname);
+			this.userJoinRoomSuccess(io, this.storeUser.findUserById(userId), roomname);
 		}
 		else {
 			const pwExist = password? true : false;
@@ -154,7 +160,7 @@ export class ChatService {
 					if (room.isBanned(userId))
 						client.emit("youAreBanned", roomname);
 					else
-						this.userJoinRoomSuccess(io, client, this.storeUser.findUserById(userId), roomname);
+						this.userJoinRoomSuccess(io, this.storeUser.findUserById(userId), roomname);
 				}
 				else
 					client.emit("wrongPassword", roomname);
@@ -196,6 +202,9 @@ export class ChatService {
 					// 방에 "유저가 나간다! 알림"
 					// 해당 알림을 서버에 저장... <
 				// 유저의 joinlist에서 방을 삭제
+	//CHECK : 실제로 Socket Leave를 같이 붙여야 할까? 아니면 socket.io 처리랑 서비스 처리를 분리?
+	//disconnect시에는 단절 자체가 leave를 자동으로 처리할 것
+	//한 방만 나갈 때만 별도처리하는게 더 부하가 적지 않을까?
 	userLeaveRoom(io : Server, client : Socket, roomname : string){
 		const room = this.storeRoom.findRoom(roomname);
 		const userId = client.data.id;
@@ -227,6 +236,15 @@ export class ChatService {
 		else
 			console.log("you are not joining in this room : try leave");
 	}
+
+	async userLeaveRoomAct(io : Server, client : Socket, roomname : string){
+		const userid = client.data.id;
+		const sockets = await io.in(`$${userid}`).fetchSockets();
+		sockets.forEach((socket) => {
+			socket.leave(roomname);
+		})
+	}
+
 	//userLeaveRooms -- userLeaveRoom 순회 / Set으로 충분? 아님 Array도 포함?
 	userLeaveRooms(io : Server, client : Socket, roomlist : Set<string>){
 		roomlist.forEach((room) => {
@@ -276,9 +294,10 @@ export class ChatService {
 			//message를 보낸다
 		}
 	}
-	//muteUser
+	//muteUser --> kick / ban 과 거의 동일한 구조 : gateway로 refactoring하면서 같이 만들자
+
 	//userSendDM
-	//blockUser?
+	//blockUser? --> event 의논
 
 	//TODO : 이하 util함수들 datarace 등 에러처리 어떻게 할지 // 아니 애초에 datarace가 나나...? 노드는 싱글 스레드(...) 소켓은 멀티플렉싱 으으으으
 	//TODO : array나 set... 이렇게 되나...? error check
@@ -353,10 +372,11 @@ export class ChatService {
 		else if (operation === "mute")
 			notice = "Muted";
 		const body = `You are ${notice} from Room "${roomname}"`
-		const sockets = await io.in(`$${target}`).fetchSockets();
-		sockets.forEach((socket) => {
-			socket.emit("sendMessage", "server", body);
-		})
+		await this.emitEventsToAllSockets(io, target, "sendMessage", ["server, body"]);
+		// const sockets = await io.in(`$${target}`).fetchSockets();
+		// sockets.forEach((socket) => {
+		// 	socket.emit("sendMessage", "server", body);
+		// })
 	}
 
 	//채팅방에서 어떤 행동을 할 때 가능한지 모두 체크 : 권한, 유효성, etc.
@@ -392,5 +412,12 @@ export class ChatService {
 			return (false);
 		}
 		return (true);
+	}
+
+	async emitEventsToAllSockets(io : Server, targetId : number, eventname : string, ... args : object[]) : Promise<void> {
+		const sockets = await io.in(`$${targetId}`).fetchSockets();
+		sockets.forEach((socket) => {
+			socket.emit(eventname, args);	//work?
+		})
 	}
 }
