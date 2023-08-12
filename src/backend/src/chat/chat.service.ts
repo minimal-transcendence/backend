@@ -69,6 +69,7 @@ export class ChatService {
 		if (user === undefined)
 			user = this.storeUser.saveUser(userId, new User(userId, nickname));
 		//success
+		user.connected = true;
 		this.userJoinRoomSuccess(io, user, "DEFAULT");
 		user.currentRoom = "DEFAULT";
 		
@@ -100,6 +101,7 @@ export class ChatService {
 		//2. 유저의 isGaming 상태도 false	//게임 중 접속 끊길 수도 있음... <- 만약 접속이 잠시 끊겼다가 재접속 하면 어떻게?
 	async disconnectUser(io: Server, userId : number) : Promise<void> {
 		const user = this.storeUser.findUserById(userId);
+		user.connected = false;
 		this.userLeaveRooms(io, userId, user.joinlist);
 	}
 
@@ -267,6 +269,7 @@ export class ChatService {
 		if (room.isOperator(targetId))
 			room.deleteUserFromOperators(targetId);
 		room.deleteUserFromUserlist(targetId);
+		//이하는 userLeave랑 작용이 같다
 		const targetUser = this.storeUser.findUserById(targetId);
 		targetUser.joinlist.delete(roomname);	//DISCUSS : 쫓겨나면 default 방으로?
 		targetUser.currentRoom = "DEFAULT";
@@ -282,6 +285,8 @@ export class ChatService {
 		//TODO & DISCUSS : 쫓겨나고 나서 알람 보내줄지
 	}
 
+	//TODO & DISCUSS : sendAlert로 합칠 수 있을 것 같기도?
+		//socket은 요청한 곳에만 보내면 되겠지?
 	//sendYouAreKickedMessage
 	//sendYouAreBannedMessage
 	//sendYouAreMutedMessage
@@ -330,7 +335,7 @@ export class ChatService {
 			id : userId,
 			nickname : user.nickname,
 			isGaming : user.isGaming,
-			isConnected : connection
+			isConnected : user.connected
 		}
 		return (res);
 	}
@@ -360,11 +365,13 @@ export class ChatService {
 		//or 만약 방에 아무 유저도 없으면? <- datarace일 때 가능성 있다.
 		room.userlist.forEach((user) => {
 			const target : User = this.storeUser.findUserById(user);
+			// if (target.connected = true){	//체크할 필요 없는게 맞다.. disconnect할때 다 지워줌
 			userInfo.push({
 				id : user,
 				nickname : target.nickname,
 				isGaming : target.isGaming
 			})
+			// }
 		})
 		return (userInfo);
 	}
@@ -461,4 +468,6 @@ export class ChatService {
 			socket.emit(eventname, args);	//work?
 		})
 	}
+
+	//CHECK : 좀 처리가 일관성이 없는게 joinlist도 persistent 하게 할지 말지 안 정해놓고 시작함ㅠ -> 주석 정리시 check
 }
