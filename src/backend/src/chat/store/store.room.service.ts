@@ -157,5 +157,15 @@ export class ChatRoomStoreService implements RoomStore{
 			target.clearRoom();
 		this.rooms.delete(roomname);
 	}
+
+	//startWith? includes?
+	findQueryMatchRoomNames(query : string) : string[] {
+		const res = [];
+		this.rooms.forEach((_, key) => {
+			if (key.includes(query))
+				res.push(key);
+		})
+		return (res);
+	}
 }
 

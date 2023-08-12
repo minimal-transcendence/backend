@@ -98,8 +98,9 @@ export class ChatService {
 		//0. 유저의 joinlist를 전부 해제
 		//1. 유저의 connected 상태 false
 		//2. 유저의 isGaming 상태도 false	//게임 중 접속 끊길 수도 있음... <- 만약 접속이 잠시 끊겼다가 재접속 하면 어떻게?
-	async disconnectUser(client: Socket, userId : number) : Promise<void> {
-
+	async disconnectUser(io: Server, userId : number) : Promise<void> {
+		const user = this.storeUser.findUserById(userId);
+		this.userLeaveRooms(io, userId, user.joinlist);
 	}
 
 	// client.join("DEFAULT");
@@ -109,6 +110,8 @@ export class ChatService {
 		const sockets = await io.in(`$${user.id}`).fetchSockets();
 		sockets.forEach((socket) => {
 			socket.join(roomname);
+			const currRoomInfo = this.makeCurrRoomInfo(roomname);
+			socket.emit("sendCurrRoomInfo", currRoomInfo);
 		})
 		//이미 유저의 joinlist에 방이 있는지 확인
 		//없으면
@@ -154,6 +157,7 @@ export class ChatService {
 			room = this.storeRoom.findRoom(roomname);
 			//TODO: 이렇게 server선언 되는지 확인해야함...!
 			this.userJoinRoomSuccess(io, this.storeUser.findUserById(userId), roomname);
+			//TODO & DISCUSS : 전 서버 소켓들에게 새 방 생겼다고 다 알려줘야 함?
 		}
 		else {
 			const pwExist = password? true : false;
@@ -207,9 +211,8 @@ export class ChatService {
 	//CHECK : 실제로 Socket Leave를 같이 붙여야 할까? 아니면 socket.io 처리랑 서비스 처리를 분리?
 	//disconnect시에는 단절 자체가 leave를 자동으로 처리할 것
 	//한 방만 나갈 때만 별도처리하는게 더 부하가 적지 않을까?
-	userLeaveRoom(io : Server, client : Socket, roomname : string){
+	userLeaveRoom(io : Server, userId : number, roomname : string){
 		const room = this.storeRoom.findRoom(roomname);
-		const userId = client.data.id;
 		if (room === undefined){
 			console.log("Room does not exist");
 			return ;
@@ -230,10 +233,11 @@ export class ChatService {
 			if (room.isOperator(userId))
 				room.deleteUserFromOperators(userId);	//처음에는 owner는 owner역할만 하지만, 첫 owner가 나갈 때  새로  들어오는  newOwner는 중복일 수  있음
 			const body = `Good bye ${this.storeUser.getNicknameById(userId)}`
-			io.to("roomname").emit(body);
+			io.to("roomname").emit("sendMessage", body);
 			room.messages.push(new Message(-1, body));
-			//TODO : 여기서 유저리스트도 한 번 업뎃해야함 -> currRoom인 유저들만 업뎃하면 됨 //서버 단계에서 얘네만 업뎃 해줄건가?
-			//사실 이 경우에는 userUpdate를 하면 되는 것 같다 -> 프론트에서 그 모듈만 날리는 식으로 : CHECK & DISCUSS
+
+			//해당방의 모든 소켓을 모아서, 소켓 유저아이디로 유저 객체에 접근 -> currRoom을 확인하고 보내기 vs 클라이언트가 처리하기
+			io.to("roomname").emit("userUpdate", this.makeUserStatus(userId, false));
 		}
 		else
 			console.log("you are not joining in this room : try leave");
@@ -248,9 +252,9 @@ export class ChatService {
 	}
 
 	//userLeaveRooms -- userLeaveRoom 순회 / Set으로 충분? 아님 Array도 포함?
-	userLeaveRooms(io : Server, client : Socket, roomlist : Set<string>){
+	userLeaveRooms(io : Server, userId : number, roomlist : Set<string>){
 		roomlist.forEach((room) => {
-			this.userLeaveRoom(io, client, room);
+			this.userLeaveRoom(io, userId, room);
 		})
 	}
 
@@ -301,6 +305,37 @@ export class ChatService {
 		room.addUserToMutelist(targetId);	
 	}
 
+	//TODO : 이 모든 Getter들... 에러처리를 생각해야
+	getAllRoomList() : roomInfo[] {
+		const roomlist = Array.from(this.storeRoom.rooms.keys());
+		return (this.makeRoomInfo(roomlist));
+	}
+
+	getUserRoomList(userId : number) : roomInfo[] {
+		const thisUser = this.storeUser.findUserById(userId);
+		return (this.makeRoomInfo(thisUser.joinlist));
+	}
+
+	//얘는 사실 딱히 최근 메세지 필요없는 것 같은데...(굳이 따지자면 방장이랑 참여인원이 있어야 하는게 아닐까?)
+	//DISCUSS & CHECK : return form
+	getQueryRoomList(query : string) : string[] {
+		const roomlist = this.storeRoom.findQueryMatchRoomNames(query);
+		return (roomlist);
+	}
+
+	//이게 맞나....?
+	makeUserStatus(userId : number, connection: boolean) : userInfo {
+		const user = this.storeUser.findUserById(userId);
+		const res = {
+			id : userId,
+			nickname : user.nickname,
+			isGaming : user.isGaming,
+			isConnected : connection
+		}
+		return (res);
+	}
+
+	// TODO :
 	//userSendDM
 	//blockUser? --> event 의논
 
@@ -419,6 +454,7 @@ export class ChatService {
 		return (true);
 	}
 
+	//TODO : 되는지 확인
 	async emitEventsToAllSockets(io : Server, targetId : number, eventname : string, ... args : object[]) : Promise<void> {
 		const sockets = await io.in(`$${targetId}`).fetchSockets();
 		sockets.forEach((socket) => {

@@ -73,6 +73,7 @@ export class ChatGateway
 		const userId = await this.chatService.clientAuthentification(client);
 		client.data.id = userId;
 		
+		//TODO : 아니 생각해보니까 이 때도 유저가 이미 들어있던 방들에게 유저가 돌아왔다는 걸 통보해야 한다...!
 		console.log("new connection");
 		const thisUser = this.storeUser.findUserById(userId);
 		console.log(`found user : ${JSON.stringify(thisUser)}`);
@@ -101,7 +102,7 @@ export class ChatGateway
 
 		//TODO : 미완성
 		client.on("sendRoomLeave", (room) => {
-			this.chatService.userLeaveRoom(this.server, client, room);
+			this.chatService.userLeaveRoom(this.server, client.data.id, room);
 			this.chatService.userLeaveRoomAct(this.server, client, room);
 		});
 
@@ -142,25 +143,41 @@ export class ChatGateway
 		});
 		
 		//TODO : 이거는 validityCheck가 따로 필요한 것 같은데?
+		//1. owner만 operator 해제가 가능한지
+		//2. operator도 operator를 해제할 수 있는지 논의 필요
 		client.on("deleteOperator", (roomname, user) => {
 			const targetId = this.storeUser.getIdByNickname(user);
 			const room = this.storeRoom.findRoom(roomname);
 			//
 		});
 		
-		//client.on("requestAllRoomList", () => {});
-		//client.on("requestMyRoomList", () => {});
-		//client.on("requestSearchResultRoomList", (query) => {});
-		//client.on("requestRoomMembers", (roomname) => {});
+		client.on("requestAllRoomList", () => {
+			const roomInfo = this.chatService.getAllRoomList();
+			client.emit("sendAllRoomList", roomInfo);
+		});
+
+		client.on("requestMyRoomList", () => {
+			const roomInfo = this.chatService.getUserRoomList(client.data.id);
+			client.emit("sendUserRoomList", roomInfo);
+		});
+		
+		client.on("requestSearchResultRoomList", (query) => {
+			const roomInfo = this.chatService.getQueryRoomList(query);
+			client.emit("responseRoomQuery", roomInfo);
+		});
+
+		client.on("requestRoomMembers", (roomname) => {
+			const roomMembers = this.chatService.makeRoomUserInfo(roomname);
+			client.emit("sendRoomMembers", roomMembers);
+		});
 		
 		//client.on("changeNick", (newNick) => {});
 		//client.on("sendDirectMessage", (to, body) => {});
-		//DISCUSS : DM방도 따로 method가 필요하다
-
+		//DISCUSS : DM방 select도 따로 method가 필요하다
 	}
 
 	//disconnecting, disconnect 둘다 감지 가능?
 	async handleDisconnect(@ConnectedSocket() client: Socket) {
-		
+		await this.chatService.disconnectUser(this.server, client.data.id);
 	}
 }

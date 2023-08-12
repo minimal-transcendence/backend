@@ -3,6 +3,7 @@ export type userInfo = {
 	id : number;
 	nickname : string;
 	isGaming : boolean;
+	isConnected? : boolean;	//
 }
 
 export type roomInfo = {
