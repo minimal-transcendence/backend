@@ -20,7 +20,7 @@ export class Room {
 	constructor(
 		// roomId: number,
 		owner : number,
-		password? : string
+		password? : string,
 	){
 		// this.roomId = roomId;
 		// this.roomname = roomname;
@@ -129,8 +129,8 @@ interface RoomStore{
 	//방을 DM이랑 분리하게 되면 아이디는 필요없다!
 	rooms : Map<string, Room>;
 	
-	findRoom(roomname : string) : Room;
-	saveRoom(roomname : string, room : Room) : void;
+	findRoom(roomName : string) : Room;
+	saveRoom(roomName : string, room : Room) : void;
 	findAllRoom() : Room[];
 }
 
@@ -138,8 +138,8 @@ interface RoomStore{
 export class ChatRoomStoreService implements RoomStore{
 	rooms = new Map();
 
-	findRoom(roomname: string): Room {
-		return this.rooms.get(roomname);
+	findRoom(roomName: string): Room {
+		return this.rooms.get(roomName);
 	}
 
 	//여기는 password가 필요하다
