@@ -173,6 +173,7 @@ function MyProfile() {
 							<div>
 								<p>
 								닉네임
+								<br/>
 								{userNickname !== null ?
 								(<input className='account' placeholder={userNickname} type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)
 								:
@@ -180,13 +181,14 @@ function MyProfile() {
 								</p>
 								<p>
 									프로필 사진
-									<br />
+									<br/>
 									<input type="file" accept='image/*' onChange={handleFileChange}></input>
 									<br/>
 									{imageUrl && <img src={imageUrl} alt="profile image" width="100" height = "100" />}
 								</p>
 								<p>
 									2차인증 여부
+									<br/>
 										<input
 										type="checkbox"
 										checked={checkIs2Fa}
@@ -194,8 +196,11 @@ function MyProfile() {
 										/>
 										<span className="slider"></span>
 									<p>
-										이곳에 QR이 보인다면 인증을 통해 OTP를 등록해주세요
-										<img src='http://localhost/api/2fa/qrcode' alt="qr image"/>
+										<img
+										src='http://localhost/api/2fa/qrcode'
+										alt="qr image"
+										onError={(e: React.SyntheticEvent<HTMLImageElement>) => e.currentTarget.style.display = 'none'}
+										/>
 									</p>
 									<p>
 										<input placeholder="띄워쓰기 제외한 6자리" type="text" value={verCode} onChange={(e) => setVerCode(e.target.value)} />
