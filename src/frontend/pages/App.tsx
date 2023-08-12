@@ -19,9 +19,9 @@ const socket = io.connect("http://localhost:3002", {
   },
   autoConnect: false,
 });
-socket.on("welcomeMessage", (message: any) => {
-  console.log(`i got message : ${message}`);
-});
+// socket.on("welcomeMessage", (message) => {
+//   console.log(`i got message : ${message}`);
+// });
 
 const NO_SEARCH_RESULT_ERROR = "There is no room! : ";
 const NO_JOINNED_RESULT_ERROR = "No Joinned???! : ";
@@ -57,6 +57,8 @@ export default function App() {
   const [tmpLoginID, setTmpLoginID] = useState<string>("");
   const [tmpLoginNickName, setTmpLoginNickName] = useState<string>("");
   const [tmpIsLoggedIn, setTmpIsLoggedIn] = useState<boolean>(false);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
+  // const [socket, setSocket] = useState<any>(null);
   // isLoading;
   // selectedRoom;
 
@@ -73,7 +75,48 @@ export default function App() {
     }
     setRoomUserList(null);
   }
+  useEffect(
+    function () {
+      function chkLogin() {
+        if (tmpIsLoggedIn) {
+          socket.io.opts.query = {
+            id: tmpLoginID,
+            nickname: tmpLoginNickName,
+          };
+          socket.connect();
+          console.log(
+            "socket",
+            socket.connected,
+            socket.io.opts.query,
+            socket,
+            tmpIsLoggedIn,
+            tmpLoginID,
+            tmpLoginNickName
+          );
 
+          socket.emit("sendNickNameID", {
+            id: tmpLoginID,
+            nickName: tmpLoginNickName,
+          });
+          // socket.emit("sendNickNameID", "hi");
+          // socket.emit("hi", {"sibla", "sd"});
+          // setIsConnected(() => true);
+        }
+      }
+      chkLogin();
+    },
+    [tmpIsLoggedIn]
+  );
+  // useEffect(
+  //   function () {
+  //     function tk() {
+  //       console.log("hcl");
+
+  //     }
+  //     tk();
+  //   },
+  //   [isConnected]
+  // );
   useEffect(() => {
     function requestPassword(roomName: string) {
       console.log(
@@ -105,7 +148,7 @@ export default function App() {
       socket.off("sendRoomMembers", sendRoomMembers);
       socket.off("requestPassword", requestPassword);
     };
-  }, []);
+  }, [socket]);
 
   useEffect(
     function () {
@@ -139,24 +182,6 @@ export default function App() {
     [query]
   );
 
-  useEffect(
-    function () {
-      function chkLogin() {
-        if (tmpIsLoggedIn) {
-          console.log("socket", socket.connected, socket.io.opts.query);
-          socket.io.opts.query = {
-            id: tmpLoginID,
-            nickname: tmpLoginNickName,
-          };
-          socket.connect();
-          socket.emit("sendNickNameID", { tmpLoginID, tmpLoginNickName });
-        }
-      }
-      chkLogin();
-    },
-    [tmpIsLoggedIn]
-  );
-
   return !tmpIsLoggedIn ? (
     <TempLogin
       socket={socket}
@@ -177,22 +202,6 @@ export default function App() {
           />
         )}
       </div>
-
-      {/* <ModalOverlay isOpenModal={isOpenModal3} />
-      <div>
-        {isOpenModal3 && (
-          <>
-            <ModalBasic
-              roomName={passWordRequiredRoom}
-              socket={socket}
-              setIsOpenModal={setIsOpenModal3}
-              innerText={"만들면서 입력할 때임 비번입력 ㄱ"}
-            />
-
-            <span>hizzzzzzzzzzzzzzzzzzzzzzzzzzzz</span>
-          </>
-        )}
-      </div> */}
 
       <NavBar query={query} setQuery={setQuery} />
       <Main>
@@ -220,7 +229,7 @@ export default function App() {
             curOpen={curOpen}
             setCurOpen={setCurOpen}
             users={roomUserList?.users}
-            title={roomUserList?.roomName}
+            roomName={roomUserList?.roomName}
             tmpLoginNickName={tmpLoginNickName}
           />
         </Box>
@@ -230,7 +239,7 @@ export default function App() {
 }
 
 function ModalOverlay({ isOpenModal }: { isOpenModal: any }) {
-  console.log("hidden ? ", isOpenModal);
+  // console.log("hidden ? ", isOpenModal);
   return <div className={`overlay ${!isOpenModal ? "hidden" : ""}`}></div>;
 }
 function ErrorMessage({ message }: { message: string }) {
@@ -421,12 +430,12 @@ function SearchResult({ el, onSelectRoom }: { el: any; onSelectRoom: any }) {
 
       <div>
         <p>
-          {/* <span>{el?.messageNew ? "🆕" : "☑️"}</span>
+          <span>{el.messageNew ? "🆕" : "☑️"}</span>
           <span>
-            {el?.messageRecent.length >= 14
-              ? el?.messageRecent.substr(0, 14) + "..."
+            {el.messageRecent.length >= 14
+              ? el.messageRecent.substr(0, 14) + "..."
               : el.messageRecent}
-          </span> */}
+          </span>
         </p>
       </div>
     </li>
@@ -469,32 +478,31 @@ function CenterBox({
 
 function ChatRoomUser({
   users,
-  title,
+  roomName,
   curOpen,
   setCurOpen,
   tmpLoginNickName,
 }: {
   users: any;
-  title: string;
+  roomName: string;
   curOpen: number;
   setCurOpen: any;
   tmpLoginNickName: string;
 }) {
-  if (!users || !title) return;
+  if (!users || !roomName) return;
   return (
     <>
       <div className="summary">
-        <h4>{title} 유저목록</h4>
+        <h4>{roomName} 유저목록</h4>
       </div>
 
-      <ul className="list-users">
+      <ul className="list-users" key={tmpLoginNickName}>
         {users.map((user: any, i: number) => (
           <ChatRoomUserInfo
             user={user}
-            key={user.id}
-            curOpen={curOpen}
-            onOpen={setCurOpen}
+            key={i}
             num={i}
+            roomName={roomName}
             tmpLoginNickName={tmpLoginNickName}
           />
         ))}
@@ -505,43 +513,43 @@ function ChatRoomUser({
 
 function ChatRoomUserInfo({
   user,
-  curOpen,
-  onOpen,
   num,
+  roomName,
   tmpLoginNickName,
 }: {
   user: any;
-  curOpen: number;
-  onOpen: any;
   num: number;
+  roomName: string;
   tmpLoginNickName: string;
 }) {
-  const isOpen = num === curOpen;
-
-  function handleToggle() {
-    onOpen(() => {
-      if (isOpen) return null;
-      else return num;
-    });
+  function handleMenu(event: any) {
+    if (event.target.dataset.name) {
+      console.log(
+        `${tmpLoginNickName}가 ${user.nickName}를 ${roomName}에서 ${event.target.dataset.name}클릭!!!`
+      );
+      const targetNickName = user.nickName;
+      if (event.target.dataset.name === "kick")
+        socket.emit("kickUser", { roomName, targetNickName });
+      else if (event.target.dataset.name === "ban")
+        socket.emit("banUser", { roomName, targetNickName });
+      else if (event.target.dataset.name === "mute")
+        socket.emit("muteUser", { roomName, targetNickName });
+      else if (event.target.dataset.name === "block")
+        socket.emit("blockUser", { targetNickName });
+      else if (event.target.dataset.name === "opAdd")
+        socket.emit("addOperator", { roomName, targetNickName });
+      else if (event.target.dataset.name === "opDelete")
+        socket.emit("deleteOperator", { roomName, targetNickName });
+    } else {
+      console.log("you click other");
+    }
   }
-  // function handleKBOM() {
-  //   setSelectedRoom(room);
-  //   setRoomNameModal(room.roomName);
-  //   setCurOpen(-1);
-  //   console.log("in SelectRoomName handle ", room.roomName);
-  //   if (event.target.dataset.name) {
-  //     console.log(`${event.target.dataset.name}나가기!!!`);
-  //     socket.emit("sendRoomLeave", event.target.dataset.name);
-  //   } else {
-  //     socket.emit("selectRoom", room.roomName);
-  //   }
-  //   setRoomUserList(null);
-  // }
 
   return (
     <li
-      className={`item-userlist ${isOpen ? "open" : ""}`}
-      onClick={handleToggle}
+      // className={`item-userlist ${isOpen ? "open" : ""}`}
+      className="item-userlist"
+      // onClick={handleToggle}
     >
       <p className="number">{num < 9 ? `0${num + 1}` : `${num + 1}`}</p>
       <p className="userlist-username">
@@ -549,8 +557,17 @@ function ChatRoomUserInfo({
       </p>
       {/* <p className="icon">{isOpen ? "-" : "+"}</p> */}
       <div className="userlist-KBOM-box">
-        <div>
-          <img src={menuIcon} width="15" height="15" />
+        <div className="dropdown">
+          <img className="dropbtn" src={menuIcon} width="15" height="15" />
+
+          <div onClick={() => handleMenu(event)} className="dropdown-content">
+            <span data-name="kick">Kick</span>
+            <span data-name="ban">Ban</span>
+            <span data-name="mute">Mute</span>
+            <span data-name="block">block</span>
+            <span data-name="opAdd">Add Oper</span>
+            <span data-name="opDelete">Delete Oper</span>
+          </div>
         </div>
       </div>
       <p className="userlist-userstatus-text">
@@ -563,24 +580,6 @@ function ChatRoomUserInfo({
           else if (num === 4) return "자리비움";
         })()}
       </p>
-      {isOpen && (
-        <div className="content-box">
-          <>
-            <div>
-              {/* <p>
-                <span>생성자</span>
-                <span>{user.isCreator ? "🟣" : "✖️"}</span>
-                <span>방장 </span>
-                <span>{user.isOp ? "🟣" : "✖️"}</span>
-              </p> */}
-            </div>
-            <div className="content-box li"></div>
-            <div className="content-box li"></div>
-            <div className="content-box li"></div>
-            <div className="content-box li"></div>
-          </>
-        </div>
-      )}
     </li>
   );
 }
