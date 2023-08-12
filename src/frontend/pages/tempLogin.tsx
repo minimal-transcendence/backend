@@ -34,7 +34,6 @@ function TempLogin({
       setTmpLoginID(() => id);
       setTmpLoginNickName(() => nickName);
       setTmpIsLoggedIn(() => true);
-      socket.emit("sendNickNameID", { id, nickName });
       console.log("id nickname : ", id, nickName);
     }
     setDisabled(false);

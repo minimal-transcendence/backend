@@ -68,7 +68,7 @@ export class ChatGateway
 
 	async handleConnection(@ConnectedSocket() client: Socket) {
 		this.logger.log(`Client Connected : ${client.id}`);
-		
+		console.log("query!!", JSON.stringify(client.handshake.query, null, 2));
 		/* Authentification */
 		// console.log(this.storeUser.findAllUser());
 		// const userId = await this.chatService.clientAuthentification(client);

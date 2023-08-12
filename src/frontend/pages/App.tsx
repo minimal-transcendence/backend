@@ -12,8 +12,13 @@ let logOutIcon: any;
 let userIcon: any;
 let searchIcon: any;
 
-const socket = io.connect("http://localhost:4000");
-
+const socket = io.connect("http://localhost:3002", {
+  query: {
+    id: 1234,
+    nickname: "namkim",
+  },
+  autoConnect: false,
+});
 socket.on("welcomeMessage", (message: any) => {
   console.log(`i got message : ${message}`);
 });
@@ -134,16 +139,23 @@ export default function App() {
     [query]
   );
 
-  // useEffect(
-  //   function () {
-  //     function joinWithRoomName() {
-  //       // setPassWordRequiredRoom("hi");
-  //       setIsOpenModal3(true);
-  //     }
-  //     joinWithRoomName();
-  //   },
-  //   [passWordRequiredRoom]
-  // );
+  useEffect(
+    function () {
+      function chkLogin() {
+        if (tmpIsLoggedIn) {
+          console.log("socket", socket.connected, socket.io.opts.query);
+          socket.io.opts.query = {
+            id: tmpLoginID,
+            nickname: tmpLoginNickName,
+          };
+          socket.connect();
+          socket.emit("sendNickNameID", { tmpLoginID, tmpLoginNickName });
+        }
+      }
+      chkLogin();
+    },
+    [tmpIsLoggedIn]
+  );
 
   return !tmpIsLoggedIn ? (
     <TempLogin
@@ -409,12 +421,12 @@ function SearchResult({ el, onSelectRoom }: { el: any; onSelectRoom: any }) {
 
       <div>
         <p>
-          <span>{el.messageNew ? "🆕" : "☑️"}</span>
+          {/* <span>{el?.messageNew ? "🆕" : "☑️"}</span>
           <span>
-            {el.messageRecent.length >= 14
-              ? el.messageRecent.substr(0, 14) + "..."
+            {el?.messageRecent.length >= 14
+              ? el?.messageRecent.substr(0, 14) + "..."
               : el.messageRecent}
-          </span>
+          </span> */}
         </p>
       </div>
     </li>
