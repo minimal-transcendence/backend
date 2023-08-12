@@ -60,7 +60,7 @@ export class ChatGateway
 				user.id, 
 				new User(user.id, user.nickname)
 			);
-		})
+		});
 		this.storeUser.saveUser(-1, new User(-1, "Server_Admin"));
 		this.storeRoom.saveRoom("DEFAULT", new Room(-1));	//owner id = -1 as server
 	}
@@ -68,6 +68,7 @@ export class ChatGateway
 	async handleConnection(@ConnectedSocket() client: Socket) {
 		this.logger.log(`Client Connected : ${client.id}`);
 		
+		/* Authentification */
 		console.log(this.storeUser.findAllUser());
 		const userId = await this.chatService.clientAuthentification(client);
 		client.data.id = userId;
@@ -77,30 +78,84 @@ export class ChatGateway
 		console.log(`found user : ${JSON.stringify(thisUser)}`);
 		console.log(client.id);
 
+		/* Initialize */
 		//유저가 원래 DB에 있던 유저가 아니면 추가
 		//그 default room과 dm room에 각각 join후 필요한 정보 emit(각 소켓 별)
 		await this.chatService.newUserConnected(this.server, client, userId, this.storeUser.getNicknameById(userId));
 		
-		// client.on("sendChatMessage", (to, body) => {})
-		this.chatService.sendChat(this.server, client, "DEFAULT", "I'm coming");
-		this.chatService.makeCurrRoomInfo("DEFAULT");
+		client.on("sendChatMessage", (to, body) => {
+			this.chatService.sendChat(this.server, client, to, body);
+		});
+		// this.chatService.sendChat(this.server, client, "DEFAULT", "I'm coming");
+		// this.chatService.makeCurrRoomInfo("DEFAULT");
 
-		//client.on("sendRoomPass", (room, password) => {})
-		//client.on("sendRoomLeave", (room) => {})
-		//client.on("selectRoom", (room) => {})
+		client.on("selectRoom", (room) => {
+			//async await 어렵다 어려워
+			this.chatService.userJoinRoom(this.server, client, room);
+		});
+
+		//TODO : 무조건 password 넣는 단계가 분리되면 userJoinRoom함수 자체를 좀 더 효율적으로 정비 가능
+		client.on("sendRoomPass", (room, password) => {
+			this.chatService.userJoinRoom(this.server, client, room, password);
+		});
+
+		//TODO : 미완성
+		client.on("sendRoomLeave", (room) => {
+			this.chatService.userLeaveRoom(this.server, client, room);
+			this.chatService.userLeaveRoomAct(this.server, client, room);
+		});
+
 		//client.on("blockUser", (user) => {})	//의논 요
-		//client.on("kickUser", (roomname, user) => {})
-		//client.on("muteUser", (roomname, user) => {})
-		//client.on("banUser", (roomname, user) => {})
-		//client.on("addOperator", (roomname, user) => {})
-		//client.on("deleteOperator", (roomname, user) => {})
-		//client.on("requestAllRoomList", () => {})
-		//client.on("requestMyRoomList", () => {})
-		//client.on("requestSearchResultRoomList", (query) => {})
-		//client.on("requestRoomMembers", (roomname) => {})
+
+		client.on("kickUser", (roomname, user) => {
+			const targetId = this.storeUser.getIdByNickname(user);
+			const room = this.storeRoom.findRoom(roomname);
+			if (this.chatService.checkActValidity(roomname, client.data.id, targetId)){
+				this.chatService.kickUser(this.server, roomname, targetId);
+			}
+		});
 		
-		//client.on("changeNick", (newNick) => {})
-		//client.on("sendDirectMessage", (to, body) => {})
+		client.on("banUser", (roomname, user) => {
+			const targetId = this.storeUser.getIdByNickname(user);
+			const room = this.storeRoom.findRoom(roomname);
+			if (this.chatService.checkActValidity(roomname, client.data.id, targetId)){
+				this.chatService.banUser(this.server, roomname, targetId);
+			}
+		});
+
+		client.on("muteUser", (roomname, user) => {
+			const targetId = this.storeUser.getIdByNickname(user);
+			const room = this.storeRoom.findRoom(roomname);
+			if (this.chatService.checkActValidity(roomname, client.data.id, targetId)){
+				this.chatService.muteUser(this.server, roomname, targetId);
+			}
+		});
+		
+		//checkValidity에서 operator가 owner를 operator로 등록하려고 할 때도 에러가 날 것
+		//에러처리할 때 고려해야 한다.
+		client.on("addOperator", (roomname, user) => {
+			const targetId = this.storeUser.getIdByNickname(user);
+			const room = this.storeRoom.findRoom(roomname);
+			if (this.chatService.checkActValidity(roomname, client.data.id, targetId)){
+				room.addUserToOperators(targetId);
+			}
+		});
+		
+		//TODO : 이거는 validityCheck가 따로 필요한 것 같은데?
+		client.on("deleteOperator", (roomname, user) => {
+			const targetId = this.storeUser.getIdByNickname(user);
+			const room = this.storeRoom.findRoom(roomname);
+			//
+		});
+		
+		//client.on("requestAllRoomList", () => {});
+		//client.on("requestMyRoomList", () => {});
+		//client.on("requestSearchResultRoomList", (query) => {});
+		//client.on("requestRoomMembers", (roomname) => {});
+		
+		//client.on("changeNick", (newNick) => {});
+		//client.on("sendDirectMessage", (to, body) => {});
+		//DISCUSS : DM방도 따로 method가 필요하다
 
 	}
 

@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { currRoomInfo, formedMessage, roomInfo, userInfo } from './chat.types';
 import { Message } from './store/store.message.service';
 import { WebSocketServer } from '@nestjs/websockets';
+import { RoutesMapper } from '@nestjs/core/middleware/routes-mapper';
 
 @Injectable()
 export class ChatService {
@@ -145,7 +146,8 @@ export class ChatService {
 
 	//CHECK & DISCUSS : 한 유저가 여러 소켓을 가진 경우에 대해 : 모든 창에 경고를 띄울 필요 있을까?
 	//하지만 join은 전부 처리해줘야 (완료)
-	async userJoinRoom(io : Server, client:Socket, userId : number, roomname : string, password? : string) {
+	async userJoinRoom(io : Server, client:Socket, roomname : string, password? : string) {
+		const userId = client.data.id;
 		let room = this.storeRoom.findRoom(roomname);
 		if (room === undefined){
 			this.storeRoom.saveRoom(roomname, new Room(userId, password? password : null));
@@ -255,46 +257,49 @@ export class ChatService {
 	//operation : either kick / mute / ban	--> DISCUSS : 받으면 모듈창으로 메세지를 띄워주는게 좋을 것 같다
 
 	//kickUser
-	async kickUser(io : Server, client : Socket, roomname : string, target : string){
-		const targetId = this.storeUser.getIdByNickname(target);
+	async kickUser(io : Server, roomname : string, targetId : number){
 		const room = this.storeRoom.findRoom(roomname);
-		if (this.checkActValidity(roomname, client.data.id, targetId)){
-			//여기서 target한테 emit을 해야하는데... 어떻게...? 이게 문제네 흑흑 < DM방으로 실현하자...! 와 DM만만세!
-			if (room.isOperator(targetId))
-				room.deleteUserFromOperators(targetId);
-			room.deleteUserFromUserlist(targetId);
-			const targetUser = this.storeUser.findUserById(targetId);
-			targetUser.joinlist.delete(roomname);	//쫓겨나면 default 방으로?
-			targetUser.currentRoom = "DEFAULT";
-
-			const body = `${client.data.nickname} is Kicked Out`;
-			io.to(roomname).emit("sendMessage", "server", body);	//여기 nickname필요
-			room.storeMessage(-1, body);
-
-			//아니 이건 알겠는데... 특정 방에서 어떻게 강제로 연결을 끊지???
-			const sockets = await io.in(`$${target}`).fetchSockets();
-			sockets.forEach((socket) => {
-				socket.leave(roomname);
-			})
-			//아... 이거 validity check gateway 에서 해야하네...
-		}
-		//TODO : checkValidity실패했을때 어떻게 할지
+		//여기서 target한테 emit을 해야하는데... 어떻게...? 이게 문제네 흑흑 < DM방으로 실현하자...! 와 DM만만세!
+		if (room.isOperator(targetId))
+			room.deleteUserFromOperators(targetId);
+		room.deleteUserFromUserlist(targetId);
+		const targetUser = this.storeUser.findUserById(targetId);
+		targetUser.joinlist.delete(roomname);	//DISCUSS : 쫓겨나면 default 방으로?
+		targetUser.currentRoom = "DEFAULT";
+		const body = `${targetUser.nickname} is Kicked Out`;
+		io.to(roomname).emit("sendMessage", "server", body);
+		room.storeMessage(-1, body);
+		//아니 이건 알겠는데... 특정 방에서 어떻게 강제로 연결을 끊지???
+		const sockets = await io.in(`$${targetId}`).fetchSockets();
+		sockets.forEach((socket) => {
+			socket.leave(roomname);
+		})
+		//TODO & DISCUSS : checkValidity실패했을때 어떻게 할지
+		//TODO & DISCUSS : 쫓겨나고 나서 알람 보내줄지
 	}
+
+	//sendYouAreKickedMessage
+	//sendYouAreBannedMessage
+	//sendYouAreMutedMessage
 	
 	//banUser ... ban 기능을 생각해보자...
-	banUser(io : Server, client : Socket, roomname : string, target : string){
-		const targetId = this.storeUser.getIdByNickname(target);
+	banUser(io : Server, roomname : string, targetId : number){
 		const room = this.storeRoom.findRoom(roomname);
-		if (this.checkActValidity(roomname, client.data.id, targetId)){
-			if (room.isOperator(targetId))
-				room.deleteUserFromOperators(targetId);
+		if (room.isOperator(targetId)){
+			room.deleteUserFromOperators(targetId);
 			room.deleteUserFromUserlist(targetId);
+			room.addUserToBanlist(targetId);
+			this.kickUser(io, roomname, targetId);
 			//여기서 특정 시간동안 banlist에 올리고
 			//kick하고
 			//message를 보낸다
 		}
 	}
-	//muteUser --> kick / ban 과 거의 동일한 구조 : gateway로 refactoring하면서 같이 만들자
+
+	muteUser(io : Server, roomname: string, targetId : number){
+		const room = this.storeRoom.findRoom(roomname);
+		room.addUserToMutelist(targetId);	
+	}
 
 	//userSendDM
 	//blockUser? --> event 의논

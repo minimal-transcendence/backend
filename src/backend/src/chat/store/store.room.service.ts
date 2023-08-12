@@ -69,12 +69,21 @@ export class Room {
 	}
 
 	//후... 이거 묶을 걸 그랬나ㅠ
-	addUserToUserlist(userId : number){
-		this.userlist.add(userId);
+	addUserToUserlist(userid : number){
+		this.userlist.add(userid);
 	}
 
-	deleteUserFromUserlist(userId : number){
-		this.userlist.delete(userId);
+	addUserToBanlist(userid : number){
+		//여기서 setTimeOut을 하면... 내가 원하는 대로 실행이 됨...?
+		//CHECK : 필수ㅠㅠ
+		this.banlist.add(userid);
+		setTimeout((userid : number) => {
+			this.banlist.delete(userid);
+		}, 60000);	//60초 뒤에...
+	}
+
+	deleteUserFromUserlist(userid : number){
+		this.userlist.delete(userid);
 	}
 
 	addUserToOperators(userid : number){
@@ -87,11 +96,15 @@ export class Room {
 
 	addUserToMutelist(userid : number){
 		this.mutelist.add(userid);
+		setTimeout((userid : number) => {
+			this.mutelist.delete(userid);
+		}, 60000);
 	}
 
-	deleteUserFromMutelist(userid : number){
-		this.mutelist.delete(userid);
-	}
+	//자동으로 일정시간만?
+	// deleteUserFromMutelist(userid : number){
+	// 	this.mutelist.delete(userid);
+	// }
 	private clearSets(){
 		this.userlist.clear();
 		this.operators.clear();
