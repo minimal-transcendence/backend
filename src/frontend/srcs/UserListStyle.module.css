@@ -1,0 +1,253 @@
+
+.prifileMainBox{
+	position: static;
+	width: 541px;
+	height: 723px;
+
+	background: #FFFFFF;
+	border-radius: 53px;
+	overflow: auto;
+}
+
+
+/* Rectangle 302 */
+.profileBox{
+	position: static;
+	width: 476px;
+	height: 144px;
+
+	background: #F9F9F9;
+	box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+	border-radius: 31px;
+}
+
+
+/* Rectangle 311 */
+.profilePurpleBox{
+	position: static;
+	width: 476px;
+	height: 144px;
+
+	background: #6256F5;
+	box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), inset 0px 4px 10px rgba(0, 0, 0, 0.25);
+	border-radius: 31px;
+}
+
+/* wonkim */
+.name{
+	position: static;
+	width: 89px;
+	height: 40px;
+
+	font-family: 'Pretendard';
+	font-style: normal;
+	font-weight: 700;
+	font-size: 24px;
+	line-height: 40px;
+	/* identical to box height, or 167% */
+	display: flex;
+	align-items: center;
+	text-align: center;
+
+	color: #000000;
+}
+/* 0 / 3 / 3 */
+.record{
+	position: static;
+	width: 108px;
+	height: 39px;
+
+	font-family: 'Pretendard';
+	font-style: normal;
+	font-weight: 700;
+	font-size: 20px;
+	line-height: 40px;
+	/* or 200% */
+	display: flex;
+	align-items: center;
+	text-align: center;
+
+	color: #000000;
+}
+
+/* Mask group */
+.profilePicture{
+	position: static;
+	width: 96px;
+	height: 96px;
+}
+
+
+/* Rectangle 237 */
+.profilePictureBox{
+	position: static;
+	width: 96px;
+	height: 96px;
+
+	background: #D9D9D9;
+	border-radius: 19px;
+}
+
+/* 0a0398e6611656b65d089feefe38c22b 1
+.img{
+	position: static;
+	width: 107.02px;
+	height: 107.02px;
+
+	background: url(0a0398e6611656b65d089feefe38c22b);
+} */
+
+/* Rectangle 312 */
+.followButtonBox{
+	position: static;
+	width: 101px;
+	height: 31px;
+
+	background: #4193EF;
+	border-radius: 7px;
+
+	font-family: 'Pretendard';
+	font-style: normal;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 40px;
+	/* identical to box height, or 250% */
+	display: flex;
+	align-items: center;
+	text-align: center;
+
+	color: #FFFFFF;
+}
+
+
+/* Rectangle 294 */
+.normalButtonBox{
+	position: static;
+	width: 101px;
+	height: 31px;
+
+	background: #58BF91;
+	border-radius: 7px;
+}
+
+/* Rectangle 291 */
+.followingButtonBox{
+	position: static;
+	width: 101px;
+	height: 31px;
+
+	background: #454545;
+	border-radius: 7px;
+}
+
+/* Ellipse 2 */
+.onlineCircle{
+	position: static;
+	width: 32px;
+	height: 31px;
+
+	background: #66E739;
+}
+
+
+/* Ellipse 3 */
+.offlineCircle{
+	position: static;
+	width: 32px;
+	height: 31px;
+
+	background: #F83838;
+}
+
+/* Outline/Communication/User-plus */
+.followIconBox{
+	position: relative;
+	width: 20px;
+	height: 20px;
+}
+
+/* Icon */
+.followIconImage{
+	position: static;
+	left: 13.54%;
+	right: 5.21%;
+	top: 13.54%;
+	bottom: 15.71%;
+
+	background: #FFFFFF;
+}
+/* 팔로우 */
+.followInBox{
+	position: static;
+	width: 42px;
+	height: 40px;
+
+	font-family: 'Pretendard';
+	font-style: normal;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 40px;
+	/* identical to box height, or 250% */
+	display: flex;
+	align-items: center;
+	text-align: center;
+
+	color: #FFFFFF;
+}
+
+/* 게임신청 */
+.gameProposalInbox{
+	position: static;
+	width: 56px;
+	height: 40px;
+
+	font-family: 'Pretendard';
+	font-style: normal;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 40px;
+	/* identical to box height, or 250% */
+	display: flex;
+	align-items: center;
+	text-align: center;
+
+	color: #FFFFFF;
+}
+
+/* 프로필 */
+.profileInbox{
+	position: static;
+	width: 42px;
+	height: 40px;
+
+	font-family: 'Pretendard';
+	font-style: normal;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 40px;
+	/* identical to box height, or 250% */
+	display: flex;
+	align-items: center;
+	text-align: center;
+
+	color: #FFFFFF;
+}
+
+/* 팔로잉 */
+.followingInbox{
+	position: static;
+	width: 42px;
+	height: 40px;
+
+	font-family: 'Pretendard';
+	font-style: normal;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 40px;
+	/* identical to box height, or 250% */
+	display: flex;
+	align-items: center;
+	text-align: center;
+
+	color: #FFFFFF;
+}

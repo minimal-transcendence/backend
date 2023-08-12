@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import styles from "./UserListStyle.module.css";
 
 function UserList() {
 	const [showModals, setShowModals] = useState<boolean[]>([]);
@@ -175,21 +175,23 @@ function UserList() {
 			if (showprofileOption || userData[index].isFriend){
 				return(
 				<>
-				<p className='profile-left'>
-				{userData[index].userProfileURL !== 'path' ? (
-				<img src={userData[index].userProfileURL} alt="profile image" width="50" height = "50" />) :
-				(<img src="img/img1.png" alt="profile image" width="50" height = "50" />)}
-				{userData[index].nickname}<br />
-				승: {userData[index].win} 패:{userData[index].lose}
-			</p>
-			<p>
-				{userData[index].isFriend === 1 && (
-					<button onClick={() => {unFollow(index)}}>언팔로우</button>)}
-				{userData[index].isFriend === 0 && (
-					<button onClick={() => {follow(index)}}>팔로우</button>)}
-				<button onClick={() => {sendGameMatch(index)}}>게임 신청</button>
-				<button onClick={() => {profilePopup(index)}}>프로필 보기</button>
-			</p>
+				<div className={styles.profileBox}>
+					<p>
+						{userData[index].userProfileURL !== 'path' ? (
+						<img src={userData[index].userProfileURL} alt="profile image" width="50" height = "50" />) :
+						(<img src="img/img1.png" alt="profile image" width="50" height = "50" />)}
+						{userData[index].nickname}<br />
+						승: {userData[index].win} 패:{userData[index].lose}
+					</p>
+					<p>
+						{userData[index].isFriend === 1 && (
+							<button className={styles.followButtonBox} onClick={() => {unFollow(index)}}>언팔로우</button>)}
+						{userData[index].isFriend === 0 && (
+							<button className={styles.followingButtonBox} onClick={() => {follow(index)}}>팔로우</button>)}
+						<button className={styles.normalButtonBox} onClick={() => {sendGameMatch(index)}}>게임 신청</button>
+						<button className={styles.normalButtonBox} onClick={() => {profilePopup(index)}}>프로필 보기</button>
+					</p>
+				</div>
 			{showModals[index] && (
 			<div className='modal'>
 				<div className='modal-content'>
@@ -231,7 +233,7 @@ function UserList() {
 		}
 
 		return (
-			<div className='friend-wrapper-out'>
+			<div className={styles.profileMainBox}>
 				{showprofileOption === false && (
 					<button onClick={() => setShowprofileOption(true)}>전체 보기</button>
 				)}
@@ -239,7 +241,6 @@ function UserList() {
 					<button onClick={() => setShowprofileOption(false)}>친구만 보기</button>
 				)}
 				<button onClick={() => reloadData()}>새로 고침</button>
-				<div className='friend-wrapper'>
 					{userData.map((item, index) => (
 					<div key={index}>
 						{userId && userData[index].id != userId && (
@@ -247,7 +248,6 @@ function UserList() {
 						)}
 					</div>
 					))}
-				</div>
 			</div>
 			);
 		}
