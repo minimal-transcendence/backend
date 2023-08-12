@@ -23,6 +23,7 @@ import { JwtService } from '@nestjs/jwt';
 //TODO : 아직 인증 처리가 완전하지 않아서 새로고침을 했을 때, 혹은 jwtToken이 만료 되었을때... 같은 유저가 하나는 user99, 하나는 null로 찍힌다ㅠ 인증이 정상적으로 이루어지고 나서도 이렇게 되는지 확인할 것
 @UseGuards(JwtGuard)	//guard해도 연결 자체가 막히지는 않는 듯... ㄸㄹㄹ
 @WebSocketGateway(3002, {
+	cors : 'http://localhost',
 	pingInterval : 5000,
 	pingTimeout : 3000,
 })
@@ -69,20 +70,24 @@ export class ChatGateway
 		this.logger.log(`Client Connected : ${client.id}`);
 		
 		/* Authentification */
-		console.log(this.storeUser.findAllUser());
-		const userId = await this.chatService.clientAuthentification(client);
-		client.data.id = userId;
+		// console.log(this.storeUser.findAllUser());
+		// const userId = await this.chatService.clientAuthentification(client);
+		client.data.id = client.handshake.query.id;
+		client.data.nickname = client.handshake.query.nickname;
+		const userId = client.data.id;
+		console.log("here");
+		console.log(userId, client.data.nickname);
 		
-		//TODO : 아니 생각해보니까 이 때도 유저가 이미 들어있던 방들에게 유저가 돌아왔다는 걸 통보해야 한다...!
-		console.log("new connection");
-		const thisUser = this.storeUser.findUserById(userId);
-		console.log(`found user : ${JSON.stringify(thisUser)}`);
-		console.log(client.id);
+		//TODO : 아니 생각해보니까 이때도 유 저가 이미 들어있던 방들에게 유저가 돌아왔다는 걸 통보해야 한다...!
+		// console.log("new connection");
+		// const thisUser = this.storeUser.findUserById(userId);
+		// console.log(`found user : ${JSON.stringify(thisUser)}`);
+		// console.log(client.id);
 
 		/* Initialize */
 		//유저가 원래 DB에 있던 유저가 아니면 추가
 		//그 default room과 dm room에 각각 join후 필요한 정보 emit(각 소켓 별)
-		await this.chatService.newUserConnected(this.server, client, userId, this.storeUser.getNicknameById(userId));
+		await this.chatService.newUserConnected(this.server, client, userId, client.data.nickname);
 		
 		client.on("sendChatMessage", (to, body) => {
 			this.chatService.sendChat(this.server, client, to, body);
@@ -171,7 +176,9 @@ export class ChatGateway
 			client.emit("sendRoomMembers", roomMembers);
 		});
 		
-		//client.on("changeNick", (newNick) => {});
+		// client.on("changeNick", (newNick) => {
+
+		// });
 		//client.on("sendDirectMessage", (to, body) => {});
 		//DISCUSS : DM방 select도 따로 method가 필요하다
 	}

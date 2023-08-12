@@ -65,10 +65,11 @@ export class ChatService {
 		//만약 그 경우에는 매 최초 접속마다 유저 닉네임 업데이트가 필요한지 확인을 거쳐야 한다 <- 아직 안 되어있음
 	async newUserConnected(io : Server, client : Socket, userId : number, nickname : string) : Promise<void> {
 		client.join(`$${userId}`);
-		let user = this.storeUser.findUserById(userId);
+		let user : User = this.storeUser.findUserById(userId);
 		if (user === undefined)
 			user = this.storeUser.saveUser(userId, new User(userId, nickname));
-		//success
+		// console.log("new user" + JSON.stringify(user));
+		console.log("new user" + user);
 		user.connected = true;
 		this.userJoinRoomSuccess(io, user, "DEFAULT");
 		user.currentRoom = "DEFAULT";
@@ -113,6 +114,8 @@ export class ChatService {
 		sockets.forEach((socket) => {
 			socket.join(roomname);
 			const currRoomInfo = this.makeCurrRoomInfo(roomname);
+			const roomMembers = this.makeRoomUserInfo(roomname);
+			socket.emit("sendRoomMembers", roomMembers);
 			socket.emit("sendCurrRoomInfo", currRoomInfo);
 		})
 		//이미 유저의 joinlist에 방이 있는지 확인
@@ -127,11 +130,10 @@ export class ChatService {
 			room.addUserToUserlist(user.id);
 			//CHECK : 이런 welcome message도 저장할 것인가?
 			const body = `Welcome ${user.nickname} !`;
-			io.to(roomname).emit(body);
+			io.to(roomname).emit("sendMessage", body);
 			room.messages.push(new Message(-1, body));
 		}
 		user.currentRoom = roomname;
-		//TODO & CHECK: 생각해보니 이 단계에서 방 정보와 방의 유저 정보를 보내는게 좋을 것 같다
 	}
 
 	//userJoinRoom
@@ -149,7 +151,7 @@ export class ChatService {
 			//3. 유저를 join을 이용해서 그 방으로 연결(유저리스트 등록하고 welcome message)
 	//if 3중 중첩문.... 이대로 괜찮은가.......
 
-	//CHECK & DISCUSS : 한 유저가 여러 소켓을 가진 경우에 대해 : 모든 창에 경고를 띄울 필요 있을까?
+	//CHECK & DISCUSS : 한 유저가 여러 소켓을 가진 경우에 대해 : 모든 창에 경고를 띄울 필요 있을까? -> 창하나만
 	//하지만 join은 전부 처리해줘야 (완료)
 	async userJoinRoom(io : Server, client:Socket, roomname : string, password? : string) {
 		const userId = client.data.id;
@@ -159,7 +161,7 @@ export class ChatService {
 			room = this.storeRoom.findRoom(roomname);
 			//TODO: 이렇게 server선언 되는지 확인해야함...!
 			this.userJoinRoomSuccess(io, this.storeUser.findUserById(userId), roomname);
-			//TODO & DISCUSS : 전 서버 소켓들에게 새 방 생겼다고 다 알려줘야 함?
+			//TODO & DISCUSS : 전 서버 소켓들에게 새 방 생겼다고 다 알려줘야 함? -> 안 알려줌
 		}
 		else {
 			const pwExist = password? true : false;
@@ -265,7 +267,7 @@ export class ChatService {
 	//kickUser
 	async kickUser(io : Server, roomname : string, targetId : number){
 		const room = this.storeRoom.findRoom(roomname);
-		//여기서 target한테 emit을 해야하는데... 어떻게...? 이게 문제네 흑흑 < DM방으로 실현하자...! 와 DM만만세!
+		//여기서 target한테 emit을 해야하는데... 어떻게...? 이게 문제네 흑흑 < DM방으로 실현하자... ! 와 DM만만세!
 		if (room.isOperator(targetId))
 			room.deleteUserFromOperators(targetId);
 		room.deleteUserFromUserlist(targetId);
@@ -273,6 +275,7 @@ export class ChatService {
 		const targetUser = this.storeUser.findUserById(targetId);
 		targetUser.joinlist.delete(roomname);	//DISCUSS : 쫓겨나면 default 방으로?
 		targetUser.currentRoom = "DEFAULT";
+		this.userJoinRoomSuccess(io, targetUser, "DEFAULT");
 		const body = `${targetUser.nickname} is Kicked Out`;
 		io.to(roomname).emit("sendMessage", "server", body);
 		room.storeMessage(-1, body);
@@ -282,7 +285,6 @@ export class ChatService {
 			socket.leave(roomname);
 		})
 		//TODO & DISCUSS : checkValidity실패했을때 어떻게 할지
-		//TODO & DISCUSS : 쫓겨나고 나서 알람 보내줄지
 	}
 
 	//TODO & DISCUSS : sendAlert로 합칠 수 있을 것 같기도?
@@ -339,9 +341,19 @@ export class ChatService {
 		}
 		return (res);
 	}
-
+	
 	// TODO :
-	//userSendDM
+	//자신의 닉네임 정보를 고치고
+	//유저 정보 업뎃하고
+	//참여 중인 모든 방에 이름 바꾼거... < 알려야 함? 이건 정하기 나름인 것 같다
+	//사실 재접속해야 적용된다고 해도 할 말 없는거 아니냐구?ㅠ
+	// userChangeNick(userId : number, newNick : string) {
+
+	// }
+	
+	//userSendDM //양쪽에 저장하는게 낭비인가... 새 소켓이 들어올때마다 분류연산 해줘야 하는게 낭비인가ㅠ ㅇ<-<
+	//selectDMRoom
+
 	//blockUser? --> event 의논
 
 	//TODO : 이하 util함수들 datarace 등 에러처리 어떻게 할지 // 아니 애초에 datarace가 나나...? 노드는 싱글 스레드(...) 소켓은 멀티플렉싱 으으으으

@@ -22,5 +22,6 @@ export type currRoomInfo = {
 //여기는 export 굳이 필요한지?
 export type formedMessage = {
 	from : string;
+	to?	: string;
 	body : string;
 }
