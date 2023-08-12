@@ -3,14 +3,20 @@ import { useEffect, useState, useRef } from "react";
 import * as io from "socket.io-client";
 import ModalBasic from "./modal";
 import TempLogin from "./tempLogin";
-// import menuIcon from "../assets/menu.png";
-// import logOutIcon from "../assets/logout.png";
-// import userIcon from "../assets/user.png";
-// import searchIcon from "../assets/search.png";
-let menuIcon: any;
-let logOutIcon: any;
-let userIcon: any;
-let searchIcon: any;
+import Image from "next/image";
+import menuIcon from "../assets/menu.png";
+import logOutIcon from "../assets/logout.png";
+import userIcon from "../assets/user.png";
+import searchIcon from "../assets/search.png";
+// const menuIcon = require("../assets/menu.png");
+// const logOutIcon = require("../assets/logout.png");
+// const userIcon = require("../assets/user.png");
+// const searchIcon = require("../assets/search.png");
+
+// let menuIcon: any;
+// let logOutIcon: any;
+// let userIcon: any;
+// let searchIcon: any;
 
 const socket = io.connect("http://localhost:3002", {
   query: {
@@ -293,11 +299,11 @@ function NavMenu() {
           <label htmlFor="switch">Toggle</label>
         </p>
         <p className="nav-userlist">
-          <img src={userIcon} width="30" height="30" />
+          <Image src={userIcon} width="30" height="30" alt="usericon" />
         </p>
         <p className="nav-profile">My</p>
         <p className="nav-logout">
-          <img src={logOutIcon} width="30" height="30" />
+          <Image src={logOutIcon} width="30" height="30" alt="logouticon" />
         </p>
       </div>
       {/* <div className="nav-bar-menu-r"> */}
@@ -432,7 +438,7 @@ function SearchResult({ el, onSelectRoom }: { el: any; onSelectRoom: any }) {
         <p>
           <span>{el.messageNew ? "🆕" : "☑️"}</span>
           <span>
-            {el.messageRecent.length >= 14
+            {el.messageRecent?.length >= 14
               ? el.messageRecent.substr(0, 14) + "..."
               : el.messageRecent}
           </span>
@@ -558,7 +564,13 @@ function ChatRoomUserInfo({
       {/* <p className="icon">{isOpen ? "-" : "+"}</p> */}
       <div className="userlist-KBOM-box">
         <div className="dropdown">
-          <img className="dropbtn" src={menuIcon} width="15" height="15" />
+          <Image
+            className="dropbtn"
+            src={menuIcon}
+            width="15"
+            height="15"
+            alt="menuicon"
+          />
 
           <div onClick={() => handleMenu(event)} className="dropdown-content">
             <span data-name="kick">Kick</span>
