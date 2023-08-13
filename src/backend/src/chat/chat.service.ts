@@ -76,15 +76,15 @@ export class ChatService {
 		
 		//datarace... 괜찮을까
 		//TODO: 전체방은 챗방 목록에 뜨게 할건지?(안하면 전체방 다시 돌아가고 싶을 때 어떻게 할지!)
-		const roomInfo : roomInfo[] = this.makeRoomInfo(user.joinlist);
-		const userInfo : userInfo[] = this.makeRoomUserInfo("DEFAULT");
-		const currRoomInfo : currRoomInfo = this.makeCurrRoomInfo("DEFAULT");
-		client.emit("init", userInfo, roomInfo, currRoomInfo);
+		// const roomInfo : roomInfo[] = this.makeRoomInfo(user.joinlist);
+		// const userInfo : userInfo[] = this.makeRoomUserInfo("DEFAULT");
+		// const currRoomInfo : currRoomInfo = this.makeCurrRoomInfo("DEFAULT");
+		// client.emit("init", userInfo, roomInfo, currRoomInfo);
 
-		//LOG : //
-		console.log("ROOM INFO " + JSON.stringify(roomInfo));
-		console.log("USER INFO " + JSON.stringify(userInfo));
-		console.log("CURR ROOM " + JSON.stringify(currRoomInfo));
+		// //LOG : //
+		// console.log("ROOM INFO " + JSON.stringify(roomInfo));
+		// console.log("USER INFO " + JSON.stringify(userInfo));
+		// console.log("CURR ROOM " + JSON.stringify(currRoomInfo));
 	}
 
 	//유저가 나갈 때
@@ -112,12 +112,8 @@ export class ChatService {
 		//유저 소켓을 모두 찾아서 방으로 join 해주고
 		const sockets = await io.in(`$${user.id}`).fetchSockets();
 		sockets.forEach((socket) => {
-			console.log("user joined : " + roomname);
+			// console.log("user joined : " + roomname);
 			socket.join(roomname);
-			const currRoomInfo = this.makeCurrRoomInfo(roomname);
-			const roomMembers = this.makeRoomUserInfo(roomname);
-			socket.emit("sendRoomMembers", roomMembers);
-			socket.emit("sendCurrRoomInfo", currRoomInfo);
 		})
 		//이미 유저의 joinlist에 방이 있는지 확인
 		//없으면
@@ -135,8 +131,19 @@ export class ChatService {
 			room.messages.push(new Message(-1, body));
 		}
 		user.currentRoom = roomname;
+		const currRoomInfo = this.makeCurrRoomInfo(roomname);
+		const roomMembers = this.makeRoomUserInfo(roomname);
+		const roomInfo = this.makeRoomInfo(user.joinlist);
 		//연산이.... 좀 더 들긴하지만 새 방이 만들어질때를 생각하면 이게 최선이다...
-		this.emitEventsToAllSockets(io, user.id, "sendRoomList", this.makeRoomInfo(user.joinlist));
+		// this.emitEventsToAllSockets(io, user.id, "sendRoomList", this.makeRoomInfo(user.joinlist));
+		// this.emitEventsToAllSockets(io, user.id, "sendRoomMembers", roomMembers);
+		// this.emitEventsToAllSockets(io, user.id, "sendCurrRoomInfo", currRoomInfo);
+		sockets.forEach((socket) => {
+			console.log("res", roomInfo, roomMembers, currRoomInfo);
+			socket.emit("sendRoomList", roomInfo);
+			socket.emit("sendRoomMembers", roomMembers);
+			socket.emit("sendCurrRoomInfo", currRoomInfo);
+		})
 	}
 
 	//userJoinRoom
@@ -437,7 +444,7 @@ export class ChatService {
 
 	makeCurrRoomInfo(roomname : string) : currRoomInfo {
 		const room = this.storeRoom.findRoom(roomname);
-		console.log("make CurrRoomInfo : " + JSON.stringify(room));
+		// console.log("make CurrRoomInfo : " + JSON.stringify(room));
 		const owner = this.storeUser.getNicknameById(room.owner);	//왜 한번씩 여기서 오류가 나는지...?
 		const operatorList = [];
 		const joineduserList = [];
@@ -509,10 +516,11 @@ export class ChatService {
 	}
 
 	//TODO : 되는지 확인
-	async emitEventsToAllSockets(io : Server, targetId : number, eventname : string, ... args : object[]) : Promise<void> {
+	async emitEventsToAllSockets(io : Server, targetId : number, eventname : string, args1? : any, args2? : any, args3? : any) : Promise<void> {
+		console.log(eventname + " " + args1 + " " + args2 + " " + args3);
 		const sockets = await io.in(`$${targetId}`).fetchSockets();
 		sockets.forEach((socket) => {
-			socket.emit(eventname, args);	//work?
+			socket.emit(eventname, args1, args2, args3);	//work?
 		})
 	}
 
