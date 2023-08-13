@@ -143,6 +143,7 @@ export class ChatService {
 			socket.emit("sendRoomList", roomInfo);
 			socket.emit("sendRoomMembers", roomMembers);
 			socket.emit("sendCurrRoomInfo", currRoomInfo);
+			socket.emit('hi', 'hi1');
 		})
 	}
 

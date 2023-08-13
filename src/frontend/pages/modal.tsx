@@ -53,9 +53,11 @@ function ModalBasic({
       await new Promise((r) => setTimeout(r, 100));
       alert(`입력된 비번: ${roomname} ${passWord}`);
       setIsOpenModal(false);
-      socket.emit("sendRoomPass", { roomname, passWord });
+      console.log("in modal, before emit"); //0813
+      socket.emit("sendRoomPass", roomname, passWord); //0813
+      console.log("in modal, after emit"); //0813
     }
-
+    console.log("in modal, out modal"); //0813
     setDisabled(false);
   };
 

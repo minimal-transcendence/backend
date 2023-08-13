@@ -111,20 +111,25 @@ export default function App() {
       // setCurrentroomname(() => result[0].roomname);
       setQuery("");
     }
-    function sendUserRoomList(result: any) {
-      console.log("in useEffect sendUserRoomList");
+    function sendRoomList(result: any) {
+      console.log("in useEffect sendRoomList", result);
       setTempSearchList(() => result);
     }
     function sendCurrRoomInfo(result: any) {
-      console.log("in useEffect sendCurrRoomInfo");
+      console.log("in useEffect sendCurrRoomInfo", result);
       setCurrentroomname(() => result.roomname);
     }
-    socket.on("sendUserRoomList", sendUserRoomList);
+    function hi(result: any) {
+      console.log("in useEffect hi", result);
+    }
+    socket.on("sendRoomList", sendRoomList);
     socket.on("sendRoomMembers", sendRoomMembers);
     socket.on("requestPassword", requestPassword);
     socket.on("sendCurrRoomInfo", sendCurrRoomInfo);
+    socket.on("hi", hi);
     return () => {
-      socket.off("sendUserRoomList", sendUserRoomList);
+      socket.off("hi", hi);
+      socket.off("sendRoomList", sendRoomList);
       socket.off("sendRoomMembers", sendRoomMembers);
       socket.off("requestPassword", requestPassword);
       socket.off("sendCurrRoomInfo", sendCurrRoomInfo);
