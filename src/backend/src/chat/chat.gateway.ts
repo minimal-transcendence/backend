@@ -5,7 +5,6 @@ import {
 	OnGatewayConnection,
 	OnGatewayDisconnect,
 	OnGatewayInit,
-	SubscribeMessage,
 	// SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer,
@@ -83,6 +82,9 @@ export class ChatGateway
 		// const thisUser = this.storeUser.findUserById(userId);
 		// console.log(`found user : ${JSON.stringify(thisUser)}`);
 		// console.log(client.id);
+		client.onAny((any) => {
+			console.log(any);
+		})
 
 		/* Initialize */
 		//유저가 원래 DB에 있던 유저가 아니면 추가

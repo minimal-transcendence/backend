@@ -7,8 +7,8 @@ import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { currRoomInfo, formedMessage, queryResponseRoomInfo, roomInfo, userInfo } from './chat.types';
 import { Message } from './store/store.message.service';
-import { WebSocketServer } from '@nestjs/websockets';
-import { RoutesMapper } from '@nestjs/core/middleware/routes-mapper';
+// import { WebSocketServer } from '@nestjs/websockets';
+// import { RoutesMapper } from '@nestjs/core/middleware/routes-mapper';
 
 @Injectable()
 export class ChatService {
