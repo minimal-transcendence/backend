@@ -130,8 +130,10 @@ body {
   /* text-align: center; */
 }
 .box-center-header {
+  display: grid;
+  grid-template-columns: 4fr 1fr;
   margin-bottom: 2rem;
-  padding-left: 3rem;
+  padding-left: 1rem;
 }
 .box-center-main {
   border: 1px solid var(--color-border);
