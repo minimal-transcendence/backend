@@ -1,22 +1,25 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useLayoutEffect } from "react";
 
 import * as io from "socket.io-client";
 import ModalBasic from "./modal";
+
 import TempLogin from "./tempLogin";
-// import menuIcon from "../assets/menu.png";
-// import logOutIcon from "../assets/logout.png";
-// import userIcon from "../assets/user.png";
-// import searchIcon from "../assets/search.png";
-let menuIcon: any;
-let logOutIcon: any;
-let userIcon: any;
-let searchIcon: any;
+import menuIcon from "../assets/menu.png";
+import logOutIcon from "../assets/logout.png";
+import userIcon from "../assets/user.png";
+import searchIcon from "../assets/search.png";
 
-const socket = io.connect("http://localhost:4000");
-
-socket.on("welcomeMessage", (message: any) => {
-  console.log(`i got message : ${message}`);
+import Image from "next/image";
+const socket = io.connect("http://localhost:3002", {
+  query: {
+    id: 1234,
+    nickname: "namkim",
+  },
+  autoConnect: false,
 });
+// socket.on("welcomeMessage", (message) => {
+//   console.log(`i got message : ${message}`);
+// });
 
 const NO_SEARCH_RESULT_ERROR = "There is no room! : ";
 const NO_JOINNED_RESULT_ERROR = "No Joinned???! : ";
@@ -29,7 +32,7 @@ export type UserOnChat = {
 };
 
 export type TempSearch = {
-  roomName: string;
+  roomname: string;
   messageRecent: string;
   messageNew: boolean;
   users: UserOnChat[];
@@ -47,60 +50,86 @@ export default function App() {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isOpenModal3, setIsOpenModal3] = useState(false);
   const [passWordRequiredRoom, setPassWordRequiredRoom] = useState<string>("");
-  const [roomNameModal, setRoomNameModal] = useState<string>("");
-  const [currentRoomName, setCurrentRoomName] = useState<string>("");
+  const [roomnameModal, setroomnameModal] = useState<string>("");
+  const [currentroomname, setCurrentroomname] = useState<string>("");
   const [tmpLoginID, setTmpLoginID] = useState<string>("");
-  const [tmpLoginNickName, setTmpLoginNickName] = useState<string>("");
+  const [tmpLoginnickname, setTmpLoginnickname] = useState<string>("");
   const [tmpIsLoggedIn, setTmpIsLoggedIn] = useState<boolean>(false);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
+  // const [socket, setSocket] = useState<any>(null);
   // isLoading;
   // selectedRoom;
 
   function handleSelectRoom(event: any, room: any) {
     setSelectedRoom(room);
-    setRoomNameModal(room.roomName);
+    setroomnameModal(room.roomname);
     setCurOpen(-1);
-    console.log("in SelectRoomName handle ", room.roomName);
+    console.log("in Selectroomname handle ", room.roomname);
     if (event.target.dataset.name) {
       console.log(`${event.target.dataset.name}나가기!!!`);
       socket.emit("sendRoomLeave", event.target.dataset.name);
     } else {
-      socket.emit("selectRoom", room.roomName);
+      socket.emit("selectRoom", room.roomname);
     }
     setRoomUserList(null);
   }
+  useEffect(
+    function () {
+      function chkLogin() {
+        if (tmpIsLoggedIn) {
+          socket.io.opts.query = {
+            id: tmpLoginID,
+            nickname: tmpLoginnickname,
+          };
+          socket.connect();
+          socket.emit("sendnicknameID", {
+            id: tmpLoginID,
+            nickname: tmpLoginnickname,
+          });
+        }
+      }
+      chkLogin();
+    },
+    [tmpIsLoggedIn]
+  );
 
   useEffect(() => {
-    function requestPassword(roomName: string) {
+    function requestPassword(roomname: string) {
       console.log(
         "in useEffect requestPassword",
-        JSON.stringify(roomName, null, 2)
+        JSON.stringify(roomname, null, 2)
       );
-      alert(`requestPassword이벤트가 왔어요zx. ${roomName} ${isOpenModal}`);
+      alert(`requestPassword이벤트가 왔어요zx. ${roomname} ${isOpenModal}`);
       setIsOpenModal(true);
     }
     function sendRoomMembers(result: any) {
       console.log(
-        "in useEffect roomMembers",
-        JSON.stringify(result[0], null, 2)
+        "in useEffect sendRoomMembers",
+        JSON.stringify(result, null, 2)
       );
-      setRoomUserList(() => result[0]);
-      setCurrentRoomName(() => result[0].roomName);
+      setRoomUserList(() => result);
+      // setCurrentroomname(() => result[0].roomname);
       setQuery("");
     }
     function sendUserRoomList(result: any) {
-      console.log("in useEffect allromo");
+      console.log("in useEffect sendUserRoomList" + JSON.stringify(result, null, 2));
       setTempSearchList(() => result);
     }
-
+    function sendCurrRoomInfo(result: any) {
+      console.log("in useEffect sendCurrRoomInfo"+ JSON.stringify(result, null, 2));
+      setCurrentroomname(() => result.roomname);
+    }
     socket.on("sendUserRoomList", sendUserRoomList);
     socket.on("sendRoomMembers", sendRoomMembers);
     socket.on("requestPassword", requestPassword);
+    socket.on("sendCurrRoomInfo", sendCurrRoomInfo);
     return () => {
       socket.off("sendUserRoomList", sendUserRoomList);
       socket.off("sendRoomMembers", sendRoomMembers);
       socket.off("requestPassword", requestPassword);
+      socket.off("sendCurrRoomInfo", sendCurrRoomInfo);
     };
-  }, []);
+  }, [socket]);
 
   useEffect(
     function () {
@@ -134,22 +163,11 @@ export default function App() {
     [query]
   );
 
-  // useEffect(
-  //   function () {
-  //     function joinWithRoomName() {
-  //       // setPassWordRequiredRoom("hi");
-  //       setIsOpenModal3(true);
-  //     }
-  //     joinWithRoomName();
-  //   },
-  //   [passWordRequiredRoom]
-  // );
-
   return !tmpIsLoggedIn ? (
     <TempLogin
       socket={socket}
       setTmpLoginID={setTmpLoginID}
-      setTmpLoginNickName={setTmpLoginNickName}
+      setTmpLoginnickname={setTmpLoginnickname}
       setTmpIsLoggedIn={setTmpIsLoggedIn}
     />
   ) : (
@@ -158,29 +176,13 @@ export default function App() {
       <div>
         {isOpenModal && (
           <ModalBasic
-            roomName={roomNameModal}
+            roomname={roomnameModal}
             socket={socket}
             setIsOpenModal={setIsOpenModal}
             innerText={"방클릭해서 드갈때 비번입력 ㄱ"}
           />
         )}
       </div>
-
-      {/* <ModalOverlay isOpenModal={isOpenModal3} />
-      <div>
-        {isOpenModal3 && (
-          <>
-            <ModalBasic
-              roomName={passWordRequiredRoom}
-              socket={socket}
-              setIsOpenModal={setIsOpenModal3}
-              innerText={"만들면서 입력할 때임 비번입력 ㄱ"}
-            />
-
-            <span>hizzzzzzzzzzzzzzzzzzzzzzzzzzzz</span>
-          </>
-        )}
-      </div> */}
 
       <NavBar query={query} setQuery={setQuery} />
       <Main>
@@ -190,8 +192,8 @@ export default function App() {
               results={results}
               query={query}
               onSelectRoom={handleSelectRoom}
-              setRoomNameModal={setRoomNameModal}
-              tmpLoginNickName={tmpLoginNickName}
+              setroomnameModal={setroomnameModal}
+              tmpLoginnickname={tmpLoginnickname}
             />
           )}
           {results.length === 0 && (
@@ -199,17 +201,17 @@ export default function App() {
           )}
         </Box>
         <CenterBox
-          currentRoomName={currentRoomName}
+          currentroomname={currentroomname}
           tmpLoginID={tmpLoginID}
-          tmpLoginNickName={tmpLoginNickName}
+          tmpLoginnickname={tmpLoginnickname}
         />
         <Box>
           <ChatRoomUser
             curOpen={curOpen}
             setCurOpen={setCurOpen}
-            users={roomUserList?.users}
-            title={roomUserList?.roomName}
-            tmpLoginNickName={tmpLoginNickName}
+            users={roomUserList}
+            roomname={currentroomname}
+            tmpLoginnickname={tmpLoginnickname}
           />
         </Box>
       </Main>
@@ -218,7 +220,7 @@ export default function App() {
 }
 
 function ModalOverlay({ isOpenModal }: { isOpenModal: any }) {
-  console.log("hidden ? ", isOpenModal);
+  // console.log("hidden ? ", isOpenModal);
   return <div className={`overlay ${!isOpenModal ? "hidden" : ""}`}></div>;
 }
 function ErrorMessage({ message }: { message: string }) {
@@ -272,11 +274,13 @@ function NavMenu() {
           <label htmlFor="switch">Toggle</label>
         </p>
         <p className="nav-userlist">
-          <img src={userIcon} width="30" height="30" />
+          {/* <img src={userIcon} width="30" height="30" alt="usericon" /> */}
+          <Image src={userIcon} width="30" height="30" alt="usericon" />
         </p>
         <p className="nav-profile">My</p>
         <p className="nav-logout">
-          <img src={logOutIcon} width="30" height="30" />
+          {/* <img src={logOutIcon} width="30" height="30" /> */}
+          <Image src={logOutIcon} width="30" height="30" alt="logouticon" />
         </p>
       </div>
       {/* <div className="nav-bar-menu-r"> */}
@@ -302,21 +306,21 @@ function Box({ children }: { children: any }) {
   );
 }
 
-function SearchListCreateRoom({ setRoomNameModal }: { setRoomNameModal: any }) {
-  const [roomName, setRoomName] = useState("");
+function SearchListCreateRoom({ setroomnameModal }: { setroomnameModal: any }) {
+  const [roomname, setroomname] = useState("");
   const [disabled, setDisabled] = useState(false);
 
   const handleSubmit = async (event: any) => {
     setDisabled(true);
     event.preventDefault();
-    if (roomName.length < 1) {
+    if (roomname.length < 1) {
       alert("채팅창 이름 입력해라");
     } else {
       await new Promise((r) => setTimeout(r, 10));
-      alert(`입력된 채팅창 이름: ${roomName}`);
-      setRoomNameModal(roomName);
-      socket.emit("tryRoomPass", roomName);
-      // setPassWordRequiredRoom(roomName);
+      alert(`입력된 채팅창 이름: ${roomname}`);
+      setroomnameModal(roomname);
+      socket.emit("tryRoomPass", roomname);
+      // setPassWordRequiredRoom(roomname);
     }
 
     setDisabled(false);
@@ -330,16 +334,11 @@ function SearchListCreateRoom({ setRoomNameModal }: { setRoomNameModal: any }) {
             <input
               className="input-search-input"
               type="text"
-              value={roomName}
-              onChange={(e) => setRoomName(e.target.value)}
+              value={roomname}
+              onChange={(e) => setroomname(e.target.value)}
             />
           </div>
         </span>
-        {/* <span>
-          <button className="btn-add" type="submit" disabled={disabled}>
-            입장
-          </button>
-        </span> */}
       </div>
     </form>
   );
@@ -349,14 +348,14 @@ function SearchList({
   results,
   query,
   onSelectRoom,
-  setRoomNameModal,
-  tmpLoginNickName,
+  setroomnameModal,
+  tmpLoginnickname,
 }: {
   results: any;
   query: string;
   onSelectRoom: any;
-  setRoomNameModal: any;
-  tmpLoginNickName: string;
+  setroomnameModal: any;
+  tmpLoginnickname: string;
 }) {
   console.log(
     `in SearchList query : <${query}>
@@ -372,14 +371,14 @@ function SearchList({
       </div>
 
       {/* <div className="summary result-or-join">
-        <h4>{query ? "검색결과" : `${tmpLoginNickName} 님의 참여목록`}</h4>
+        <h4>{query ? "검색결과" : `${tmpLoginnickname} 님의 참여목록`}</h4>
       </div> */}
       <ul className="list list-rooms-search">
-        <SearchListCreateRoom setRoomNameModal={setRoomNameModal} />
+        <SearchListCreateRoom setroomnameModal={setroomnameModal} />
       </ul>
       <ul className="list list-rooms">
         {results?.map((el: any) => (
-          <SearchResult el={el} key={el.roomName} onSelectRoom={onSelectRoom} />
+          <SearchResult el={el} key={el.roomname} onSelectRoom={onSelectRoom} />
         ))}
       </ul>
 
@@ -400,20 +399,20 @@ function SearchResult({ el, onSelectRoom }: { el: any; onSelectRoom: any }) {
   return (
     <li onClick={() => onSelectRoom(event, el)}>
       <div>
-        <h3>{el.roomName}</h3>
+        <h3>{el.roomname}</h3>
       </div>
 
-      {/* <button className="btn-toggle" data-name={el.roomName}>
+      {/* <button className="btn-toggle" data-name={el.roomname}>
         {"X"}
       </button> */}
 
       <div>
         <p>
-          <span>{el.messageNew ? "🆕" : "☑️"}</span>
+          <span>{el?.messageNew ? "🆕" : "☑️"}</span>
           <span>
-            {el.messageRecent.length >= 14
-              ? el.messageRecent.substr(0, 14) + "..."
-              : el.messageRecent}
+            {el?.messageRecent?.length >= 14
+              ? el?.messageRecent.substr(0, 14) + "..."
+              : el?.messageRecent}
           </span>
         </p>
       </div>
@@ -422,12 +421,12 @@ function SearchResult({ el, onSelectRoom }: { el: any; onSelectRoom: any }) {
 }
 
 function CenterBox({
-  currentRoomName,
-  tmpLoginNickName,
+  currentroomname,
+  tmpLoginnickname,
   tmpLoginID,
 }: {
-  currentRoomName: string;
-  tmpLoginNickName: string;
+  currentroomname: string;
+  tmpLoginnickname: string;
   tmpLoginID: string;
 }) {
   const handleSubmit = async (event: any) => {
@@ -437,10 +436,10 @@ function CenterBox({
   return (
     <div className="box box-center">
       <div className="box-center-header">
-        <h1>Chat in {currentRoomName} </h1>
-        {/* <span>
-          nickname : {tmpLoginNickName} id : {tmpLoginID}
-        </span> */}
+        <h1>Chat in {currentroomname} </h1>
+        <span>
+          nickname : {tmpLoginnickname} id : {tmpLoginID}
+        </span>
       </div>
       <div className="box-center-main">
         <div className="chat-message-main">h</div>
@@ -457,33 +456,34 @@ function CenterBox({
 
 function ChatRoomUser({
   users,
-  title,
+  roomname,
   curOpen,
   setCurOpen,
-  tmpLoginNickName,
+  tmpLoginnickname,
 }: {
   users: any;
-  title: string;
+  roomname: string;
   curOpen: number;
   setCurOpen: any;
-  tmpLoginNickName: string;
+  tmpLoginnickname: string;
 }) {
-  if (!users || !title) return;
+  console.log("in chatroomUser, users", users);
+  console.log("in chatroomUser, roomname", roomname);
+  if (!users || !roomname) return;
   return (
     <>
       <div className="summary">
-        <h4>{title} 유저목록</h4>
+        <h4>{roomname} 유저목록</h4>
       </div>
 
-      <ul className="list-users">
+      <ul className="list-users" key={tmpLoginnickname}>
         {users.map((user: any, i: number) => (
           <ChatRoomUserInfo
             user={user}
-            key={user.id}
-            curOpen={curOpen}
-            onOpen={setCurOpen}
+            key={i}
             num={i}
-            tmpLoginNickName={tmpLoginNickName}
+            roomname={roomname}
+            tmpLoginnickname={tmpLoginnickname}
           />
         ))}
       </ul>
@@ -493,52 +493,67 @@ function ChatRoomUser({
 
 function ChatRoomUserInfo({
   user,
-  curOpen,
-  onOpen,
   num,
-  tmpLoginNickName,
+  roomname,
+  tmpLoginnickname,
 }: {
   user: any;
-  curOpen: number;
-  onOpen: any;
   num: number;
-  tmpLoginNickName: string;
+  roomname: string;
+  tmpLoginnickname: string;
 }) {
-  const isOpen = num === curOpen;
-
-  function handleToggle() {
-    onOpen(() => {
-      if (isOpen) return null;
-      else return num;
-    });
+  function handleMenu(event: any) {
+    if (event.target.dataset.name) {
+      console.log(
+        `${tmpLoginnickname}가 ${user.nickname}를 ${roomname}에서 ${event.target.dataset.name}클릭!!!`
+      );
+      const targetnickname = user.nickname;
+      if (event.target.dataset.name === "kick")
+        socket.emit("kickUser", { roomname, targetnickname });
+      else if (event.target.dataset.name === "ban")
+        socket.emit("banUser", { roomname, targetnickname });
+      else if (event.target.dataset.name === "mute")
+        socket.emit("muteUser", { roomname, targetnickname });
+      else if (event.target.dataset.name === "block")
+        socket.emit("blockUser", { targetnickname });
+      else if (event.target.dataset.name === "opAdd")
+        socket.emit("addOperator", { roomname, targetnickname });
+      else if (event.target.dataset.name === "opDelete")
+        socket.emit("deleteOperator", { roomname, targetnickname });
+    } else {
+      console.log("you click other");
+    }
   }
-  // function handleKBOM() {
-  //   setSelectedRoom(room);
-  //   setRoomNameModal(room.roomName);
-  //   setCurOpen(-1);
-  //   console.log("in SelectRoomName handle ", room.roomName);
-  //   if (event.target.dataset.name) {
-  //     console.log(`${event.target.dataset.name}나가기!!!`);
-  //     socket.emit("sendRoomLeave", event.target.dataset.name);
-  //   } else {
-  //     socket.emit("selectRoom", room.roomName);
-  //   }
-  //   setRoomUserList(null);
-  // }
 
   return (
     <li
-      className={`item-userlist ${isOpen ? "open" : ""}`}
-      onClick={handleToggle}
+      // className={`item-userlist ${isOpen ? "open" : ""}`}
+      className="item-userlist"
+      // onClick={handleToggle}
     >
       <p className="number">{num < 9 ? `0${num + 1}` : `${num + 1}`}</p>
       <p className="userlist-username">
-        {user.nickName} {user.nickName === tmpLoginNickName ? "🎆" : ""}
+        {user.nickname} {user.nickname === tmpLoginnickname ? "🎆" : ""}
       </p>
       {/* <p className="icon">{isOpen ? "-" : "+"}</p> */}
       <div className="userlist-KBOM-box">
-        <div>
-          <img src={menuIcon} width="15" height="15" />
+        <div className="dropdown">
+          {/* <img className="dropbtn" src={menuIcon} width="15" height="15" /> */}
+          <Image
+            className="dropbtn"
+            src={menuIcon}
+            width="15"
+            height="15"
+            alt="menuicon"
+          />
+          <div onClick={() => handleMenu(event)} className="dropdown-content">
+            <span data-name="kick">Kick</span>
+            <span data-name="ban">Ban</span>
+            <span data-name="mute">Mute</span>
+            <span data-name="block">block</span>
+            <span data-name="opAdd">Add Oper</span>
+            <span data-name="opDelete">Delete Oper</span>
+          </div>
         </div>
       </div>
       <p className="userlist-userstatus-text">
@@ -551,24 +566,6 @@ function ChatRoomUserInfo({
           else if (num === 4) return "자리비움";
         })()}
       </p>
-      {isOpen && (
-        <div className="content-box">
-          <>
-            <div>
-              {/* <p>
-                <span>생성자</span>
-                <span>{user.isCreator ? "🟣" : "✖️"}</span>
-                <span>방장 </span>
-                <span>{user.isOp ? "🟣" : "✖️"}</span>
-              </p> */}
-            </div>
-            <div className="content-box li"></div>
-            <div className="content-box li"></div>
-            <div className="content-box li"></div>
-            <div className="content-box li"></div>
-          </>
-        </div>
-      )}
     </li>
   );
 }
