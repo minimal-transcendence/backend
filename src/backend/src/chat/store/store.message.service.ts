@@ -1,24 +1,18 @@
 import { Injectable } from '@nestjs/common';
 
 export class Message {
-	//속성 괜찮...?
 	readonly from : number;
-	// readonly to : number;	//이러면 방도 숫자가 있긴 있어야하는데ㅠㅠ
 	readonly body : string;
 	readonly at : number;
 
 	constructor(
 		from : number,
-		// to : number,
 		body : string
 	){
 		this.from = from;
-		// this.to = to;
 		this.body = body;
-		this.at = Date.now();	//필요하면 다른 포맷으로 바꾸자
+		this.at = Date.now();
 	}
-	// clear() {	
-	// }
 }
 
 //이게 최선인가... 확실해요....?	//위에 메세지랑 같이 못 쓰는 이유가 있나요...?

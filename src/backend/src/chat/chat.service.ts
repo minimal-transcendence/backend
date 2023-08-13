@@ -5,7 +5,7 @@ import { ChatUserStoreService, User } from './store/store.user.service';
 import { PrismaService } from 'src/prisma.service';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { currRoomInfo, formedMessage, roomInfo, userInfo } from './chat.types';
+import { currRoomInfo, formedMessage, queryResponseRoomInfo, roomInfo, userInfo } from './chat.types';
 import { Message } from './store/store.message.service';
 import { WebSocketServer } from '@nestjs/websockets';
 import { RoutesMapper } from '@nestjs/core/middleware/routes-mapper';
@@ -68,27 +68,27 @@ export class ChatService {
 		let user : User = this.storeUser.findUserById(userId);
 		if (user === undefined)
 			user = this.storeUser.saveUser(userId, new User(userId, nickname));
-		// console.log("new user" + JSON.stringify(user));
-		console.log("new user" + user);
+		console.log("new user" + JSON.stringify(user));
+		// console.log("new user" + user);
 		user.connected = true;
-		this.userJoinRoomSuccess(io, user, "DEFAULT");
+		await this.userJoinRoomSuccess(io, user, "DEFAULT");	//이게 마지막에 실행된다... 안돼...
 		user.currentRoom = "DEFAULT";
 		
 		//datarace... 괜찮을까
 		//TODO: 전체방은 챗방 목록에 뜨게 할건지?(안하면 전체방 다시 돌아가고 싶을 때 어떻게 할지!)
-		const roomInfo = this.makeRoomInfo(user.joinlist);
-		const userInfo = this.makeRoomUserInfo("DEFAULT");
-		const currRoomInfo = this.makeCurrRoomInfo("DEFAULT");
+		const roomInfo : roomInfo[] = this.makeRoomInfo(user.joinlist);
+		const userInfo : userInfo[] = this.makeRoomUserInfo("DEFAULT");
+		const currRoomInfo : currRoomInfo = this.makeCurrRoomInfo("DEFAULT");
 		client.emit("init", userInfo, roomInfo, currRoomInfo);
 
 		//LOG : //
-		console.log(roomInfo);
-		console.log(userInfo);
-		console.log(currRoomInfo);
+		console.log("ROOM INFO " + JSON.stringify(roomInfo));
+		console.log("USER INFO " + JSON.stringify(userInfo));
+		console.log("CURR ROOM " + JSON.stringify(currRoomInfo));
 	}
 
 	//유저가 나갈 때
-	//disconnecting
+	//disconnectinga
 		//유저가 소속된 모든 방에 유저가 나간다는 메세지를 emit한다 (이 메세지는 저장 x? 저장?)
 		//유저가 속한 모든 방에서 유저 접속을 단절 <- 이건 소켓이 해준다.
 		//유저가 속한 각 방에서 유저가 owner이거나 operator인지 체크한다
@@ -112,6 +112,7 @@ export class ChatService {
 		//유저 소켓을 모두 찾아서 방으로 join 해주고
 		const sockets = await io.in(`$${user.id}`).fetchSockets();
 		sockets.forEach((socket) => {
+			console.log("user joined : " + roomname);
 			socket.join(roomname);
 			const currRoomInfo = this.makeCurrRoomInfo(roomname);
 			const roomMembers = this.makeRoomUserInfo(roomname);
@@ -134,6 +135,8 @@ export class ChatService {
 			room.messages.push(new Message(-1, body));
 		}
 		user.currentRoom = roomname;
+		//연산이.... 좀 더 들긴하지만 새 방이 만들어질때를 생각하면 이게 최선이다...
+		this.emitEventsToAllSockets(io, user.id, "sendRoomList", this.makeRoomInfo(user.joinlist));
 	}
 
 	//userJoinRoom
@@ -151,19 +154,25 @@ export class ChatService {
 			//3. 유저를 join을 이용해서 그 방으로 연결(유저리스트 등록하고 welcome message)
 	//if 3중 중첩문.... 이대로 괜찮은가.......
 
-	//CHECK & DISCUSS : 한 유저가 여러 소켓을 가진 경우에 대해 : 모든 창에 경고를 띄울 필요 있을까? -> 창하나만
-	//하지만 join은 전부 처리해줘야 (완료)
+	//(CLOSE) 한 유저가 여러 소켓을 가진 경우에 대해 : 모든 창에 경고를 띄울 필요 있을까? -> 창하나만
+	//하지만 join은 전부 처리해줘야 (CLOSE)
 	async userJoinRoom(io : Server, client:Socket, roomname : string, password? : string) {
 		const userId = client.data.id;
 		let room = this.storeRoom.findRoom(roomname);
 		if (room === undefined){
 			this.storeRoom.saveRoom(roomname, new Room(userId, password? password : null));
 			room = this.storeRoom.findRoom(roomname);
-			//TODO: 이렇게 server선언 되는지 확인해야함...!
 			this.userJoinRoomSuccess(io, this.storeUser.findUserById(userId), roomname);
-			//TODO & DISCUSS : 전 서버 소켓들에게 새 방 생겼다고 다 알려줘야 함? -> 안 알려줌
+			//(CLOSE) 전 서버 소켓들에게 새 방 생겼다고 다 알려줘야 함? -> 안 알려줌
+			//새 방이 만들어질 땐 접속 후에 방 정보를 업데이트 해줘야 (그래야 새 방에 user Welcome message 가 lastMessage로 뜬다...)
 		}
 		else {
+			//이미 들어간 방이면 password를 묻지 않는다.
+			if (room.isJoinning(userId))
+			{
+				this.userJoinRoomSuccess(io, this.storeUser.findUserById(userId), roomname);
+				return ;
+			}
 			const pwExist = password? true : false;
 			if (pwExist) {
 				if (room.isPassword(password)){
@@ -216,6 +225,7 @@ export class ChatService {
 	//disconnect시에는 단절 자체가 leave를 자동으로 처리할 것
 	//한 방만 나갈 때만 별도처리하는게 더 부하가 적지 않을까?
 	userLeaveRoom(io : Server, userId : number, roomname : string){
+		console.log("userLeaveRoom : " + roomname);
 		const room = this.storeRoom.findRoom(roomname);
 		if (room === undefined){
 			console.log("Room does not exist");
@@ -236,7 +246,9 @@ export class ChatService {
 			}
 			if (room.isOperator(userId))
 				room.deleteUserFromOperators(userId);	//처음에는 owner는 owner역할만 하지만, 첫 owner가 나갈 때  새로  들어오는  newOwner는 중복일 수  있음
-			const body = `Good bye ${this.storeUser.getNicknameById(userId)}`
+			const thisUser = this.storeUser.findUserById(userId);
+			thisUser.joinlist.delete(roomname);
+			const body = `Good bye ${thisUser.nickname}`
 			io.to("roomname").emit("sendMessage", body);
 			room.messages.push(new Message(-1, body));
 
@@ -283,6 +295,7 @@ export class ChatService {
 		const sockets = await io.in(`$${targetId}`).fetchSockets();
 		sockets.forEach((socket) => {
 			socket.leave(roomname);
+			socket.emit("sendAlert", "Attention", `You are kicked out from ${roomname}`);
 		})
 		//TODO & DISCUSS : checkValidity실패했을때 어떻게 할지
 	}
@@ -292,6 +305,10 @@ export class ChatService {
 	//sendYouAreKickedMessage
 	//sendYouAreBannedMessage
 	//sendYouAreMutedMessage
+	//이렇게는 안 된다
+	// sendAlert(client: Socket, alertTitle : string, alertBody : string){
+	// 	client.emit("sendAlert", alertTitle, alertBody);
+	// }
 	
 	//banUser ... ban 기능을 생각해보자...
 	banUser(io : Server, roomname : string, targetId : number){
@@ -325,9 +342,26 @@ export class ChatService {
 
 	//얘는 사실 딱히 최근 메세지 필요없는 것 같은데...(굳이 따지자면 방장이랑 참여인원이 있어야 하는게 아닐까?)
 	//DISCUSS & CHECK : return form
-	getQueryRoomList(query : string) : string[] {
+	getQueryRoomList(query : string) : queryResponseRoomInfo[] {
 		const roomlist = this.storeRoom.findQueryMatchRoomNames(query);
-		return (roomlist);
+		const res = [];
+		roomlist.forEach((roomname) => {
+			const room = this.storeRoom.findRoom(roomname);
+			const owner = this.storeUser.getNicknameById(room.owner);
+			// (Array.from([1, 2, 3], (x) => x + x));
+			//TODO : 이게 일단 되는지 확인해야 한다...!
+			const userlist = Array.from(
+					room.userlist, 
+					(user) => this.storeUser.getNicknameById(user)
+				);
+			//TODO : 사실 members에서 owner은 빼야해...!
+			res.push({
+				roomname : room,
+				owner : owner,
+				members : userlist
+			})
+		})
+		return (res);
 	}
 
 	//이게 맞나....?
@@ -403,7 +437,8 @@ export class ChatService {
 
 	makeCurrRoomInfo(roomname : string) : currRoomInfo {
 		const room = this.storeRoom.findRoom(roomname);
-		const owner = this.storeUser.getNicknameById(room.owner);
+		console.log("make CurrRoomInfo : " + JSON.stringify(room));
+		const owner = this.storeUser.getNicknameById(room.owner);	//왜 한번씩 여기서 오류가 나는지...?
 		const operatorList = [];
 		const joineduserList = [];
 		room.userlist.forEach((user) => {
