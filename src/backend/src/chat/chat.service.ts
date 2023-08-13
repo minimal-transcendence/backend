@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ChatRoomStoreService, Room } from './store/store.room.service';
 import { ChatUserStoreService, User } from './store/store.user.service';
-// import { ChatMessageStoreService } from './store/store.message.service';
+import { ChatMessageStoreService, DM } from './store/store.message.service';
 import { PrismaService } from 'src/prisma.service';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
@@ -15,7 +15,7 @@ export class ChatService {
 	constructor(
 		private storeRoom : ChatRoomStoreService,
 		private storeUser : ChatUserStoreService,
-		// private storeMessage : ChatMessageStoreService,
+		private storeMessage : ChatMessageStoreService,
 		private prisma : PrismaService,
 		private jwtService : JwtService
 	){}
@@ -371,6 +371,27 @@ export class ChatService {
 		return (res);
 	}
 
+	fetchDM(io : Server, from : number, to : number, body : string){
+		this.storeMessage.saveMessage(new DM(from, to, body));
+		//여기는 사실 you have 1 new message 이런거 보내주면 되는데...!
+		io.to(`$${from}`).to(`$${to}`).emit("sendAlert", "New DM", "You got 1 new message");
+	}
+
+	makeDMRoomMessages(from : string, to : string) : formedMessage[] {
+		// TODO : 메세지가 순차적으로 담겨있는지 확인 필요
+		const fromId = this.storeUser.getIdByNickname(from);
+		const toId = this.storeUser.getIdByNickname(to);
+		const msg = this.storeMessage
+					.findMessagesForUser(fromId, toId)
+					.map(message => ({
+						from : from,
+						to : to,
+						body : message.body,
+						at : message.at
+					}));
+		return (msg);
+	}
+
 	//이게 맞나....?
 	makeUserStatus(userId : number, connection: boolean) : userInfo {
 		const user = this.storeUser.findUserById(userId);
@@ -480,6 +501,7 @@ export class ChatService {
 		// })
 	}
 
+	//TODO : sendAlert message 분리하려면 이 함수에서 Socket 받아야함!
 	//채팅방에서 어떤 행동을 할 때 가능한지 모두 체크 : 권한, 유효성, etc.
 	checkActValidity(roomname : string, actor : number, target : number) : boolean {
 		const room = this.storeRoom.findRoom(roomname);
@@ -516,11 +538,11 @@ export class ChatService {
 	}
 
 	//TODO : 되는지 확인
-	async emitEventsToAllSockets(io : Server, targetId : number, eventname : string, args1? : any, args2? : any, args3? : any) : Promise<void> {
-		console.log(eventname + " " + args1 + " " + args2 + " " + args3);
+	async emitEventsToAllSockets(io : Server, targetId : number, eventname : string, args1? : any, args2? : any) : Promise<void> {
+		console.log(eventname + " " + args1 + " " + args2);
 		const sockets = await io.in(`$${targetId}`).fetchSockets();
 		sockets.forEach((socket) => {
-			socket.emit(eventname, args1, args2, args3);	//work?
+			socket.emit(eventname, args1, args2);	//work?
 		})
 	}
 

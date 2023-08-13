@@ -24,6 +24,7 @@ export type formedMessage = {
 	from : string;
 	to?	: string;
 	body : string;
+	at? : number
 }
 
 export type queryResponseRoomInfo = {

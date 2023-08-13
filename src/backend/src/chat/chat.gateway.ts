@@ -14,7 +14,7 @@ import { Socket } from 'socket.io';
 import { Server } from 'socket.io';
 import { ChatRoomStoreService, Room } from './store/store.room.service';
 import { ChatUserStoreService, User } from './store/store.user.service';
-// import { Message } from './store/store.message.service';
+import { DM, ChatMessageStoreService } from './store/store.message.service';
 import { ChatService } from './chat.service';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { PrismaService } from 'src/prisma.service';
@@ -33,7 +33,7 @@ export class ChatGateway
 	constructor(
 		private storeRoom : ChatRoomStoreService,
 		private storeUser : ChatUserStoreService,
-		// private storeMessage : ChatMessageStoreService,
+		private storeMessage : ChatMessageStoreService,
 		private chatService : ChatService,
 		private prisma : PrismaService,
 		private jwtService : JwtService,
@@ -176,11 +176,23 @@ export class ChatGateway
 			client.emit("sendRoomMembers", roomMembers);
 		});
 		
-		// client.on("changeNick", (newNick) => {
+		//여기 뭔가 event emit이 필요한지 의논할 것...
+		//sendAlert 외에 말이다...
+		client.on("changeNick", (newNick) => {
+			const user = this.storeUser.findUserById(client.data.id);
+			user.nickname = newNick;	//중복 확인은 여기서 하지 않는다... db에서 한다...
+			client.emit("sendAlert", "Nickname Changed", "your nickname has successfully changed!");
+		});
 
-		// });
-		//client.on("sendDirect Message", (to, body) => {});
-		//DISCUSS : DM방 select도 따로 method가 필요하다
+		client.on("selectDMRoom", (username) => {
+			const DMs = this.chatService.makeDMRoomMessages(client.data.nickname, username);
+			this.chatService.emitEventsToAllSockets(this.server, client.data.id, "sendDMRoomInfo", username, DMs);
+		})
+		client.on("sendDirectMessage", (to, body) => {
+			const fromId = client.data.id;
+			const toId = this.storeUser.getIdByNickname(to);
+			this.chatService.fetchDM(this.server, fromId, toId, body);
+		});
 	}
 
 	//disconnecting, disconnect 둘다 감지 가능?

@@ -16,6 +16,7 @@ export class Room {
 	mutelist : Set<number>;
 	banlist : Set<number>;
 	messages : Message[];
+	isPrivate : boolean;
 
 	constructor(
 		// roomId: number,
@@ -32,6 +33,7 @@ export class Room {
 		this.mutelist = new Set();
 		this.banlist = new Set();
 		this.messages = [];
+		this.isPrivate = false;
 	}
 
 	isPassword(input : string) : boolean {
@@ -158,12 +160,14 @@ export class ChatRoomStoreService implements RoomStore{
 		this.rooms.delete(roomname);
 	}
 
-	//startWith? includes?
+	//
 	findQueryMatchRoomNames(query : string) : string[] {
 		const res = [];
 		this.rooms.forEach((_, key) => {
-			if (key.includes(query))
-				res.push(key);
+			if (key.includes(query)){
+				if (this.findRoom(key).isPrivate == false)
+					res.push(key);
+			}
 		})
 		return (res);
 	}

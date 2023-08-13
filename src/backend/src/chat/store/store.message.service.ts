@@ -15,30 +15,41 @@ export class Message {
 	}
 }
 
-//이게 최선인가... 확실해요....?	//위에 메세지랑 같이 못 쓰는 이유가 있나요...?
-// export class DM {
-// 	readonly from : number;
-// 	readonly to : number;
-// 	readonly body : string;
-// 	readonly at : number;
-// }
+export class DM {
+	readonly from : number;
+	readonly to : number;
+	readonly body : string;
+	readonly at : number;
 
-// interface MessageStore{
-// 	//id 적용 할까....?
-// 	messages: Message[];
-// 	saveMessage(message : Message) : void;
-// 	findMessagesForUser(id : number) : Message[];
-// }
+	constructor(
+		from : number,
+		to : number,
+		body : string
+	){
+		this.from = from,
+		this.to = to,
+		this.body = body,
+		this.at = Date.now();
+	}
+}
 
-// @Injectable()
-// export class ChatMessageStoreService implements MessageStore {
-// 	messages = [];
-// 	saveMessage(message: Message): void {
-// 		this.messages.push(message);
-// 	}
-// 	findMessagesForUser(id: number): Message[] {
-// 		return this.messages.filter(
-// 			({ from, to }) => from === id || to === id
-// 		);
-// 	}
-// }
+interface DMStore{
+	messages: DM[];
+	saveMessage(message : DM) : void;
+	findMessagesForUser(from : number, to : number) : DM[];
+}
+
+@Injectable()
+export class ChatMessageStoreService implements DMStore {
+	messages = [];
+	saveMessage(message: DM): void {
+		this.messages.push(message);
+	}
+
+	//효율적일까...? 더 좋은 방법...?
+	findMessagesForUser(from : number, to : number): DM[] {
+		return this.messages.filter(
+			({ from, to }) => ((from === from && to === to) || (from === to && to === from))
+		);
+	}
+}
