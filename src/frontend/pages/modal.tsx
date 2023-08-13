@@ -4,12 +4,12 @@ import "./index.css";
 function ModalBasic({
   setIsOpenModal,
   socket,
-  roomName,
+  roomname,
   innerText,
 }: {
   setIsOpenModal: any;
   socket: any;
-  roomName: string;
+  roomname: string;
   innerText: string;
 }) {
   // 모달 끄기
@@ -51,9 +51,9 @@ function ModalBasic({
       alert("비번 입력해라");
     } else {
       await new Promise((r) => setTimeout(r, 100));
-      alert(`입력된 비번: ${roomName} ${passWord}`);
+      alert(`입력된 비번: ${roomname} ${passWord}`);
       setIsOpenModal(false);
-      socket.emit("sendRoomPass", { roomName, passWord });
+      socket.emit("sendRoomPass", { roomname, passWord });
     }
 
     setDisabled(false);

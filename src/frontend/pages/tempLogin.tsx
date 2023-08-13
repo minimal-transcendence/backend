@@ -4,15 +4,15 @@ import "./index.css";
 function TempLogin({
   socket,
   setTmpLoginID,
-  setTmpLoginNickName,
+  setTmpLoginnickname,
   setTmpIsLoggedIn,
 }: {
   socket: any;
   setTmpLoginID: any;
-  setTmpLoginNickName: any;
+  setTmpLoginnickname: any;
   setTmpIsLoggedIn: any;
 }) {
-  const [nickName, setNickName] = useState<string>("");
+  const [nickname, setnickname] = useState<string>("");
   const [id, setId] = useState<string>("");
   const [disabled, setDisabled] = useState(false);
 
@@ -20,7 +20,7 @@ function TempLogin({
     setDisabled(true);
     event.preventDefault();
     const tempIDlist = ["2000", "2001", "2002", "2003", "2004", "2005"];
-    const tempNickNameList = [
+    const tempnicknameList = [
       "ysungwon_v",
       "namkim_v",
       "jaeyjeon_v",
@@ -28,14 +28,13 @@ function TempLogin({
       "ProGamer",
       "God",
     ];
-    if (tempIDlist.includes(id) || tempNickNameList.includes(nickName)) {
+    if (tempIDlist.includes(id) || tempnicknameList.includes(nickname)) {
       alert("아이디나 비번 다른 거 입력핫메");
     } else {
       setTmpLoginID(() => id);
-      setTmpLoginNickName(() => nickName);
+      setTmpLoginnickname(() => nickname);
       setTmpIsLoggedIn(() => true);
-      socket.emit("sendNickNameID", { id, nickName });
-      console.log("id nickname : ", id, nickName);
+      console.log("id nickname : ", id, nickname);
     }
     setDisabled(false);
   };
@@ -53,10 +52,10 @@ function TempLogin({
           </span>
           <span>
             <input
-              type="nickName"
-              value={nickName}
+              type="nickname"
+              value={nickname}
               placeholder="임시 nickname 입력하세요"
-              onChange={(e) => setNickName(e.target.value)}
+              onChange={(e) => setnickname(e.target.value)}
             />
           </span>
         </div>
