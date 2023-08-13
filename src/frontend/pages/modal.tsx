@@ -54,7 +54,7 @@ function ModalBasic({
       alert(`입력된 비번: ${roomname} ${passWord}`);
       setIsOpenModal(false);
       socket.emit("sendRoomPass", { roomname, passWord });
-    } 
+    }
 
     setDisabled(false);
   };

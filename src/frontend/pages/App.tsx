@@ -112,11 +112,11 @@ export default function App() {
       setQuery("");
     }
     function sendUserRoomList(result: any) {
-      console.log("in useEffect sendUserRoomList" + JSON.stringify(result, null, 2));
+      console.log("in useEffect sendUserRoomList");
       setTempSearchList(() => result);
     }
     function sendCurrRoomInfo(result: any) {
-      console.log("in useEffect sendCurrRoomInfo"+ JSON.stringify(result, null, 2));
+      console.log("in useEffect sendCurrRoomInfo");
       setCurrentroomname(() => result.roomname);
     }
     socket.on("sendUserRoomList", sendUserRoomList);
