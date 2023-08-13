@@ -8,7 +8,7 @@ export type userInfo = {
 
 export type roomInfo = {
 	roomname : string;
-	lastMessage : string;
+	lastMessage : string;	//모든
 }
 
 export type currRoomInfo = {
@@ -24,4 +24,10 @@ export type formedMessage = {
 	from : string;
 	to?	: string;
 	body : string;
+}
+
+export type queryResponseRoomInfo = {
+	roomname : string;
+	owner : string;
+	joinedUsers : string[];	//owner제외
 }

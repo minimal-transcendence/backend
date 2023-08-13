@@ -158,12 +158,12 @@ export class ChatGateway
 		
 		client.on("requestAllRoomList", () => {
 			const roomInfo = this.chatService.getAllRoomList();
-			client.emit("sendAllRoomList", roomInfo);
+			client.emit("sendRoomList", roomInfo);
 		});
 
 		client.on("requestMyRoomList", () => {
 			const roomInfo = this.chatService.getUserRoomList(client.data.id);
-			client.emit("sendUserRoomList", roomInfo);
+			client.emit("sendRoomList", roomInfo);
 		});
 		
 		client.on("requestSearchResultRoomList", (query) => {
@@ -179,12 +179,13 @@ export class ChatGateway
 		// client.on("changeNick", (newNick) => {
 
 		// });
-		//client.on("sendDirectMessage", (to, body) => {});
+		//client.on("sendDirect Message", (to, body) => {});
 		//DISCUSS : DM방 select도 따로 method가 필요하다
 	}
 
 	//disconnecting, disconnect 둘다 감지 가능?
 	async handleDisconnect(@ConnectedSocket() client: Socket) {
+		this.logger.log(client.data.nickname + '나감');
 		await this.chatService.disconnectUser(this.server, client.data.id);
 	}
 }
