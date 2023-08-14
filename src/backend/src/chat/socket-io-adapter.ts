@@ -28,7 +28,7 @@ export class SocketIOAdapter extends IoAdapter {
 const createJwtMiddleware = (jwtService: JwtService, logger: Logger) =>
 (socket: SocketWithAuth, next) => {
     const token =
-        socket.handshake.auth.token;
+        socket.handshake.auth.token || socket.handshake.headers['token'];
 
     logger.debug(`Validating jwt token before connection: ${token}`);
 
