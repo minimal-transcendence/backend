@@ -135,7 +135,7 @@ export default function App() {
     }
     function sendMessage(roomname: string, body: string) {
       console.log(
-        `in useEffect sendMessage  <${roomname}> <${body}> 내 방은 <${currentroomname}>`
+        `in useEffect sendMessage1  <${roomname}> <${body}> 내 방은 <${currentroomname}>`
       );
 
       if (roomname === currentroomname) {
@@ -395,9 +395,10 @@ function SearchList({
       setLeftHeader(event.target.dataset.name);
       if (event.target.dataset.name === "all")
         socket.emit("requestAllRoomList");
-      else if (event.target.dataset.name === "result")
+      else if (event.target.dataset.name === "result") {
+        console.log("wehn click result ", query);
         socket.emit("requestSearchResultRoomList", query);
-      else if (event.target.dataset.name === "joined")
+      } else if (event.target.dataset.name === "joined")
         socket.emit("requestMyRoomList");
     } else console.log("in handleChk other");
   }
@@ -545,7 +546,7 @@ function CenterBox({
   return (
     <div className="box box-center">
       <div className="box-center-header">
-        <h2>Chat in {currentroomname} </h2>
+        <h2>Chat in1 {currentroomname} </h2>
         <span
           className="box-center-header exit"
           onClick={() => handleExit(currentroomname)}
@@ -634,17 +635,17 @@ function ChatRoomUserInfo({
       );
       const targetnickname = user.nickname;
       if (event.target.dataset.name === "kick")
-        socket.emit("kickUser", { roomname, targetnickname });
+        socket.emit("kickUser", roomname, targetnickname);
       else if (event.target.dataset.name === "ban")
-        socket.emit("banUser", { roomname, targetnickname });
+        socket.emit("banUser", roomname, targetnickname);
       else if (event.target.dataset.name === "mute")
-        socket.emit("muteUser", { roomname, targetnickname });
+        socket.emit("muteUser", roomname, targetnickname);
       else if (event.target.dataset.name === "block")
-        socket.emit("blockUser", { targetnickname });
+        socket.emit("blockUser", targetnickname);
       else if (event.target.dataset.name === "opAdd")
-        socket.emit("addOperator", { roomname, targetnickname });
+        socket.emit("addOperator", roomname, targetnickname);
       else if (event.target.dataset.name === "opDelete")
-        socket.emit("deleteOperator", { roomname, targetnickname });
+        socket.emit("deleteOperator", roomname, targetnickname);
     } else {
       console.log("you click other");
     }
