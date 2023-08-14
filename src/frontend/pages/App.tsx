@@ -50,6 +50,12 @@ export default function App() {
     },
   });
 
+  const gameSocket = io.connect("http://localhost/game", {
+    auth: {
+      token: jwt,
+    },
+  });
+
   useEffect(() => {
     // setUserId(() => localStorage.getItem("id"));
     const item = localStorage.getItem("access_token");
@@ -84,6 +90,10 @@ export default function App() {
   socket.on("hello", (message: any) => {
     console.log("hello", message);
     // socket.emit("message", "hello from NEXT");
+  });
+
+  gameSocket.on("game", (message: any) => {
+    console.log("message from game socket : ", message);
   });
 
   useEffect(() => {
