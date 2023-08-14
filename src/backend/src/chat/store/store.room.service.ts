@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { Message } from './store.message.service';
 
+console.log('tt');
 //방도 number 로 관리해야한다 -> message from / to format
 export class Room {
 	//readonly 랑 const 차이?
@@ -115,7 +116,7 @@ export class Room {
 	}
 
 	clearRoom(){
-		this.clearSets();
+		// this.clearSets();
 		this.operators = null;
 		this.mutelist = null;
 		this.banlist = null;
@@ -127,13 +128,13 @@ export class Room {
 	}
 }
 
-interface RoomStore{
-	//방을 DM이랑 분리하게 되면 아이디는 필요없다!
-	rooms : Map<string, Room>;
-	
-	findRoom(roomName : string) : Room;
-	saveRoom(roomName : string, room : Room) : void;
-	findAllRoom() : Room[];
+interface RoomStore {
+  //방을 DM이랑 분리하게 되면 아이디는 필요없다!
+  rooms: Map<string, Room>;
+
+  findRoom(roomName: string): Room;
+  saveRoom(roomName: string, room: Room): void;
+  findAllRoom(): Room[];
 }
 
 @Injectable()
@@ -172,4 +173,3 @@ export class ChatRoomStoreService implements RoomStore{
 		return (res);
 	}
 }
-

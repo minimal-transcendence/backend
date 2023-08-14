@@ -5,7 +5,13 @@ import { ChatMessageStoreService, DM } from './store/store.message.service';
 import { PrismaService } from 'src/prisma.service';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { currRoomInfo, formedMessage, queryResponseRoomInfo, roomInfo, userInfo } from './chat.types';
+import {
+  currRoomInfo,
+  formedMessage,
+  queryResponseRoomInfo,
+  roomInfo,
+  userInfo,
+} from './chat.types';
 import { Message } from './store/store.message.service';
 // import { WebSocketServer } from '@nestjs/websockets';
 // import { RoutesMapper } from '@nestjs/core/middleware/routes-mapper';
