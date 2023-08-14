@@ -1,9 +1,23 @@
 import { Injectable } from '@nestjs/common';
 
 export class Message {
-	//속성 괜찮...?
 	readonly from : number;
-	readonly to : number;	//이러면 방도 숫자가 있긴 있어야하는데ㅠㅠ
+	readonly body : string;
+	readonly at : number;
+
+	constructor(
+		from : number,
+		body : string
+	){
+		this.from = from;
+		this.body = body;
+		this.at = Date.now();
+	}
+}
+
+export class DM {
+	readonly from : number;
+	readonly to : number;
 	readonly body : string;
 	readonly at : number;
 
@@ -12,29 +26,30 @@ export class Message {
 		to : number,
 		body : string
 	){
-		this.from = from;
-		this.to = to;
-		this.body = body;
-		this.at = Date.now();	//필요하면 다른 포맷으로 바꾸자
+		this.from = from,
+		this.to = to,
+		this.body = body,
+		this.at = Date.now();
 	}
 }
 
-interface MessageStore{
-	//id 적용 할까....?
-	messages: Message[];
-	saveMessage(message : Message) : void;
-	findMessagesForUser(id : number) : Message[];
+interface DMStore{
+	messages: DM[];
+	saveMessage(message : DM) : void;
+	findMessagesForUser(from : number, to : number) : DM[];
 }
 
 @Injectable()
-export class ChatMessageStoreService implements MessageStore {
+export class ChatMessageStoreService implements DMStore {
 	messages = [];
-	saveMessage(message: Message): void {
+	saveMessage(message: DM): void {
 		this.messages.push(message);
 	}
-	findMessagesForUser(id: number): Message[] {
+
+	//효율적일까...? 더 좋은 방법...?
+	findMessagesForUser(from : number, to : number): DM[] {
 		return this.messages.filter(
-			({ from, to }) => from === id || to === id
+			({ from, to }) => ((from === from && to === to) || (from === to && to === from))
 		);
 	}
 }

@@ -8,14 +8,20 @@ import { PrismaService } from './prisma.service';
 import { UserServiceModule } from './user/user.module';
 import { MatchModule } from './match/match.module';
 import { ChatModule } from './chat/chat.module';
+import { GameGateway } from './game/game.gateway';
+import { GameService } from './game/game.service';
+// import { GameStoreService } from './game/game.store.service';
+// import { GameModule } from './game/game.module';
 
 @Module({
   imports: [
-		AuthModule, TwoFactorAuthModule,
-		UserServiceModule,
-		MatchModule,
-		ChatModule,
-	],
+    AuthModule,
+    TwoFactorAuthModule,
+    UserServiceModule,
+    MatchModule,
+    ChatModule,
+    // GameModule,
+  ],
   // imports: [ConfigModule.forRoot(), AuthModule, UserAuthModule, TwoFactorAuthModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
