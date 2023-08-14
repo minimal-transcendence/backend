@@ -36,14 +36,14 @@ export class GameGateway
   }
 
   async handleConnection(@ConnectedSocket() client: SocketWithAuth, userId : string, ) {
-		// const sockets = this.io.sockets;
+		const sockets = this.io.sockets;
 
 		this.logger.debug(
 			`Game Socket connected with userId: ${client.userId}`
 		);
 
 		this.logger.log(`Game Client Connected : ${client.id}`);
-		this.logger.debug(`Number of connected Game sockets: ${client.size}`)
+		this.logger.debug(`Number of connected Game sockets: ${sockets.size}`)
 
 		this.io.emit('game', `from ${client.userId} ${client.email}`);
   }
