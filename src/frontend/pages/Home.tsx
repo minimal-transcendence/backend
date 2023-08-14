@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/router';
-import UserList from '../srcs/UserList';
-import MyProfile from '../srcs/MyProfile';
-
+import React, { useState, useContext, useEffect } from "react";
+import { useRouter } from "next/router";
+import UserList from "../srcs/UserList";
+import MyProfile from "../srcs/MyProfile";
+import App from "./App";
 function Home() {
   const router = useRouter();
   const [myProfileModal, setMyProfileModal] = useState<boolean>(false);
@@ -24,20 +24,20 @@ function Home() {
   // 이미 로그인되었는지 확인
   useEffect(() => {
     // 예시로 localStorage에 isLoggedIn 상태를 저장한 것으로 가정
-    const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
-    if (storedIsLoggedIn === 'true') {
+    const storedIsLoggedIn = localStorage.getItem("isLoggedIn");
+    if (storedIsLoggedIn === "true") {
       setIsLoggedIn(true);
     }
-  }, );
+  });
 
   if (!isLoggedIn) {
     // 로그인 상태가 아닐 경우, 로그인 페이지로 이동
     return (
       <div>
         <p>로그인이 필요합니다. 로그인 페이지로 이동합니다.</p>
-        <button onClick={() => router.push('/')}>Go to Home</button>
+        <button onClick={() => router.push("/")}>Go to Home</button>
       </div>
-    )
+    );
   } else {
     return (
       <div>
@@ -56,10 +56,11 @@ function Home() {
           <MyProfile />
           </>
         )}
+        <App />
         </div>
       </div>
     );
   }
-};
+}
 
 export default Home;
