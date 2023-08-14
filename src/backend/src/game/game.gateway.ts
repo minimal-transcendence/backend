@@ -39,12 +39,18 @@ export class GameGateway implements OnGatewayInit{
 	//한 판 더 하시겠습니까? <- 네 / 아니오 : 거절해도 패하지 않게 처리 & 시간 지나면 자동으로 게임 수락 (랜덤매치 승낙/거절에도 쓸 수 있는 듯?)
 	//여기서 더 게임이 진행되지 않으면? 게임 소켓에서 접속 종료 -> 자동으로 채팅 화면으로 돌아가기
 
-	//큐를 두 개 쓰는게 안전할 것 같다
+	//큐를 두 개 쓰는게 안전할지도
 	//유저 정보는 chat에 있는거 갖다쓸 수 있나...? namespace 분리하려면 안 하는게 좋을 것 같음
-	//여기서 유저한테 필요한 정보...? id ... ?
+	//여기서 유저한테 필요한 정보...? id ... ? 화면에 뿌려주려면 승률 랭킹 아래 정도로 표시하자 그럼 안 심심할듯!
+	//player 1
+	//YSUNGWON
+	//99.9%
+	//RANK 1
 */
-  @SubscribeMessage('message')
+
+  @SubscribeMessage('oneVsOneApply')
   handleMessage(client: any, payload: any): string {
     return 'Hello world!';
   }
+  
 }

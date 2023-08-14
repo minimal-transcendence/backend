@@ -26,7 +26,7 @@ export class Room {
 	){
 		// this.roomId = roomId;
 		// this.roomname = roomname;
-		this.password = password? password : null;	//or ''?
+		this.password = password? password : null;
 		this.owner = owner;
 		this.operators = new Set();
 		this.userlist = new Set();
