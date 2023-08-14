@@ -6,6 +6,7 @@ import App from "./App";
 function Home() {
   const router = useRouter();
   const [myProfileModal, setMyProfileModal] = useState<boolean>(false);
+  const [userListModal, setUserListModal] = useState<boolean>(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const logout = () => {
@@ -43,20 +44,27 @@ function Home() {
       <div>
         <div>
           <button onClick={() => setMyProfileModal(true)}>내 프로필</button>
+          <button onClick={() => setUserListModal(true)}>유저 목록</button>
           <button onClick={logout}>로그 아웃</button>
-          <h1>홈</h1>
         </div>
         <div>
+          {userListModal && (
+            <>
+          <button onClick={() => setUserListModal(false)}>닫기</button>
           <UserList />
+          </>
+          )}
         </div>
         <div>
-        {myProfileModal && (
-          <>
-          <button onClick={() => setMyProfileModal(false)}>닫기</button>
-          <MyProfile />
-          </>
-        )}
-        <App />
+          {myProfileModal && (
+            <>
+            <button onClick={() => setMyProfileModal(false)}>닫기</button>
+            <MyProfile />
+            </>
+          )}
+          <div>
+            <App />
+          </div>
         </div>
       </div>
     );
