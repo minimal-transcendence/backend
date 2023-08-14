@@ -7,14 +7,16 @@ function MyProfile() {
 	const [imageUrl, setImageUrl] = useState<string | null>(null);
 	const [userNickname, setUserNickname] = useState<string | null>(localStorage.getItem("nickname"));
 	const [userId, setUserID] = useState<string | null>(localStorage.getItem("id"));
+	const [avatarURL, setAvatarURL] = useState<string | null>(localStorage.getItem('avatar'));
 	const [is2Fa, setIs2Fa] = useState(localStorage.getItem("is2fa"));
 	const [checkIs2Fa, setCheckIs2Fa] = useState(is2Fa==='true');
 	const [verCode, setVerCode] = useState('');
 
-	  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+	  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files && e.target.files.length > 0) {
 			const file = e.target.files[0];
 			setSelectedFile(file);
+			console.log(file);
 		  }
 	  };
 
@@ -62,19 +64,12 @@ function MyProfile() {
 		if (selectedFile) {
 			const formData = new FormData();
 			formData.append('avatar', selectedFile);
-			const dataToUpdate = {
-				id: userId,
-				avatar: formData,
-			};
+			console.log(formData);
 			try {
 				const response = await fetch(apiUrl, {
-					method: 'PATCH',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify(dataToUpdate),
+					method: 'POST',
+					body: formData,
 				});
-				console.log(JSON.stringify(dataToUpdate));
 				if (!response.ok) {
 					throw new Error('Network response was not ok');
 				}
@@ -85,6 +80,8 @@ function MyProfile() {
 				}
 				setSelectedFile(null);
 				console.log('profile 변경 응답 데이터:', responseData);
+				localStorage.setItem('avatar', "/api/" + responseData.avatar);
+				setAvatarURL("/api/" + responseData.avatar);
 				alert("프로필 사진이 변경되었습니다");
 				} catch (error) {
 				console.error('Error uploading image:', error);
@@ -171,6 +168,9 @@ function MyProfile() {
 				<>
 					<div className='modal-content'>
 						<h2>내 프로필</h2>
+						{avatarURL && (
+							<img src={avatarURL}></img>
+						)}
 						<div className='register-inside'>
 							<div>
 								<p>

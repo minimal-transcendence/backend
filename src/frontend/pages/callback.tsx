@@ -41,9 +41,11 @@ function Callback() {
         localStorage.setItem("id", data.id);
         setUserId(data.id);
         if (data.is2faEnabled === false) {
-            localStorage.setItem("access_token", data.access_token);
+            const detailResponse = await(await fetch('http://localhost/api/user/' + data.id)).json();
+            localStorage.setItem("access_token", detailResponse.access_token);
             localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('is2fa', 'false');
+            localStorage.setItem('avatar', "/api/" + detailResponse.avatar);
             router.push('Home');
         } else if(data.is2faEnabled  === true) {
             setShowCodeInput(true);
@@ -88,7 +90,9 @@ function Callback() {
                 throw("인증 실패");
             }
             console.log("인증 결과:", responseData);
+            const detailResponse = await(await fetch('http://localhost/api/user/' + responseData.id)).json();
             localStorage.setItem("access_token", responseData.access_token);
+            localStorage.setItem('avatar', "/api/" + detailResponse.avatar);
             localStorage.setItem('isLoggedIn', 'true');
             router.push('Home');
         }catch(error){

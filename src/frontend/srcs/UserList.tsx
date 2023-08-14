@@ -57,7 +57,7 @@ function UserList() {
 			const newData: userDataInterface = {
 				id: detailResponse.id,
 				nickname: detailResponse.nickname,
-				userProfileURL: detailResponse.avatar,
+				userProfileURL: "/api/" + detailResponse.avatar,
 				score: parseInt(detailResponse.score),
 				win: detailResponse._count.asWinner,
 				lose: detailResponse._count.asLoser,
@@ -177,7 +177,7 @@ function UserList() {
 				<>
 				<div className={styles.profileBox}>
 					<div className={styles.profileImage}>
-						{userData[index].userProfileURL !== 'path' ? (
+						{userData[index].userProfileURL !== '/apipath' ? (
 						<img src={userData[index].userProfileURL} alt="profile image" className={styles.profileImage} />) :
 						(<img src="img/img1.png" alt="profile image" className={styles.profilePicture} />)}
 					</div>
@@ -206,7 +206,7 @@ function UserList() {
 			<div className='modal'>
 				<div className='modal-content'>
 					<p>
-						{userData[index].userProfileURL != 'path' ? (
+						{userData[index].userProfileURL != '/apipath' ? (
 						<img src={userData[index].userProfileURL} alt="profile image" width="100" height = "100" />) :
 						(<img src="img/img1.png" alt="profile image" width="100" height = "100" />)}
 					</p>

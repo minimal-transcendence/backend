@@ -14,6 +14,7 @@ function Home() {
     localStorage.removeItem('nickname');
     localStorage.removeItem('is2fa');
     localStorage.removeItem('access_token');
+    localStorage.removeItem('avatar');
     const ApiUrl = 'http://localhost/api/auth/logout';
 		fetch(ApiUrl,{
 			method: 'POST'});
