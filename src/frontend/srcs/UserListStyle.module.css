@@ -1,91 +1,101 @@
 
-.prifileMainBox{
-	position: static;
-	width: 541px;
-	height: 723px;
-
-	background: #FFFFFF;
-	border-radius: 53px;
+.profileMainBox{
+	display: flex;
+    flex-direction: column;
+	padding: 20px;
+	border: 1px solid #ddd;
+	border-radius: 10px;
+	width: 520px;
+	height: 600px;
 	overflow: auto;
+	background: #F9F9F9;
+    align-items: middle;
 }
 
 
 /* Rectangle 302 */
 .profileBox{
-	position: static;
+	display: flex;
+	align-items: center;
+	padding: 10px;
+	padding-bottom: 20px;
+	margin: 10px;
+	border: 1px solid #ddd;
+	border-radius: 10px;
 	width: 476px;
-	height: 144px;
-
+	height: 120px;
 	background: #F9F9F9;
 	box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
-	border-radius: 31px;
 }
 
+.profileImage {
+	flex: 0.8;
+	padding: 10px;
+	width: 100px;
+	height: 100px;
+	border-radius: 20px; /* 모서리 둥글게 */
+	overflow: hidden; /* 넘치는 부분 숨김 */
+  }
 
-/* Rectangle 311 */
-.profilePurpleBox{
-	position: static;
-	width: 476px;
-	height: 144px;
+  .profileImage img {
+	max-width: 100%;
+	height: auto;
+	border-radius: 20px;
+  }
 
-	background: #6256F5;
-	box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), inset 0px 4px 10px rgba(0, 0, 0, 0.25);
-	border-radius: 31px;
-}
-
-/* wonkim */
-.name{
-	position: static;
-	width: 89px;
-	height: 40px;
-
+  .profileInfo {
+	flex: 2.2;
 	font-family: 'Pretendard';
 	font-style: normal;
-	font-weight: 700;
-	font-size: 24px;
-	line-height: 40px;
-	/* identical to box height, or 167% */
+  }
+
+  .profileInfo h2 {
+	margin-bottom: 5px;
+  }
+
+  .buttons {
 	display: flex;
-	align-items: center;
-	text-align: center;
+	flex-direction: row; /* 버튼들을 세로로 배치 */
+	gap: 10px; /* 버튼 간격 */
+  }
 
-	color: #000000;
-}
-/* 0 / 3 / 3 */
-.record{
-	position: static;
-	width: 108px;
-	height: 39px;
+  .buttons button {
+	padding: 8px 8px;
+	width: 101px;
+	height: 31px;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	color:white;
+  }
 
-	font-family: 'Pretendard';
-	font-style: normal;
-	font-weight: 700;
-	font-size: 20px;
-	line-height: 40px;
-	/* or 200% */
-	display: flex;
-	align-items: center;
-	text-align: center;
+  .followIn{
+	background: #4193EF;
+  }
 
-	color: #000000;
-}
+  .normalIn{
+	background: #58BF91;
+  }
+
+  .unfollowIn{
+	background: #454545;
+  }
 
 /* Mask group */
 .profilePicture{
-	position: static;
-	width: 96px;
-	height: 96px;
+	width: 100px;
+	height: 100px;
 }
 
 
 /* Rectangle 237 */
 .profilePictureBox{
-	position: static;
-	width: 96px;
-	height: 96px;
+	object-fit: cover;
+	width: 100px;
+	height: 100px;
 
 	background: #D9D9D9;
-	border-radius: 19px;
+	border-radius: 5px;
 }
 
 /* 0a0398e6611656b65d089feefe38c22b 1
@@ -99,7 +109,6 @@
 
 /* Rectangle 312 */
 .followButtonBox{
-	position: static;
 	width: 101px;
 	height: 31px;
 
@@ -122,7 +131,6 @@
 
 /* Rectangle 294 */
 .normalButtonBox{
-	position: static;
 	width: 101px;
 	height: 31px;
 
@@ -132,7 +140,6 @@
 
 /* Rectangle 291 */
 .followingButtonBox{
-	position: static;
 	width: 101px;
 	height: 31px;
 
@@ -142,7 +149,6 @@
 
 /* Ellipse 2 */
 .onlineCircle{
-	position: static;
 	width: 32px;
 	height: 31px;
 
@@ -168,7 +174,6 @@
 
 /* Icon */
 .followIconImage{
-	position: static;
 	left: 13.54%;
 	right: 5.21%;
 	top: 13.54%;
@@ -178,7 +183,6 @@
 }
 /* 팔로우 */
 .followInBox{
-	position: static;
 	width: 42px;
 	height: 40px;
 
@@ -197,7 +201,6 @@
 
 /* 게임신청 */
 .gameProposalInbox{
-	position: static;
 	width: 56px;
 	height: 40px;
 
@@ -216,7 +219,6 @@
 
 /* 프로필 */
 .profileInbox{
-	position: static;
 	width: 42px;
 	height: 40px;
 
@@ -234,8 +236,7 @@
 }
 
 /* 팔로잉 */
-.followingInbox{
-	position: static;
+.followingInBox{
 	width: 42px;
 	height: 40px;
 

@@ -11,18 +11,23 @@ function MyProfile() {
 	const [checkIs2Fa, setCheckIs2Fa] = useState(is2Fa==='true');
 	const [verCode, setVerCode] = useState('');
 
-	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		// 파일을 선택했을 때 호출
-		if (e.target.files && e.target.files.length > 0){
+	  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (e.target.files && e.target.files.length > 0) {
 			const file = e.target.files[0];
 			setSelectedFile(file);
-			setImageUrl(URL.createObjectURL(file));
-		}
-	};
+		  }
+	  };
+
 
 	async function fixProfile(){
+		const apiUrl = 'http://localhost/api/user/' + userId;
+
 		if (newNickname !== '' && newNickname !== userNickname){
-			const apiUrl = 'http://localhost/api/user/' + userId;
+			if(newNickname.length >= 13){
+				alert("닉네임의 길이는 최대 12자 입니다");
+				setNewNickname('');
+				return ;
+			}
 			const dataToUpdate = {
 				id: userId,
 				nickname: newNickname,
@@ -55,23 +60,21 @@ function MyProfile() {
 			}
 		}
 		if (selectedFile) {
-			//const formData = new FormData();
-			//formData.append('image', selectedFile);
+			const formData = new FormData();
+			formData.append('avatar', selectedFile);
 			const dataToUpdate = {
 				id: userId,
-				avatar: imageUrl,
+				avatar: formData,
 			};
-
-			const apiUrl = 'http://localhost/api/user/' + userId;
 			try {
 				const response = await fetch(apiUrl, {
 					method: 'PATCH',
 					headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify(dataToUpdate),
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(dataToUpdate),
 				});
-
+				console.log(JSON.stringify(dataToUpdate));
 				if (!response.ok) {
 					throw new Error('Network response was not ok');
 				}
@@ -80,15 +83,14 @@ function MyProfile() {
 				if (responseData.error){
 					throw new Error(responseData.error);
 				}
-				console.log(JSON.stringify(dataToUpdate));
 				setSelectedFile(null);
 				console.log('profile 변경 응답 데이터:', responseData);
 				alert("프로필 사진이 변경되었습니다");
 				} catch (error) {
 				console.error('Error uploading image:', error);
 				alert("에러 발생 :" + error);
-				}
 			}
+		}
 		//fetch -> formData를 body로 post하기
 		//setProfileURL(내 프로필이미지 경로)해주기
 		if (is2Fa === 'false' && checkIs2Fa === true){
