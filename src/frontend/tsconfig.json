@@ -29,8 +29,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "srcs/index.d.ts",
-    "declaration.d.ts"
+    "srcs/index.d.ts"
   ],
   "exclude": ["node_modules"]
 }
