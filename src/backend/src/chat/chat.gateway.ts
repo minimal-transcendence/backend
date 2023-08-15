@@ -115,11 +115,11 @@ export class ChatGateway
 
 		//TODO : check
 		client.on("blockUser", (user) => {
-			
+			this.chatService.blockUser(this.server, client, user);
 		});
-
+		
 		client.on("unblockUser", (user) => {
-
+			this.chatService.unblockUser(this.server, client, user);
 		});
 
 		client.on("kickUser", (roomname, user) => {
