@@ -386,6 +386,29 @@ export class ChatService {
 		room.addUserToMutelist(targetId);	
 	}
 
+	blockUser(io : Server, client : Socket, target : string) {
+		const thisUser = this.storeUser.findUserById(client.data.id);
+		const targetId = this.storeUser.getIdByNickname(target);
+		if (thisUser.blocklist.has(targetId))
+			client.emit("sendAlert", "Notice", "You've already blocked this user");
+		else {
+			(thisUser.addUserToBlocklist(targetId));
+			client.emit("sendAlert", "Notice", `Successfully block ${target}`);
+		}
+	}
+
+	unblockUser(io : Server, client : Socket, target : string) {
+		const thisUser = this.storeUser.findUserById(client.data.id);
+		const targetId = this.storeUser.getIdByNickname(target);
+		if (thisUser.blocklist.has(targetId)){
+			(thisUser.deleteUserFromBlockList(targetId));
+			client.emit("sendAlert", "Notice", `Successfully unblock ${target}`);
+		}
+		else {
+			client.emit("sendAlert", "Failed", `${target} is not blocked yet`);
+		}
+	}
+
 	//TODO : 이 모든 Getter들... 에러처리를 생각해야
 	getAllRoomList() : roomInfo[] {
 		const roomlist = Array.from(this.storeRoom.rooms.keys());
@@ -547,7 +570,7 @@ export class ChatService {
 		else if (operation === "mute")
 			notice = "Muted";
 		const body = `You are ${notice} from Room "${roomname}"`
-		await this.emitEventsToAllSockets(io, target, "sendMessage", ["server, body"]);
+		await this.emitEventsToAllSockets(io, target, "sendMessage", "server", body);
 		// const sockets = await io.in(`$${target}`).fetchSockets();
 		// sockets.forEach((socket) => {
 		// 	socket.emit("sendMessage", "server", body);

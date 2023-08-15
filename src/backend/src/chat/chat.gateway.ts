@@ -113,7 +113,14 @@ export class ChatGateway
 			this.chatService.userLeaveRoomAct(this.server, client, room);
 		});
 
-		//client.on("blockUser", (user) => {})	//의논 요
+		//TODO : check
+		client.on("blockUser", (user) => {
+			
+		});
+
+		client.on("unblockUser", (user) => {
+
+		});
 
 		client.on("kickUser", (roomname, user) => {
 			const targetId = this.storeUser.getIdByNickname(user);
@@ -155,7 +162,9 @@ export class ChatGateway
 		client.on("deleteOperator", (roomname, user) => {
 			const targetId = this.storeUser.getIdByNickname(user);
 			const room = this.storeRoom.findRoom(roomname);
-			//
+			if (this.chatService.checkActValidity(roomname, client.data.id, targetId)){
+				room.deleteUserFromOperators(targetId);
+			}
 		});
 		
 		client.on("requestAllRoomList", () => {
