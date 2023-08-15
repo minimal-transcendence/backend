@@ -169,9 +169,6 @@ export class ChatGateway
 		});
 		
 		client.on("requestSearchResultRoomList", (query) => {
-			console.log('query: ' + query);
-			if (query === null)
-				console.log("query is NULL!!!!");
 			const roomInfo = this.chatService.getQueryRoomList(query);
 			client.emit("responseRoomQuery", roomInfo);
 		});

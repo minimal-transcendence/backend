@@ -163,9 +163,6 @@ export class ChatRoomStoreService implements RoomStore{
 
 	//
 	findQueryMatchRoomNames(query : string | null) : string[] {
-		console.log(query);
-		if (query === null)
-			console.log("query is null");
 		const res = [];
 		this.rooms.forEach((_, key) => {
 			if (key.includes(query)){
@@ -173,7 +170,6 @@ export class ChatRoomStoreService implements RoomStore{
 					res.push(key);
 			}
 		})
-		console.log("res" + res);
 		return (res);
 	}
 }

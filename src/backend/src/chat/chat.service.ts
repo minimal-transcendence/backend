@@ -241,8 +241,12 @@ export class ChatService {
 			return ;
 		}
 		if (room.userlist.has(client.data.id)){	//이렇게 아이디를 잘 가져올 수 있는지 생각해보자(auth 올라가면 그냥 client.id로 꺼내도 됨 (이건 사실 nickname도 그렇다))
-			client.in(to).emit("sendMessage", this.storeUser.getNicknameById(client.data.id), body);	//방에 emit(본인은 안 받아야)
-			room.messages.push(new Message(client.data.id, body));
+			if (!room.isMuted(client.data.id)){
+				io.in(to).emit("sendMessage", this.storeUser.getNicknameById(client.data.id), body);	//방에 emit(본인은 안 받아야)
+				room.messages.push(new Message(client.data.id, body));
+			}
+			else
+				client.emit("sendAlert", "Attention", `You are MUTED in ${to}`);
 		}
 		else {
 			console.log(room.userlist);
@@ -395,8 +399,10 @@ export class ChatService {
 	//얘는 사실 딱히 최근 메세지 필요없는 것 같은데...(굳이 따지자면 방장이랑 참여인원이 있어야 하는게 아닐까?)
 	//DISCUSS & CHECK : return form
 	getQueryRoomList(query : string | null) : queryResponseRoomInfo[] {
-		const roomlist = this.storeRoom.findQueryMatchRoomNames(query);
 		const res = [];
+		if (query === null || query.length === 0)
+			return (res);
+		const roomlist = this.storeRoom.findQueryMatchRoomNames(query);
 		roomlist.forEach((roomname) => {
 			const room = this.storeRoom.findRoom(roomname);
 			const owner = this.storeUser.getNicknameById(room.owner);
@@ -550,6 +556,10 @@ export class ChatService {
 	//TODO : sendAlert message 분리하려면 이 함수에서 Socket 받아야함!
 	//채팅방에서 어떤 행동을 할 때 가능한지 모두 체크 : 권한, 유효성, etc.
 	checkActValidity(roomname : string, actor : number, target : number) : boolean {
+		if (actor === target) {
+			console.log("[ ACT ERROR ] you can't do sth to yourself")
+			return (false);
+		}
 		const room = this.storeRoom.findRoom(roomname);
 		if (room === undefined){
 			console.log("[ ACT ERROR ] Room does not exist")
