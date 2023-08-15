@@ -346,6 +346,7 @@ export class ChatService {
 		this.userJoinRoomAct(io, targetUser, "DEFAULT");
 		const body = `${targetUser.nickname} is Kicked Out`;
 		io.to(roomname).emit("sendMessage", "server", body);
+		io.to(roomname).emit("sendRoomMembers", room.userlist);
 		room.storeMessage(-1, body);
 		//아니 이건 알겠는데... 특정 방에서 어떻게 강제로 연결을 끊지???
 		const sockets = await io.in(`$${targetId}`).fetchSockets();
