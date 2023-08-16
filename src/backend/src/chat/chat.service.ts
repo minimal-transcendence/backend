@@ -548,6 +548,8 @@ export class ChatService {
 			operators : operatorList,
 			joinedUsers : joineduserList,
 			messages : this.mappingMessagesUserIdToNickname(room.messages),
+			isPrivate : room.isPrivate,
+			isProtected : room.password ? true : false
 		}
 		return (res)
 	}
