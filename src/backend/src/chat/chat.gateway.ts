@@ -9,10 +9,11 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Socket, Server } from 'socket.io';
-import { ChatRoomStoreService, Room } from './store/store.room.service';
-import { ChatUserStoreService, User } from './store/store.user.service';
-import { DM, ChatMessageStoreService } from './store/store.message.service';
+import { Socket } from 'socket.io';
+import { Server } from 'socket.io';
+import { ChatRoomStoreService, Room } from '../store/store.room.service';
+import { ChatUserStoreService, User } from '../store/store.user.service';
+import { DM, ChatMessageStoreService } from '../store/store.message.service';
 import { ChatService } from './chat.service';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { PrismaService } from 'src/prisma.service';

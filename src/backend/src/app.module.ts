@@ -8,10 +8,11 @@ import { PrismaService } from './prisma.service';
 import { UserServiceModule } from './user/user.module';
 import { MatchModule } from './match/match.module';
 import { ChatModule } from './chat/chat.module';
-import { GameGateway } from './game/game.gateway';
-import { GameService } from './game/game.service';
+// import { GameGateway } from './game/game.gateway';
+// import { GameService } from './game/game.service';
 // import { GameStoreService } from './game/game.store.service';
-import { GameModule } from './game/game.module';
+// import { GameModule } from './game/game.module';
+import { StoreModule } from './store/store.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { GameModule } from './game/game.module';
     UserServiceModule,
     MatchModule,
     ChatModule,
-    GameModule, 
+    StoreModule,
+    // GameModule,
   ],
   // imports: [ConfigModule.forRoot(), AuthModule, UserAuthModule, TwoFactorAuthModule],
   controllers: [AppController],
