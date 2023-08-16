@@ -2,19 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 
 export class Gamer {
-	// id : number;
+	id : number;
 	nickname : string;
 	isGaming : boolean;
-	isInQueue : boolean;
-
+	//본인에 대한 queue
+	
 	constructor(
+		id : number,
 		nickname : string,
 		isGaming? : boolean,
-		isInQueue? : boolean
+		isInQueue? : boolean	//이 속성이 필요함?
 	){
+		this.id = id;
 		this.nickname = nickname;
 		this.isGaming = isGaming? isGaming : false;
-		this.isInQueue = isInQueue? isInQueue : false;
 	}
 }
 
