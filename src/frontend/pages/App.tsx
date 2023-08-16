@@ -571,8 +571,10 @@ function ChatRoomUserInfo({
         `${tmpLoginnickname}가 ${user.nickname}를 ${roomname}에서 ${event.target.dataset.name}클릭!!!`
       );
       const targetnickname = user.nickname;
-      if (event.target.dataset.name === "kick")
-        socket.emit("kickUser", roomname, targetnickname);
+      if (event.target.dataset.name === "kick"){
+		console.log("target nickname : " + targetnickname);  
+		socket.emit("kickUser", roomname, targetnickname);
+	  }
       else if (event.target.dataset.name === "ban")
         socket.emit("banUser", roomname, targetnickname);
       else if (event.target.dataset.name === "mute")

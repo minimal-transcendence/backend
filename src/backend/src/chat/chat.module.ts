@@ -20,5 +20,8 @@ import { JwtService } from '@nestjs/jwt';
 		PrismaService
 	],
 //   controllers: [ChatController]
+	exports: [
+		ChatGateway
+	]
 })
 export class ChatModule {}
