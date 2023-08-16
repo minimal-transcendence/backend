@@ -238,7 +238,11 @@ export class ChatService {
 		if (room.userlist.has(client.data.id)){	//이렇게 아이디를 잘 가져올 수 있는지 생각해보자(auth 올라가면 그냥 client.id로 꺼내도 됨 (이건 사실 nickname도 그렇다))
 			if (!room.isMuted(client.data.id)){
 				const message = new Message(client.data.id, body);
-				io.in(to).emit("sendMessage", client.data.nickname, to, message);	//방에 emit(본인은 안 받아야)
+				io.in(to).emit("sendMessage", to, {
+					from : client.data.nickname,
+					body : body,
+					at : message.at
+				});	//안 바꿔도 되
 				room.messages.push(message);
 			}
 			else
@@ -297,10 +301,10 @@ export class ChatService {
 			thisUser.joinlist.delete(roomname);
 			room.deleteUserFromUserlist(userId);
 			const body = `Good bye ${thisUser.nickname}`
-			io.to("roomname").emit("sendMessage", body);
+			io.to(roomname).emit("sendMessage", body);
 			room.messages.push(new Message(-1, body));
 			//해당방의 모든 소켓을 모아서, 소켓 유저아이디로 유저 객체에 접근 -> currRoom을 확인하고 보내기 vs 클라이언트가 처리하기
-			io.to("roomname").emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
+			io.to(roomname).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
 			console.log("userLeaveRoom : enter --------------------------------------------5")
 		}
 		else
