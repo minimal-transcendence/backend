@@ -20,9 +20,10 @@ import { PrismaService } from 'src/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 
 //TODO : 아직 인증 처리가 완전하지 않아서 새로고침을 했을 때, 혹은 jwtToken이 만료 되었을때... 같은 유저가 하나는 user99, 하나는 null로 찍힌다ㅠ 인증이 정상적으로 이루어지고 나서도 이렇게 되는지 확인할 것
-@UseGuards(JwtGuard) //guard해도 연결 자체가 막히지는 않는 듯... ㄸㄹㄹ
+// @UseGuards(JwtGuard) //guard해도 연결 자체가 막히지는 않는 듯... ㄸㄹㄹ
 @WebSocketGateway(3002, {
   cors: 'http://localhost',
+  namespace : '/chat',
   pingInterval: 5000,
   pingTimeout: 3000,
 })
@@ -92,6 +93,7 @@ export class ChatGateway
 		await this.chatService.newUserConnected(this.server, client, userId, client.data.nickname);
 		
 		client.on("sendChatMessage", (to, body) => {
+			console.log("i got it!")
 			this.chatService.sendChat(this.server, client, to, body);
 		});
 		// this.chatService.sendChat(this.server, client, "DEFAULT", "I'm coming");
