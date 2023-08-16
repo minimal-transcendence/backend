@@ -184,8 +184,6 @@ function UserList() {
 		return(
 			<>
 			{showModals[index] && (
-			<div>
-			<button onClick={() => {profilePopdown(index)}}>닫기</button>
 			<div className={styles_profile.mainBox}>
 			<div className={styles_profile.profileInner}>
 				<div>
@@ -210,7 +208,7 @@ function UserList() {
 					{userData[index].nickname !== userNickname && userData[index].isFriend === 0 && (
 					<button className={styles_profile.followButton} onClick={() => {follow(index)}}> 팔로우 </button>)}
 					{userData[index].nickname !== userNickname && userData[index].isFriend === 1 && (
-					<button className={styles_profile.followingButton} onClick={() => {unFollow(index)}}> 팔로잉 </button>)}
+					<button className={styles_profile.followingButton} onClick={() => {unFollow(index)}}> 언팔로우 </button>)}
 					<button className={styles_profile.gameButton}> 게임 신청 </button>
 				</div>
 			</div>
@@ -226,7 +224,7 @@ function UserList() {
 						{userData[index].matchhistory[idx].winner}
 						</div>
 						<img
-						src=""
+						src="url"
 						alt="profile img"
 						className={styles_profile.logProfileImage}/>
 						<div className={styles_profile.resultFont}>
@@ -236,7 +234,7 @@ function UserList() {
 							패
 						</div>
 						<img
-						src=""
+						src="url"
 						alt="profile img"
 						className={styles_profile.logProfileImage}/>
 						<div className={styles_profile.logName}>
@@ -245,7 +243,6 @@ function UserList() {
 					</div>))}
 				</div>
 			</div>
-		</div>
 		</div>
 			)}
 		</>
@@ -296,14 +293,23 @@ function UserList() {
 		return(
 			<>
 			{showProfile && (
-			<div className={styles.profileMainBox}>
-				{userData.map((item, index) => (
-					<div key={index}>
-						{userId && userData[index].id != userId && (
-						getProfile(index)
-						)}
-					</div>
-				))}
+			<div>
+				{showprofileOption === false && (
+					<button onClick={() => setShowprofileOption(true)}>전체 보기</button>
+				)}
+				{showprofileOption === true && (
+					<button onClick={() => setShowprofileOption(false)}>친구만 보기</button>
+				)}
+				<button onClick={() => reloadData()}>새로 고침</button>
+				<div className={styles.profileMainBox}>
+					{userData.map((item, index) => (
+						<div key={index} className={styles_profile.fontSet}>
+							{userId && userData[index].id != userId && (
+							getProfile(index)
+							)}
+						</div>
+					))}
+				</div>
 			</div>
 			)}
 			</>
@@ -315,9 +321,9 @@ function UserList() {
 		return(
 			<>
 			{showDetailProfile && (
-			<div className={styles_profile.mainBox}>
+			<div>
 				{userData.map((item, index) => (
-					<div key={index}>
+					<div key={index} className={styles_profile.fontSet}>
 						{userId && userData[index].id != userId && (
 						getDetailProfile(index)
 						)}
@@ -331,13 +337,6 @@ function UserList() {
 
 		return (
 			<div>
-				{showprofileOption === false && (
-					<button onClick={() => setShowprofileOption(true)}>전체 보기</button>
-				)}
-				{showprofileOption === true && (
-					<button onClick={() => setShowprofileOption(false)}>친구만 보기</button>
-				)}
-				<button onClick={() => reloadData()}>새로 고침</button>
 				{getProfileBox()}
 				{getDetailProfileBox()}
 			</div>

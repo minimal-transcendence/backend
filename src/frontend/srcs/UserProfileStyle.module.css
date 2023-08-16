@@ -5,6 +5,7 @@
 	padding: 30px;
 	border-radius:20px;
 	flex-direction: row;
+	background-color: beige;
   }
 
   .profileInner{
@@ -54,9 +55,18 @@
   .followButton{
 	background: #4193EF;
   }
+  .followingButton{
+	background: #454545;
+  }
   .gameButton{
 	background: #58BF91;
   }
+  .fontSet{
+	font-weight: bold;
+	font-family: Pretendard, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+	  'Liberation Sans', sans-serif;
+  }
+
   .logBanner{
 	font-size: 18px;
 	font-weight: bold;

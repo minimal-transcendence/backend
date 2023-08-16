@@ -10,12 +10,6 @@ function Callback() {
     const code = router.query.code as string;
 
     const authLogin = async () => {
-        //이미 로그인 된 상태라면
-        const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
-        if (storedIsLoggedIn === 'true') {
-            router.push('Home');
-        }
-
         const response = await fetch('http://localhost/api/auth/login?code=' + code)
         // const response = await(await fetch('http://localhost/api/auth/login?code=' + code)).json();
 
@@ -49,7 +43,14 @@ function Callback() {
     }
 
     useEffect(() => {
-        if(!router.isReady) return;
+        const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
+        if (storedIsLoggedIn === 'true') {
+            window.history.replaceState({}, '', '/');
+            console.log("already logedin");
+            router.push('Home');
+            return ;
+        }
+        else if(!router.isReady) return;
         authLogin();
         console.log("Callback Page");
     }, [router.isReady]);
