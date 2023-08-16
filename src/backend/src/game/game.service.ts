@@ -1,8 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { Namespace, Server } from 'socket.io';
 
 //chat과는 완전히 socket이 분리된다고 생각하고 짜자
 @Injectable()
 export class GameService {
+	chatNamespace : Namespace;
+
+	// initialize(server : Server){
+	// 	this.chatNamespace.server.of("/chat");
+	// }
+
+	// sendMessage(eventName: string, data: any) {
+	// 	this.chatNamespace.emit(eventName, data);
+	// }
 	/*
 	//user 필요한 정보
 	//id, nickname, isGaming, //화면단에 필요하다면 전적 관련 정보들 -> prisma
