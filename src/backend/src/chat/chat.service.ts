@@ -204,10 +204,13 @@ export class ChatService {
 		}
 		else {
 			//이미 들어간 방이면 password를 묻지 않는다.
-			if (room.isJoinning(userId))
-			{
+			if (room.isJoinning(userId)){
 				console.log("userJoinRoom : enter --------------------------------------------2")
 				this.userJoinRoomAct(io, this.storeUser.findUserById(userId), roomname);
+				return ;
+			}
+			if (room.isPrivate){
+				client.emit("sendAlert", "Alert", "This room is Private");
 				return ;
 			}
 			const pwExist = password? true : false;
@@ -230,6 +233,13 @@ export class ChatService {
 		}
 	}
 
+	setPassword(io: Server, client : Socket, roomname : string, password : string){
+		const room = this.storeRoom.findRoom(roomname);
+		if (room.isOwner(client.data.id))
+			room.updatePassword(password);
+		else
+			client.emit("sendAlert", "Alert", "You have no authority");
+	}
 
 	//만약 없는 방일 때 -> throw Error
 	//만약 방에 속한 유저가 아닐 때 -> throw Error? or ignore?

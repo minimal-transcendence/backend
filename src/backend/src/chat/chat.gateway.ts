@@ -109,6 +109,10 @@ export class ChatGateway
 			this.chatService.userJoinRoom(this.server, client, room, password);
 		});
 
+		client.on("setRoomPass", (room, password) => {
+			this.chatService.setPassword(this.server, client, room, password);
+		})
+
 		//TODO : 미완성
 		client.on("sendRoomLeave", (room) => {
 			this.chatService.userLeaveRoom(this.server, client.data.id, room);
