@@ -23,194 +23,219 @@ import { JwtService } from '@nestjs/jwt';
 // @UseGuards(JwtGuard) //guard해도 연결 자체가 막히지는 않는 듯... ㄸㄹㄹ
 @WebSocketGateway(3002, {
   cors: 'http://localhost',
-  namespace : '/chat',
+  // namespace : '/chat',
   pingInterval: 5000,
   pingTimeout: 3000,
 })
 export class ChatGateway
   implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
 {
-	constructor(
-		private storeRoom : ChatRoomStoreService,
-		private storeUser : ChatUserStoreService,
-		private storeMessage : ChatMessageStoreService,
-		private chatService : ChatService,
-		private prisma : PrismaService,
-		private jwtService : JwtService,
-	){}
-	
-	@WebSocketServer() 
-	server : Server;
-	private logger: Logger = new Logger('EventsGateway');
+  constructor(
+    private storeRoom: ChatRoomStoreService,
+    private storeUser: ChatUserStoreService,
+    private storeMessage: ChatMessageStoreService,
+    private chatService: ChatService,
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+  ) {}
 
-	//아니면 여기서 prisma 써서 userlist 다 가져오게 할까...?
-	//여기서 async써도 괜찮은가...?
-	//TODO : 아니 생각해보니.... 이거 validation 어떻게...?
-	async afterInit(){
-		this.logger.log('웹소켓 서버 초기화 ✅');
+  @WebSocketServer()
+  server: Server;
+  private logger: Logger = new Logger('EventsGateway');
 
-		//DB의 모든 유저를 등록한다
-		const users = await this.prisma.user.findMany({
-			select : { 
-				id : true,
-				nickname : true
-			}
-		});
-		users.forEach((user) => {
-			this.storeUser.saveUser(
-				user.id, 
-				new User(user.id, user.nickname)
-			);
-		});
-		this.storeUser.saveUser(-1, new User(-1, "Server_Admin"));
-		this.storeRoom.saveRoom("DEFAULT", new Room(-1));	//owner id = -1 as server
-	}
+  //아니면 여기서 prisma 써서 userlist 다 가져오게 할까...?
+  //여기서 async써도 괜찮은가...?
+  //TODO : 아니 생각해보니.... 이거 validation 어떻게...?
+  async afterInit() {
+    this.logger.log('웹소켓 서버 초기화 ✅');
 
-	async handleConnection(@ConnectedSocket() client: Socket) {
-		this.logger.log(`Client Connected : ${client.id}`);
-		console.log("query!!", JSON.stringify(client.handshake.query, null, 2));
-		/* Authentification */
-		// console.log(this.storeUser.findAllUser());
-		// const userId = await this.chatService.clientAuthentification(client);
-		client.data.id = client.handshake.query.id;
-		client.data.nickname = client.handshake.query.nickname;
-		const userId = client.data.id;
-		console.log("here");
-		console.log(userId, client.data.nickname);
-		
-		//TODO : 아니 생각해보니까 이때도 유 저가 이미 들어있던 방들에게 유저가 돌아왔다는 걸 통보해야 한다...!
-		// console.log("new connection");
-		// const thisUser = this.storeUser.findUserById(userId);
-		// console.log(`found user : ${JSON.stringify(thisUser)}`);
-		// console.log(client.id);
-		client.onAny((any) => {
-			console.log(any);
-		})
+    //DB의 모든 유저를 등록한다
+    const users = await this.prisma.user.findMany({
+      select: {
+        id: true,
+        nickname: true,
+      },
+    });
+    users.forEach((user) => {
+      this.storeUser.saveUser(user.id, new User(user.id, user.nickname));
+    });
+    this.storeUser.saveUser(-1, new User(-1, 'Server_Admin'));
+    this.storeRoom.saveRoom('DEFAULT', new Room(-1)); //owner id = -1 as server
+  }
 
-		/* Initialize */
-		//유저가 원래 DB에 있던 유저가 아니면 추가
-		//그 default room과 dm room에 각각 join후 필요한 정보 emit(각 소켓 별)
-		await this.chatService.newUserConnected(this.server, client, userId, client.data.nickname);
-		
-		client.on("sendChatMessage", (to, body) => {
-			console.log("i got it!")
-			this.chatService.sendChat(this.server, client, to, body);
-		});
-		// this.chatService.sendChat(this.server, client, "DEFAULT", "I'm coming");
-		// this.chatService.makeCurrRoomInfo("DEFAULT");
+  async handleConnection(@ConnectedSocket() client: Socket) {
+    this.logger.log(`Client Connected : ${client.id}`);
+    console.log('query!!', JSON.stringify(client.handshake.query, null, 2));
+    /* Authentification */
+    // console.log(this.storeUser.findAllUser());
+    // const userId = await this.chatService.clientAuthentification(client);
+    client.data.id = client.handshake.query.id;
+    client.data.nickname = client.handshake.query.nickname;
+    const userId = client.data.id;
+    console.log('here');
+    console.log(userId, client.data.nickname);
 
-		client.on("selectRoom", (room) => {
-			//async await 어렵다 어려워
-			this.chatService.userJoinRoom(this.server, client, room);
-		});
+    //TODO : 아니 생각해보니까 이때도 유 저가 이미 들어있던 방들에게 유저가 돌아왔다는 걸 통보해야 한다...!
+    // console.log("new connection");
+    // const thisUser = this.storeUser.findUserById(userId);
+    // console.log(`found user : ${JSON.stringify(thisUser)}`);
+    // console.log(client.id);
+    client.onAny((any) => {
+      console.log(any);
+    });
 
-		//TODO : 무조건 password 넣는 단계가 분리되면 userJoinRoom함수 자체를 좀 더 효율적으로 정비 가능
-		client.on("sendRoomPass", (room, password) => {
-			this.chatService.userJoinRoom(this.server, client, room, password);
-		});
+    /* Initialize */
+    //유저가 원래 DB에 있던 유저가 아니면 추가
+    //그 default room과 dm room에 각각 join후 필요한 정보 emit(각 소켓 별)
+    await this.chatService.newUserConnected(
+      this.server,
+      client,
+      userId,
+      client.data.nickname,
+    );
 
-		//TODO : 미완성
-		client.on("sendRoomLeave", (room) => {
-			this.chatService.userLeaveRoom(this.server, client.data.id, room);
-			this.chatService.userLeaveRoomAct(this.server, client, room);
-		});
+    client.on('sendChatMessage', (to, body) => {
+      console.log('i got it!');
+      this.chatService.sendChat(this.server, client, to, body);
+    });
+    // this.chatService.sendChat(this.server, client, "DEFAULT", "I'm coming");
+    // this.chatService.makeCurrRoomInfo("DEFAULT");
 
-		//TODO : check
-		client.on("blockUser", (user) => {
-			this.chatService.blockUser(this.server, client, user);
-		});
-		
-		client.on("unblockUser", (user) => {
-			this.chatService.unblockUser(this.server, client, user);
-		});
+    client.on('selectRoom', (room) => {
+      //async await 어렵다 어려워
+      this.chatService.userJoinRoom(this.server, client, room);
+    });
 
-		client.on("kickUser", (roomname, user) => {
-			const targetId = this.storeUser.getIdByNickname(user);
-			const room = this.storeRoom.findRoom(roomname);
-			if (this.chatService.checkActValidity(roomname, client.data.id, targetId)){
-				this.chatService.kickUser(this.server, roomname, targetId);
-			}
-		});
-		
-		client.on("banUser", (roomname, user) => {
-			const targetId = this.storeUser.getIdByNickname(user);
-			const room = this.storeRoom.findRoom(roomname);
-			if (this.chatService.checkActValidity(roomname, client.data.id, targetId)){
-				this.chatService.banUser(this.server, roomname, targetId);
-			}
-		});
+    //TODO : 무조건 password 넣는 단계가 분리되면 userJoinRoom함수 자체를 좀 더 효율적으로 정비 가능
+    client.on('sendRoomPass', (room, password) => {
+      this.chatService.userJoinRoom(this.server, client, room, password);
+    });
 
-		client.on("muteUser", (roomname, user) => {
-			const targetId = this.storeUser.getIdByNickname(user);
-			const room = this.storeRoom.findRoom(roomname);
-			if (this.chatService.checkActValidity(roomname, client.data.id, targetId)){
-				this.chatService.muteUser(this.server, roomname, targetId);
-			}
-		});
-		
-		//checkValidity에서 operator가 owner를 operator로 등록하려고 할 때도 에러가 날 것
-		//에러처리할 때 고려해야 한다.
-		client.on("addOperator", (roomname, user) => {
-			const targetId = this.storeUser.getIdByNickname(user);
-			const room = this.storeRoom.findRoom(roomname);
-			if (this.chatService.checkActValidity(roomname, client.data.id, targetId)){
-				room.addUserToOperators(targetId);
-			}
-		});
-		
-		//TODO : 이거는 validityCheck가 따로 필요한 것 같은데?
-		//1. owner만 operator 해제가 가능한지
-		//2. operator도 operator를 해제할 수 있는지 논의 필요
-		client.on("deleteOperator", (roomname, user) => {
-			const targetId = this.storeUser.getIdByNickname(user);
-			const room = this.storeRoom.findRoom(roomname);
-			if (this.chatService.checkActValidity(roomname, client.data.id, targetId)){
-				room.deleteUserFromOperators(targetId);
-			}
-		});
-		
-		client.on("requestAllRoomList", () => {
-			const roomInfo = this.chatService.getAllRoomList();
-			client.emit("sendRoomList", roomInfo);
-		});
+    //TODO : 미완성
+    client.on('sendRoomLeave', (room) => {
+      this.chatService.userLeaveRoom(this.server, client.data.id, room);
+      this.chatService.userLeaveRoomAct(this.server, client, room);
+    });
 
-		client.on("requestMyRoomList", () => {
-			const roomInfo = this.chatService.getUserRoomList(client.data.id);
-			client.emit("sendRoomList", roomInfo);
-		});
-		
-		client.on("requestSearchResultRoomList", (query) => {
-			const roomInfo = this.chatService.getQueryRoomList(query);
-			client.emit("responseRoomQuery", roomInfo);
-		});
+    //TODO : check
+    client.on('blockUser', (user) => {
+      this.chatService.blockUser(this.server, client, user);
+    });
 
-		client.on("requestRoomMembers", (roomname) => {
-			const roomMembers = this.chatService.makeRoomUserInfo(roomname);
-			client.emit("sendRoomMembers", roomMembers);
-		});
-		
-		//여기 뭔가 event emit이 필요한지 의논할 것...
-		//sendAlert 외에 말이다...
-		client.on("changeNick", (newNick) => {
-			const user = this.storeUser.findUserById(client.data.id);
-			user.nickname = newNick;	//중복 확인은 여기서 하지 않는다... db에서 한다...
-			client.emit("sendAlert", "Nickname Changed", "your nickname has successfully changed!");
-		});
+    client.on('unblockUser', (user) => {
+      this.chatService.unblockUser(this.server, client, user);
+    });
 
-		client.on("selectDMRoom", (username) => {
-			const DMs = this.chatService.makeDMRoomMessages(client.data.nickname, username);
-			this.chatService.emitEventsToAllSockets(this.server, client.data.id, "sendDMRoomInfo", username, DMs);
-		})
-		client.on("sendDirectMessage", (to, body) => {
-			const fromId = client.data.id;
-			const toId = this.storeUser.getIdByNickname(to);
-			this.chatService.fetchDM(this.server, fromId, toId, body);
-		});
-	}
+    client.on('kickUser', (roomname, user) => {
+      const targetId = this.storeUser.getIdByNickname(user);
+      const room = this.storeRoom.findRoom(roomname);
+      if (
+        this.chatService.checkActValidity(roomname, client.data.id, targetId)
+      ) {
+        this.chatService.kickUser(this.server, roomname, targetId);
+      }
+    });
 
-	//disconnecting, disconnect 둘다 감지 가능?
-	async handleDisconnect(@ConnectedSocket() client: Socket) {
-		this.logger.log(client.data.nickname + '나감');
-		await this.chatService.disconnectUser(this.server, client.data.id);
-	}
+    client.on('banUser', (roomname, user) => {
+      const targetId = this.storeUser.getIdByNickname(user);
+      const room = this.storeRoom.findRoom(roomname);
+      if (
+        this.chatService.checkActValidity(roomname, client.data.id, targetId)
+      ) {
+        this.chatService.banUser(this.server, roomname, targetId);
+      }
+    });
+
+    client.on('muteUser', (roomname, user) => {
+      const targetId = this.storeUser.getIdByNickname(user);
+      const room = this.storeRoom.findRoom(roomname);
+      if (
+        this.chatService.checkActValidity(roomname, client.data.id, targetId)
+      ) {
+        this.chatService.muteUser(this.server, roomname, targetId);
+      }
+    });
+
+    //checkValidity에서 operator가 owner를 operator로 등록하려고 할 때도 에러가 날 것
+    //에러처리할 때 고려해야 한다.
+    client.on('addOperator', (roomname, user) => {
+      const targetId = this.storeUser.getIdByNickname(user);
+      const room = this.storeRoom.findRoom(roomname);
+      if (
+        this.chatService.checkActValidity(roomname, client.data.id, targetId)
+      ) {
+        room.addUserToOperators(targetId);
+      }
+    });
+
+    //TODO : 이거는 validityCheck가 따로 필요한 것 같은데?
+    //1. owner만 operator 해제가 가능한지
+    //2. operator도 operator를 해제할 수 있는지 논의 필요
+    client.on('deleteOperator', (roomname, user) => {
+      const targetId = this.storeUser.getIdByNickname(user);
+      const room = this.storeRoom.findRoom(roomname);
+      if (
+        this.chatService.checkActValidity(roomname, client.data.id, targetId)
+      ) {
+        room.deleteUserFromOperators(targetId);
+      }
+    });
+
+    client.on('requestAllRoomList', () => {
+      const roomInfo = this.chatService.getAllRoomList();
+      client.emit('sendRoomList', roomInfo);
+    });
+
+    client.on('requestMyRoomList', () => {
+      const roomInfo = this.chatService.getUserRoomList(client.data.id);
+      client.emit('sendRoomList', roomInfo);
+    });
+
+    client.on('requestSearchResultRoomList', (query) => {
+      const roomInfo = this.chatService.getQueryRoomList(query);
+      client.emit('responseRoomQuery', roomInfo);
+    });
+
+    client.on('requestRoomMembers', (roomname) => {
+      const roomMembers = this.chatService.makeRoomUserInfo(roomname);
+      client.emit('sendRoomMembers', roomMembers);
+    });
+
+    //여기 뭔가 event emit이 필요한지 의논할 것...
+    //sendAlert 외에 말이다...
+    client.on('changeNick', (newNick) => {
+      const user = this.storeUser.findUserById(client.data.id);
+      user.nickname = newNick; //중복 확인은 여기서 하지 않는다... db에서 한다...
+      client.emit(
+        'sendAlert',
+        'Nickname Changed',
+        'your nickname has successfully changed!',
+      );
+    });
+
+    client.on('selectDMRoom', (username) => {
+      const DMs = this.chatService.makeDMRoomMessages(
+        client.data.nickname,
+        username,
+      );
+      this.chatService.emitEventsToAllSockets(
+        this.server,
+        client.data.id,
+        'sendDMRoomInfo',
+        username,
+        DMs,
+      );
+    });
+    client.on('sendDirectMessage', (to, body) => {
+      const fromId = client.data.id;
+      const toId = this.storeUser.getIdByNickname(to);
+      this.chatService.fetchDM(this.server, fromId, toId, body);
+    });
+  }
+
+  //disconnecting, disconnect 둘다 감지 가능?
+  async handleDisconnect(@ConnectedSocket() client: Socket) {
+    this.logger.log(client.data.nickname + '나감');
+    await this.chatService.disconnectUser(this.server, client.data.id);
+  }
 }

@@ -13,12 +13,12 @@ const ChatHeader = ({
     console.log("방나감 ", currentroomname);
     socket.emit("sendRoomLeave", currentroomname);
   };
-  const onSubmit = (event: any, value: string) => {
+  const onSubmit = (event: any, value: string, currentRoomName: string) => {
     event.preventDefault();
     console.log("패스워드바꾸려고 ", value);
-    // socket.emit("sendRoomLeave", currentroomname);
+    socket.emit("setRoomPass", currentRoomName, value);
     setPassword("");
-    setRoomState("Protected");
+    setRoomState("Public");
   };
   function handleMenu(event: any, currentRoomName: string) {
     if (event.target.dataset.name) {
@@ -82,7 +82,7 @@ const ChatHeader = ({
             <div data-name="private">Private</div>
             <div data-name="password">
               <p>Password-protected</p>
-              <form onSubmit={() => onSubmit(event, password)}>
+              <form onSubmit={() => onSubmit(event, password, currentRoomName)}>
                 <input
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

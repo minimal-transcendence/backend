@@ -151,12 +151,22 @@ export default function App() {
         setMessages(() => [...messages, tmpData]);
       }
     }
+
+    function userUpdate(
+      username: string,
+      isGaming: boolean,
+      isConnected: boolean
+    ) {
+      console.log(`in userUdpate ${username} ${isGaming} ${isConnected}`);
+    }
+
     socket.on("sendRoomList", sendRoomList);
     socket.on("sendRoomMembers", sendRoomMembers);
     socket.on("requestPassword", requestPassword);
     socket.on("sendCurrRoomInfo", sendCurrRoomInfo);
     socket.on("sendMessage", sendMessage);
     socket.on("responseRoomQuery", responseRoomQuery);
+    socket.on("userUpdate", userUpdate);
     return () => {
       socket.off("responseRoomQuery", responseRoomQuery);
       socket.off("sendRoomList", sendRoomList);
@@ -164,6 +174,7 @@ export default function App() {
       socket.off("requestPassword", requestPassword);
       socket.off("sendCurrRoomInfo", sendCurrRoomInfo);
       socket.off("sendMessage", sendMessage);
+      socket.off("userUpdate", userUpdate);
     };
   }, [socket, currentRoomName, messages]);
 
