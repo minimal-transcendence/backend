@@ -133,8 +133,13 @@ export class ChatService {
 			console.log("userJoinRoomAct : enter --------------------------------------------2")
 			//CHECK : 이런 welcome message도 저장할 것인가?
 			const body = `Welcome ${user.nickname} !`;
-			io.to(roomname).emit("sendMessage", body);
-			room.messages.push(new Message(-1, body));
+			const message = new Message(-1, body);
+			io.in(roomname).emit("sendMessage", roomname, {
+				from : "Server_Admin",
+				body : body,
+				at : message.at
+			});
+			room.messages.push(message);
 			const sockets2 = await io.in(roomname).fetchSockets();
 			const roomMembers = this.makeRoomUserInfo(roomname);
 			sockets2.forEach((socket) => {
