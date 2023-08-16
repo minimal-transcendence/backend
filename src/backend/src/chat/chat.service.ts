@@ -242,8 +242,9 @@ export class ChatService {
 		}
 		if (room.userlist.has(client.data.id)){	//이렇게 아이디를 잘 가져올 수 있는지 생각해보자(auth 올라가면 그냥 client.id로 꺼내도 됨 (이건 사실 nickname도 그렇다))
 			if (!room.isMuted(client.data.id)){
-				io.in(to).emit("sendMessage", this.storeUser.getNicknameById(client.data.id), to, body);	//방에 emit(본인은 안 받아야)
-				room.messages.push(new Message(client.data.id, body));
+				const message = new Message(client.data.id, body);
+				io.in(to).emit("sendMessage", to, message);	//방에 emit(본인은 안 받아야)
+				room.messages.push(message);
 			}
 			else
 				client.emit("sendAlert", "Attention", `You are MUTED in ${to}`);
