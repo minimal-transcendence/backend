@@ -26,10 +26,10 @@ const ChatBody = ({
   return (
     <div className="chat-message-body">
       {messages?.map((message: any, i: number) =>
-        message["from"] === myNickName ? (
+        message["nickname"] === myNickName ? (
           <div
             className={`sender-${
-              message["from"] === myNickName ? "right" : "left"
+              message["nickname"] === myNickName ? "right" : "left"
             }`}
             key={i}
           >
@@ -45,7 +45,7 @@ const ChatBody = ({
         ) : (
           <div
             className={`sender-${
-              message["from"] === myNickName ? "right" : "left"
+              message["nickname"] === myNickName ? "right" : "left"
             }`}
             key={i}
           >
@@ -57,7 +57,7 @@ const ChatBody = ({
               <p className="message-recipient">{message.body}</p>
             </div>
             <div className="message-recipient-low">
-              <div className="message-recipient-nick">{message.from}</div>
+              <div className="message-recipient-nick">{message.nickname}</div>
               <div className="message-recipient-at">
                 {new Date(message.at).toDateString()}
               </div>

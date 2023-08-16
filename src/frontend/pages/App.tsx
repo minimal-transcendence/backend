@@ -136,18 +136,19 @@ export default function App() {
       setcurrentRoomName(() => result.roomname);
       setMessages(() => result.messages);
     }
-    function sendMessage(roomname: string, data: any) {
+    function sendMessage(from: string, roomname: string, data: any) {
       console.log(
-        `in useEffect sendMessage1  <${roomname}> <${JSON.stringify(
+        `in useEffect sendMessage1  from<${from}> roomname<${roomname}> body<${data}> <${JSON.stringify(
           data,
           null,
           2
         )}> 내 방은 <${currentRoomName}>`
       );
-
+      const tmpData = { ...data, nickname: from };
+      console.log("tmpData ", JSON.stringify(tmpData, null, 2));
       if (roomname === currentRoomName) {
         console.log("same room!");
-        setMessages(() => [...messages, data]);
+        setMessages(() => [...messages, tmpData]);
       }
     }
     socket.on("sendRoomList", sendRoomList);
@@ -571,11 +572,10 @@ function ChatRoomUserInfo({
         `${tmpLoginnickname}가 ${user.nickname}를 ${roomname}에서 ${event.target.dataset.name}클릭!!!`
       );
       const targetnickname = user.nickname;
-      if (event.target.dataset.name === "kick"){
-		console.log("target nickname : " + targetnickname);  
-		socket.emit("kickUser", roomname, targetnickname);
-	  }
-      else if (event.target.dataset.name === "ban")
+      if (event.target.dataset.name === "kick") {
+        console.log("target nickname : " + targetnickname);
+        socket.emit("kickUser", roomname, targetnickname);
+      } else if (event.target.dataset.name === "ban")
         socket.emit("banUser", roomname, targetnickname);
       else if (event.target.dataset.name === "mute")
         socket.emit("muteUser", roomname, targetnickname);
