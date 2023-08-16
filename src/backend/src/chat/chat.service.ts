@@ -242,7 +242,7 @@ export class ChatService {
 		}
 		if (room.userlist.has(client.data.id)){	//이렇게 아이디를 잘 가져올 수 있는지 생각해보자(auth 올라가면 그냥 client.id로 꺼내도 됨 (이건 사실 nickname도 그렇다))
 			if (!room.isMuted(client.data.id)){
-				io.in(to).emit("sendMessage", this.storeUser.getNicknameById(client.data.id), body);	//방에 emit(본인은 안 받아야)
+				io.in(to).emit("sendMessage", this.storeUser.getNicknameById(client.data.id), to, body);	//방에 emit(본인은 안 받아야)
 				room.messages.push(new Message(client.data.id, body));
 			}
 			else
@@ -341,14 +341,13 @@ export class ChatService {
 		room.deleteUserFromUserlist(targetId);
 		//이하는 userLeave랑 작용이 같다
 		const targetUser = this.storeUser.findUserById(targetId);
-		targetUser.joinlist.delete(roomname);	//DISCUSS : 쫓겨나면 default 방으로?
+		targetUser.joinlist.delete(roomname);
 		targetUser.currentRoom = "DEFAULT";
 		this.userJoinRoomAct(io, targetUser, "DEFAULT");
 		const body = `${targetUser.nickname} is Kicked Out`;
-		io.to(roomname).emit("sendMessage", "server", body);
+		io.to(roomname).emit("sendMessage", "server", body);	//쫓겨나는 사람은 제하는게 좋을지도
 		io.to(roomname).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
 		room.storeMessage(-1, body);
-		//아니 이건 알겠는데... 특정 방에서 어떻게 강제로 연결을 끊지???
 		const sockets = await io.in(`$${targetId}`).fetchSockets();
 		sockets.forEach((socket) => {
 			socket.leave(roomname);
@@ -358,16 +357,6 @@ export class ChatService {
 		//TODO & DISCUSS : checkValidity실패했을때 어떻게 할지
 	}
 
-	//TODO & DISCUSS : sendAlert로 합칠 수 있을 것 같기도?
-		//socket은 요청한 곳에만 보내면 되겠지?
-	//sendYouAreKickedMessage
-	//sendYouAreBannedMessage
-	//sendYouAreMutedMessage
-	//이렇게는 안 된다
-	// sendAlert(client: Socket, alertTitle : string, alertBody : string){
-	// 	client.emit("sendAlert", alertTitle, alertBody);
-	// }
-	
 	//banUser ... ban 기능을 생각해보자...
 	banUser(io : Server, roomname : string, targetId : number){
 		const room = this.storeRoom.findRoom(roomname);
