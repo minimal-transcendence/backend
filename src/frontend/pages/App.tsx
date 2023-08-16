@@ -2,7 +2,7 @@ import { useEffect, useState, useLayoutEffect } from "react";
 
 import * as io from "socket.io-client";
 import ModalBasic from "./modal";
-
+import ChatMain from "./components/chatpage/ChatMain";
 import TempLogin from "./tempLogin";
 import menuIcon from "../assets/menu.png";
 import logOutIcon from "../assets/logout.png";
@@ -51,13 +51,13 @@ export default function App() {
   const [isOpenModal3, setIsOpenModal3] = useState(false);
   const [passWordRequiredRoom, setPassWordRequiredRoom] = useState<string>("");
   const [roomnameModal, setroomnameModal] = useState<string>("");
-  const [currentroomname, setCurrentroomname] = useState<string>("");
+  const [currentRoomName, setcurrentRoomName] = useState<string>("");
   const [tmpLoginID, setTmpLoginID] = useState<string>("");
   const [tmpLoginnickname, setTmpLoginnickname] = useState<string>("");
   const [tmpIsLoggedIn, setTmpIsLoggedIn] = useState<boolean>(false);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [leftHeader, setLeftHeader] = useState<string>("");
-
+  const [messages, setMessages] = useState<any>("");
   function handleSelectRoom(event: any, room: any) {
     setSelectedRoom(room);
     setroomnameModal(room.roomname);
@@ -72,7 +72,9 @@ export default function App() {
   useEffect(
     function () {
       function chkLogin() {
+        console.log("chkLogin");
         if (tmpIsLoggedIn) {
+          console.log("chkLogin in if");
           socket.io.opts.query = {
             id: tmpLoginID,
             nickname: tmpLoginnickname,
@@ -105,7 +107,7 @@ export default function App() {
       );
       setRoomUserList(() => result);
       setLeftHeader(() => "joined");
-      // setCurrentroomname(() => result[0].roomname);
+      // setcurrentRoomName(() => result[0].roomname);
       setQuery("");
     }
     function sendRoomList(result: any) {
@@ -128,18 +130,24 @@ export default function App() {
           result.roomname,
           null,
           2
-        )}>  currentroomname : <${currentroomname}>`
+        )}>  currentRoomName : <${currentRoomName}>`
       );
 
-      setCurrentroomname(() => result.roomname);
+      setcurrentRoomName(() => result.roomname);
+      setMessages(() => result.messages);
     }
-    function sendMessage(roomname: string, body: string) {
+    function sendMessage(roomname: string, data: any) {
       console.log(
-        `in useEffect sendMessage1  <${roomname}> <${body}> 내 방은 <${currentroomname}>`
+        `in useEffect sendMessage1  <${roomname}> <${JSON.stringify(
+          data,
+          null,
+          2
+        )}> 내 방은 <${currentRoomName}>`
       );
 
-      if (roomname === currentroomname) {
+      if (roomname === currentRoomName) {
         console.log("same room!");
+        setMessages(() => [...messages, data]);
       }
     }
     socket.on("sendRoomList", sendRoomList);
@@ -156,7 +164,7 @@ export default function App() {
       socket.off("sendCurrRoomInfo", sendCurrRoomInfo);
       socket.off("sendMessage", sendMessage);
     };
-  }, [socket, currentroomname]);
+  }, [socket, currentRoomName, messages]);
 
   useEffect(
     function () {
@@ -170,6 +178,7 @@ export default function App() {
             setLeftHeader("all");
             setError("");
           } else if (!query) {
+            console.log("!query");
             socket.emit("requestMyRoomList");
 
             setLeftHeader("joined");
@@ -230,17 +239,18 @@ export default function App() {
             />
           }
         </Box>
-        <CenterBox
-          currentroomname={currentroomname}
-          tmpLoginID={tmpLoginID}
-          tmpLoginnickname={tmpLoginnickname}
+        <ChatMain
+          socket={socket}
+          currentRoomName={currentRoomName}
+          messages={messages}
+          myNickName={tmpLoginnickname}
         />
         <Box>
           <ChatRoomUser
             curOpen={curOpen}
             setCurOpen={setCurOpen}
             users={roomUserList}
-            roomname={currentroomname}
+            roomname={currentRoomName}
             tmpLoginnickname={tmpLoginnickname}
           />
         </Box>
@@ -264,6 +274,7 @@ function ErrorMessage({ message }: { message: string }) {
 }
 
 function NavBar({ query, setQuery }: { query: string; setQuery: any }) {
+  console.log("navebar ");
   return (
     <nav className="nav-bar">
       <Logo />
@@ -352,7 +363,7 @@ function SearchListCreateRoom({ setroomnameModal }: { setroomnameModal: any }) {
       socket.emit("selectRoom", roomname);
       // setPassWordRequiredRoom(roomname);
     }
-
+    setroomname("");
     setDisabled(false);
   };
 
@@ -496,87 +507,13 @@ function SearchResult({ el, onSelectRoom }: { el: any; onSelectRoom: any }) {
         <p>
           <span>{el?.messageNew ? "🆕" : "☑️"}</span>
           <span>
-            {el?.messageRecent?.length >= 10
-              ? el?.messageRecent.substr(0, 10) + "..."
+            {el?.messageRecent?.length >= 14
+              ? el?.messageRecent.substr(0, 14) + "..."
               : el?.messageRecent}
           </span>
         </p>
       </div>
     </li>
-  );
-}
-
-function CenterBox({
-  currentroomname,
-  tmpLoginnickname,
-  tmpLoginID,
-}: {
-  currentroomname: string;
-  tmpLoginnickname: string;
-  tmpLoginID: string;
-}) {
-  const [textareaValue, setTextareaValue] = useState("_Hello,_ **Markdown**!");
-
-  const handleExit = (currentroomname: string) => {
-    console.log("방나감 ", currentroomname);
-    socket.emit("sendRoomLeave", currentroomname);
-  };
-  function handleSubmit(e: any) {
-    e.preventDefault();
-    const form = e.target;
-    const formData = new FormData(form);
-    const formJson = Object.fromEntries(formData.entries());
-    console.log("버튼 누를때?in handle1 e", formJson.textareaContent);
-    socket.emit("sendChatMessage", currentroomname, formJson.textareaContent);
-    formData.set("textareaContent", "");
-  }
-  function handleSubmit2(e: any) {
-    // Prevent the browser from reloading the page
-    e.preventDefault();
-    console.log("엔터칠때?in handl2 e", e.target.value);
-    socket.emit("sendChatMessage", currentroomname, e.target.value);
-    e.target.value = "";
-  }
-  const handleOnKeyPress = (e: any) => {
-    if (e.key === "Enter") {
-      handleSubmit2(e); // Enter 입력이 되면 클릭 이벤트 실행
-    }
-  };
-
-  return (
-    <div className="box box-center">
-      <div className="box-center-header">
-        <h2>Chat in1 {currentroomname} </h2>
-        <span
-          className="box-center-header exit"
-          onClick={() => handleExit(currentroomname)}
-        >
-          X{/* nickname : {tmpLoginnickname} id : {tmpLoginID} */}
-        </span>
-      </div>
-      <div className="box-center-main">
-        <div className="chat-message-main">h</div>
-        <form
-          className="chat-message-form"
-          method="post"
-          onSubmit={handleSubmit}
-          onKeyDown={handleOnKeyPress}
-        >
-          <textarea
-            name="textareaContent"
-            defaultValue="I really enjoyed biking yesterday!"
-            rows={4}
-            cols={33}
-            className="input2"
-            value={textareaValue}
-            onChange={(e) => setTextareaValue(e.target.value)}
-          />
-          <button className="btn-send" type="submit">
-            Send
-          </button>
-        </form>
-      </div>
-    </div>
   );
 }
 
@@ -679,12 +616,12 @@ function ChatRoomUserInfo({
             alt="menuicon"
           />
           <div onClick={() => handleMenu(event)} className="dropdown-content">
-            <span data-name="kick">Kick</span>
-            <span data-name="ban">Ban</span>
-            <span data-name="mute">Mute</span>
-            <span data-name="block">block</span>
-            <span data-name="opAdd">Add Oper</span>
-            <span data-name="opDelete">Delete Oper</span>
+            <div data-name="kick">Kick</div>
+            <div data-name="ban">Ban</div>
+            <div data-name="mute">Mute</div>
+            <div data-name="block">block</div>
+            <div data-name="opAdd">Add Oper</div>
+            <div data-name="opDelete">Delete Oper</div>
           </div>
         </div>
       </div>
