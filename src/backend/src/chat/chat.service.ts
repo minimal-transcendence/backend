@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { ChatRoomStoreService, Room } from './store/store.room.service';
-import { ChatUserStoreService, User } from './store/store.user.service';
-import { ChatMessageStoreService, DM } from './store/store.message.service';
-import { PrismaService } from 'src/prisma.service';
+import { ChatRoomStoreService, Room } from '../store/store.room.service';
+import { ChatUserStoreService, User } from '../store/store.user.service';
+import { ChatMessageStoreService, Message, DM } from '../store/store.message.service';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import {
@@ -12,17 +11,13 @@ import {
   roomInfo,
   userInfo,
 } from './chat.types';
-import { Message } from './store/store.message.service';
-// import { WebSocketServer } from '@nestjs/websockets';
-// import { RoutesMapper } from '@nestjs/core/middleware/routes-mapper';
 
 @Injectable()
 export class ChatService {
 	constructor(
-		private storeRoom : ChatRoomStoreService,
 		private storeUser : ChatUserStoreService,
+		private storeRoom : ChatRoomStoreService,
 		private storeMessage : ChatMessageStoreService,
-		private prisma : PrismaService,
 		private jwtService : JwtService
 	){}
 
@@ -300,12 +295,12 @@ export class ChatService {
 				room.deleteUserFromOperators(userId);	//처음에는 owner는 owner역할만 하지만, 첫 owner가 나갈 때  새로  들어오는  newOwner는 중복일 수  있음
 			console.log("userLeaveRoom : enter --------------------------------------------4")
 			thisUser.joinlist.delete(roomname);
+			room.deleteUserFromUserlist(userId);
 			const body = `Good bye ${thisUser.nickname}`
 			io.to("roomname").emit("sendMessage", body);
 			room.messages.push(new Message(-1, body));
-			
 			//해당방의 모든 소켓을 모아서, 소켓 유저아이디로 유저 객체에 접근 -> currRoom을 확인하고 보내기 vs 클라이언트가 처리하기
-			io.to("roomname").emit("userUpdate", this.makeUserStatus(userId, false));
+			io.to("roomname").emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
 			console.log("userLeaveRoom : enter --------------------------------------------5")
 		}
 		else
