@@ -16,7 +16,7 @@ function MyProfile() {
 		if (e.target.files && e.target.files.length > 0) {
 			const file = e.target.files[0];
 			setSelectedFile(file);
-			console.log(file);
+			setImageUrl(URL.createObjectURL(file));
 		  }
 	  };
 
@@ -78,10 +78,11 @@ function MyProfile() {
 				if (responseData.error){
 					throw new Error(responseData.error);
 				}
-				setSelectedFile(null);
 				console.log('profile 변경 응답 데이터:', responseData);
 				localStorage.setItem('avatar', "/api/" + responseData.avatar);
 				setAvatarURL("/api/" + responseData.avatar);
+				setImageUrl(null);
+				setSelectedFile(null);
 				alert("프로필 사진이 변경되었습니다");
 				} catch (error) {
 				console.error('Error uploading image:', error);
@@ -201,6 +202,8 @@ function MyProfile() {
 										<img
 										src='http://localhost/api/2fa/qrcode'
 										alt="qr image"
+										width="100"
+										height="100"
 										onError={(e: React.SyntheticEvent<HTMLImageElement>) => e.currentTarget.style.display = 'none'}
 										/>
 									</p>

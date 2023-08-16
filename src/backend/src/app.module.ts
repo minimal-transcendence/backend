@@ -7,7 +7,7 @@ import { TwoFactorAuthModule } from './two-factor-auth/two-factor-auth.module';
 import { PrismaService } from './prisma.service';
 import { UserServiceModule } from './user/user.module';
 import { MatchModule } from './match/match.module';
-import { ChatModule } from './chat/chat.module';
+// import { ChatModule } from './chat/chat.module';
 import { GameGateway } from './game/game.gateway';
 import { GameService } from './game/game.service';
 // import { GameStoreService } from './game/game.store.service';
@@ -19,7 +19,7 @@ import { GameService } from './game/game.service';
     TwoFactorAuthModule,
     UserServiceModule,
     MatchModule,
-    ChatModule,
+    //ChatModule,
     // GameModule,
   ],
   // imports: [ConfigModule.forRoot(), AuthModule, UserAuthModule, TwoFactorAuthModule],

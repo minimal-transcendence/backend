@@ -7,12 +7,6 @@ function Callback() {
     const [verCode, setVerCode] = useState('');
     const [userId, setUserId] = useState<number | null>(null);
 
-    // const [code, setCode] = useState('');
-    // const getCode = async () => {
-    //     const queryCode = await router.query.code as string;
-    //     setCode(queryCode);
-    // }
-
     const code = router.query.code as string;
 
     const authLogin = async () => {

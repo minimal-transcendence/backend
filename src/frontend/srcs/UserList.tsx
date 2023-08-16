@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import styles from "./UserListStyle.module.css";
+import styles_profile from "./UserProfileStyle.module.css";
 
 function UserList() {
 	const [showModals, setShowModals] = useState<boolean[]>([]);
 	const [showprofileOption, setShowprofileOption] = useState(true);
+	const [showProfile, setShowProfile] = useState(true);
+	const [showDetailProfile, setDetailShowprofile] = useState(false);
 	const [userNickname, setUserNickname] = useState<string | null>(localStorage.getItem("nickname"));
 	const [userId, setUserID] = useState<string | null>(localStorage.getItem("id"));
 	const [userData, setData] = useState<userDataInterface[]>([]);
@@ -37,6 +40,8 @@ function UserList() {
 	const reloadData = async() => {
 		setData([]);
 		setShowModals([]);
+		setShowProfile(true);
+		setDetailShowprofile(false);
 
 		const idList:string[] = [];
 		const responseFriend = await (await fetch ('http://localhost/api/user/' + userId + '/friend')).json();
@@ -85,12 +90,16 @@ function UserList() {
 		let copiedData = [...showModals];
 		copiedData[index] = true;
 		setShowModals(copiedData);
+		setDetailShowprofile(true);
+		setShowProfile(false);
 	}
 
 	function profilePopdown(index:number){
 		let copiedData = [...showModals];
 		copiedData[index] = false;
 		setShowModals(copiedData);
+		setDetailShowprofile(false);
+		setShowProfile(true);
 	}
 
 	function sendGameMatch(index:number){
@@ -171,76 +180,154 @@ function UserList() {
 		reloadData();
 		}, []);
 
-		function getProfile(index:number){
-			if (showprofileOption || userData[index].isFriend){
-				return(
-				<>
-				<div className={styles.profileBox}>
-					<div className={styles.profileImage}>
-						{userData[index].userProfileURL !== '/apipath' ? (
-						<img src={userData[index].userProfileURL} alt="profile image" className={styles.profileImage} />) :
-						(<img src="img/img1.png" alt="profile image" className={styles.profilePicture} />)}
-					</div>
-					<div className={styles.profileInfo}>
-						<h2>{userData[index].nickname}</h2>
-						<h3>승: {userData[index].win} 패:{userData[index].lose}</h3>
-						<div className={styles.buttons}>
-							{userData[index].isFriend === 1 && (
-								<button className={styles.unfollowIn} onClick={() => {unFollow(index)}}>
-									언팔로우
-								</button>)}
-							{userData[index].isFriend === 0 && (
-								<button className={styles.followIn} onClick={() => {follow(index)}}>
-									팔로우
-								</button>)}
-							<button className={styles.normalIn} onClick={() => {sendGameMatch(index)}}>
-									게임 신청
-							</button>
-							<button className={styles.normalIn} onClick={() => {profilePopup(index)}}>
-									프로필 보기
-							</button>
-						</div>
-					</div>
-				</div>
+	function getDetailProfile(index:number){
+		return(
+			<>
 			{showModals[index] && (
-			<div className='modal'>
-				<div className='modal-content'>
-					<p>
-						{userData[index].userProfileURL != '/apipath' ? (
-						<img src={userData[index].userProfileURL} alt="profile image" width="100" height = "100" />) :
-						(<img src="img/img1.png" alt="profile image" width="100" height = "100" />)}
-					</p>
+			<div>
+			<button onClick={() => {profilePopdown(index)}}>닫기</button>
+			<div className={styles_profile.mainBox}>
+			<div className={styles_profile.profileInner}>
+				<div>
+					<img
+					src={userData[index].userProfileURL}
+					alt="profile img"
+					className={styles_profile.profileImage}/>
+				</div>
+				<div>
+					<h2>{userData[index].nickname}의 프로필</h2>
+				</div>
+				<br/><br/><br/><br/><br/>
+				<div className={styles_profile.wlsBanner}>
+					Win / Lose / Total Score
+				</div>
+				<div>
 					<h2>
-						{userData[index].nickname} ({userData[index].id}) 의 프로필
+					{userData[index].win} / {userData[index].lose} / {userData[index].score}
 					</h2>
-					<p>승: {userData[index].win} 패:{userData[index].lose} 점수: {userData[index].win * 10 - userData[index].lose * 10}</p>
-					<p>최근 전적</p>
-					<p>
-					{userData[index].matchhistory.map((item, idx) => (
-					<div key={idx}>
-						{userData[index].matchhistory[idx].time} 승: {userData[index].matchhistory[idx].winner} 패: {userData[index].matchhistory[idx].loser}
-					</div>
-					))}
-					</p>
-						{userData[index].nickname !== userNickname && userData[index].isFriend === 1 && (
-						<button onClick={() => {unFollow(index)}}>언팔로우</button>)}
-						{userData[index].nickname !== userNickname && userData[index].isFriend === 0 && (
-						<button onClick={() => {follow(index)}}>팔로우</button>)}
-						{userData[index].nickname !== userNickname && (
-						<button>게임 신청</button>)}
-					<p>
-					<button onClick={() => profilePopdown(index)}>닫기</button>
-					</p>
+				</div>
+				<div className={styles_profile.buttons}>
+					{userData[index].nickname !== userNickname && userData[index].isFriend === 0 && (
+					<button className={styles_profile.followButton} onClick={() => {follow(index)}}> 팔로우 </button>)}
+					{userData[index].nickname !== userNickname && userData[index].isFriend === 1 && (
+					<button className={styles_profile.followingButton} onClick={() => {unFollow(index)}}> 팔로잉 </button>)}
+					<button className={styles_profile.gameButton}> 게임 신청 </button>
 				</div>
 			</div>
+			<div className={styles_profile.logInner}>
+				<div className={styles_profile.logBanner}>
+					<h1>최근 전적</h1>
+					{userData[index].matchhistory.map((item, idx) => (
+					<div key={idx} className={styles_profile.logBox}>
+						<div className={styles_profile.logTime}>
+							{userData[index].matchhistory[idx].time}
+						</div>
+						<div className={styles_profile.logName}>
+						{userData[index].matchhistory[idx].winner}
+						</div>
+						<img
+						src=""
+						alt="profile img"
+						className={styles_profile.logProfileImage}/>
+						<div className={styles_profile.resultFont}>
+							승
+						</div>
+						<div className={styles_profile.resultFont}>
+							패
+						</div>
+						<img
+						src=""
+						alt="profile img"
+						className={styles_profile.logProfileImage}/>
+						<div className={styles_profile.logName}>
+						{userData[index].matchhistory[idx].loser}
+						</div>
+					</div>))}
+				</div>
+			</div>
+		</div>
+		</div>
 			)}
-			</>
+		</>
+		)
+	}
+
+	function getProfile(index:number){
+		if (showprofileOption || userData[index].isFriend){
+			return(
+				<div className={styles.profileBox}>
+						<div className={styles.profileImage}>
+							{userData[index].userProfileURL !== '/api/path' ? (
+							<img src={userData[index].userProfileURL} alt="profile image" className={styles.profileImage} />
+							) : (
+							<img src="img/img1.png" alt="profile image" className={styles.profilePicture} />
+							)}
+						</div>
+						<div className={styles.profileInfo}>
+							<h2>{userData[index].nickname}</h2>
+							<h3>{userData[index].win} / {userData[index].lose} / {userData[index].score}</h3>
+							<div className={styles.buttons}>
+								{userData[index].isFriend === 1 && (
+									<button className={styles.unfollowIn} onClick={() => {unFollow(index)}} >
+										언팔로우
+									</button>
+									)}
+								{userData[index].isFriend === 0 && (
+									<button className={styles.followIn} onClick={() => {follow(index)}}>
+										팔로우
+									</button>)}
+								<button className={styles.normalIn} onClick={() => {sendGameMatch(index)}}>
+										게임 신청
+								</button>
+								<button className={styles.normalIn} onClick={() => {profilePopup(index)}}>
+										프로필 보기
+								</button>
+							</div>
+						</div>
+			</div>
 		);
 		}
 		else {
 			return null;
 		}
-		}
+	}
+
+	function getProfileBox(){
+		return(
+			<>
+			{showProfile && (
+			<div className={styles.profileMainBox}>
+				{userData.map((item, index) => (
+					<div key={index}>
+						{userId && userData[index].id != userId && (
+						getProfile(index)
+						)}
+					</div>
+				))}
+			</div>
+			)}
+			</>
+		)
+	}
+
+	function getDetailProfileBox()
+	{
+		return(
+			<>
+			{showDetailProfile && (
+			<div className={styles_profile.mainBox}>
+				{userData.map((item, index) => (
+					<div key={index}>
+						{userId && userData[index].id != userId && (
+						getDetailProfile(index)
+						)}
+					</div>
+				))}
+			</div>
+			)}
+			</>
+		)
+	}
 
 		return (
 			<div>
@@ -251,15 +338,8 @@ function UserList() {
 					<button onClick={() => setShowprofileOption(false)}>친구만 보기</button>
 				)}
 				<button onClick={() => reloadData()}>새로 고침</button>
-				<div className={styles.profileMainBox}>
-					{userData.map((item, index) => (
-					<div key={index}>
-						{userId && userData[index].id != userId && (
-						getProfile(index)
-						)}
-					</div>
-					))}
-				</div>
+				{getProfileBox()}
+				{getDetailProfileBox()}
 			</div>
 			);
 		}
