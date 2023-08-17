@@ -1,0 +1,70 @@
+version: "3"
+
+services:
+  postgresql:
+    # build: ./src/postgresql
+    # image: postgresql
+    container_name: postgresql
+    image: postgres:15.3-alpine3.18
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d ${POSTGRES_DB} -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 5432:5432
+    env_file:
+      - .env
+    volumes:
+      - postgresql_volume:/var/lib/postgresql/data
+
+  backend:
+    build: ./src/backend
+    container_name: backend
+    image: backend
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    restart: always
+    ports:
+      - 3001:3001
+      - 3002:3002
+      - 5555:5555
+    env_file:
+      - .env
+    volumes:
+      - photo_volume:/photo
+
+  frontend:
+    # build: ./src/frontend
+    # container_name: frontend
+    # image: frontend
+    build: ./src/frontend
+    container_name: frontend
+    image: frontend
+    depends_on:
+      - backend
+    restart: always
+    ports:
+      - 80:80
+    # for dev
+    # volumes:
+    #   - /Users/seunchoi/app-docker/default.conf:/etc/nginx/conf.d/default.conf:ro
+    # command: [nginx-debug, '-g', 'daemon off;']
+
+networks:
+  mini-ts:
+    driver: bridge
+
+volumes:
+  postgresql_volume:
+    external: false
+#     name: postgresql_volume
+#     driver_opts:
+#       type: none
+#       device: /Users/seunchoi/app-docker/pgdata
+#       o: bind
+
+  photo_volume:
+      external: false
