@@ -1,6 +1,11 @@
-import { ConnectedSocket, OnGatewayConnection, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Namespace, Server, Socket } from 'socket.io';
-import { ChatGateway } from 'src/chat/chat.gateway';
+import { ConnectedSocket,
+	OnGatewayConnection,
+	OnGatewayInit,
+	OnGatewayDisconnect,
+	SubscribeMessage,
+	WebSocketGateway,
+	WebSocketServer } from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 import { GameService } from './game.service';
 
 
@@ -9,34 +14,29 @@ import { GameService } from './game.service';
 	cors : {
 		origin : 'http://localhost'
 	},
-	namespace : '/game',
+	// namespace : '/game',
 	pingInterval : 5000,
 	pingTimeout: 3000
 })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection{
 
 	@WebSocketServer() 
-	server : Namespace;
+	server : Server;
 		
 	// chatNamespace: Namespace;
 	constructor (
 		private gameService : GameService,
 	){}
-	chatNamespace : Namespace;
 	
-	async afterInit(io : Server) {
-		this.chatNamespace = io.of("chat")
-		// this.chatNamespace = server.of('chat');
-		// console.log('io : ' + JSON.stringify(io));
+	async afterInit() {
 	}
 
-	async handleConnection(io : Server, @ConnectedSocket() client: Socket) {
-		console.log("hello i'm game user!");
-		// this.chatGateway.server.emit("sendChatMessage", "game", "hihi");
-		this.chatNamespace.emit("sendMessage", "game", "hihi");
-		// this.gameService.sendMessage("sendChatMessage", "chat chat chat")
-		io.of("/chat").emit("sendChatMessage", "hihi gamer");
-		client.emit("gameHello", "hello gamer!");
+	async handleConnection(@ConnectedSocket() client: Socket) {
+		
+	}
+
+	async handleDisconnection(){
+
 	}
 /*
 	일단 생각해보자.... game 은 어느시점에 들어오게 되지?

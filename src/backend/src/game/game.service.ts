@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Namespace, Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
 //chat과는 완전히 socket이 분리된다고 생각하고 짜자
 @Injectable()
 export class GameService {
-	chatNamespace : Namespace;
 
 	// initialize(server : Server){
 	// 	this.chatNamespace.server.of("/chat");
@@ -27,4 +26,18 @@ export class GameService {
 		//5. paddleInfo (???)
 		//6. ballInfo (x : number, y : number, score? : number)
 	*/
+
+	//modeConverter -> storeService 에 OOP로 넣는게 맞을지도
+	//client.data.id
+	randomMatchApply(io: Server, client: Socket, paddlemode : number, speedmode : number){
+		//is client gaming or waitingRandomMatch? -> error
+		//is sb in queue? -> send match invitation
+		//else -> save
+	}
+	
+	oneVsOneApply(io : Server, client : Socket, to : number, paddlemode : number, speedmode: number){
+		//is client gaming or waitingRandomMatch? -> error... 가 아니라 그냥 쌓이는거다!
+		//is to gaming? -> error 가 아니라 걍 대기
+		//
+	}
 }
