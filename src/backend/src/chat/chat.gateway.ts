@@ -84,38 +84,37 @@ export class ChatGateway
       console.log(any);
     });
 
-    /* Initialize */
-    //유저가 원래 DB에 있던 유저가 아니면 추가
-    //그 default room과 dm room에 각각 join후 필요한 정보 emit(각 소켓 별)
-    await this.chatService.newUserConnected(
-      this.server,
-      client,
-      userId,
-      client.data.nickname,
-    );
+		/* Initialize */
+		//유저가 원래 DB에 있던 유저가 아니면 추가
+		//그 default room과 dm room에 각각 join후 필요한 정보 emit(각 소켓 별)
+		await this.chatService.newUserConnected(this.server, client, userId, client.data.nickname);
+		
+		client.on("sendChatMessage", (to, body) => {
+			console.log("i got it!")
+			this.chatService.sendChat(this.server, client, to, body);
+		});
+		// this.chatService.sendChat(this.server, client, "DEFAULT", "I'm coming");
+		// this.chatService.makeCurrRoomInfo("DEFAULT");
 
-    client.on('sendChatMessage', (to, body) => {
-      console.log('i got it!');
-      this.chatService.sendChat(this.server, client, to, body);
-    });
-    // this.chatService.sendChat(this.server, client, "DEFAULT", "I'm coming");
-    // this.chatService.makeCurrRoomInfo("DEFAULT");
+		client.on("selectRoom", (room) => {
+			//async await 어렵다 어려워
+			this.chatService.userJoinRoom(this.server, client, room);
+		});
 
-    client.on('selectRoom', (room) => {
-      //async await 어렵다 어려워
-      this.chatService.userJoinRoom(this.server, client, room);
-    });
+		//TODO : 무조건 password 넣는 단계가 분리되면 userJoinRoom함수 자체를 좀 더 효율적으로 정비 가능
+		client.on("sendRoomPass", (room, password) => {
+			this.chatService.userJoinRoom(this.server, client, room, password);
+		});
 
-    //TODO : 무조건 password 넣는 단계가 분리되면 userJoinRoom함수 자체를 좀 더 효율적으로 정비 가능
-    client.on('sendRoomPass', (room, password) => {
-      this.chatService.userJoinRoom(this.server, client, room, password);
-    });
+		client.on("setRoomPass", (room, password) => {
+			this.chatService.setPassword(this.server, client, room, password);
+		})
 
-    //TODO : 미완성
-    client.on('sendRoomLeave', (room) => {
-      this.chatService.userLeaveRoom(this.server, client.data.id, room);
-      this.chatService.userLeaveRoomAct(this.server, client, room);
-    });
+		//TODO : 미완성
+		client.on("sendRoomLeave", (room) => {
+			this.chatService.userLeaveRoom(this.server, client.data.id, room);
+			this.chatService.userLeaveRoomAct(this.server, client, room);
+		});
 
     //TODO : check
     client.on('blockUser', (user) => {

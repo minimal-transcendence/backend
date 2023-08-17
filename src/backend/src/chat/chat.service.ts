@@ -114,67 +114,63 @@ export class ChatService {
     this.userLeaveRooms(io, userId, user.joinlist);
   }
 
-  // client.join("DEFAULT");
-  // client.join(`$${user.id}`);
-  async userJoinRoomAct(io: Server, user: User, roomname: string) {
-    console.log(`client: ${user.id} join success roomname : ${roomname}`);
-    //유저 소켓을 모두 찾아서 방으로 join 해주고
-    const sockets = await io.in(`$${user.id}`).fetchSockets();
-    sockets.forEach((socket) => {
-      // console.log("user joined : " + roomname);
-      socket.join(roomname);
-    });
-    //이미 유저의 joinlist에 방이 있는지 확인
-    //없으면
-    //유저 객체 joinlist add, 방 객체 userlist add
-    //방에다가 welcome message
-    //currRoom을 바꿔준다
-    console.log(
-      'userJoinRoomAct : enter --------------------------------------------0',
-    );
-    if (!user.joinlist.has(roomname)) {
-      console.log(
-        'userJoinRoomAct : enter --------------------------------------------1',
-      );
-
-      user.joinlist.add(roomname);
-      const room = this.storeRoom.findRoom(roomname);
-      room.addUserToUserlist(user.id);
-      console.log(
-        'userJoinRoomAct : enter --------------------------------------------2',
-      );
-      //CHECK : 이런 welcome message도 저장할 것인가?
-      const body = `Welcome ${user.nickname} !`;
-      io.to(roomname).emit('sendMessage', body);
-      room.messages.push(new Message(-1, body));
-      const sockets2 = await io.in(roomname).fetchSockets();
-      const roomMembers = this.makeRoomUserInfo(roomname);
-      sockets2.forEach((socket) => {
-        if (
-          this.storeUser.findUserById(socket.data.id).currentRoom === roomname
-        )
-          socket.emit('sendRoomMembers', roomMembers);
-      });
-    }
-    user.currentRoom = roomname;
-    const currRoomInfo = this.makeCurrRoomInfo(roomname);
-    const roomMembers = this.makeRoomUserInfo(roomname);
-    const roomInfo = this.makeRoomInfo(user.joinlist);
-    console.log(
-      'userJoinRoomAct : enter --------------------------------------------3',
-    );
-    //연산이.... 좀 더 들긴하지만 새 방이 만들어질때를 생각하면 이게 최선이다...
-    // this.emitEventsToAllSockets(io, user.id, "sendRoomList", this.makeRoomInfo(user.joinlist));
-    // this.emitEventsToAllSockets(io, user.id, "sendRoomMembers", roomMembers);
-    // this.emitEventsToAllSockets(io, user.id, "sendCurrRoomInfo", currRoomInfo);
-    sockets.forEach((socket) => {
-      console.log('res', roomInfo, roomMembers, currRoomInfo);
-      socket.emit('sendRoomList', roomInfo);
-      socket.emit('sendRoomMembers', roomMembers);
-      socket.emit('sendCurrRoomInfo', currRoomInfo);
-      socket.emit('hi', 'hi1');
-    });
-  }
+	// client.join("DEFAULT");
+	// client.join(`$${user.id}`);
+	async userJoinRoomAct(io: Server, user : User, roomname : string) {
+		console.log(`client: ${user.id} join success roomname : ${roomname}`);
+		//유저 소켓을 모두 찾아서 방으로 join 해주고
+		const sockets = await io.in(`$${user.id}`).fetchSockets();
+		sockets.forEach((socket) => {
+			// console.log("user joined : " + roomname);
+			socket.join(roomname);
+		})
+		//이미 유저의 joinlist에 방이 있는지 확인
+		//없으면
+		//유저 객체 joinlist add, 방 객체 userlist add
+		//방에다가 welcome message
+		//currRoom을 바꿔준다
+		console.log("userJoinRoomAct : enter --------------------------------------------0")
+		if (!user.joinlist.has(roomname))
+		{
+			console.log("userJoinRoomAct : enter --------------------------------------------1")
+			
+			user.joinlist.add(roomname);
+			const room = this.storeRoom.findRoom(roomname);
+			room.addUserToUserlist(user.id);
+			console.log("userJoinRoomAct : enter --------------------------------------------2")
+			//CHECK : 이런 welcome message도 저장할 것인가?
+			const body = `Welcome ${user.nickname} !`;
+			const message = new Message(-1, body);
+			io.in(roomname).emit("sendMessage", roomname, {
+				from : "Server_Admin",
+				body : body,
+				at : message.at
+			});
+			room.messages.push(message);
+			const sockets2 = await io.in(roomname).fetchSockets();
+			const roomMembers = this.makeRoomUserInfo(roomname);
+			sockets2.forEach((socket) => {
+				if (this.storeUser.findUserById(socket.data.id).currentRoom === roomname)
+					socket.emit("sendRoomMembers", roomMembers);
+			})
+		}
+		user.currentRoom = roomname;
+		const currRoomInfo = this.makeCurrRoomInfo(roomname);
+		const roomMembers = this.makeRoomUserInfo(roomname);
+		const roomInfo = this.makeRoomInfo(user.joinlist);
+		console.log("userJoinRoomAct : enter --------------------------------------------3")
+		//연산이.... 좀 더 들긴하지만 새 방이 만들어질때를 생각하면 이게 최선이다...
+		// this.emitEventsToAllSockets(io, user.id, "sendRoomList", this.makeRoomInfo(user.joinlist));
+		// this.emitEventsToAllSockets(io, user.id, "sendRoomMembers", roomMembers);
+		// this.emitEventsToAllSockets(io, user.id, "sendCurrRoomInfo", currRoomInfo);
+		sockets.forEach((socket) => {
+			console.log("res", roomInfo, roomMembers, currRoomInfo);
+			socket.emit("sendRoomList", roomInfo);
+			socket.emit("sendRoomMembers", roomMembers);
+			socket.emit("sendCurrRoomInfo", currRoomInfo);
+			socket.emit('hi', 'hi1');
+		})
+	}
 
   //userJoinRoom
   // 방이 이미 존재하는 방인지 확인
@@ -205,58 +201,56 @@ export class ChatService {
     return true;
   }
 
-  async userJoinRoom(
-    io: Server,
-    client: Socket,
-    roomname: string,
-    password?: string,
-  ) {
-    const userId = client.data.id;
-    let room = this.storeRoom.findRoom(roomname);
-    console.log(`client: ${client.data.id} join roomname : ${roomname}`);
-    if (room === undefined) {
-      console.log(
-        'userJoinRoom : enter --------------------------------------------1',
-      );
-      this.storeRoom.saveRoom(
-        roomname,
-        new Room(userId, password ? password : null),
-      );
-      room = this.storeRoom.findRoom(roomname);
-      this.userJoinRoomAct(io, this.storeUser.findUserById(userId), roomname);
-      //(CLOSE) 전 서버 소켓들에게 새 방 생겼다고 다 알려줘야 함? -> 안 알려줌
-      //새 방이 만들어질 땐 접속 후에 방 정보를 업데이트 해줘야 (그래야 새 방에 user Welcome message 가 lastMessage로 뜬다...)
-    } else {
-      //이미 들어간 방이면 password를 묻지 않는다.
-      if (room.isJoinning(userId)) {
-        console.log(
-          'userJoinRoom : enter --------------------------------------------2',
-        );
-        this.userJoinRoomAct(io, this.storeUser.findUserById(userId), roomname);
-        return;
-      }
-      const pwExist = password ? true : false;
-      if (pwExist) {
-        if (password) {
-          if (room.isPassword(password)) {
-            if (this.JoinRoomBanCheck(io, client, room))
-              this.userJoinRoomAct(
-                io,
-                this.storeUser.findUserById(userId),
-                roomname,
-              );
-          } else client.emit('wrongPassword', roomname);
-        } else client.emit('requestPassword', roomname);
-      } else {
-        if (this.JoinRoomBanCheck(io, client, room))
-          this.userJoinRoomAct(
-            io,
-            this.storeUser.findUserById(userId),
-            roomname,
-          );
-      }
-    }
-  }
+	async userJoinRoom(io : Server, client:Socket, roomname : string, password? : string) {
+		const userId = client.data.id;
+		let room = this.storeRoom.findRoom(roomname);
+		console.log(`client: ${client.data.id} join roomname : ${roomname}`);
+		if (room === undefined){
+			console.log("userJoinRoom : enter --------------------------------------------1")
+			this.storeRoom.saveRoom(roomname, new Room(userId, password? password : null));
+			room = this.storeRoom.findRoom(roomname);
+			this.userJoinRoomAct(io, this.storeUser.findUserById(userId), roomname);
+			//(CLOSE) 전 서버 소켓들에게 새 방 생겼다고 다 알려줘야 함? -> 안 알려줌
+			//새 방이 만들어질 땐 접속 후에 방 정보를 업데이트 해줘야 (그래야 새 방에 user Welcome message 가 lastMessage로 뜬다...)
+		}
+		else {
+			//이미 들어간 방이면 password를 묻지 않는다.
+			if (room.isJoinning(userId)){
+				console.log("userJoinRoom : enter --------------------------------------------2")
+				this.userJoinRoomAct(io, this.storeUser.findUserById(userId), roomname);
+				return ;
+			}
+			if (room.isPrivate){
+				client.emit("sendAlert", "Alert", "This room is Private");
+				return ;
+			}
+			const pwExist = password? true : false;
+			if (pwExist) {
+				if (password){
+					if (room.isPassword(password)){
+						if (this.JoinRoomBanCheck(io, client, room))
+							this.userJoinRoomAct(io, this.storeUser.findUserById(userId), roomname);
+					}
+					else
+						client.emit("wrongPassword", roomname);
+				}
+				else
+					client.emit("requestPassword", roomname);
+			}
+			else {
+				if (this.JoinRoomBanCheck(io, client, room))
+					this.userJoinRoomAct(io, this.storeUser.findUserById(userId), roomname);
+			}
+		}
+	}
+
+	setPassword(io: Server, client : Socket, roomname : string, password : string){
+		const room = this.storeRoom.findRoom(roomname);
+		if (room.isOwner(client.data.id))
+			room.updatePassword(password);
+		else
+			client.emit("sendAlert", "Alert", "You have no authority");
+	}
 
   //만약 없는 방일 때 -> throw Error
   //만약 방에 속한 유저가 아닐 때 -> throw Error? or ignore?
