@@ -70,6 +70,7 @@ export class AuthController {
     @UseGuards(JwtRefreshGuard)
     @Get('refresh')
     async refresh(@Req() req: any, @Res() res: Response) {
+		console.log("refresh token requested");
         const user = req.user;
         const access_token = await this.authService.generateAccessToken(user);
         res.setHeader('Authorization', 'Bearer '+ access_token);

@@ -54,7 +54,7 @@ services:
     command: sh /app/dev.sh
     # for dev
     volumes:
-      - nextjs_volume:/app/pages
+      - nextjs_volume:/app
       # - C:\Users\hwoar\OneDrive\바탕 화면\sw_train\Web_development\backendgg\backend-namkim\backend-namkim\src\frontend:/app
     # command: [nginx-debug, '-g', 'daemon off;']
 
@@ -69,12 +69,12 @@ volumes:
   nestjs_volume:
     driver_opts:
       type: none
-      device: /Users/ysungwon/ft_tran/backend/src/backend
+      device: /Users/namkim/backend/src/backend
       o: bind
   nextjs_volume:
     driver_opts:
       type: none
-      device: /Users/ysungwon/ft_tran/backend/src/frontend/pages
+      device: /Users/namkim/backend/src/frontend
       o: bind
 #     name: postgresql_volume
 #     driver_opts:

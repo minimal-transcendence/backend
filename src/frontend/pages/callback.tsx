@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 function Callback() {
+	console.log("callback start");
     const router = useRouter();
     const [showCodeInput, setShowCodeInput] = useState<boolean>(false);
     const [verCode, setVerCode] = useState('');
@@ -30,7 +31,8 @@ function Callback() {
         setUserId(data.id);
         if (data.is2faEnabled === false) {
             const detailResponse = await(await fetch('http://localhost/api/user/' + data.id)).json();
-            localStorage.setItem("access_token", detailResponse.access_token);
+            console.log(detailResponse.access_token);
+			localStorage.setItem("access_token", detailResponse.access_token);
             localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('is2fa', 'false');
             localStorage.setItem('avatar', "/api/" + detailResponse.avatar);
@@ -43,6 +45,7 @@ function Callback() {
     }
 
     useEffect(() => {
+		console.log("callback useEffect start");
         const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
         if (storedIsLoggedIn === 'true') {
             window.history.replaceState({}, '', '/');

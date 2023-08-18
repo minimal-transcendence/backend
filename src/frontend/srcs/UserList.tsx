@@ -44,20 +44,42 @@ function UserList() {
 		setDetailShowprofile(false);
 
 		const idList:string[] = [];
-		const responseFriend = await (await fetch ('http://localhost/api/user/' + userId + '/friend')).json();
-		const friendCount = responseFriend.friendList.length;
+		let responseFriend0 = await fetch ('http://localhost/api/user/' + userId + '/friend');
+		if (responseFriend0.status === 401) {
+			responseFriend0 = await fetch('http://localhost/api/auth/refresh');
+			if (responseFriend0.status === 401)
+				console.log("refresh0 failed");
+			else{
+				console.log("refresh token success 0")
+				responseFriend0 = await fetch ('http://localhost/api/user/' + userId + '/friend');
+			}
+		}
+		const responseFriend = await responseFriend0.json();
+		const friendCount = responseFriend.friendList? responseFriend.friendList.length : 0;
 		for(let i = 0; i < friendCount ; i++){
 			idList.push(responseFriend.friendList[i].id);
 		}
 
-		const response = await(await fetch('http://localhost/api/user')).json();
-		const useridx = response.length;
+		let response = await fetch('http://localhost/api/user');
+		if (response.status === 401){
+			response = await fetch('http://localhost/api/auth/refresh');
+			if (response.status === 401){
+				console.log("refresh failed");
+				//logout + login 페이지로 redirect
+			}
+			else {
+				console.log("refresh token sucess")
+				response = await fetch('http://localhost/api/user');
+			}
+		}
+		const response2 = await response.json();
+		const useridx = response2.length;
 
 		const newDataList: userDataInterface[] = [];
 		const newModalList: boolean[] = [];
 		for(let i = 0 ; i < useridx ; i++){
-			const detailResponse = await(await fetch('http://localhost/api/user/' + response[i].id)).json();
-			const matchResponse = await(await fetch('http://localhost/api/user/' + response[i].id + '/matchhistory')).json();
+			const detailResponse = await(await fetch('http://localhost/api/user/' + response2[i].id)).json();
+			const matchResponse = await(await fetch('http://localhost/api/user/' + response2[i].id + '/matchhistory')).json();
 			const matchCount = matchResponse.length;
 			const newData: userDataInterface = {
 				id: detailResponse.id,
@@ -177,6 +199,7 @@ function UserList() {
 	}
 
 	useEffect (() => {
+		console.log("start");
 		reloadData();
 		}, []);
 

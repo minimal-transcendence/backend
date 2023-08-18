@@ -1,16 +1,38 @@
 import React, { useState, useEffect } from 'react';
+import { fetch_refresh } from './FetchInterceptor';
 
+// function fetchInterceptor() {
+// 	const { fetch : originalFetch } = window;
+// 	window.fetch = async (...args) => {
+// 		let response = await originalFetch(...args);
+// 		console.log("response : " + JSON.stringify(response));
+// 		if (response.status === 401){
+// 			await fetch('http://localhost/api/auth/refresh');
+// 		}
+// 		response = await originalFetch(...args);
+// 		console.log("response2 : " + JSON.stringify(response));
+// 		return response;
+// 	}
+// }
 function MyProfile() {
-
+	console.log("MyProfile start");
+	useEffect(()=> {
+		console.log("MyProfile useEffect");
+		async function getReady(){
+			await fetch_refresh('http://localhost/api/user/' + userId);	//이걸 await하게 하고 싶은데...?
+		}
+		getReady();
+	})
 	const [newNickname, setNewNickname] = useState('');
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [imageUrl, setImageUrl] = useState<string | null>(null);
 	const [userNickname, setUserNickname] = useState<string | null>(localStorage.getItem("nickname"));
 	const [userId, setUserID] = useState<string | null>(localStorage.getItem("id"));
-	const [avatarURL, setAvatarURL] = useState<string | null>(localStorage.getItem('avatar'));
+	const [avatarURL, setAvatarURL] = useState<string | null>(localStorage.getItem('avatar'));//
 	const [is2Fa, setIs2Fa] = useState(localStorage.getItem("is2fa"));
 	const [checkIs2Fa, setCheckIs2Fa] = useState(is2Fa==='true');
 	const [verCode, setVerCode] = useState('');
+	const [qrUrl, setQrUrl] = useState('http://localhost/api/2fa/qrcode');	//
 
 	  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files && e.target.files.length > 0) {
@@ -22,6 +44,7 @@ function MyProfile() {
 
 
 	async function fixProfile(){
+		console.log("fixProfile start");
 		const apiUrl = 'http://localhost/api/user/' + userId;
 
 		if (newNickname !== '' && newNickname !== userNickname){
@@ -35,7 +58,7 @@ function MyProfile() {
 				nickname: newNickname,
 			};
 			try {
-				const response = await fetch(apiUrl, {
+				let response = await fetch(apiUrl, {
 				method: 'PATCH',
 				headers: {
 					'Content-Type': 'application/json',
@@ -43,6 +66,17 @@ function MyProfile() {
 				body: JSON.stringify(dataToUpdate),
 				});
 
+				if (response.status === 401){
+					console.log("refresh token");
+					await fetch('http://localhost/api/auth/refresh');
+				}
+				response = await fetch(apiUrl, {
+					method: 'PATCH',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(dataToUpdate),
+				});
 				if (!response.ok) {
 				throw new Error('API 요청이 실패하였습니다.');
 				}
@@ -101,14 +135,24 @@ function MyProfile() {
 					id: userId,
 					twoFactorAuthCode: verCode
 				};
-				const response = await fetch(faChangeApiUrl, {
+				let response = await fetch(faChangeApiUrl, {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
 					},
 					body: JSON.stringify(dataToUpdate),
 				});
-
+				if (response.status === 401) {
+					console.log("refresh token");
+					await fetch('http://localhost/api/auth/refresh');
+					response = await fetch(faChangeApiUrl, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify(dataToUpdate),
+					});
+				}
 				if (!response.ok) {
 					throw new Error('API 요청이 실패하였습니다.(change 2faData');
 				}
@@ -200,7 +244,7 @@ function MyProfile() {
 										<span className="slider"></span>
 									<p>
 										<img
-										src='http://localhost/api/2fa/qrcode'
+										src={qrUrl}
 										alt="qr image"
 										width="100"
 										height="100"
