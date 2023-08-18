@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 
 export default function GameListHeader({
-  tmpLoginnickname,
+  myNickName,
   page,
   setPage,
   leftArrow,
   rightArrow,
 }: {
-  tmpLoginnickname: string;
+  myNickName: string;
   page: number;
   setPage: any;
   leftArrow: boolean;
@@ -15,7 +15,7 @@ export default function GameListHeader({
 }) {
   return (
     <div className="gamelist-header">
-      <h4>{tmpLoginnickname} 님의 Game-List</h4>
+      <h4>{myNickName} 님의 Game-List</h4>
 
       <button
         onClick={() => setPage(() => page - 1)}

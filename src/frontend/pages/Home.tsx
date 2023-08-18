@@ -30,7 +30,7 @@ function Home() {
     if (storedIsLoggedIn === "true") {
       setIsLoggedIn(true);
     }
-  });
+  }, []);
 
   if (!isLoggedIn) {
     // 로그인 상태가 아닐 경우, 로그인 페이지로 이동

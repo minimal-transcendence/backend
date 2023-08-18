@@ -1,18 +1,20 @@
 import ysungwonIcon from "../../../assets/ysungwon.jpg";
 import Image from "next/image";
+import { useState, useContext } from "react";
+import { SocketContext } from "../../../context/socket";
+
 const ChatBody = ({
-  socket,
   messages,
   typingStatus,
   lastMessageRef,
   myNickName,
 }: {
-  socket: any;
   messages: any;
   typingStatus: string;
   lastMessageRef: any;
   myNickName: string;
 }) => {
+  const socket = useContext(SocketContext);
   if (messages?.length === 0) return;
   // console.log(
   //   `in body, messages length : ${messages.length} ${JSON.stringify(

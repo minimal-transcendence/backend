@@ -1,19 +1,14 @@
 import GameListHeader from "./GameListHeader";
 import GameListBody from "./GameListBody";
-import { useState, useEffect } from "react";
-export default function GameList({
-  socket,
-  tmpLoginnickname,
-}: {
-  socket: any;
-  tmpLoginnickname: string;
-}) {
+import { useState, useEffect, useContext } from "react";
+import { SocketContext } from "../../../context/socket";
+export default function GameList({ myNickName }: { myNickName: string }) {
   const [gameList, setGameList] = useState<any>([]);
   const [page, setPage] = useState<number>(1);
   const [leftArrow, setLeftArrow] = useState<boolean>(false);
   const [rightArrow, setRightArrow] = useState<boolean>(false);
   const [tmpUsers, setTmpUsers] = useState<any>([]);
-
+  const socket = useContext(SocketContext);
   useEffect(() => {
     function updateGameList(data: any) {
       console.log(`in UpdateGameList ${JSON.stringify(data, null, 2)}`);
@@ -53,13 +48,9 @@ export default function GameList({
           setPage={setPage}
           leftArrow={leftArrow}
           rightArrow={rightArrow}
-          tmpLoginnickname={tmpLoginnickname}
+          myNickName={myNickName}
         />
-        <GameListBody
-          tmpUsers={tmpUsers}
-          socket={socket}
-          tmpLoginnickname={tmpLoginnickname}
-        />
+        <GameListBody tmpUsers={tmpUsers} myNickName={myNickName} />
       </div>
     </>
   );

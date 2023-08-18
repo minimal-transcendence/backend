@@ -1,16 +1,16 @@
-import { useState } from "react";
-
+import { useState, useContext } from "react";
+import { SocketContext } from "../../../context/socket";
 const ChatFooter = ({
-  socket,
   currentRoomName,
   textareaValue,
   setTextareaValue,
 }: {
-  socket: any;
   currentRoomName: any;
   textareaValue: any;
   setTextareaValue: any;
 }) => {
+  const socket = useContext(SocketContext);
+
   function handleSubmit(e: any) {
     e.preventDefault();
     const form = e.target;

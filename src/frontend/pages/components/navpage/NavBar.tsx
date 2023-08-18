@@ -1,9 +1,9 @@
 import Logo from "./NavBarLogo";
 import Menu from "./NavBarMenu";
 import Search from "./NavBarSearch";
-
+import { SocketContext } from "../../../context/socket";
+import { useState, useContext } from "react";
 export default function NavBar({
-  socket,
   query,
   setQuery,
   setIsLoading,
@@ -11,7 +11,6 @@ export default function NavBar({
   setLeftHeader,
   setError,
 }: {
-  socket: any;
   query: string;
   setQuery: any;
   setIsLoading: any;
@@ -19,6 +18,7 @@ export default function NavBar({
   setLeftHeader: any;
   setError: any;
 }) {
+  const socket = useContext(SocketContext);
   console.log("navebar ");
   return (
     <nav className="nav-bar">
@@ -26,13 +26,12 @@ export default function NavBar({
       <Search
         query={query}
         setQuery={setQuery}
-        socket={socket}
         setIsLoading={setIsLoading}
         setSelectedRoom={setSelectedRoom}
         setLeftHeader={setLeftHeader}
         setError={setError}
       />
-      <Menu socket={socket} />
+      <Menu />
     </nav>
   );
 }

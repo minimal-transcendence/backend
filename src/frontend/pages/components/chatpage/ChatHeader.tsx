@@ -1,13 +1,10 @@
-import { useState } from "react";
-const ChatHeader = ({
-  socket,
-  currentRoomName,
-}: {
-  socket: any;
-  currentRoomName: string;
-}) => {
+import { useState, useContext } from "react";
+import { SocketContext } from "../../../context/socket";
+const ChatHeader = ({ currentRoomName }: { currentRoomName: string }) => {
   const [roomState, setRoomState] = useState<string>("Public");
   const [password, setPassword] = useState<string>("");
+  const socket = useContext(SocketContext);
+
   const handleExit = (event: any, currentroomname: string) => {
     event.preventDefault();
     console.log("방나감 ", currentroomname);

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import { SocketContext } from "../../../context/socket";
 
 export default function Search({
-  socket,
   query,
   setQuery,
   setIsLoading,
@@ -9,7 +9,6 @@ export default function Search({
   setLeftHeader,
   setError,
 }: {
-  socket: any;
   query: string;
   setQuery: any;
   setIsLoading: any;
@@ -17,6 +16,7 @@ export default function Search({
   setLeftHeader: any;
   setError: any;
 }) {
+  const socket = useContext(SocketContext);
   useEffect(
     function () {
       function fetchResults() {
@@ -52,7 +52,7 @@ export default function Search({
       }
       fetchResults();
     },
-    [query]
+    [query, setError, setIsLoading, setLeftHeader, setSelectedRoom, socket]
   );
   return (
     <input

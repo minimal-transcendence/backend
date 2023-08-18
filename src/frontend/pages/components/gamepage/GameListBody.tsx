@@ -1,13 +1,14 @@
 import GameListItemInfo from "./GameListItemInfo";
+import { useContext } from "react";
+import { SocketContext } from "../../../context/socket";
 export default function GameListBody({
-  socket,
-  tmpLoginnickname,
+  myNickName,
   tmpUsers,
 }: {
-  socket: any;
-  tmpLoginnickname: string;
+  myNickName: string;
   tmpUsers: any;
 }) {
+  const socket = useContext(SocketContext);
   if (tmpUsers?.length === 0 || !tmpUsers) {
     console.log("gamelengh 0");
     return;
@@ -15,13 +16,9 @@ export default function GameListBody({
     console.log("gmaelist", JSON.stringify(tmpUsers, null, 2));
     return (
       <div className="gamelist-body">
-        <ul className="gamelist-lists" key={tmpLoginnickname}>
+        <ul className="gamelist-lists">
           {tmpUsers.map((game: any, i: number) => (
-            <GameListItemInfo
-              game={game}
-              key={i}
-              tmpLoginnickname={tmpLoginnickname}
-            />
+            <GameListItemInfo game={game} key={i} myNickName={myNickName} />
           ))}
         </ul>
       </div>
