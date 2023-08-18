@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import "./index.css";
+import "../../index.css";
 
-function ModalBasic({
+export default function ModalBasic({
   setIsOpenModal,
   socket,
   roomname,
@@ -87,4 +87,3 @@ function ModalBasic({
     </div>
   );
 }
-export default ModalBasic;

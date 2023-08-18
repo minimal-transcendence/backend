@@ -1,29 +1,28 @@
-import { useEffect, useState, useLayoutEffect } from "react";
+import { useEffect, useState } from "react";
 
 import * as io from "socket.io-client";
-import ModalBasic from "./modal";
+import ModalBasic from "./components/modalpage/modal";
+import ModalOverlay from "./components/modalpage/ModalOverlay";
+import TempLogin from "./components/temploginpage/tempLogin";
+import NavBar from "./components/navpage/NavBar";
+import GameList from "./components/gamepage/GameList";
 import ChatMain from "./components/chatpage/ChatMain";
-import TempLogin from "./tempLogin";
 import menuIcon from "../assets/menu.png";
-import logOutIcon from "../assets/logout.png";
-import userIcon from "../assets/user.png";
-import searchIcon from "../assets/search.png";
+
 import ysungwonIcon from "../assets/ysungwon.jpg";
+
+// import searchIcon from "./assets/search.png";
 import Image from "next/image";
-const socket = io.connect("http://localhost:3002", {
+
+export const socket = io.connect("http://localhost:3002", {
   query: {
     id: 1234,
     nickname: "namkim",
   },
   autoConnect: false,
 });
-// socket.on("welcomeMessage", (message) => {
-//   console.log(`i got message : ${message}`);
-// });
 
 const NO_SEARCH_RESULT_ERROR = "There is no room! : ";
-const NO_JOINNED_RESULT_ERROR = "No Joinned???! : ";
-let CLIENTNAME: string;
 
 export type UserOnChat = {
   id: string;
@@ -45,30 +44,23 @@ export default function App() {
   const [error, setError] = useState<string>("");
   const [query, setQuery] = useState("");
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
-  const [curOpen, setCurOpen] = useState<number>(-1);
   const [roomUserList, setRoomUserList] = useState<any>(null);
   const [isOpenModal, setIsOpenModal] = useState(false);
-  const [isOpenModal3, setIsOpenModal3] = useState(false);
-  const [passWordRequiredRoom, setPassWordRequiredRoom] = useState<string>("");
+
   const [roomnameModal, setroomnameModal] = useState<string>("");
   const [currentRoomName, setcurrentRoomName] = useState<string>("");
   const [tmpLoginID, setTmpLoginID] = useState<string>("");
   const [tmpLoginnickname, setTmpLoginnickname] = useState<string>("");
   const [tmpIsLoggedIn, setTmpIsLoggedIn] = useState<boolean>(false);
-  const [isConnected, setIsConnected] = useState<boolean>(false);
   const [leftHeader, setLeftHeader] = useState<string>("");
   const [messages, setMessages] = useState<any>("");
+
   function handleSelectRoom(event: any, room: any) {
     setSelectedRoom(room);
     setroomnameModal(room.roomname);
-    setCurOpen(-1);
     console.log("in Selectroomname handle ", room.roomname);
-
     socket.emit("selectRoom", room.roomname);
-
-    setRoomUserList(null);
   }
-
   useEffect(
     function () {
       function chkLogin() {
@@ -136,19 +128,21 @@ export default function App() {
       setcurrentRoomName(() => result.roomname);
       setMessages(() => result.messages);
     }
-    function sendMessage(from: string, roomname: string, data: any) {
+
+    function sendMessage(roomname: string, data: any) {
       console.log(
-        `in useEffect sendMessage1  from<${from}> roomname<${roomname}> body<${data}> <${JSON.stringify(
+        `in useEffect sendMessage1  from<${
+          data.from
+        }> roomname<${roomname}> body<${JSON.stringify(
           data,
           null,
           2
         )}> 내 방은 <${currentRoomName}>`
       );
-      const tmpData = { ...data, nickname: from };
-      console.log("tmpData ", JSON.stringify(tmpData, null, 2));
+
       if (roomname === currentRoomName) {
         console.log("same room!");
-        setMessages(() => [...messages, tmpData]);
+        setMessages(() => [...messages, data]);
       }
     }
 
@@ -178,48 +172,12 @@ export default function App() {
     };
   }, [socket, currentRoomName, messages]);
 
-  useEffect(
-    function () {
-      function fetchResults() {
-        try {
-          setIsLoading(true);
-
-          if (query === "#all") {
-            socket.emit("requestAllRoomList");
-            setSelectedRoom(null);
-            setLeftHeader("all");
-            setError("");
-          } else if (!query) {
-            console.log("!query");
-            socket.emit("requestMyRoomList");
-
-            setLeftHeader("joined");
-            setSelectedRoom(null);
-            setError("");
-          } else {
-            console.log("in requestMyRoomList if <", query);
-            socket.emit("requestSearchResultRoomList", query);
-
-            setSelectedRoom(null);
-            setLeftHeader("result");
-            setError("");
-          }
-        } catch (err: any) {
-          console.error(err.message);
-          setError(err.message);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-      fetchResults();
-    },
-    [query]
-  );
-
   return !tmpIsLoggedIn ? (
     <TempLogin
-      socket={socket}
+      tmpLoginID={tmpLoginID}
       setTmpLoginID={setTmpLoginID}
+      tmpLoginnickname={tmpLoginnickname}
+      tmpIsLoggedIn={tmpIsLoggedIn}
       setTmpLoginnickname={setTmpLoginnickname}
       setTmpIsLoggedIn={setTmpIsLoggedIn}
     />
@@ -237,18 +195,29 @@ export default function App() {
         )}
       </div>
 
-      <NavBar query={query} setQuery={setQuery} />
+      <NavBar
+        query={query}
+        setQuery={setQuery}
+        socket={socket}
+        setIsLoading={setIsLoading}
+        setSelectedRoom={setSelectedRoom}
+        setLeftHeader={setLeftHeader}
+        setError={setError}
+      />
       <Main>
         <Box>
           {
-            <SearchList
-              results={results}
-              query={query}
-              leftHeader={leftHeader}
-              setLeftHeader={setLeftHeader}
-              onSelectRoom={handleSelectRoom}
-              setroomnameModal={setroomnameModal}
-            />
+            <>
+              <SearchList
+                results={results}
+                query={query}
+                leftHeader={leftHeader}
+                setLeftHeader={setLeftHeader}
+                onSelectRoom={handleSelectRoom}
+                setroomnameModal={setroomnameModal}
+              />
+              <DMlist />
+            </>
           }
         </Box>
         <ChatMain
@@ -258,23 +227,28 @@ export default function App() {
           myNickName={tmpLoginnickname}
         />
         <Box>
-          <ChatRoomUser
-            curOpen={curOpen}
-            setCurOpen={setCurOpen}
-            users={roomUserList}
-            roomname={currentRoomName}
-            tmpLoginnickname={tmpLoginnickname}
-          />
+          <>
+            <ChatRoomUser
+              users={roomUserList}
+              roomname={currentRoomName}
+              tmpLoginnickname={tmpLoginnickname}
+            />
+            <GameList socket={socket} tmpLoginnickname={tmpLoginnickname} />
+          </>
         </Box>
       </Main>
     </>
   );
 }
 
-function ModalOverlay({ isOpenModal }: { isOpenModal: any }) {
-  // console.log("hidden ? ", isOpenModal);
-  return <div className={`overlay ${!isOpenModal ? "hidden" : ""}`}></div>;
+function DMlist() {
+  return (
+    <div className="dmlist-header">
+      <h4>DM-List</h4>
+    </div>
+  );
 }
+
 function ErrorMessage({ message }: { message: string }) {
   console.log("errmessga called");
   return (
@@ -285,78 +259,12 @@ function ErrorMessage({ message }: { message: string }) {
   );
 }
 
-function NavBar({ query, setQuery }: { query: string; setQuery: any }) {
-  console.log("navebar ");
-  return (
-    <nav className="nav-bar">
-      <Logo />
-      <Search query={query} setQuery={setQuery} />
-      <NavMenu />
-    </nav>
-  );
-}
-
-function Logo() {
-  return (
-    <div className="logo">
-      <span role="img">🏓</span>
-      <h1>42PONG</h1>
-      {/* <span>UserList</span> <span>/</span>
-      <span className="selected">RoomList</span> */}
-    </div>
-  );
-}
-
-function Search({ query, setQuery }: { query: string; setQuery: any }) {
-  return (
-    <input
-      className="search"
-      type="text"
-      placeholder="Search Room"
-      value={query}
-      onChange={(e) => setQuery(e.target.value)}
-    />
-  );
-}
-function NavMenu() {
-  return (
-    <div className="nav-bar-menu">
-      <div className="nav-bar-menu-l">
-        <p className="nav-randmatch">
-          <input type="checkbox" id="switch" />
-          <label htmlFor="switch">Toggle</label>
-        </p>
-        <p className="nav-userlist">
-          {/* <img src={userIcon} width="30" height="30" alt="usericon" /> */}
-          <Image src={userIcon} width="30" height="30" alt="usericon" />
-        </p>
-        <p className="nav-profile">My</p>
-        <p className="nav-logout">
-          {/* <img src={logOutIcon} width="30" height="30" /> */}
-          <Image src={logOutIcon} width="30" height="30" alt="logouticon" />
-        </p>
-      </div>
-      {/* <div className="nav-bar-menu-r"> */}
-    </div>
-  );
-}
-
 function Main({ children }: { children: any }) {
   return <main className="main">{children}</main>;
 }
 
 function Box({ children }: { children: any }) {
-  const [isOpen, setIsOpen] = useState(true);
-
-  return (
-    <div className="box">
-      {/* <button className="btn-toggle" onClick={() => setIsOpen((open) => !open)}>
-        {isOpen ? "–" : "+"}
-      </button>
-      {isOpen && children} */}
-      {children}
-    </div>
-  );
+  return <div className="box">{children}</div>;
 }
 
 function SearchListCreateRoom({ setroomnameModal }: { setroomnameModal: any }) {
@@ -373,7 +281,6 @@ function SearchListCreateRoom({ setroomnameModal }: { setroomnameModal: any }) {
       alert(`입력된 채팅창 이름: ${roomname}`);
       setroomnameModal(roomname);
       socket.emit("selectRoom", roomname);
-      // setPassWordRequiredRoom(roomname);
     }
     setroomname("");
     setDisabled(false);
@@ -429,6 +336,44 @@ function SearchList({
     console.log("no resuslt");
     return (
       <>
+        <div className="wrp">
+          <div className="list-rooms-search">
+            <SearchListCreateRoom setroomnameModal={setroomnameModal} />
+          </div>
+          <div className="selection-list" onClick={() => handleChk(event)}>
+            <span
+              data-name="all"
+              className={`${leftHeader === "all" ? "selected" : ""}`}
+            >
+              All
+            </span>
+            <span> / </span>
+            <span
+              data-name="result"
+              className={`${leftHeader === "result" ? "selected" : ""}`}
+            >
+              Result
+            </span>
+            <span> / </span>
+            <span
+              data-name="joined"
+              className={`${leftHeader === "joined" ? "selected" : ""}`}
+            >
+              Joined
+            </span>
+            <span className="btn-page-wrap">
+              <button className="btn-page">&larr; </button>
+              <button className="btn-page">&rarr;</button>
+            </span>
+          </div>
+          <ErrorMessage message={NO_SEARCH_RESULT_ERROR + query} />
+        </div>
+      </>
+    );
+  }
+  return (
+    <>
+      <div className="wrp">
         <div className="list-rooms-search">
           <SearchListCreateRoom setroomnameModal={setroomnameModal} />
         </div>
@@ -453,53 +398,23 @@ function SearchList({
           >
             Joined
           </span>
-          <span className="btn-page-wrap">
-            <button className="btn-page">&larr; </button>
-            <button className="btn-page">&rarr;</button>
+          <span>
+            <span>
+              <button className="btn-page">&larr;</button>
+              <button className="btn-page">&rarr;</button>
+            </span>
           </span>
         </div>
-        <ErrorMessage message={NO_SEARCH_RESULT_ERROR + query} />
-      </>
-    );
-  }
-  return (
-    <>
-      <div className="list-rooms-search">
-        <SearchListCreateRoom setroomnameModal={setroomnameModal} />
+        <ul className="list list-rooms">
+          {results?.map((el: any) => (
+            <SearchResult
+              el={el}
+              key={el.roomname}
+              onSelectRoom={onSelectRoom}
+            />
+          ))}
+        </ul>
       </div>
-      <div className="selection-list" onClick={() => handleChk(event)}>
-        <span
-          data-name="all"
-          className={`${leftHeader === "all" ? "selected" : ""}`}
-        >
-          All
-        </span>
-        <span> / </span>
-        <span
-          data-name="result"
-          className={`${leftHeader === "result" ? "selected" : ""}`}
-        >
-          Result
-        </span>
-        <span> / </span>
-        <span
-          data-name="joined"
-          className={`${leftHeader === "joined" ? "selected" : ""}`}
-        >
-          Joined
-        </span>
-        <span>
-          <span>
-            <button className="btn-page">&larr;</button>
-            <button className="btn-page">&rarr;</button>
-          </span>
-        </span>
-      </div>
-      <ul className="list list-rooms">
-        {results?.map((el: any) => (
-          <SearchResult el={el} key={el.roomname} onSelectRoom={onSelectRoom} />
-        ))}
-      </ul>
     </>
   );
 }
@@ -532,38 +447,78 @@ function SearchResult({ el, onSelectRoom }: { el: any; onSelectRoom: any }) {
 function ChatRoomUser({
   users,
   roomname,
-  curOpen,
-  setCurOpen,
   tmpLoginnickname,
 }: {
   users: any;
   roomname: string;
-  curOpen: number;
-  setCurOpen: any;
   tmpLoginnickname: string;
 }) {
   // console.log("in chatroomUser, users", users);
   // console.log("in chatroomUser, roomname", roomname);
-  if (!users || !roomname) return;
-  return (
-    <>
-      <div className="userlist-header">
-        <h4>{roomname} 유저목록</h4>
-      </div>
+  const [page, setPage] = useState<number>(1);
+  const [leftArrow, setLeftArrow] = useState<boolean>(false);
+  const [rightArrow, setRightArrow] = useState<boolean>(false);
 
-      <ul className="userlist-lists" key={tmpLoginnickname}>
-        {users.map((user: any, i: number) => (
-          <ChatRoomUserInfo
-            user={user}
-            key={i}
-            num={i}
-            roomname={roomname}
-            tmpLoginnickname={tmpLoginnickname}
-          />
-        ))}
-      </ul>
-    </>
+  useEffect(
+    function () {
+      function a() {
+        if (users?.length > page * 8) setRightArrow(() => true);
+        if (page > 1) setLeftArrow(() => true);
+        if (users?.length <= page * 8) setRightArrow(() => false);
+        if (page === 1) setLeftArrow(() => false);
+      }
+      a();
+    },
+    [users, page]
   );
+  if (!users || !roomname) return;
+  else {
+    let tmpUsers;
+    if (users.length < 9) {
+      console.log(`users length가 ${users.length}이므로 1페이지 미만.`);
+      tmpUsers = users;
+    } else {
+      console.log(`users length가 ${users.length}이므로 1페이지 이상가능.`);
+
+      console.log(`현재 페이지는 ${page}이므로, `);
+      const startIndex = page * 8 - 8;
+      tmpUsers = users.slice(startIndex, startIndex + 8);
+    }
+    return (
+      <>
+        <div className="wrp">
+          <div className="userlist-header">
+            <h4>{roomname} 유저목록</h4>
+
+            <button
+              onClick={() => setPage(() => page - 1)}
+              className={`btn-page ${leftArrow ? "" : "visible"}`}
+            >
+              &larr;
+            </button>
+            <button
+              onClick={() => setPage(() => page + 1)}
+              className={`btn-page ${rightArrow ? "" : "visible"}`}
+            >
+              &rarr;
+            </button>
+          </div>
+
+          <ul className="userlist-lists" key={tmpLoginnickname}>
+            {tmpUsers.map((user: any, i: number) => (
+              <ChatRoomUserInfo
+                user={user}
+                key={i}
+                num={i}
+                roomname={roomname}
+                tmpLoginnickname={tmpLoginnickname}
+              />
+            ))}
+          </ul>
+        </div>
+      </>
+    );
+  }
 }
 
 function ChatRoomUserInfo({
@@ -596,6 +551,10 @@ function ChatRoomUserInfo({
         socket.emit("addOperator", roomname, targetnickname);
       else if (event.target.dataset.name === "opDelete")
         socket.emit("deleteOperator", roomname, targetnickname);
+      else if (event.target.dataset.name === "dmApply")
+        socket.emit("dmApply", targetnickname);
+      else if (event.target.dataset.name === "oneVsOne")
+        socket.emit("oneVsOneApply", targetnickname, "oneVsOne", 2);
     } else {
       console.log("you click other");
     }
@@ -635,6 +594,8 @@ function ChatRoomUserInfo({
             <div data-name="block">block</div>
             <div data-name="opAdd">Add Oper</div>
             <div data-name="opDelete">Delete Oper</div>
+            <div data-name="dmApply">1:1 Chat</div>
+            <div data-name="oneVsOne">1:1 Game</div>
           </div>
         </div>
       </div>
