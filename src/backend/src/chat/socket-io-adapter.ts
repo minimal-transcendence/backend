@@ -19,7 +19,7 @@ export class SocketIOAdapter extends IoAdapter {
         const server: Server = super.createIOServer(port, options);
 
         server.of('chat').use(createJwtMiddleware(jwtService, this.logger));
-        server.of('game').use(createJwtMiddleware(jwtService, this.logger));
+        // server.of('game').use(createJwtMiddleware(jwtService, this.logger));
 
         return server;
     }
@@ -38,6 +38,7 @@ const createJwtMiddleware = (jwtService: JwtService, logger: Logger) =>
         });
         socket.userId = payload.id;
         socket.email = payload.email;
+        socket.inGame = false;
         next();
     } catch {
         next(new Error('FORBIDDEN'));

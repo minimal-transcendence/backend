@@ -51,11 +51,11 @@ export default function App() {
     },
   });
 
-  const gameSocket = io.connect("http://localhost/game", {
-    auth: {
-      token: jwt,
-    },
-  });
+  // const gameSocket = io.connect("http://localhost/game", {
+  //   auth: {
+  //     token: jwt,
+  //   },
+  // });
 
   useEffect(() => {
     // setUserId(() => localStorage.getItem("id"));
@@ -93,9 +93,9 @@ export default function App() {
     // socket.emit("message", "hello from NEXT");
   });
 
-  gameSocket.on("game", (message: any) => {
-    console.log("message from game socket : ", message);
-  });
+  // gameSocket.on("game", (message: any) => {
+  //   console.log("message from game socket : ", message);
+  // });
 
   useEffect(() => {
     function requestAllRoomList(result: any) {
