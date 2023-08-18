@@ -7,14 +7,13 @@ export default function NavBar({
   query,
   setQuery,
   setIsLoading,
-  setSelectedRoom,
+
   setLeftHeader,
   setError,
 }: {
   query: string;
   setQuery: any;
   setIsLoading: any;
-  setSelectedRoom: any;
   setLeftHeader: any;
   setError: any;
 }) {
@@ -27,7 +26,6 @@ export default function NavBar({
         query={query}
         setQuery={setQuery}
         setIsLoading={setIsLoading}
-        setSelectedRoom={setSelectedRoom}
         setLeftHeader={setLeftHeader}
         setError={setError}
       />

@@ -5,14 +5,14 @@ export default function Search({
   query,
   setQuery,
   setIsLoading,
-  setSelectedRoom,
+
   setLeftHeader,
   setError,
 }: {
   query: string;
   setQuery: any;
   setIsLoading: any;
-  setSelectedRoom: any;
+
   setLeftHeader: any;
   setError: any;
 }) {
@@ -25,7 +25,7 @@ export default function Search({
 
           if (query === "#all") {
             socket.emit("requestAllRoomList");
-            setSelectedRoom(null);
+
             setLeftHeader("all");
             setError("");
           } else if (!query) {
@@ -33,13 +33,12 @@ export default function Search({
             socket.emit("requestMyRoomList");
 
             setLeftHeader("joined");
-            setSelectedRoom(null);
+
             setError("");
           } else {
             console.log("in requestMyRoomList if <", query);
             socket.emit("requestSearchResultRoomList", query);
 
-            setSelectedRoom(null);
             setLeftHeader("result");
             setError("");
           }
@@ -52,7 +51,7 @@ export default function Search({
       }
       fetchResults();
     },
-    [query, setError, setIsLoading, setLeftHeader, setSelectedRoom, socket]
+    [query, setError, setIsLoading, setLeftHeader, socket]
   );
   return (
     <input
