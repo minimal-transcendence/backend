@@ -182,7 +182,7 @@ export class GameGateway
           ballY: room.ballY,
           paddleX: room.paddleX
         });
-      }, 1000);
+      }, 15);
     };
     
   }
@@ -209,6 +209,7 @@ export class GameGateway
   // In Game
   @SubscribeMessage('keydown')
   handleKeydown(client: SocketWithAuth, payload: any) {
+    console.log(payload);
     // client is not in game
     if (!client.inGame) {
       return;
