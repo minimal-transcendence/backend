@@ -41,10 +41,12 @@ export class AuthController {
         const access_token = await this.authService.generateAccessToken({
             id: user.id,
             email: user.email,
+            nickname: user.nickname
         });
         const refresh_token = await this.authService.generateRefreshToken({
             id: user.id,
             email: user.email,
+            nickname: user.nickname
         });
 
         // hashing refresh token
@@ -82,6 +84,7 @@ export class AuthController {
         const access_token = await this.authService.generateAccessToken({
             id: user.id,
             email: user.email,
+            nickname: user.nickname
         });
         res.setHeader('Authorization', 'Bearer '+ access_token);
         res.cookie('access_token', access_token, {

@@ -4,7 +4,7 @@ import { socket } from "@/pages/Home";
 export default function TempRandomMatch() {
     let roomName: string;
 
-    socket.on('randomMatchStartCheck', (payload: string) => {
+    socket.on('matchStartCheck', (payload: string) => {
         roomName = payload;
     });
 
@@ -13,7 +13,7 @@ export default function TempRandomMatch() {
     }
 
     const handleAccept = () => {
-        socket.emit('randomMatchAccept', `${roomName}`)
+        socket.emit('matchAccept', `${roomName}`)
     }
 
     return (

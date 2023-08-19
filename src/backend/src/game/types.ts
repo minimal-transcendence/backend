@@ -1,16 +1,30 @@
-// import { Socket } from "socket.io"
+import { Socket } from "socket.io"
 
-// export type AuthPayload = {
-//     userId: string;
-//     email: string;
-// }
+export type GameListItem = {
+    from: string,
+    to: string,
+    level: number,
+}
 
-// // export type GameRoom = {
-// //     name: string;
-// //     playerOne: SocketWithAuth;
-// //     playerTwo: SocketWithAuth;
-// //     playerOneAccept: boolean;
-// //     playerTwoAccept: boolean;
-// // }
+type Player = {
+    inGame: boolean;
+    gameList: GameListItem[];
+}
 
-// export type SocketWithAuth = Socket & AuthPayload;
+type JwtPayload = {
+    userId: string,
+    email: string,
+    nickname: string,
+}
+
+export type KeydownPayload = {
+    roomName: string;
+    key: string;
+}
+
+export type OneOnOnePayload = {
+    to: string;
+    level: number;
+}
+
+export type GameSocket = Socket & JwtPayload & Player;

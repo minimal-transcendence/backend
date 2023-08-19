@@ -1,4 +1,4 @@
-import { SocketWithAuth } from "src/chat/types";
+import { GameSocket } from "./types";
 
 export class GameRoom {
     // Interval
@@ -7,8 +7,8 @@ export class GameRoom {
     name: string;
     // mode: string;
     // Players
-    playerOne: SocketWithAuth;
-    playerTwo: SocketWithAuth;
+    playerOne: GameSocket;
+    playerTwo: GameSocket;
     // players: object;
     // Check Every Player Accept this Match
     playerOneAccept: boolean;

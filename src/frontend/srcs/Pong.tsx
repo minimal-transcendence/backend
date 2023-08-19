@@ -270,8 +270,8 @@ export default function Pong() {
     const canvas: HTMLCanvasElement = canvasRef.current;
 
     // Component
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
+    // canvas.width = canvas.clientWidth;
+    // canvas.height = canvas.clientHeight;
     // Window
     // canvas.width = window.innerWidth;
     // canvas.height = window.innerHeight;

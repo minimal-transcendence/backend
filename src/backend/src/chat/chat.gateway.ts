@@ -17,7 +17,7 @@ import { ChatMessageStoreService } from './store/store.message.service';
 import { ChatService } from './chat.service';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { PrismaService } from 'src/prisma.service';
-import { SocketWithAuth } from './types';
+import { ChatSocket } from './types';
 
 // @UseGuards(JwtGuard)	//guard해도 연결 자체가 막히지는 않는 듯... ㄸㄹㄹ
 // @WebSocketGateway({
@@ -96,7 +96,7 @@ export class ChatGateway
 		//updateRooms -> 방 리스트 업데이트
 		//updateRoom -> 방 내부에 owner 이나 operator 등 바뀌었을때
 	// async handleConnection(@ConnectedSocket() client: Socket) {
-	async handleConnection(@ConnectedSocket() client: SocketWithAuth, userId : string, ) {
+	async handleConnection(@ConnectedSocket() client: ChatSocket, userId : string, ) {
 		const sockets = this.io.sockets;
 
 		this.logger.debug(
@@ -212,7 +212,7 @@ export class ChatGateway
 		// })
 	}
 	
-	async handleDisconnect(@ConnectedSocket() client: SocketWithAuth) {
+	async handleDisconnect(@ConnectedSocket() client: ChatSocket) {
 		const sockets = this.io.sockets;
 
 		this.logger.debug(

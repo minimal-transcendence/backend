@@ -1,10 +1,9 @@
 import { Socket } from "socket.io"
 
-export type AuthSocket = {
-    userId: string;
-    email: string;
-
-    inGame: boolean;
+type JwtPayload = {
+    userId: string,
+    email: string,
+    nickname: string,
 }
 
-export type SocketWithAuth = Socket & AuthSocket;
+export type ChatSocket = Socket & JwtPayload;

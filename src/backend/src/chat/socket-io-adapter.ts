@@ -2,7 +2,8 @@ import { INestApplicationContext, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { Server, ServerOptions } from 'socket.io';
-import { SocketWithAuth } from './types';
+import { ChatSocket } from './types';
+import { GameSocket } from 'src/game/types';
 
 export class SocketIOAdapter extends IoAdapter {
     private readonly logger = new Logger(SocketIOAdapter.name);
@@ -26,7 +27,7 @@ export class SocketIOAdapter extends IoAdapter {
 }
 
 const createJwtMiddleware = (jwtService: JwtService, logger: Logger) =>
-(socket: SocketWithAuth, next) => {
+(socket: ChatSocket | GameSocket, next) => {
     const token =
         socket.handshake.auth.token || socket.handshake.headers['token'];
 
@@ -38,7 +39,7 @@ const createJwtMiddleware = (jwtService: JwtService, logger: Logger) =>
         });
         socket.userId = payload.id;
         socket.email = payload.email;
-        socket.inGame = false;
+        // socket.inGame = false;
         next();
     } catch {
         next(new Error('FORBIDDEN'));

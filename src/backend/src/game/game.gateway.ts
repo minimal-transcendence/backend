@@ -11,7 +11,7 @@ import {
 	WebSocketServer,
 } from '@nestjs/websockets';
 import { Namespace } from 'socket.io';
-import { SocketWithAuth } from 'src/chat/types';
+import { GameListItem, GameSocket, KeydownPayload, OneOnOnePayload } from './types';
 import { GameRoom } from './GameRoom';
 import { GameService } from './game.service';
 
@@ -29,7 +29,7 @@ export class GameGateway
   // private room: string = "";
   // private readyPlayerCount: number = 0;
 
-  private randomMatchQueue: SocketWithAuth[] = [];
+  private randomMatchQueue: GameSocket[] = [];
   private gameRooms = {};
 
   constructor(private gameServie: GameService){}
@@ -40,8 +40,15 @@ export class GameGateway
 		this.logger.log('GAME 웹소켓 서버 초기화 ✅');
   }
 
-  async handleConnection(@ConnectedSocket() client: SocketWithAuth, userId : string, ) {
+  async handleConnection(@ConnectedSocket() client: GameSocket, userId : string, ) {
 		const sockets = this.io.sockets;
+
+    client.inGame = false;
+    client.gameList = [];
+    //For TEST
+    client.userId = "def";
+    client.nickname = "def";
+    client.email = "def";
 
 		this.logger.debug(
 			`Game Socket connected with userId: ${client.userId}`
@@ -53,7 +60,7 @@ export class GameGateway
 		this.io.emit('game', `from ${client.userId} ${client.email}`);
   }
 
-  async handleDisconnect(@ConnectedSocket() client: SocketWithAuth) {
+  async handleDisconnect(@ConnectedSocket() client: GameSocket) {
     const sockets = this.io.sockets;
 
     this.logger.debug(
@@ -64,35 +71,10 @@ export class GameGateway
     this.logger.debug(`Number of connected Game sockets: ${sockets.size}`)
   }
 
-  // @SubscribeMessage('ready')
-  // handleReady(client: SocketWithAuth) {
-  //   this.room = "room" + Math.floor(this.readyPlayerCount / 2);
-  //   client.join(this.room);
-
-  //   console.log("Player ready :", client.id, this.room);
-
-  //   this.readyPlayerCount++;
-
-  //   console.log("readyPlayCount : ", this.readyPlayerCount);
-
-  //   if (this.readyPlayerCount % 2 === 0) {
-  //     this.io.in(this.room).emit("startGame", client.id);
-  //   }
-  // }
-
-  // @SubscribeMessage('paddleMove')
-  // handlePaddleMove(client: SocketWithAuth, payload: any) {
-  //   this.io.to(this.room).emit("paddleMove", payload);
-  // }
-
-  // @SubscribeMessage('ballMove')
-  // handleBallMove(client: SocketWithAuth, payload: any) {
-  //   this.io.to(this.room).emit("ballMove", payload);
-  //   // console.log(payload);
-  // }
+  /*-------------Random Match-----------------------*/
 
   @SubscribeMessage('randomMatchApply')
-  handleRandomMatchApply(client: SocketWithAuth) {
+  handleRandomMatchApply(client: GameSocket) {
     // client is in game
     if (client.inGame) {
       return;
@@ -128,17 +110,17 @@ export class GameGateway
       // Delete Players from Random Match Queue
       this.randomMatchQueue.splice(0, 2);
       // Ask Match Accept
-      this.io.to(roomName).emit('randomMatchStartCheck', roomName);
+      this.io.to(roomName).emit('matchStartCheck', roomName);
     }
   }
 
   @SubscribeMessage('randomMatchCancel')
-  handleRandomMatchCancel(client: SocketWithAuth) {
+  handleRandomMatchCancel(client: GameSocket) {
     this.randomMatchQueue = this.randomMatchQueue.filter(item => item !== client);
   }
 
-  @SubscribeMessage('randomMatchAccept')
-  handleAccept(client: SocketWithAuth, roomName: string) {
+  @SubscribeMessage('matchAccept')
+  handleAccept(client: GameSocket, roomName: string) {
     // let room: GameRoom = this.gameRooms.find((e) => e.name === roomName)
 
     let room: GameRoom = this.gameRooms[roomName];
@@ -157,58 +139,96 @@ export class GameGateway
 
     // Start Game
     if (room.playerOneAccept && room.playerTwoAccept) {
-
-      // send game data for Init
-      this.io.to(roomName).emit('startGame', {
-        roomName: room.name,
-        canvasWidth: room.canvasWidth,
-        canvasHeight: room.canvasHeight,
-        paddleWidth: room.paddleWidth,
-        paddleHeight: room.paddleHeight,
-        paddleX: room.paddleX,
-        ballX: room.ballX,
-        ballY: room.ballY,
-        ballRadius: room.ballRadius,
-      });
-
-      // setInterval
-      room.interval = setInterval(() => {
-        this.gameServie.ballMove(room);
-
-        // send game data for drawing
-        this.io.to(roomName).emit('gameData', {
-          roomName: room.name,
-          ballX: room.ballX,
-          ballY: room.ballY,
-          paddleX: room.paddleX
-        });
-      }, 15);
+      this.gameServie.startGame(this.io, room);
     };
     
   }
 
+  @SubscribeMessage('matchDecline')
+  handleDecline(client: GameSocket, roomName:string) {
+    // check if user in the room
+    this.gameServie.validatePlayerInRoom(client, this.gameRooms[roomName]);
+
+    this.io.to(roomName).emit('matchDecline', roomName);
+    // delete game room
+    delete this.gameRooms[roomName];
+  }
+
   // Test - stop setInterval
   @SubscribeMessage('stopInterval')
-  handleStopInterval(client: SocketWithAuth, roomName: string) {
+  handleStopInterval(client: GameSocket, roomName: string) {
     let room = this.gameRooms[roomName];
 
     clearInterval(room.interval);
     console.log(`${roomName} stopped`);
   }
+  /*---------------------One on One-----------------------------------*/
+  @SubscribeMessage('oneOnOneApply')
+  handleOneOnOneApply(client: GameSocket, payload: OneOnOnePayload) {
+    // Get By Nickname
+    // let toClient: GameSocket;
 
-  @SubscribeMessage('randomMatchDecline')
-  handleDecline(client: SocketWithAuth, roomName:string) {
-    // check if user in the room
-    this.gameServie.validatePlayerInRoom(client, this.gameRooms[roomName]);
+    // this.io.sockets.clients().forEach((e) => {
+    //   if (e.nickname === payload.to) {
+    //     toClient = e;
+    //   }
+    // })
 
-    this.io.to(roomName).emit('gameDeclined', roomName);
-    // delete game room
-    delete this.gameRooms[roomName];
+    // Get By Id - TEST
+    // const toClient: GameSocket = this.io.sockets.sockets.get(payload.to);
+
+    let toClient: GameSocket;
+
+    this.io.sockets.forEach((e) => {
+      if (e.id === payload.to) {
+        toClient = e as GameSocket;
+      }
+    })
+    ////
+
+    if (!toClient) {
+      return `ERR no such user: ${payload.to}`;
+    }
+
+    // Invitation (nickname)
+    // const invitation: GameListItem = {
+    //   from: client.nickname,
+    //   to: payload.to,
+    //   level: payload.level,
+    // }
+
+    // Invitation (id) - TEST
+    const invitation: GameListItem = {
+      from: client.id,
+      to: payload.to,
+      level: payload.level,
+    }
+
+    // 중복확인 - todo
+    for (let e in client.gameList) {
+      console.log(e);
+      console.log(invitation);
+      if (this.gameServie.objectsAreSame(client.gameList[e], invitation)) {
+        return `ERR aleady invite ${payload.to}`;
+      }
+    }
+
+    // update list on each client
+    client.gameList.push(invitation);
+    toClient.gameList.push(invitation);
+
+    // send invitation list
+    client.emit('updateGameList', client.gameList);
+    toClient.emit('updateGameList', toClient.gameList);
+
+    console.log(`${client.id}-list: ${client.gameList.length}`);
+    console.log(`${toClient.id}-list: ${toClient.gameList.length}`);
   }
+  /*---------------------In Game--------------------------------------*/
 
   // In Game
   @SubscribeMessage('keydown')
-  handleKeydown(client: SocketWithAuth, payload: any) {
+  handleKeydown(client: GameSocket, payload: KeydownPayload) {
     console.log(payload);
     // client is not in game
     if (!client.inGame) {
@@ -251,33 +271,5 @@ export class GameGateway
         break;
     }
   }
-
-  // @SubscribeMessage('keydown')
-  // handleKeydown(client: SocketWithAuth, roomName: string, key: string) {
-  //   // client is not in game
-  //   if (!client.inGame) {
-  //     return;
-  //   }
-  //   // check if user in the room
-  //   this.gameServie.validatePlayerInRoom(client, this.gameRooms[roomName]);
-
-  //   switch (key) {
-  //     case 'ArrowLeft':
-  //       if (client === this.gameRooms[roomName].playerOne) {
-  //         this.gameRooms[roomName].paddleX[0] -= 15;
-  //       }
-  //       else {
-  //         this.gameRooms[roomName].paddleX[1] -= 15;
-  //       }
-  //       break;
-  //     case 'ArrowRight':
-  //       if (client === this.gameRooms[roomName].playerOne) {
-  //         this.gameRooms[roomName].paddleX[0] += 15;
-  //       }
-  //       else {
-  //         this.gameRooms[roomName].paddleX[1] += 15;
-  //       }
-  //       break;
-  //   }
-  // }
+  /*-----------------------------------------------------------*/
 }
