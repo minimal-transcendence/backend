@@ -24,6 +24,9 @@ export default function TempRandomMatch() {
             <button onClick={handleAccept}>
                 수락
             </button>
+            <button onClick={handleAccept}>
+                수락
+            </button>
         </div>
     )
 }

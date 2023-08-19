@@ -5,6 +5,7 @@ export class GameRoom {
     interval: any;
     // Room Name
     name: string;
+    //todo - level
     // mode: string;
     // Players
     playerOne: GameSocket;

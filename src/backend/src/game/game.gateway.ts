@@ -11,7 +11,7 @@ import {
 	WebSocketServer,
 } from '@nestjs/websockets';
 import { Namespace } from 'socket.io';
-import { GameListItem, GameSocket, KeydownPayload, OneOnOnePayload } from './types';
+import { GameListItem, GameSocket, KeydownPayload, OneOnOneInvite, OneOnOneAccept } from './types';
 import { GameRoom } from './GameRoom';
 import { GameService } from './game.service';
 
@@ -164,19 +164,12 @@ export class GameGateway
   }
   /*---------------------One on One-----------------------------------*/
   @SubscribeMessage('oneOnOneApply')
-  handleOneOnOneApply(client: GameSocket, payload: OneOnOnePayload) {
+  handleOneOnOneApply(client: GameSocket, payload: OneOnOneInvite) {
     // Get By Nickname
-    // let toClient: GameSocket;
-
-    // this.io.sockets.clients().forEach((e) => {
-    //   if (e.nickname === payload.to) {
-    //     toClient = e;
-    //   }
-    // })
+    // let toClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.to);
 
     // Get By Id - TEST
-    // const toClient: GameSocket = this.io.sockets.sockets.get(payload.to);
-
+    // const toClient: GameSocket = this.io.sockets.get(payload.to);
     let toClient: GameSocket;
 
     this.io.sockets.forEach((e) => {
@@ -184,7 +177,7 @@ export class GameGateway
         toClient = e as GameSocket;
       }
     })
-    ////
+    ////////////////////////
 
     if (!toClient) {
       return `ERR no such user: ${payload.to}`;
@@ -221,9 +214,85 @@ export class GameGateway
     client.emit('updateGameList', client.gameList);
     toClient.emit('updateGameList', toClient.gameList);
 
-    console.log(`${client.id}-list: ${client.gameList.length}`);
-    console.log(`${toClient.id}-list: ${toClient.gameList.length}`);
+    console.log(`${client.id} - list size: ${client.gameList.length}`);
+    console.log(`${toClient.id} - list size: ${toClient.gameList.length}`);
   }
+
+  @SubscribeMessage('oneOnOneAccept')
+  handleOneOnOneAccept(client: GameSocket, payload: OneOnOneAccept) {
+    for (let e in client.gameList) {
+      if (client.gameList[e].from === payload.from) {
+        // todo - create room / start game
+        // Get By Nickname
+        // const fromClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.from);
+
+        // Get By Id - TEST
+        // const toClient: GameSocket = this.io.sockets.get(payload.to);
+        let fromClient: GameSocket;
+
+        this.io.sockets.forEach((e) => {
+          if (e.id === payload.from) {
+            fromClient = e as GameSocket;
+          }
+        })
+        ////////////////////////
+
+        if (!fromClient) {
+          return `ERR no such user: ${payload.from}`;
+        }
+
+        // Create New Game Room
+        const roomName = "room_" + fromClient.id;
+        this.gameRooms[roomName] = new GameRoom({
+          name: roomName,
+          playerOne: fromClient,
+          playerTwo: client
+          // level: payload.level
+        });
+
+        fromClient.inGame = true;
+        client.inGame = true;
+
+        // Add Players into Game Room
+        fromClient.join(roomName);
+        client.join(roomName);
+
+        console.log(this.gameRooms[roomName].playerOne.id);
+        console.log(this.gameRooms[roomName].playerTwo.id);
+
+        // Delete Invitations from each user
+
+        // Invitation (nickname)
+        // const invitation: GameListItem = {
+        //   from: fromClient.nickname,
+        //   to: client.nickname,
+        //   level: payload.level,
+        // }
+
+        // Invitation (id) - TEST
+        const invitation: GameListItem = {
+          from: fromClient.id,
+          to: client.id,
+          level: payload.level
+        }
+
+        fromClient.gameList = fromClient.gameList.filter(item => 
+          !this.gameServie.objectsAreSame(item, invitation));
+        client.gameList = client.gameList.filter(item => 
+          !this.gameServie.objectsAreSame(item, invitation));
+
+        // Ask Match Accept
+        this.io.to(roomName).emit('matchStartCheck', roomName);
+
+        console.log(`${fromClient.id} - list size: ${fromClient.gameList.length}`);
+        console.log(`${client.id} - list size: ${client.gameList.length}`);
+        
+        break;
+      }
+    }
+    return `ERR no invitation from ${payload.from}`;
+  }
+
   /*---------------------In Game--------------------------------------*/
 
   // In Game

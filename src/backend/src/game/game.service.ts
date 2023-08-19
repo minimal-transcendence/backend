@@ -111,18 +111,28 @@ export class GameService {
     }
   }
 
+  getSocketByNickname(io: Namespace, nickname: string): GameSocket | null {
+    io.sockets.forEach((e: any) => {
+      if (e.nickname=== nickname) {
+        // toClient = e as GameSocket;
+        return e as GameSocket;
+      }
+    })
+    return null;
+  }
+
   objectsAreSame(x: Object, y: Object): boolean {
     var objectsAreSame: boolean = true;
     for(var propertyName in x) {
-      console.log(`x ${propertyName}: ${x[propertyName]}`);
-      console.log(`y ${propertyName}: ${y[propertyName]}`);
+      // console.log(`x ${propertyName}: ${x[propertyName]}`);
+      // console.log(`y ${propertyName}: ${y[propertyName]}`);
       if(x[propertyName] !== y[propertyName]) {
-        console.log(`${x[propertyName]}, ${y[propertyName]} - Not same`)
+        // console.log(`${x[propertyName]}, ${y[propertyName]} - Not same`)
         objectsAreSame = false;
         break;
       }
     }
-    console.log("Same object");
+    // console.log("Same object");
     return objectsAreSame;
  }
 }

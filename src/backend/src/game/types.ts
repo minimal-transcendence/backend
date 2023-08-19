@@ -22,8 +22,13 @@ export type KeydownPayload = {
     key: string;
 }
 
-export type OneOnOnePayload = {
+export type OneOnOneInvite = {
     to: string;
+    level: number;
+}
+
+export type OneOnOneAccept = {
+    from: string;
     level: number;
 }
 
