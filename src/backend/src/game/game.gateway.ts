@@ -204,7 +204,7 @@ export class GameGateway
       level: payload.level,
     }
 
-    // 중복확인 - todo
+    // 중복확인
     for (let e in client.gameList) {
       console.log(e);
       console.log(invitation);
