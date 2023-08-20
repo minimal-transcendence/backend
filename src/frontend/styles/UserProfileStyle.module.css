@@ -1,113 +1,114 @@
-.mainBox{
-	display: flex;
-	width:1000px;
-	height:800px;
-	padding: 30px;
-	border-radius:20px;
-	flex-direction: row;
-  }
+	.mainBox{
+		display: flex;
+		width:1000px;
+		height:800px;
+		padding: 30px;
+		border-radius:20px;
+		flex-direction: row;
+	}
 
-  .profileInner{
-	flex: 1;
-	padding: 10px;
-	padding-left: 10px;
-	padding-top: 50px;
-  }
+	.profileInner{
+		flex: 1;
+		padding: 10px;
+		padding-left: 10px;
+		padding-top: 50px;
+	}
 
-  .logInner{
-	flex: 2;
-	padding: 10px;
-	overflow: auto;
-  }
+	.logInner{
+		flex: 2;
+		padding: 10px;
+		overflow: auto;
+	}
 
-  .profileImage{
-	width:150px;
-	height:150px;
-	border-radius:20px;
-	overflow: hidden;
-  }
+	.profileImage{
+		width:150px;
+		height:150px;
+		border-radius:20px;
+		overflow: hidden;
+	}
 
-  .wlsBanner{
-	color: #808080;
-  }
+	.wlsBanner{
+		color: #808080;
+	}
 
 	.buttons {
-	  display: flex;
-	  flex-direction: row; /* 버튼들을 세로로 배치 */
-	  gap: 10px; /* 버튼 간격 */
+		display: flex;
+		flex-direction: row; /* 버튼들을 세로로 배치 */
+		gap: 10px; /* 버튼 간격 */
 	}
 
 	.buttons button {
-	  padding: 8px 8px;
-	  width: 150px;
-	  height: 50px;
-	  border: none;
-	  border-radius: 5px;
-	  cursor: pointer;
-	  color:white;
-	  font-size: 18px;
-	font-weight: bold;
-	font-family: Pretendard, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
-	  'Liberation Sans', sans-serif;
+		padding: 8px 8px;
+		width: 150px;
+		height: 50px;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+		color:white;
+		font-size: 18px;
+		font-weight: bold;
+		font-family: Pretendard, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+		'Liberation Sans', sans-serif;
 	}
 
-  .followButton{
-	background: #4193EF;
-  }
-  .followingButton{
-	background: #454545;
-  }
-  .gameButton{
-	background: #58BF91;
-  }
-  .fontSet{
-	font-weight: bold;
-	font-family: Pretendard, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
-	  'Liberation Sans', sans-serif;
-  }
+	.followButton{
+		background: #4193EF;
+	}
+	.followingButton{
+		background: #454545;
+	}
+	.gameButton{
+		background: #58BF91;
+	}
+	.fontSet{
+		font-weight: bold;
+		font-family: Pretendard, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+			'Liberation Sans', sans-serif;
+	}
 
-  .logBanner{
-	font-size: 18px;
-	font-weight: bold;
-	font-family: Pretendard, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
-	  'Liberation Sans', sans-serif;
-  }
+	.logBanner{
+		font-size: 18px;
+		font-weight: bold;
+		font-family: Pretendard, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+			'Liberation Sans', sans-serif;
+	}
 
-  .logBox{
-	display: flex;
-	flex-direction: row;
-	margin: 20px;
-	padding: 10px;
-	width: 600px;
-	height: 50px;
-	border-radius:20px;
-	background: #c1d0df;
-  }
+	.logBox{
+		display: flex;
+		flex-direction: row;
+		margin: 20px;
+		padding: 10px;
+		width: 600px;
+		height: 50px;
+		border-radius:20px;
+		background: #445069;
+		color:white;
+	}
 
-  .logTime{
-	width: 200px;
-	height: 50px;
-	font-size: 15px;
-	text-align: center;
-	justify-content: center;
-  }
+	.logTime{
+		width: 200px;
+		height: 50px;
+		font-size: 15px;
+		text-align: center;
+		justify-content: center;
+	}
 
-  .logName{
-	width: 150px;
-	height: 50px;
-	font-size: 15px;
-	text-align: center;
-	justify-content: center;
-  }
-  .logProfileImage{
-	width: 50px;
-	height: 50px;
-	border-radius:10px;
-  }
-  .resultFont{
-	width: 50px;
-	height: 50px;
-	font-size: 30px;
-	text-align: center;
-	justify-content: center;
-  }
+	.logName{
+		width: 150px;
+		height: 50px;
+		font-size: 15px;
+		text-align: center;
+		justify-content: center;
+	}
+	.logProfileImage{
+		width: 50px;
+		height: 50px;
+		border-radius:10px;
+	}
+	.resultFont{
+		width: 50px;
+		height: 50px;
+		font-size: 30px;
+		text-align: center;
+		justify-content: center;
+	}

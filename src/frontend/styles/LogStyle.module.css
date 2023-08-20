@@ -5,8 +5,8 @@
 	text-align: center;
 	justify-content: center;
 	align-items: center;
-	background: #96B6C5;
-	min-height: 100vh; /* 페이지 높이의 최소값으로 설정 */
+	background: #4682A9;
+	min-height: 100vh;
   }
   .innerBox{
 	display: flex;
@@ -15,7 +15,7 @@
 	padding: 10px;
 	border-radius:10px;
 	flex-direction: column;
-	background: #ADC4CE;
+	background: #749BC2;
 	text-align: center;
 	justify-content: center;
 	align-items: center;
@@ -43,7 +43,7 @@
 	cursor: pointer;
 	color: black;
 	font-size: 18px;
-	background: #EEE0C9;
+	background: #91C8E4;
   }
 
   .button2{
@@ -55,5 +55,5 @@
 	cursor: pointer;
 	color: black;
 	font-size: 18px;
-	background: #EEE0C9;
+	background: #91C8E4;
   }

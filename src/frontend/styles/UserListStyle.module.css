@@ -1,24 +1,7 @@
 
-.modal{
-	position: fixed; /* Stay in place */
-	z-index: 1; /* Sit on top */
-	left: 0;
-	top: 0;
-	width: 100%; /* Full width */
-	height: 100%; /* Full height */
-	overflow: auto; /* Enable scroll if needed */
-	background-color: rgb(0,0,0); /* Fallback color */
-	background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-}
-
-.modalContent {
-	margin: 15% auto; /* 15% from the top and centered */
-	border: 1px solid #888;
-  }
-
 .profileMainBox{
 	display: flex;
-    flex-direction: column;
+	flex-direction: column;
 	padding: 20px;
 	border: 1px solid #ddd;
 	border-radius: 10px;
@@ -26,11 +9,9 @@
 	height: 600px;
 	overflow: auto;
 	background: #F9F9F9;
-    align-items: middle;
+	align-items: middle;
 }
 
-
-/* Rectangle 302 */
 .profileBox{
 	display: flex;
 	align-items: center;
@@ -98,14 +79,11 @@
 	background: #454545;
   }
 
-/* Mask group */
 .profilePicture{
 	width: 100px;
 	height: 100px;
 }
 
-
-/* Rectangle 237 */
 .profilePictureBox{
 	object-fit: cover;
 	width: 100px;
@@ -113,159 +91,4 @@
 
 	background: #D9D9D9;
 	border-radius: 5px;
-}
-
-/* 0a0398e6611656b65d089feefe38c22b 1
-.img{
-	position: static;
-	width: 107.02px;
-	height: 107.02px;
-
-	background: url(0a0398e6611656b65d089feefe38c22b);
-} */
-
-/* Rectangle 312 */
-.followButtonBox{
-	width: 101px;
-	height: 31px;
-
-	background: #4193EF;
-	border-radius: 7px;
-
-	font-family: 'Pretendard';
-	font-style: normal;
-	font-weight: 700;
-	font-size: 16px;
-	line-height: 40px;
-	/* identical to box height, or 250% */
-	display: flex;
-	align-items: center;
-	text-align: center;
-
-	color: #FFFFFF;
-}
-
-
-/* Rectangle 294 */
-.normalButtonBox{
-	width: 101px;
-	height: 31px;
-
-	background: #58BF91;
-	border-radius: 7px;
-}
-
-/* Rectangle 291 */
-.followingButtonBox{
-	width: 101px;
-	height: 31px;
-
-	background: #454545;
-	border-radius: 7px;
-}
-
-/* Ellipse 2 */
-.onlineCircle{
-	width: 32px;
-	height: 31px;
-
-	background: #66E739;
-}
-
-
-/* Ellipse 3 */
-.offlineCircle{
-	position: static;
-	width: 32px;
-	height: 31px;
-
-	background: #F83838;
-}
-
-/* Outline/Communication/User-plus */
-.followIconBox{
-	position: relative;
-	width: 20px;
-	height: 20px;
-}
-
-/* Icon */
-.followIconImage{
-	left: 13.54%;
-	right: 5.21%;
-	top: 13.54%;
-	bottom: 15.71%;
-
-	background: #FFFFFF;
-}
-/* 팔로우 */
-.followInBox{
-	width: 42px;
-	height: 40px;
-
-	font-family: 'Pretendard';
-	font-style: normal;
-	font-weight: 700;
-	font-size: 16px;
-	line-height: 40px;
-	/* identical to box height, or 250% */
-	display: flex;
-	align-items: center;
-	text-align: center;
-
-	color: #FFFFFF;
-}
-
-/* 게임신청 */
-.gameProposalInbox{
-	width: 56px;
-	height: 40px;
-
-	font-family: 'Pretendard';
-	font-style: normal;
-	font-weight: 700;
-	font-size: 16px;
-	line-height: 40px;
-	/* identical to box height, or 250% */
-	display: flex;
-	align-items: center;
-	text-align: center;
-
-	color: #FFFFFF;
-}
-
-/* 프로필 */
-.profileInbox{
-	width: 42px;
-	height: 40px;
-
-	font-family: 'Pretendard';
-	font-style: normal;
-	font-weight: 700;
-	font-size: 16px;
-	line-height: 40px;
-	/* identical to box height, or 250% */
-	display: flex;
-	align-items: center;
-	text-align: center;
-
-	color: #FFFFFF;
-}
-
-/* 팔로잉 */
-.followingInBox{
-	width: 42px;
-	height: 40px;
-
-	font-family: 'Pretendard';
-	font-style: normal;
-	font-weight: 700;
-	font-size: 16px;
-	line-height: 40px;
-	/* identical to box height, or 250% */
-	display: flex;
-	align-items: center;
-	text-align: center;
-
-	color: #FFFFFF;
 }

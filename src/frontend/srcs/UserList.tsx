@@ -80,7 +80,8 @@ function UserList() {
 					loserAvatar: "/api/" + matchResponse[i].loser.avatar,
 					time: matchResponse[i].createdTime,
 				};
-				newMatchData.time = newMatchData.time.slice(0,10);
+				newMatchData.time = newMatchData.time.slice(0,19);
+				newMatchData.time = newMatchData.time.replace('T', ' ');
 				newData.matchhistory.push(newMatchData);
 			}
 			newDataList.push(newData);
@@ -222,7 +223,9 @@ function UserList() {
 					{userData[index].matchhistory.map((item, idx) => (
 					<div key={idx} className={styles_profile.logBox}>
 						<div className={styles_profile.logTime}>
-							{userData[index].matchhistory[idx].time}
+							{userData[index].matchhistory[idx].time.slice(0,10)}
+							<br />
+							{userData[index].matchhistory[idx].time.slice(11,19)}
 						</div>
 						<div className={styles_profile.logName}>
 						{userData[index].matchhistory[idx].winner}
