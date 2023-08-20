@@ -80,8 +80,9 @@ export class AuthService {
     async getHashedRefreshToken(refreshToken: string) {
         // 토큰 값을 그대로 저장하기 보단, 암호화를 거쳐 데이터베이스에 저장한다. 
         // bcrypt는 단방향 해시 함수이므로 암호화된 값으로 원래 문자열을 유추할 수 없다. 
+        const signatue = refreshToken.split('.')[2];
         const saltOrRounds = 10;
-        const hashedRefreshToken = await bcrypt.hash(refreshToken, saltOrRounds);
+        const hashedRefreshToken = await bcrypt.hash(signatue, saltOrRounds);
         return hashedRefreshToken;
     }
 
@@ -97,7 +98,9 @@ export class AuthService {
             throw new UnauthorizedException("no refresh token on user");
         }
 
-        const isMatched = await bcrypt.compare(refreshToken, user.refreshToken);
+        const signatue = refreshToken.split('.')[2];
+
+        const isMatched = await bcrypt.compare(signatue, user.refreshToken);
 
         if (isMatched) {
             return user;

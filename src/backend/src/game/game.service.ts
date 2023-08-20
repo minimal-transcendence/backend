@@ -36,7 +36,7 @@ export class GameService {
     room.interval = setInterval(() => {
       this.ballMove(room);
 
-      console.log("Speed X:", room.speedX);
+      // console.log("Speed X:", room.speedX);
 
       // send game data for drawing
       io.to(room.name).emit('gameData', {
@@ -85,7 +85,12 @@ export class GameService {
           room.winner = room.player[1].id;
           room.loser = room.player[0].id;
           room.gameOver = true;
-          console.log("Game Over: winner -", room.winner);
+          console.log("-----Game Over-----");
+          console.log("Winner:", room.winner);
+          console.log("Loser:", room.loser);
+          console.log("-------Score-------");
+          console.log(`${room.playerScore[0]} - ${room.player[0].id}`);
+          console.log(`${room.playerScore[1]} - ${room.player[1].id}`);
           return;
         }
         // Reset Ball
@@ -120,7 +125,12 @@ export class GameService {
           room.winner = room.player[0].id;
           room.loser = room.player[1].id;
           room.gameOver = true;
-          console.log("Game Over: winner -", room.winner);
+          console.log("-----Game Over-----");
+          console.log("Winner:", room.winner);
+          console.log("Loser:", room.loser);
+          console.log("-------Score-------");
+          console.log(`${room.playerScore[0]} - ${room.player[0].id}`);
+          console.log(`${room.playerScore[1]} - ${room.player[1].id}`);
           return;
         }
         // Reset Ball

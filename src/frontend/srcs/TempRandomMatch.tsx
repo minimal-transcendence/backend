@@ -2,24 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { socket } from "@/pages/Home";
 
 export default function TempRandomMatch() {
-    const [roomName, setRoomName] = useState<string>("");
+    let roomName: string;
 
-    useEffect(() => {
-        socket.on('matchStartCheck', (payload: string) => {
-            setRoomName(payload);
-        });
-    }, [roomName]);
-
-    // let roomName: string;
-
-    
+    socket.on('matchStartCheck', (payload: string) => {
+        roomName = payload;
+    });
 
     const handleRandom = () => {
         socket.emit('randomMatchApply');
     }
 
     const handleAccept = () => {
-        socket.emit('matchAccept', `${roomName}`)
+        socket.emit('matchAccept', `${roomName}`);
+    }
+
+    const handleDecline = () => {
+        socket.emit('matchDecline', `${roomName}`);
     }
 
     return (
@@ -29,6 +27,9 @@ export default function TempRandomMatch() {
             </button>
             <button onClick={handleAccept}>
                 수락
+            </button>
+            <button onClick={handleDecline}>
+                거절
             </button>
         </div>
     )

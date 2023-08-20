@@ -13,8 +13,6 @@ export class GameRoom {
     player: GameSocket[];
     // Check Every Player Accept this Match
     playerAccept: boolean[];
-    // Score
-    playerScore: number[];
     // Canvas
     canvasWidth: number;
     canvasHeight: number;
@@ -40,6 +38,8 @@ export class GameRoom {
     // Game Result
     winner: string; // winners nickname
     loser: string;
+    // Score
+    playerScore: number[];
 
     constructor({
         name,

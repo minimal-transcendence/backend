@@ -26,9 +26,6 @@ export class GameGateway
   implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
 {
   private readonly logger = new Logger(GameGateway.name);
-  // private room: string = "";
-  // private readyPlayerCount: number = 0;
-
   private randomMatchQueue: GameSocket[] = [];
   private gameRooms = {};
 
@@ -42,19 +39,24 @@ export class GameGateway
     // Monitoring finished Game
     setInterval(() => {
       for (let e in this.gameRooms) {
-        // console.log("GameRoom:", e);
+        console.log("GameRoom:", e);
         if (this.gameRooms[e].gameOver) {
+          const room: GameRoom = this.gameRooms[e];
           // todo - Save Game Result in DB
 
           this.io.to(e).emit('gameOver', {
             room: e,
-            winner: this.gameRooms[e].winner,
-            loser: this.gameRooms[e].loser
+            winner: room.winner,
+            loser: room.loser
           });
 
           // Set player status
-          this.gameRooms[e].player[0].inGame = false;
-          this.gameRooms[e].player[1].inGame = false;
+          if (room.player[0]) {
+            room.player[0].inGame = false;
+          }
+          if (room.player[1]) {
+            room.player[1].inGame = false;
+          }
 
           // Delete GameRoom Instance
           delete this.gameRooms[e];
@@ -73,22 +75,44 @@ export class GameGateway
     client.nickname = "def";
     client.email = "def";
 
-		this.logger.debug(
-			`Game Socket connected with userId: ${client.userId}`
-		);
+		// this.logger.debug(
+		// 	`Game Socket connected with userId: ${client.userId}`
+		// );
 
 		this.logger.log(`Game Client Connected : ${client.id}`);
 		this.logger.debug(`Number of connected Game sockets: ${sockets.size}`)
-
-		this.io.emit('game', `from ${client.userId} ${client.email}`);
   }
 
   async handleDisconnect(@ConnectedSocket() client: GameSocket) {
     const sockets = this.io.sockets;
 
-    this.logger.debug(
-      `Game Socket disconnected with userId: ${client.userId}`
-    );
+    // leave game
+    if (client.inGame) {
+      for (let e in this.gameRooms) {
+        const room: GameRoom = this.gameRooms[e];
+        // If client is in game
+        if (room.player[0] || room.player[1]) {
+          // Stop Inteval
+          clearInterval(room.interval);
+          // Set winner
+          const winner: GameSocket = client === room.player[0] ? room.player[1] : room.player[0];
+          room.winner = winner.id; // nickname
+          room.loser = client.id
+          // Set Room Game Over - monitoring interval will emit/clean the room
+          room.gameOver = true;
+          console.log("-----Game Over-----");
+          console.log("Winner:", room.winner);
+          console.log("Loser:", room.loser);
+          console.log("-------Score-------");
+          console.log(`${room.playerScore[0]} - ${room.player[0].id}`);
+          console.log(`${room.playerScore[1]} - ${room.player[1].id}`);
+        }
+      }
+    }
+
+    // this.logger.debug(
+    //   `Game Socket disconnected with userId: ${client.userId}`
+    // );
 
     this.logger.log(`Game Client Disconnected : ${client.id}`);
     this.logger.debug(`Number of connected Game sockets: ${sockets.size}`)
@@ -146,8 +170,6 @@ export class GameGateway
 
   @SubscribeMessage('matchAccept')
   handleAccept(client: GameSocket, roomName: string) {
-    // let room: GameRoom = this.gameRooms.find((e) => e.name === roomName)
-
     let room: GameRoom = this.gameRooms[roomName];
 
     // check if user in the room
@@ -174,20 +196,16 @@ export class GameGateway
     // check if user in the room
     this.gameServie.validatePlayerInRoom(client, this.gameRooms[roomName]);
 
+    this.gameRooms[roomName].player[0].inGame = false;
+    this.gameRooms[roomName].player[1].inGame = false;
+
     this.io.to(roomName).emit('matchDecline', roomName);
     // delete game room
     delete this.gameRooms[roomName];
   }
 
-  // Test - stop setInterval
-  @SubscribeMessage('stopInterval')
-  handleStopInterval(client: GameSocket, roomName: string) {
-    let room = this.gameRooms[roomName];
-
-    clearInterval(room.interval);
-    console.log(`${roomName} stopped`);
-  }
   /*---------------------One on One-----------------------------------*/
+
   @SubscribeMessage('oneOnOneApply')
   handleOneOnOneApply(client: GameSocket, payload: OneOnOneInvite) {
     // Get By Nickname
@@ -265,6 +283,10 @@ export class GameGateway
           return `ERR no such user: ${payload.from}`;
         }
 
+        if (fromClient.inGame) {
+          return `ERR ${payload.from} is in game`;
+        }
+
         // Create New Game Room
         const roomName = "room_" + fromClient.id;
         this.gameRooms[roomName] = new GameRoom({
@@ -299,9 +321,9 @@ export class GameGateway
           level: payload.level
         }
 
-        fromClient.gameList = fromClient.gameList.filter(item => 
+        fromClient.gameList = fromClient.gameList.filter((item: GameListItem) => 
           !this.gameServie.objectsAreSame(item, invitation));
-        client.gameList = client.gameList.filter(item => 
+        client.gameList = client.gameList.filter((item: GameListItem) => 
           !this.gameServie.objectsAreSame(item, invitation));
 
         // Ask Match Accept
