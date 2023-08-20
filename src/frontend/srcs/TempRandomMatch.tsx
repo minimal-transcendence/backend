@@ -1,12 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { socket } from "@/pages/Home";
 
 export default function TempRandomMatch() {
-    let roomName: string;
+    const [roomName, setRoomName] = useState<string>("");
 
-    socket.on('matchStartCheck', (payload: string) => {
-        roomName = payload;
-    });
+    useEffect(() => {
+        socket.on('matchStartCheck', (payload: string) => {
+            setRoomName(payload);
+        });
+    }, [roomName]);
+
+    // let roomName: string;
+
+    
 
     const handleRandom = () => {
         socket.emit('randomMatchApply');
@@ -20,9 +26,6 @@ export default function TempRandomMatch() {
         <div>
             <button onClick={handleRandom}>
                 랜덤매치
-            </button>
-            <button onClick={handleAccept}>
-                수락
             </button>
             <button onClick={handleAccept}>
                 수락

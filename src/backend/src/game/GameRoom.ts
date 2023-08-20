@@ -1,19 +1,20 @@
-import { GameSocket } from "./types";
+import { GameRoomParams, GameSocket } from "./types";
 
 export class GameRoom {
     // Interval
     interval: any;
+    // Status
+    gameOver: boolean;
     // Room Name
     name: string;
-    //todo - level
-    // mode: string;
+    // Level
+    level: number;
     // Players
-    playerOne: GameSocket;
-    playerTwo: GameSocket;
-    // players: object;
+    player: GameSocket[];
     // Check Every Player Accept this Match
-    playerOneAccept: boolean;
-    playerTwoAccept: boolean;
+    playerAccept: boolean[];
+    // Score
+    playerScore: number[];
     // Canvas
     canvasWidth: number;
     canvasHeight: number;
@@ -22,8 +23,6 @@ export class GameRoom {
     paddleWidth: number;
     paddleDiff: number;
     paddleX: number[];
-    trajectoryX = [0, 0];
-    playerMoved = false;
     // Ball
     ballX: number;
     ballY: number;
@@ -33,37 +32,75 @@ export class GameRoom {
     speedY: number;
     speedX: number;
 
+    // Difficulty
+    maxSpeedY: number;
+    maxSpeedX: number; //fixed
+    defaultSpeedY: number;
+
+    // Game Result
+    winner: string; // winners nickname
+    loser: string;
+
     constructor({
         name,
-        playerOne,
-        playerTwo,
-        // mode,
-    }) {
-        this.name = name
-        // this.mode = mode
-        this.playerOne = playerOne
-        this.playerTwo = playerTwo
+        players,
+        level
+    }: GameRoomParams) {
+        // Status
+        this.gameOver = false;
 
-        this.playerOneAccept = false;
-        this.playerTwoAccept = false;
+        this.name = name
+        this.player = [players[0], players[1]];
+        this.level = level;
+        //
+        this.playerAccept = [false, false];
+        // Score
+        this.playerScore = [0, 0];
         //Canvas
         this.canvasWidth = 900;
         this.canvasHeight = 1600;
+
+        // Set Level
+        switch(level) {
+            case 0 : // easy
+                this.paddleWidth = 200;
+                this.defaultSpeedY = 4;
+                this.maxSpeedY = 10;
+                break;
+            case 2 : // hard
+                this.paddleWidth = 100;
+                this.defaultSpeedY = 8;
+                this.maxSpeedY = 15;
+                break;
+            default : // normal
+                this.paddleWidth = 150;
+                this.defaultSpeedY = 6;
+                this.maxSpeedY = 12;
+                break;
+        }
         // Paddle
         this.paddleHeight = 10;
-        this.paddleWidth = 50;
         this.paddleDiff = 25;
         this.paddleX = [this.canvasWidth / 2 - this.paddleWidth / 2,
         this.canvasWidth / 2 - this.paddleWidth / 2];
-        this.trajectoryX = [0, 0];
-        this.playerMoved = false;
+        // Speed
+        // this.speedY = 2;
+        // this.speedX = 0.07;
+
         // Ball
         this.ballX = this.canvasWidth / 2;
         this.ballY = this.canvasHeight / 2;
         this.ballRadius = 5;
         this.ballDirection = 1;
-        // Speed
-        this.speedY = 2;
-        this.speedX = 0.07;
+        //Speed
+        this.speedY = this.defaultSpeedY;
+        this.speedX = 0;
+
+        this.maxSpeedX = this.canvasWidth / 150
+        
+
+        // Game Result
+        this.winner =  ""; // winners nickname
+        this.loser = "";
     }
 }

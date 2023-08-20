@@ -32,4 +32,10 @@ export type OneOnOneAccept = {
     level: number;
 }
 
+export type GameRoomParams = {
+    name: string;
+    players: GameSocket[];
+    level: number;
+}
+
 export type GameSocket = Socket & JwtPayload & Player;

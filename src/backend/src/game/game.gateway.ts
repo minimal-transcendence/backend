@@ -38,6 +38,29 @@ export class GameGateway
 
   async afterInit(): Promise<void>{
 		this.logger.log('GAME 웹소켓 서버 초기화 ✅');
+
+    // Monitoring finished Game
+    setInterval(() => {
+      for (let e in this.gameRooms) {
+        // console.log("GameRoom:", e);
+        if (this.gameRooms[e].gameOver) {
+          // todo - Save Game Result in DB
+
+          this.io.to(e).emit('gameOver', {
+            room: e,
+            winner: this.gameRooms[e].winner,
+            loser: this.gameRooms[e].loser
+          });
+
+          // Set player status
+          this.gameRooms[e].player[0].inGame = false;
+          this.gameRooms[e].player[1].inGame = false;
+
+          // Delete GameRoom Instance
+          delete this.gameRooms[e];
+        }
+      }
+    }, 1500)
   }
 
   async handleConnection(@ConnectedSocket() client: GameSocket, userId : string, ) {
@@ -94,19 +117,19 @@ export class GameGateway
       const roomName = "room_" + this.randomMatchQueue[0].id;
       this.gameRooms[roomName] = new GameRoom({
         name: roomName,
-        playerOne: this.randomMatchQueue[0],
-        playerTwo: this.randomMatchQueue[1]
+        players: [this.randomMatchQueue[0], this.randomMatchQueue[1]],
+        level: 1
       });
 
       this.randomMatchQueue[0].inGame = true;
       this.randomMatchQueue[1].inGame = true;
 
       // console.log(this.gameRooms);
-      console.log(this.gameRooms[roomName].playerOne.id);
-      console.log(this.gameRooms[roomName].playerTwo.id);
+      console.log(this.gameRooms[roomName].player[0].id);
+      console.log(this.gameRooms[roomName].player[1].id);
       // Add Players into Game Room
-      this.gameRooms[roomName].playerOne.join(roomName);
-      this.gameRooms[roomName].playerTwo.join(roomName);
+      this.gameRooms[roomName].player[0].join(roomName);
+      this.gameRooms[roomName].player[1].join(roomName);
       // Delete Players from Random Match Queue
       this.randomMatchQueue.splice(0, 2);
       // Ask Match Accept
@@ -119,6 +142,8 @@ export class GameGateway
     this.randomMatchQueue = this.randomMatchQueue.filter(item => item !== client);
   }
 
+  /*-------------Match Accept-----------------------*/
+
   @SubscribeMessage('matchAccept')
   handleAccept(client: GameSocket, roomName: string) {
     // let room: GameRoom = this.gameRooms.find((e) => e.name === roomName)
@@ -129,16 +154,16 @@ export class GameGateway
     this.gameServie.validatePlayerInRoom(client, room);
 
     // if (client.userId === room.playerOne.userId) {
-    if (client.id === room.playerOne.id) {
-      room.playerOneAccept = true;
+    if (client.id === room.player[0].id) {
+      room.playerAccept[0] = true;
     }
     // else if (client.userId === room.playerTwo.userId) {
-    else if (client.id === room.playerTwo.id) {
-      room.playerTwoAccept = true;
+    else if (client.id === room.player[1].id) {
+      room.playerAccept[1] = true;
     }
 
     // Start Game
-    if (room.playerOneAccept && room.playerTwoAccept) {
+    if (room.playerAccept[0] && room.playerAccept[1]) {
       this.gameServie.startGame(this.io, room);
     };
     
@@ -222,7 +247,6 @@ export class GameGateway
   handleOneOnOneAccept(client: GameSocket, payload: OneOnOneAccept) {
     for (let e in client.gameList) {
       if (client.gameList[e].from === payload.from) {
-        // todo - create room / start game
         // Get By Nickname
         // const fromClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.from);
 
@@ -245,9 +269,8 @@ export class GameGateway
         const roomName = "room_" + fromClient.id;
         this.gameRooms[roomName] = new GameRoom({
           name: roomName,
-          playerOne: fromClient,
-          playerTwo: client
-          // level: payload.level
+          players: [fromClient, client],
+          level: payload.level
         });
 
         fromClient.inGame = true;
@@ -257,8 +280,8 @@ export class GameGateway
         fromClient.join(roomName);
         client.join(roomName);
 
-        console.log(this.gameRooms[roomName].playerOne.id);
-        console.log(this.gameRooms[roomName].playerTwo.id);
+        console.log(this.gameRooms[roomName].player[0].id);
+        console.log(this.gameRooms[roomName].player[1].id);
 
         // Delete Invitations from each user
 
@@ -287,7 +310,7 @@ export class GameGateway
         console.log(`${fromClient.id} - list size: ${fromClient.gameList.length}`);
         console.log(`${client.id} - list size: ${client.gameList.length}`);
         
-        break;
+        return;
       }
     }
     return `ERR no invitation from ${payload.from}`;
@@ -298,7 +321,6 @@ export class GameGateway
   // In Game
   @SubscribeMessage('keydown')
   handleKeydown(client: GameSocket, payload: KeydownPayload) {
-    console.log(payload);
     // client is not in game
     if (!client.inGame) {
       return;
@@ -311,7 +333,7 @@ export class GameGateway
 
     switch (payload.key) {
       case 'ArrowLeft':
-        if (client === room.playerOne) {
+        if (client === room.player[0]) {
           room.paddleX[0] -= 15;
           if (room.paddleX[0] <= 0) {
             room.paddleX[0] = 0;
@@ -325,7 +347,7 @@ export class GameGateway
         }
         break;
       case 'ArrowRight':
-        if (client === room.playerOne) {
+        if (client === room.player[0]) {
           room.paddleX[0] += 15;
           if (room.paddleX[0] >= room.canvasWidth - room.paddleWidth) {
             room.paddleX[0] = room.canvasWidth - room.paddleWidth;

@@ -13,7 +13,7 @@ export class GameService {
           throw new Error('no such room');
         }
 
-      if (player !== gameRoom.playerOne && player !== gameRoom.playerTwo) {
+      if (player !== gameRoom.player[0] && player !== gameRoom.player[1]) {
           throw new Error(`no such user in the room: ${player.id}`);
       }
   }
@@ -36,6 +36,8 @@ export class GameService {
     room.interval = setInterval(() => {
       this.ballMove(room);
 
+      console.log("Speed X:", room.speedX);
+
       // send game data for drawing
       io.to(room.name).emit('gameData', {
         roomName: room.name,
@@ -47,12 +49,11 @@ export class GameService {
   }
 
   ballMove(room: GameRoom) {
-      // Vertical Speed
-      room.ballY += room.speedY * room.ballDirection;
-      // Horizontal Speed
-      room.ballX += room.speedX;
-      // todo - ball bound
-      // Bounce off Left Wall
+    // Vertical Speed
+    room.ballY += room.speedY * room.ballDirection;
+    // Horizontal Speed
+    room.ballX += room.speedX;
+    // Bounce off Left Wall
     if (room.ballX < 0 && room.speedX < 0) {
       room.speedX = -room.speedX;
     }
@@ -60,53 +61,73 @@ export class GameService {
     if (room.ballX > room.canvasWidth && room.speedX > 0) {
       room.speedX = -room.speedX;
     }
-    // Bounce off player paddle (bottom)
+    
     if (room.ballY > room.canvasHeight - room.paddleDiff) {
+      // Bounce off player paddle (bottom)
       if (room.ballX >= room.paddleX[0] && room.ballX <= room.paddleX[0] + room.paddleWidth) {
           // Add Speed on Hit
           room.speedY += 1;
           // Max Speed
-          if (room.speedY > 5) {
-              room.speedY = 5;
+          if (room.speedY > room.maxSpeedY) {
+              room.speedY = room.maxSpeedY;
           }
           room.ballDirection = -room.ballDirection;
-          room.trajectoryX[0] = room.ballX - (room.paddleX[0] + room.paddleDiff);
-          room.speedX = room.trajectoryX[0] * 0.3;
+          room.speedX = room.speedX > 0 ?
+            Math.random() * room.maxSpeedX :
+            Math.random() * -room.maxSpeedX;
       } else {
-        // todo - Reset Ball, add to Computer Score
-          //   ballReset();
-          room.ballX = room.canvasWidth / 2;
-          room.ballY = room.canvasHeight / 2;
-          room.speedY = 3;
-          // todo -console.log("in ballreset ", refreeRoom);
-          // socket.emit("ballMove", {
-          //     ballX,
-          //     ballY,
-          // });
-        // score[1]++;
+        // Add to Computer Score
+        room.playerScore[1]++;
+        console.log(room.playerScore);
+        // Game Over
+        if (room.playerScore[1] >= 3) {
+          clearInterval(room.interval);
+          room.winner = room.player[1].id;
+          room.loser = room.player[0].id;
+          room.gameOver = true;
+          console.log("Game Over: winner -", room.winner);
+          return;
+        }
+        // Reset Ball
+        room.ballX = room.canvasWidth / 2;
+        room.ballY = room.canvasHeight / 2;
+        room.speedY = room.defaultSpeedY;
+        room.speedX = 0;
       }
     }
-    // Bounce off computer paddle (top)
+
     if (room.ballY < room.paddleDiff) {
+      // Bounce off computer paddle (top)
       if (room.ballX >= room.paddleX[1] && room.ballX <= room.paddleX[1] + room.paddleWidth) {
         // Add Speed on Hit
         room.speedY += 1;
           // Max Speed
-          if (room.speedY > 5) {
-              room.speedY = 5;
+          if (room.speedY > room.maxSpeedY) {
+              room.speedY = room.maxSpeedY;
           }
 
           room.ballDirection = -room.ballDirection;
-          room.trajectoryX[1] = room.ballX - (room.paddleX[1] + room.paddleDiff);
-          room.speedX = room.trajectoryX[1] * 0.3;
+          room.speedX = room.speedX > 0 ?
+            Math.random() * room.maxSpeedX :
+            Math.random() * -room.maxSpeedX;
       } else {
-        // Reset Ball, Increase Computer Difficulty, add to Player Score
-        // todo
-      //   ballReset();
-          room.ballX = room.canvasWidth / 2;
-          room.ballY = room.canvasHeight / 2;
-          room.speedY = 3;
-        // score[0]++;
+        // Add to Player Score
+        room.playerScore[0]++;
+        console.log(room.playerScore);
+        // Game Over
+        if (room.playerScore[0] >= 3) {
+          clearInterval(room.interval);
+          room.winner = room.player[0].id;
+          room.loser = room.player[1].id;
+          room.gameOver = true;
+          console.log("Game Over: winner -", room.winner);
+          return;
+        }
+        // Reset Ball
+        room.ballX = room.canvasWidth / 2;
+        room.ballY = room.canvasHeight / 2;
+        room.speedY = room.defaultSpeedY;
+        room.speedX = 0;
       }
     }
   }
