@@ -9,14 +9,18 @@ const ChatMain = ({
   currentRoomName,
   setcurrentRoomName,
   myNickName,
+  messages,
+  setMessages,
 }: {
   currentRoomName: string;
   setcurrentRoomName: any;
   myNickName: string;
+  messages: any;
+  setMessages: any;
 }) => {
   const [textareaValue, setTextareaValue] = useState("");
   const [typingStatus, setTypingStatus] = useState("");
-  const [messages, setMessages] = useState<any>("");
+
   const lastMessageRef = useRef<null | HTMLElement>(null);
   const socket = useContext(SocketContext);
 
@@ -35,29 +39,10 @@ const ChatMain = ({
       setMessages(() => result.messages);
     }
 
-    function sendMessage(roomname: string, data: any) {
-      console.log(
-        `in useEffect sendMessage1  from<${
-          data.from
-        }> roomname<${roomname}> body<${JSON.stringify(
-          data,
-          null,
-          2
-        )}> 내 방은 <${currentRoomName}>`
-      );
-
-      if (roomname === currentRoomName) {
-        console.log("same room!");
-        setMessages(() => [...messages, data]);
-      }
-    }
-
     socket.on("sendCurrRoomInfo", sendCurrRoomInfo);
-    socket.on("sendMessage", sendMessage);
 
     return () => {
       socket.off("sendCurrRoomInfo", sendCurrRoomInfo);
-      socket.off("sendMessage", sendMessage);
     };
   }, [currentRoomName, messages, setcurrentRoomName, socket]);
 

@@ -5,7 +5,7 @@ import ModalBasic from "./components/modalpage/modal";
 import ModalOverlay from "./components/modalpage/ModalOverlay";
 import TempLogin from "./components/temploginpage/tempLogin";
 import NavBar from "./components/navpage/NavBar";
-import GameList from "./components/gamepage/GameList";
+import GameList from "./components/gamelistpage/GameList";
 import ChatMain from "./components/chatpage/ChatMain";
 import SearchList from "./components/searchlistpage/SearchList";
 import ChatRoomUser from "./components/chatroompage/ChatRoom";
@@ -49,13 +49,12 @@ export default function App() {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
+  const [messages, setMessages] = useState<any>("");
 
   useEffect(
     function () {
       function chkLogin() {
-        console.log("chkLogin");
         if (tmpIsLoggedIn) {
-          console.log("chkLogin in if");
           socket.io.opts.query = {
             id: tmpLoginID,
             nickname: tmpLoginnickname,
@@ -84,12 +83,43 @@ export default function App() {
       setQuery("");
     }
 
+    function sendMessage(roomname: string, data: any) {
+      console.log(
+        `in useEffect sendMessage1  from<${
+          data.from
+        }> roomname<${roomname}> body<${JSON.stringify(
+          data,
+          null,
+          2
+        )}> 내 방은 <${currentRoomName}>`
+      );
+      setTempSearchList((results) => {
+        return results.map((result) => {
+          if (result.roomname === roomname) {
+            result.messageRecent = `${data.from} : ${data.body}`;
+            if (roomname === currentRoomName) {
+              result.messageNew = false;
+            } else {
+              result.messageNew = true;
+            }
+          }
+          return result;
+        });
+      });
+      if (roomname === currentRoomName) {
+        console.log("same room!", currentRoomName, roomname);
+        setMessages(() => [...messages, data]);
+      }
+    }
+
+    socket.on("sendMessage", sendMessage);
     socket.on("sendRoomMembers", sendRoomMembers);
 
     return () => {
+      socket.off("sendMessage", sendMessage);
       socket.off("sendRoomMembers", sendRoomMembers);
     };
-  }, [currentRoomName]);
+  }, [currentRoomName, results]);
 
   return (
     <SocketContext.Provider value={socket}>
@@ -141,6 +171,8 @@ export default function App() {
               }
             </Box>
             <ChatMain
+              messages={messages}
+              setMessages={setMessages}
               currentRoomName={currentRoomName}
               setcurrentRoomName={setcurrentRoomName}
               myNickName={tmpLoginnickname}
