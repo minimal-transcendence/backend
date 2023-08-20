@@ -222,6 +222,8 @@ function UserList() {
 					<h1>최근 전적</h1>
 					{userData[index].matchhistory.map((item, idx) => (
 					<div key={idx} className={styles_profile.logBox}>
+						{idx <= 10 && (
+						<>
 						<div className={styles_profile.logTime}>
 							{userData[index].matchhistory[idx].time.slice(0,10)}
 							<br />
@@ -247,6 +249,8 @@ function UserList() {
 						<div className={styles_profile.logName}>
 						{userData[index].matchhistory[idx].loser}
 						</div>
+						</>
+						)}
 					</div>))}
 				</div>
 			</div>

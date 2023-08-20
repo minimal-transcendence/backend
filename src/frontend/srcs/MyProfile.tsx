@@ -88,8 +88,7 @@ function MyProfile() {
 				alert("에러 발생 :" + error);
 			}
 		}
-		//fetch -> formData를 body로 post하기
-		//setProfileURL(내 프로필이미지 경로)해주기
+
 		if (is2Fa === 'false' && checkIs2Fa === true){
 			try{
 				if (verCode == '' || verCode.length !== 6){
@@ -169,7 +168,7 @@ function MyProfile() {
 					<div>
 						<h2>내 프로필</h2>
 						{avatarURL && (
-							<img src={avatarURL}></img>
+							<img src={avatarURL} width="100" height = "100" ></img>
 						)}
 						<div>
 							<div>
@@ -206,6 +205,11 @@ function MyProfile() {
 										onError={(e: React.SyntheticEvent<HTMLImageElement>) => e.currentTarget.style.display = 'none'}
 										/>
 									</p>
+									<div>
+										{(is2Fa === 'true' && checkIs2Fa === false || is2Fa === 'false' && checkIs2Fa === true) && (
+											<span>변경사항 적용을 위해 OTP코드를 입력하세요</span>
+										)}
+									</div>
 									<p>
 										<input placeholder="띄워쓰기 제외한 6자리" type="text" value={verCode} onChange={(e) => setVerCode(e.target.value)} />
 									</p>
