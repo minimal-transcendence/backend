@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import styles from "../styles/LogStyle.module.css";
 
 function Log() {
   const router = useRouter();
@@ -13,7 +14,7 @@ function Log() {
       setIsLoggedIn(true);
     }
     console.log("Login Page");
-  }, );
+  }, []);
 
   useEffect(() =>{
     if (startLogin === true){
@@ -32,17 +33,21 @@ function Log() {
   }
 
   return (
-    <div className='wrapper'>
+    <div className={styles.mainBox}>
       {isLoggedIn ? (
-        <div>
-          <p>이미 로그인되었습니다. /Home 페이지로 이동합니다.</p>
-          <button onClick={() => router.push('/Home')}>Go to Home</button>
+        <div className={styles.innerBox}>
+            <div className={styles.title2}>
+            이미 로그인되었습니다. /Home 페이지로 이동합니다.
+            </div>
+          <button className={styles.button2} onClick={() => router.push('/Home')}> 확인</button>
         </div>
       ) : (
-        <div className='main'>
-          <h1 className='logo'>로그인</h1>
-          <button className='my_btn' onClick={Login}>
-            Intra login
+        <div className={styles.innerBox}>
+          <div className={styles.title}>
+            로그인
+          </div>
+          <button className={styles.button} onClick={Login}>
+            42 로그인
           </button>
         </div>
       )}

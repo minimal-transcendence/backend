@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import styles from "./UserListStyle.module.css";
-import styles_profile from "./UserProfileStyle.module.css";
+import styles from "../styles/UserListStyle.module.css";
+import styles_profile from "../styles/UserProfileStyle.module.css";
 
 function UserList() {
 	const [showModals, setShowModals] = useState<boolean[]>([]);
@@ -13,7 +13,9 @@ function UserList() {
 
 	interface userMatchHistory{
 		winner: string,
+		winnerAvatar: string,
 		loser: string,
+		loserAvatar: string,
 		time: string,
 	}
 
@@ -63,9 +65,9 @@ function UserList() {
 				id: detailResponse.id,
 				nickname: detailResponse.nickname,
 				userProfileURL: "/api/" + detailResponse.avatar,
-				score: parseInt(detailResponse.score),
 				win: detailResponse._count.asWinner,
 				lose: detailResponse._count.asLoser,
+				score: (parseInt(detailResponse._count.asWinner) * 10 - parseInt(detailResponse._count.asLoser) * 10),
 				lastLogin: detailResponse.lastLogin,
 				isFriend: checkIsFriend(idList, detailResponse.id),
 				matchhistory: [],
@@ -73,7 +75,9 @@ function UserList() {
 			for(let i = 0 ; i < matchCount ; i++){
 				const newMatchData: userMatchHistory = {
 					winner: matchResponse[i].winner.nickname,
+					winnerAvatar: "/api/" + matchResponse[i].winner.avatar,
 					loser: matchResponse[i].loser.nickname,
+					loserAvatar: "/api/" + matchResponse[i].loser.avatar,
 					time: matchResponse[i].createdTime,
 				};
 				newMatchData.time = newMatchData.time.slice(0,10);
@@ -224,7 +228,7 @@ function UserList() {
 						{userData[index].matchhistory[idx].winner}
 						</div>
 						<img
-						src="url"
+						src={userData[index].matchhistory[idx].winnerAvatar}
 						alt="profile img"
 						className={styles_profile.logProfileImage}/>
 						<div className={styles_profile.resultFont}>
@@ -234,7 +238,7 @@ function UserList() {
 							패
 						</div>
 						<img
-						src="url"
+						src={userData[index].matchhistory[idx].loserAvatar}
 						alt="profile img"
 						className={styles_profile.logProfileImage}/>
 						<div className={styles_profile.logName}>

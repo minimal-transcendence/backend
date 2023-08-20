@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
 
 function MyProfile() {
-
 	const [newNickname, setNewNickname] = useState('');
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [imageUrl, setImageUrl] = useState<string | null>(null);
 	const [userNickname, setUserNickname] = useState<string | null>(localStorage.getItem("nickname"));
 	const [userId, setUserID] = useState<string | null>(localStorage.getItem("id"));
 	const [avatarURL, setAvatarURL] = useState<string | null>(localStorage.getItem('avatar'));
-	const [is2Fa, setIs2Fa] = useState(localStorage.getItem("is2fa"));
-	const [checkIs2Fa, setCheckIs2Fa] = useState(is2Fa==='true');
+	const [is2Fa, setIs2Fa] = useState<string | null>(localStorage.getItem("is2fa"));
+	const [checkIs2Fa, setCheckIs2Fa] = useState<boolean>(is2Fa === 'true');
 	const [verCode, setVerCode] = useState('');
 
-	  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files && e.target.files.length > 0) {
 			const file = e.target.files[0];
 			setSelectedFile(file);
@@ -20,8 +19,8 @@ function MyProfile() {
 		  }
 	  };
 
-
 	async function fixProfile(){
+		//여기서 refresh 하면될듯
 		const apiUrl = 'http://localhost/api/user/' + userId;
 
 		if (newNickname !== '' && newNickname !== userNickname){
@@ -165,22 +164,22 @@ function MyProfile() {
 	}
 
 	return (
-			<div className='modal'>
+			<div>
 				<>
-					<div className='modal-content'>
+					<div>
 						<h2>내 프로필</h2>
 						{avatarURL && (
 							<img src={avatarURL}></img>
 						)}
-						<div className='register-inside'>
+						<div>
 							<div>
 								<p>
 								닉네임
 								<br/>
 								{userNickname !== null ?
-								(<input className='account' placeholder={userNickname} type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)
+								(<input placeholder={userNickname} type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)
 								:
-								(<input className='account' type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)}
+								(<input type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)}
 								</p>
 								<p>
 									프로필 사진
