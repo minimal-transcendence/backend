@@ -1,8 +1,7 @@
-import ysungwonIcon from "../../../assets/ysungwon.jpg";
-import Image from "next/image";
 import { useState, useContext } from "react";
 import { SocketContext } from "../../../context/socket";
-
+import ysungwonIcon from "../../../assets/ysungwon.jpg";
+import Image from "next/image";
 const ChatBody = ({
   messages,
   typingStatus,

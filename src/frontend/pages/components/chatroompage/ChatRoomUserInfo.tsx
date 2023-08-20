@@ -6,13 +6,11 @@ import Image from "next/image";
 
 export default function ChatRoomUserInfo({
   user,
-  key,
   num,
   roomname,
   myNickName,
 }: {
   user: any;
-  key: number;
   num: number;
   roomname: string;
   myNickName: string;

@@ -1,6 +1,7 @@
 import ChatRoomUserInfo from "./ChatRoomUserInfo";
 import { useEffect, useState } from "react";
 
+const pageHeight = 8;
 export default function ChatRoomUser({
   users,
   roomname,
@@ -19,9 +20,9 @@ export default function ChatRoomUser({
   useEffect(
     function () {
       function a() {
-        if (users?.length > page * 8) setRightArrow(() => true);
+        if (users?.length > page * pageHeight) setRightArrow(() => true);
         if (page > 1) setLeftArrow(() => true);
-        if (users?.length <= page * 8) setRightArrow(() => false);
+        if (users?.length <= page * pageHeight) setRightArrow(() => false);
         if (page === 1) setLeftArrow(() => false);
       }
       a();
@@ -31,14 +32,14 @@ export default function ChatRoomUser({
   if (!users || !roomname) return;
   else {
     let tmpUsers;
-    if (users.length < 9) {
+    if (users.length <= pageHeight) {
       console.log(`users length가 ${users.length}이므로 1페이지 미만.`);
       tmpUsers = users;
     } else {
       console.log(`users length가 ${users.length}이므로 1페이지 이상가능.`);
 
       console.log(`현재 페이지는 ${page}이므로, `);
-      const startIndex = page * 8 - 8;
+      const startIndex = (page - 1) * pageHeight;
       tmpUsers = users.slice(startIndex, startIndex + 8);
     }
     return (

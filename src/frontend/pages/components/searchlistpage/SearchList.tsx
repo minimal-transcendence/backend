@@ -1,7 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { SocketContext } from "../../../context/socket";
 
-import SearchResult from "./SearchResult";
 import SearchListCreateRoom from "./SearchListCreateRoom";
 import ErrorMessage from "./ErrorMessage";
 import SearchListHeader from "./SearchListHeader";
@@ -26,7 +25,7 @@ export default function SearchList({
   setTempSearchList: any;
 }) {
   const socket = useContext(SocketContext);
-
+  console.log("in searchList ", results);
   useEffect(() => {
     function requestPassword(roomname: string) {
       console.log(
@@ -61,12 +60,6 @@ export default function SearchList({
     };
   }, [isOpenModal]);
 
-  function handleSelectRoom(event: any, room: any) {
-    setroomnameModal(room.roomname);
-    console.log("in Selectroomname handle ", room?.roomname);
-    socket.emit("selectRoom", room?.roomname);
-  }
-
   if (results?.length === 0) {
     console.log("no resuslt");
     return (
@@ -94,15 +87,6 @@ export default function SearchList({
           setLeftHeader={setLeftHeader}
           setroomnameModal={setroomnameModal}
         />
-        <ul className="list list-rooms">
-          {results?.map((el: any) => (
-            <SearchResult
-              el={el}
-              key={el.roomname}
-              onSelectRoom={handleSelectRoom}
-            />
-          ))}
-        </ul>
       </div>
     </>
   );
