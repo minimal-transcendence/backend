@@ -378,75 +378,57 @@ export default function Pong() {
       setInterval(draw, 15);
     })
 
-    // socket.on("startGame", (refereeId: string) => {
-    //   console.log("Refree is ", refereeId);
+    const keys = {
+      left: {
+        pressed: false
+      },
+      right: {
+        pressed: false
+      },
+    }
 
-    //   isReferee = socket.id === refereeId;
-    //   const refreeRoom = refereeId;
-    //   console.log("start!!", refreeRoom);
-      
-    //   /*-----------------------------------------------------*/
-    //   setInterval(isInGame ? draw : welcome, 10);
-    //   /*-----------------------------------------------------*/
-      
+    setInterval(() => {
+      if (keys.left.pressed) {
+        socket.emit('keydown', {
+          roomName: roomName,
+          key: 'ArrowLeft'
+        });
+      }
 
-
-    //   canvas.addEventListener("keydown", (e: KeyboardEvent) => {
-    //     // playerMoved = true;
-    //     // if (e.key === "ArrowRight") {
-    //     //   paddleX[paddleIndex] += 15;
-    //     //   if (paddleX[paddleIndex] >= canvas.width - paddleWidth) {
-    //     //     paddleX[paddleIndex] = canvas.width - paddleWidth;
-    //     //   }
-    //     // }
-    //     // if (e.key === "ArrowLeft") {
-    //     //   paddleX[paddleIndex] -= 15;
-    //     //   if (paddleX[paddleIndex] <= 0) {
-    //     //     paddleX[paddleIndex] = 0;
-    //     //   }
-    //     // }
-
-    //     // socket.emit("paddleMove", {
-    //     //   xPosition: paddleX[paddleIndex],
-    //     // });
-    //     console.log(e);
-
-    //     if (!isInGame) {
-    //       return;
-    //     }
-
-    //     switch (e.key) {
-    //       case 'ArrowLeft':
-    //         socket.to(socket.data.gamingRoom).emit('keydown', 'ArrowLeft');
-    //         break
-
-    //       case 'ArrowRight':
-    //         socket.to(socket.data.gamingRoom).emit('keydown', 'ArrowRight');
-    //         break
-    //     }
-    //   });
-    // });
+      if (keys.right.pressed) {
+        socket.emit('keydown', {
+          roomName: roomName,
+          key: 'ArrowRight'
+        });
+      }
+    }, 15);
 
     canvas.addEventListener("keydown", (e: KeyboardEvent) => {
       if (!isInGame) {
         return;
       }
-
-      // console.log(e);
-
       switch (e.key) {
         case 'ArrowLeft':
-          socket.emit('keydown', {
-            roomName: roomName,
-            key: 'ArrowLeft'
-          });
+          keys.left.pressed = true;
           break
 
         case 'ArrowRight':
-          socket.emit('keydown', {
-            roomName: roomName,
-            key: 'ArrowRight'
-          });
+          keys.right.pressed = true;
+          break
+      }
+    });
+
+    canvas.addEventListener("keyup", (e: KeyboardEvent) => {
+      if (!isInGame) {
+        return;
+      }
+      switch (e.key) {
+        case 'ArrowLeft':
+          keys.left.pressed = false;
+          break
+
+        case 'ArrowRight':
+          keys.right.pressed = false;
           break
       }
     });

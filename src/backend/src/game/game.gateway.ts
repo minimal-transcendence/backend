@@ -343,6 +343,7 @@ export class GameGateway
   // In Game
   @SubscribeMessage('keydown')
   handleKeydown(client: GameSocket, payload: KeydownPayload) {
+    // console.log(payload.key);
     // client is not in game
     if (!client.inGame) {
       return;
@@ -356,13 +357,13 @@ export class GameGateway
     switch (payload.key) {
       case 'ArrowLeft':
         if (client === room.player[0]) {
-          room.paddleX[0] -= 15;
+          room.paddleX[0] -= 7;
           if (room.paddleX[0] <= 0) {
             room.paddleX[0] = 0;
           }
         }
         else {
-          room.paddleX[1] -= 15;
+          room.paddleX[1] -= 7;
           if (room.paddleX[1] <= 0) {
             room.paddleX[1] = 0;
           }
@@ -370,13 +371,13 @@ export class GameGateway
         break;
       case 'ArrowRight':
         if (client === room.player[0]) {
-          room.paddleX[0] += 15;
+          room.paddleX[0] += 7;
           if (room.paddleX[0] >= room.canvasWidth - room.paddleWidth) {
             room.paddleX[0] = room.canvasWidth - room.paddleWidth;
           }
         }
         else {
-          room.paddleX[1] += 15;
+          room.paddleX[1] += 7;
           if (room.paddleX[1] >= room.canvasWidth - room.paddleWidth) {
             room.paddleX[1] = room.canvasWidth - room.paddleWidth;
           }
