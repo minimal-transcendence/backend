@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 function MyProfile() {
 	const [newNickname, setNewNickname] = useState('');
@@ -172,22 +172,22 @@ function MyProfile() {
 						)}
 						<div>
 							<div>
-								<p>
+								<div>
 								닉네임
 								<br/>
 								{userNickname !== null ?
 								(<input placeholder={userNickname} type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)
 								:
 								(<input type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)}
-								</p>
-								<p>
+								</div>
+								<div>
 									프로필 사진
 									<br/>
 									<input type="file" accept='image/*' onChange={handleFileChange}></input>
 									<br/>
 									{imageUrl && <img src={imageUrl} alt="profile image" width="100" height = "100" />}
-								</p>
-								<p>
+								</div>
+								<div>
 									2차인증 여부
 									<br/>
 										<input
@@ -196,7 +196,7 @@ function MyProfile() {
 										onChange={() => setCheckIs2Fa(!checkIs2Fa)}
 										/>
 										<span className="slider"></span>
-									<p>
+									<div>
 										<img
 										src='http://localhost/api/2fa/qrcode'
 										alt="qr image"
@@ -204,16 +204,16 @@ function MyProfile() {
 										height="100"
 										onError={(e: React.SyntheticEvent<HTMLImageElement>) => e.currentTarget.style.display = 'none'}
 										/>
-									</p>
+									</div>
 									<div>
 										{(is2Fa === 'true' && checkIs2Fa === false || is2Fa === 'false' && checkIs2Fa === true) && (
 											<span>변경사항 적용을 위해 OTP코드를 입력하세요</span>
 										)}
 									</div>
-									<p>
+									<div>
 										<input placeholder="띄워쓰기 제외한 6자리" type="text" value={verCode} onChange={(e) => setVerCode(e.target.value)} />
-									</p>
-								</p>
+									</div>
+								</div>
 								<button onClick={fixProfile}>저장</button>
 							</div>
 						</div>

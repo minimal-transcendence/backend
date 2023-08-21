@@ -10,6 +10,7 @@ function UserList() {
 	const [userNickname, setUserNickname] = useState<string | null>(localStorage.getItem("nickname"));
 	const [userId, setUserID] = useState<string | null>(localStorage.getItem("id"));
 	const [userData, setData] = useState<userDataInterface[]>([]);
+	const [connectList, setConnectList] = useState<string[]>([]);
 
 	interface userMatchHistory{
 		winner: string,
@@ -28,6 +29,7 @@ function UserList() {
 		score: number,
 		lastLogin: string,
 		isFriend: number,
+		isLogin: number,
 		matchhistory: userMatchHistory[],
 	}
 
@@ -70,6 +72,7 @@ function UserList() {
 				score: (parseInt(detailResponse._count.asWinner) * 10 - parseInt(detailResponse._count.asLoser) * 10),
 				lastLogin: detailResponse.lastLogin,
 				isFriend: checkIsFriend(idList, detailResponse.id),
+				isLogin: 0,
 				matchhistory: [],
 			};
 			for(let i = 0 ; i < matchCount ; i++){
@@ -191,11 +194,17 @@ function UserList() {
 			{showModals[index] && (
 			<div className={styles_profile.mainBox}>
 			<div className={styles_profile.profileInner}>
-				<div>
+				<div className={styles_profile.imageBox}>
 					<img
 					src={userData[index].userProfileURL}
 					alt="profile img"
 					className={styles_profile.profileImage}/>
+					{userData[index].isLogin === 0 && (
+					<div className={styles_profile.circleLogout}></div>
+					)}
+					{userData[index].isLogin === 1 && (
+					<div className={styles_profile.circleLogin}></div>
+					)}
 				</div>
 				<div>
 					<h2>{userData[index].nickname}의 프로필</h2>
@@ -220,10 +229,8 @@ function UserList() {
 			<div className={styles_profile.logInner}>
 				<div className={styles_profile.logBanner}>
 					<h1>최근 전적</h1>
-					{userData[index].matchhistory.map((item, idx) => (
+					{userData[index].matchhistory.slice(0,10).map((item, idx) => (
 					<div key={idx} className={styles_profile.logBox}>
-						{idx <= 10 && (
-						<>
 						<div className={styles_profile.logTime}>
 							{userData[index].matchhistory[idx].time.slice(0,10)}
 							<br />
@@ -249,8 +256,6 @@ function UserList() {
 						<div className={styles_profile.logName}>
 						{userData[index].matchhistory[idx].loser}
 						</div>
-						</>
-						)}
 					</div>))}
 				</div>
 			</div>
@@ -264,34 +269,37 @@ function UserList() {
 		if (showprofileOption || userData[index].isFriend){
 			return(
 				<div className={styles.profileBox}>
-						<div className={styles.profileImage}>
-							{userData[index].userProfileURL !== '/api/path' ? (
-							<img src={userData[index].userProfileURL} alt="profile image" className={styles.profileImage} />
-							) : (
-							<img src="img/img1.png" alt="profile image" className={styles.profilePicture} />
+					<div>
+						<img src={userData[index].userProfileURL} alt="profile image" className={styles.profileImage} />
+					</div>
+					<div className={styles.profileInfo}>
+						<div className={styles.nameBox}>
+							<h2>{userData[index].nickname}</h2>
+							{userData[index].isLogin === 0 && (
+							<div className={styles.circleLogout}></div>
+							)}
+							{userData[index].isLogin === 1 && (
+							<div className={styles.circleLogin}></div>
 							)}
 						</div>
-						<div className={styles.profileInfo}>
-							<h2>{userData[index].nickname}</h2>
-							<h3>{userData[index].win} / {userData[index].lose} / {userData[index].score}</h3>
-							<div className={styles.buttons}>
-								{userData[index].isFriend === 1 && (
-									<button className={styles.unfollowIn} onClick={() => {unFollow(index)}} >
-										언팔로우
-									</button>
-									)}
-								{userData[index].isFriend === 0 && (
-									<button className={styles.followIn} onClick={() => {follow(index)}}>
-										팔로우
-									</button>)}
-								<button className={styles.normalIn} onClick={() => {sendGameMatch(index)}}>
-										게임 신청
-								</button>
-								<button className={styles.normalIn} onClick={() => {profilePopup(index)}}>
-										프로필 보기
-								</button>
-							</div>
+						<h3>{userData[index].win} / {userData[index].lose} / {userData[index].score}</h3>
+						<div className={styles.buttons}>
+							{userData[index].isFriend === 1 && (
+								<button className={styles.unfollowIn} onClick={() => {unFollow(index)}} >
+									언팔로우
+								</button>)}
+							{userData[index].isFriend === 0 && (
+								<button className={styles.followIn} onClick={() => {follow(index)}}>
+									팔로우
+								</button>)}
+							<button className={styles.normalIn} onClick={() => {sendGameMatch(index)}}>
+									게임 신청
+							</button>
+							<button className={styles.normalIn} onClick={() => {profilePopup(index)}}>
+									프로필 보기
+							</button>
 						</div>
+					</div>
 			</div>
 		);
 		}

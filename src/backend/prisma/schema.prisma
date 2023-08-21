@@ -14,7 +14,7 @@ model User {
   id           Int            @id
   nickname     String?        @unique
   email        String?        @unique
-  avatar       String         @default("path")
+  avatar       String         @default("app/photo/default.png")
   score        Int            @default(0)
   createdAt    DateTime       @default(now())
   lastLogin    DateTime       @updatedAt

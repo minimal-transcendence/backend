@@ -21,11 +21,45 @@
 	}
 
 	.profileImage{
+		position: absolute;
+		top: 0;
+		left: 0;
 		width:150px;
 		height:150px;
 		border-radius:20px;
 		overflow: hidden;
-	}
+		z-index: 1;
+	  }
+
+	  .imageBox {
+		position: relative;
+		width: 150px;
+		height: 150px;
+	  }
+
+	  .circleLogout {
+		position: absolute;
+		top: 115px;
+		left: 115px;
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		z-index: 2;
+		border:1px solid white;
+		background-color: red;
+	  }
+
+	  .circleLogin {
+		position: absolute;
+		top: 115px;
+		left: 115px;
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		z-index: 2;
+		border:1px solid white;
+		background-color: green;
+	  }
 
 	.wlsBanner{
 		color: #808080;
@@ -76,7 +110,7 @@
 	.logBox{
 		display: flex;
 		flex-direction: row;
-		margin: 20px;
+		margin: 10px;
 		padding: 10px;
 		width: 600px;
 		height: 50px;
