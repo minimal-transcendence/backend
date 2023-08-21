@@ -22,6 +22,7 @@ export class GameService {
     // send game data for Init
       io.to(room.name).emit('startGame', {
       roomName: room.name,
+      level: room.level,
       canvasWidth: room.canvasWidth,
       canvasHeight: room.canvasHeight,
       paddleWidth: room.paddleWidth,
@@ -43,7 +44,8 @@ export class GameService {
         roomName: room.name,
         ballX: room.ballX,
         ballY: room.ballY,
-        paddleX: room.paddleX
+        paddleX: room.paddleX,
+        playerScore: room.playerScore,
       });
     }, 15);
   }

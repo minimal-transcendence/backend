@@ -45,7 +45,7 @@ export class GameGateway
           // todo - Save Game Result in DB
 
           this.io.to(e).emit('gameOver', {
-            room: e,
+            roomName: e,
             winner: room.winner,
             loser: room.loser
           });

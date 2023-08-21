@@ -4,13 +4,31 @@ import { useRef, useEffect, useState } from "react";
 import "../pages/index.css";
 import {socket} from "../pages/Home";
 
-type Keys = {
-  left: {
-    pressed: boolean
-  },
-  right: {
-    pressed: boolean
-  },
+type StartGameData = {
+  roomName: string;
+  level: number;
+  canvasWidth: number;
+  canvasHeight: number;
+  paddleWidth: number;
+  paddleHeight: number;
+  paddleX: number[];
+  ballX: number;
+  ballY: number;
+  ballRadius: number;
+}
+
+type GameOverData = {
+  roomName: string;
+  winner: string;
+  loser: string;
+}
+
+type GameData = {
+  roomName: string;
+  ballX: number;
+  ballY: number;
+  paddleX: number[];
+  playerScore: number[];
 }
 
 export default function Pong() {
@@ -41,12 +59,15 @@ export default function Pong() {
     }
     /*-----------------------------------------------------*/
     let inGame: boolean = false;
-    let roomName: string;
     let interval: any;
 
-    // Boundary
-    // let width: number;
-    // let height: number;
+    let roomName: string;
+    let level: number;
+    let winner: string;
+    let loser: string;
+
+    // Score
+    let score: number[] = [0, 0];
 
     // Paddle
     let paddleHeight: number;
@@ -80,6 +101,31 @@ export default function Pong() {
       // }
     }
 
+    // Draw Lobby
+    const drawLobby = () => {
+      canvas.width = 900;
+      canvas.height = 1600;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      drawBackground();
+      context.fillStyle = "white";
+      context.font = "70px serif";
+      context.fillText("This is Lobby", 10, (canvas.height / 2) - 290);
+    }
+
+    // Draw Game Over
+    const drawGameOver = () => {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      drawBackground();
+      context.fillStyle = "white";
+      context.font = "70px serif";
+      context.fillText("Game Over", 10, (canvas.height / 2) - 290);
+      context.fillText(`Winner: ${winner}`, 10, (canvas.height / 2) - 200);
+      context.fillText(`Loser: ${loser}`, 10, (canvas.height / 2) - 110);
+      context.fillText(score[1].toString(), 10, (canvas.height / 2) - 20);
+      context.fillText(score[0].toString(), 10, (canvas.height / 2) + 70);
+      // context.fill();
+    }
+
     // Draw Paddle
     const drawPaddle = () => {
       context.fillStyle = "white";
@@ -107,55 +153,42 @@ export default function Pong() {
       context.stroke();
     }
 
+    // Draw Score
+    const drawScore = () => {
+      context.font = "70px serif";
+      context.fillStyle = "grey";
+      context.fillText(score[1].toString(), 10, (canvas.height / 2) - 20);
+      context.fillText(score[0].toString(), 10, (canvas.height / 2) + 70);
+    }
+
     // Draw All Context
     const draw = () => {
       context.clearRect(0, 0, canvas.width, canvas.height);
       drawBackground();
       drawCenterLine();
+      drawScore();
       drawPaddle();
       drawBall();
     }
 
     /*-----------------------------------------------------*/
 
-    // Draw Lobby
-    const drawLobby = () => {
-      canvas.width = 900;
-      canvas.height = 1600;
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      drawBackground();
-      context.beginPath();
-      context.arc(450, 800, 300, Math.PI, 2 * Math.PI);
-      context.fillStyle = "white";
-      context.fill();
-    }
-
+    // Lobby
     drawLobby();
 
-    // Draw Game Over
-    const drawGameOver = () => {
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      drawBackground();
-      context.beginPath();
-      context.arc(450, 800, 300, Math.PI, 2 * Math.PI);
-      context.fillStyle = "red";
-      context.fill();
-    }
-
     // Start Game
-    socket.on("startGame", (data: any) => {
+    socket.on("startGame", (payload: StartGameData) => {
       inGame = true;
-      // setInGame(true);
-      roomName = data.roomName;
-      // setRoomName(data.roomName);
-      canvas.width = data.canvasWidth;
-      canvas.height = data.canvasHeight;
-      paddleWidth = data.paddleWidth;
-      paddleHeight = data.paddleHeight;
-      paddleX = data.paddleX;
-      ballX = data.ballX;
-      ballY = data.ballY;
-      ballRadius = data.ballRadius;
+      roomName = payload.roomName;
+      level = payload.level
+      canvas.width = payload.canvasWidth;
+      canvas.height = payload.canvasHeight;
+      paddleWidth = payload.paddleWidth;
+      paddleHeight = payload.paddleHeight;
+      paddleX = payload.paddleX;
+      ballX = payload.ballX;
+      ballY = payload.ballY;
+      ballRadius = payload.ballRadius;
 
       interval = setInterval(() => {
         // Draw Canvas
@@ -179,7 +212,6 @@ export default function Pong() {
 
     // Listen Key Event - keydown
     canvas.addEventListener("keydown", (e: KeyboardEvent) => {
-      console.log(inGame);
       if (!inGame) {
         return;
       }
@@ -210,16 +242,19 @@ export default function Pong() {
     });
 
     // Get Game Data from Server
-    socket.on('gameData', (payload: any) => {
+    socket.on('gameData', (payload: GameData) => {
       ballX = payload.ballX;
       ballY = payload.ballY;
       paddleX = payload.paddleX;
+      score = payload.playerScore;
       // console.log(paddleX);
     })
 
     // Game Over
-    socket.on('gameOver', (payload: any) => {
+    socket.on('gameOver', (payload: GameOverData) => {
       clearInterval(interval);
+      winner = payload.winner;
+      loser = payload.loser;
       drawGameOver();
       inGame = false;
     })
