@@ -4,10 +4,14 @@ const ChatFooter = ({
   currentRoomName,
   textareaValue,
   setTextareaValue,
+  isDM,
+  DMtarget,
 }: {
   currentRoomName: any;
   textareaValue: any;
   setTextareaValue: any;
+  isDM: boolean;
+  DMtarget: string;
 }) => {
   const socket = useContext(SocketContext);
 
@@ -17,7 +21,17 @@ const ChatFooter = ({
     const formData = new FormData(form);
     const formJson = Object.fromEntries(formData.entries());
     console.log("버튼 누를때?in handle1 e", formJson.textareaContent);
-    socket.emit("sendChatMessage", currentRoomName, formJson.textareaContent);
+    if (!isDM) {
+      console.log(
+        `in footer1, isDM:${isDM} target:${DMtarget} message:${formJson.textareaContent}`
+      );
+      socket.emit("sendChatMessage", currentRoomName, formJson.textareaContent);
+    } else if (isDM) {
+      socket.emit("sendDirectMessage", DMtarget, formJson.textareaContent);
+      console.log(
+        `in footer2 isDM:${isDM} target:${DMtarget} message:${formJson.textareaContent}`
+      );
+    }
     setTextareaValue("");
   }
   function handleSubmit2(e: any) {

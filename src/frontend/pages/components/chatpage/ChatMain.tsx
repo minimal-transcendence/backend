@@ -20,7 +20,8 @@ const ChatMain = ({
 }) => {
   const [textareaValue, setTextareaValue] = useState("");
   const [typingStatus, setTypingStatus] = useState("");
-
+  const [isDM, setIsDM] = useState<boolean>(false);
+  const [DMtarget, setDMtarget] = useState<string>("");
   const lastMessageRef = useRef<null | HTMLElement>(null);
   const socket = useContext(SocketContext);
 
@@ -37,12 +38,28 @@ const ChatMain = ({
 
       setcurrentRoomName(() => result.roomname);
       setMessages(() => result.messages);
+      setIsDM(() => false);
     }
+    function sendDMRoomInfo(target: any, messages: any) {
+      console.log(
+        `in useEffect sendDMRoomInfo  
+        target <${JSON.stringify(target, null, 2)}> messages <${JSON.stringify(
+          messages,
+          null,
+          2
+        )}> currentRoomName : <${currentRoomName}>`
+      );
 
+      setcurrentRoomName(() => target);
+      setMessages(() => messages);
+      setIsDM(() => true);
+      setDMtarget(() => target);
+    }
     socket.on("sendCurrRoomInfo", sendCurrRoomInfo);
-
+    socket.on("sendDMRoomInfo", sendDMRoomInfo);
     return () => {
       socket.off("sendCurrRoomInfo", sendCurrRoomInfo);
+      socket.off("sendDMRoomInfo", sendDMRoomInfo);
     };
   }, [currentRoomName, messages, setcurrentRoomName, socket]);
 
@@ -73,6 +90,8 @@ const ChatMain = ({
           myNickName={myNickName}
         />
         <ChatFooter
+          isDM={isDM}
+          DMtarget={DMtarget}
           textareaValue={textareaValue}
           setTextareaValue={setTextareaValue}
           currentRoomName={currentRoomName}

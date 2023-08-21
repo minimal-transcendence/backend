@@ -37,7 +37,7 @@ export default function ChatRoomUserInfo({
       else if (event.target.dataset.name === "opDelete")
         socket.emit("deleteOperator", roomname, targetnickname);
       else if (event.target.dataset.name === "dmApply")
-        socket.emit("dmApply", targetnickname);
+        socket.emit("selectDMRoom", targetnickname);
       else if (event.target.dataset.name === "oneVsOne")
         socket.emit("oneVsOneApply", targetnickname, "oneVsOne", 2);
     } else {
