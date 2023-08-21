@@ -36,19 +36,21 @@ export class GameGateway
   async afterInit(): Promise<void>{
 		this.logger.log('GAME 웹소켓 서버 초기화 ✅');
 
-    // Monitoring finished Game
+    // Monitoring finished Game - clear game room instance
     setInterval(() => {
       for (let e in this.gameRooms) {
         console.log("GameRoom:", e);
         if (this.gameRooms[e].gameOver) {
           const room: GameRoom = this.gameRooms[e];
-          // todo - Save Game Result in DB
+          if (room.gameStart) {
+            // todo - Save Game Result in DB
 
-          this.io.to(e).emit('gameOver', {
-            roomName: e,
-            winner: room.winner,
-            loser: room.loser
-          });
+            this.io.to(e).emit('gameOver', {
+              roomName: e,
+              winner: room.winner,
+              loser: room.loser
+            });
+          }
 
           // Set player status
           if (room.player[0]) {
@@ -92,20 +94,26 @@ export class GameGateway
         const room: GameRoom = this.gameRooms[e];
         // If client is in game
         if (room.player[0] || room.player[1]) {
-          // Stop Inteval
-          clearInterval(room.interval);
-          // Set winner
-          const winner: GameSocket = client === room.player[0] ? room.player[1] : room.player[0];
-          room.winner = winner.id; // nickname
-          room.loser = client.id
           // Set Room Game Over - monitoring interval will emit/clean the room
           room.gameOver = true;
-          console.log("-----Game Over-----");
-          console.log("Winner:", room.winner);
-          console.log("Loser:", room.loser);
-          console.log("-------Score-------");
-          console.log(`${room.playerScore[0]} - ${room.player[0].id}`);
-          console.log(`${room.playerScore[1]} - ${room.player[1].id}`);
+          // if started game
+          if (room.gameStart) {
+            // Stop Inteval
+            clearInterval(room.interval);
+            // Set winner
+            const winner: GameSocket = client === room.player[0] ? room.player[1] : room.player[0];
+            room.winner = winner.id; // nickname
+            room.loser = client.id
+
+            console.log("-----Game Over-----");
+            console.log("Winner:", room.winner);
+            console.log("Loser:", room.loser);
+            console.log("-------Score-------");
+            console.log(`${room.playerScore[0]} - ${room.player[0].id}`);
+            console.log(`${room.playerScore[1]} - ${room.player[1].id}`);
+          } else {
+            this.io.to(room.name).emit('matchDecline', room.name);
+          }
         }
       }
     }
@@ -137,16 +145,28 @@ export class GameGateway
 
     // More than 2 players in queue
     if (this.randomMatchQueue.length >= 2) {
+      let playerOne = this.randomMatchQueue[0];
+      let playerTwo = this.randomMatchQueue[1];
+      // if player aleady is in game
+      // delete player from queue
+      if (playerOne.inGame) {
+        this.randomMatchQueue = this.randomMatchQueue.filter(item => item !== playerOne);
+        return;
+      }
+      if (playerTwo.inGame) {
+        this.randomMatchQueue = this.randomMatchQueue.filter(item => item !== playerTwo);
+        return;
+      }
       // Create New Game Room
-      const roomName = "room_" + this.randomMatchQueue[0].id;
+      const roomName = "room_" + playerOne.id;
       this.gameRooms[roomName] = new GameRoom({
         name: roomName,
-        players: [this.randomMatchQueue[0], this.randomMatchQueue[1]],
+        players: [playerOne, playerTwo],
         level: 1
       });
 
-      this.randomMatchQueue[0].inGame = true;
-      this.randomMatchQueue[1].inGame = true;
+      playerOne.inGame = true;
+      playerTwo.inGame = true;
 
       // console.log(this.gameRooms);
       console.log(this.gameRooms[roomName].player[0].id);

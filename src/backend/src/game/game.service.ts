@@ -19,6 +19,8 @@ export class GameService {
   }
 
   startGame(io: Namespace, room: GameRoom) {
+    // Set gameStart
+    room.gameStart = true;
     // send game data for Init
       io.to(room.name).emit('startGame', {
       roomName: room.name,

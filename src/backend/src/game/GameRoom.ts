@@ -4,6 +4,7 @@ export class GameRoom {
     // Interval
     interval: any;
     // Status
+    gameStart: boolean;
     gameOver: boolean;
     // Room Name
     name: string;
@@ -47,6 +48,7 @@ export class GameRoom {
         level
     }: GameRoomParams) {
         // Status
+        this.gameStart = false;
         this.gameOver = false;
 
         this.name = name

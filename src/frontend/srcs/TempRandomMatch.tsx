@@ -6,7 +6,12 @@ export default function TempRandomMatch() {
 
     socket.on('matchStartCheck', (payload: string) => {
         roomName = payload;
+        console.log(`${payload} is checking`);
     });
+
+    socket.on('matchDecline', (payload: string) => {
+        console.log(`${payload} is declined`);
+    })
 
     const handleRandom = () => {
         socket.emit('randomMatchApply');
