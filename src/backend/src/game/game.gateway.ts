@@ -343,7 +343,6 @@ export class GameGateway
   // In Game
   @SubscribeMessage('keydown')
   handleKeydown(client: GameSocket, payload: KeydownPayload) {
-    // console.log(payload.key);
     // client is not in game
     if (!client.inGame) {
       return;
