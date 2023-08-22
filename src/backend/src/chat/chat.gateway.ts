@@ -129,7 +129,7 @@ export class ChatGateway
       const targetId = this.storeUser.getIdByNickname(user);
       const room = this.storeRoom.findRoom(roomname);
       if (
-        this.chatService.checkActValidity(roomname, client.data.id, targetId)
+        this.chatService.checkActValidity(client, roomname, client.data.id, targetId)
       ) {
         this.chatService.kickUser(this.server, roomname, targetId);
       }
@@ -139,7 +139,7 @@ export class ChatGateway
       const targetId = this.storeUser.getIdByNickname(user);
       const room = this.storeRoom.findRoom(roomname);
       if (
-        this.chatService.checkActValidity(roomname, client.data.id, targetId)
+        this.chatService.checkActValidity(client, roomname, client.data.id, targetId)
       ) {
         this.chatService.banUser(this.server, roomname, targetId);
       }
@@ -149,7 +149,7 @@ export class ChatGateway
       const targetId = this.storeUser.getIdByNickname(user);
       const room = this.storeRoom.findRoom(roomname);
       if (
-        this.chatService.checkActValidity(roomname, client.data.id, targetId)
+        this.chatService.checkActValidity(client, roomname, client.data.id, targetId)
       ) {
         this.chatService.muteUser(this.server, roomname, targetId);
       }
@@ -161,8 +161,10 @@ export class ChatGateway
       const targetId = this.storeUser.getIdByNickname(user);
       const room = this.storeRoom.findRoom(roomname);
       if (
-        this.chatService.checkActValidity(roomname, client.data.id, targetId)
+        this.chatService.checkActValidity(client, roomname, client.data.id, targetId)
       ) {
+		this.server.to(roomname).emit("sendCurrRoomInfo", this.chatService.makeCurrRoomInfo(roomname));
+		// client.emit("sendAlert", "[ NOTICE ]", `Add ${user} to the Operator`);
         room.addUserToOperators(targetId);
       }
     });
@@ -174,8 +176,10 @@ export class ChatGateway
       const targetId = this.storeUser.getIdByNickname(user);
       const room = this.storeRoom.findRoom(roomname);
       if (
-        this.chatService.checkActValidity(roomname, client.data.id, targetId)
+        this.chatService.checkActValidity(client, roomname, client.data.id, targetId)
       ) {
+		this.server.to(roomname).emit("sendCurrRoomInfo", this.chatService.makeCurrRoomInfo(roomname));
+		// client.emit("sendAlert", "[ NOTICE ]", `Delete ${user} to the Operator`);
         room.deleteUserFromOperators(targetId);
       }
     });

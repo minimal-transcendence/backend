@@ -601,39 +601,47 @@ export class ChatService {
 
 	//TODO : sendAlert message 분리하려면 이 함수에서 Socket 받아야함!
 	//채팅방에서 어떤 행동을 할 때 가능한지 모두 체크 : 권한, 유효성, etc.
-	checkActValidity(roomname : string, actor : number, target : number) : boolean {
+	checkActValidity(client : Socket, roomname : string, actor : number, target : number) : boolean {
 		if (actor === target) {
-			console.log("[ ACT ERROR ] you can't do sth to yourself")
+			// console.log("[ ACT ERROR ] you can't do sth to yourself")
+			client.emit("sendAlert", "[ ACT ERROR ]", "you can't do sth to yourself")
 			return (false);
 		}
 		const room = this.storeRoom.findRoom(roomname);
 		if (room === undefined){
-			console.log("[ ACT ERROR ] Room does not exist")
+			// console.log("[ ACT ERROR ] Room does not exist")
+			client.emit("sendAlert", "[ ACT ERROR ]", "Room does not exist")
 			return (false);
 		}
 		const user = this.storeUser.findUserById(actor);
 		if (user === undefined || !user.joinlist.has(roomname)){
-			console.log("[ ACT ERROR ] invalid Actor");
+			// console.log("[ ACT ERROR ] invalid Actor");
+			client.emit("sendAlert", "[ ACT ERROR ]", "invalid Actor")
 			return (false);
 		}
 		if (!room.isOwner(user.id) && !room.isOperator(user.id)){
-			console.log("[ ACT ERROR ] Actor is not authorized");
+			// console.log("[ ACT ERROR ] Actor is not authorized");
+			client.emit("sendAlert", "[ ACT ERROR ]", "Actor is not authorized")
 			return (false);
 		}
 		if (target === -1){
-			console.log("[ ACT ERROR ] Target does not exist")
+			// console.log("[ ACT ERROR ] Target does not exist")
+			client.emit("sendAlert", "[ ACT ERROR ]", "Target does not exist")
 			return (false);
 		}
 		else if (!room.isJoinning(target)){
-			console.log("[ ACT ERROR ] Target is not joining this room");
+			// console.log("[ ACT ERROR ] Target is not joining this room");
+			client.emit("sendAlert", "[ ACT ERROR ]", "Target is not joining this room")
 			return (false);
 		}
 		else if (room.isOwner(target)){	//가능하면 owner랑 operator를 enum으로 만들어서 값 비교로 권한 우위 확인하면 더 좋았을듯.... 지금은 귀찮아...
-			console.log("[ ACT ERROR ] Target is the Owner");
+			// console.log("[ ACT ERROR ] Target is the Owner");
+			client.emit("sendAlert", "[ ACT ERROR ]", "Target is the Owner")
 			return (false);
 		}
 		else if (room.isOperator(target) && !room.isOwner(actor)){
-			console.log("[ ACT ERROR ] Only owner can do sth to Operator");
+			// console.log("[ ACT ERROR ] Only owner can do sth to Operator");
+			client.emit("sendAlert", "[ ACT ERROR ]", "Only owner can do sth to Operator")
 			return (false);
 		}
 		return (true);
