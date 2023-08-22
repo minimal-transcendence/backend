@@ -41,10 +41,7 @@ const ChatMain = ({
       setcurrentRoomName(() => result.roomname);
       setMessages(() => result.messages);
       setIsDM(() => false);
-
-      const roomStatusVar = result?.isPrivate ? "Private" : "Public";
-      console.log("roomStatus const ", roomStatusVar);
-      setRoomState(() => roomStatusVar);
+      setRoomState(() => (result?.isPrivate ? "Private" : "Public"));
     }
     function sendDMRoomInfo(target: any, messages: any) {
       console.log(

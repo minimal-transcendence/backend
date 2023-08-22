@@ -101,33 +101,37 @@ const ChatHeader = ({
       <h2>
         {isDM ? `Chat with ${currentRoomName}` : `Chat in ${currentRoomName}`}
       </h2>
-      <span>
-        <div
-          className="chat-message-header exit dropdown-chat"
-          onClick={() => handleMenu(event, currentRoomName)}
-        >
-          <div className="dropbtn">
-            <button className="chat-message-header btn-option">
-              {`\u00A0\u00A0${roomState}\u00A0`}
-            </button>
-          </div>
-          <div className="dropdown-content-chat">
-            <div data-name="private">Private</div>
-            <div data-name="password">
-              <p>Password-protected</p>
-              <form onSubmit={() => onSubmit(event, password, currentRoomName)}>
-                <input
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="패스워드입력하세요"
-                ></input>
-              </form>
+      {!isDM && (
+        <span>
+          <div
+            className="chat-message-header exit dropdown-chat"
+            onClick={() => handleMenu(event, currentRoomName)}
+          >
+            <div className="dropbtn">
+              <button className="chat-message-header btn-option">
+                {`\u00A0\u00A0${roomState}\u00A0`}
+              </button>
             </div>
-            <div data-name="public">public</div>
-            <div data-name="exit">EXIT</div>
+            <div className="dropdown-content-chat">
+              <div data-name="private">Private</div>
+              <div data-name="password">
+                <p>Password-protected</p>
+                <form
+                  onSubmit={() => onSubmit(event, password, currentRoomName)}
+                >
+                  <input
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="패스워드입력하세요"
+                  ></input>
+                </form>
+              </div>
+              <div data-name="public">public</div>
+              <div data-name="exit">EXIT</div>
+            </div>
           </div>
-        </div>
-      </span>
+        </span>
+      )}
     </div>
   );
 };
