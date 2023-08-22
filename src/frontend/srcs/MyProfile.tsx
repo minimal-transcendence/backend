@@ -34,32 +34,29 @@ function MyProfile() {
 				id: userId,
 				nickname: newNickname,
 			};
-			try {
-				const response = await fetch(apiUrl, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify(dataToUpdate),
-				});
-
-				if (!response.ok) {
-				throw new Error('API 요청이 실패하였습니다.');
+			await axiosApi.patch(apiUrl, JSON.stringify(dataToUpdate),
+			{headers: {
+				'Content-Type': 'application/json',
+			}}
+			)
+			.then(response => {
+				if (response.data.error){
+					alert("닉네임 변경에 실패했습니다. 새로운 닉네임으로 다시 시도해주세요");
+					console.error('에러 발생:', response.data);
+					setNewNickname('');
 				}
-
-				const responseData = await response.json();
-				if (responseData.error){
-					throw new Error(responseData.error);
+				else{
+					setUserNickname(newNickname);
+					localStorage.setItem("nickname", newNickname);
+					console.log('naickname 변경 성공 데이터:', response.data);
+					alert("닉네임이 변경되었습니다");
 				}
-				setUserNickname(newNickname);
-				localStorage.setItem("nickname", newNickname);
-				console.log('naickname 변경 응답 데이터:', responseData);
-				alert("닉네임이 변경되었습니다");
-			} catch (error) {
+			})
+			.catch(error => {
 				alert("닉네임 변경에 실패했습니다");
 				console.error('에러 발생:', error);
 				setNewNickname('');
-			}
+			})
 		}
 		if (selectedFile) {
 			const formData = new FormData();
@@ -84,82 +81,73 @@ function MyProfile() {
 				setImageUrl(null);
 				setSelectedFile(null);
 				alert("프로필 사진이 변경되었습니다");
-				} catch (error) {
-				console.error('Error uploading image:', error);
-				alert("에러 발생 :" + error);
+			} 
+			catch (error) {
+			console.error('Error uploading image:', error);
+			alert("에러 발생 :" + error);
 			}
 		}
 
 		if (is2Fa === 'false' && checkIs2Fa === true){
-			try{
-				if (verCode == '' || verCode.length !== 6){
-					throw("인증코드를 확인해주세요");
-				}
-				const faChangeApiUrl = 'http://localhost/api/2fa/turn-on';
-				const dataToUpdate = {
-					id: userId,
-					twoFactorAuthCode: verCode
-				};
-				const response = await fetch(faChangeApiUrl, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify(dataToUpdate),
-				});
-
-				if (!response.ok) {
-					throw new Error('API 요청이 실패하였습니다.(change 2faData');
-				}
-
-				const responseData = await response.json();
-				if (responseData.error){
-					throw new Error(responseData.error);
-				}
-				localStorage.setItem("is2fa", 'true');
-				setIs2Fa('true');
-				alert("2차인증이 설정되었습니다");
-				console.log('is2fa 변경 응답 데이터:', responseData);
+			if (verCode == '' || verCode.length !== 6){
+				throw("인증코드를 확인해주세요");
 			}
-			catch(error){
-				alert("qr인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
+			const faChangeApiUrl = 'http://localhost/api/2fa/turn-on';
+			const dataToUpdate = {
+				id: userId,
+				twoFactorAuthCode: verCode
+			};
+			await axiosApi.post(faChangeApiUrl, JSON.stringify(dataToUpdate),
+				{headers: {
+					'Content-Type': 'application/json',
+				}}
+			)
+			.then(response => {
+				if (response.data.error){
+					alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
+					console.error('에러 발생:', response.data.error);
+				}
+				else{
+					localStorage.setItem("is2fa", 'true');
+					setIs2Fa('true');
+					alert("2차인증이 설정되었습니다");
+					console.log('is2fa 변경 응답 데이터:', response.data);
+				}
+			})
+			.catch(error =>{
+				alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
 				console.error('에러 발생:', error);
-			}
+			})
 		} else if (is2Fa === 'true' && checkIs2Fa === false){
-			try{
-				if (verCode == '' || verCode.length !== 6){
-					throw("인증코드를 확인해주세요");
-				}
-				const faChangeApiUrl = 'http://localhost/api/2fa/turn-off';
-				const dataToUpdate = {
-					id: userId,
-					twoFactorAuthCode: verCode
-				};
-				const response = await fetch(faChangeApiUrl, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify(dataToUpdate),
-				});
-
-				if (!response.ok) {
-					throw new Error('API 요청이 실패하였습니다.(change 2faData');
-				}
-
-				const responseData = await response.json();
-				if (responseData.error){
-					throw new Error(responseData.error);
-				}
-				localStorage.setItem("is2fa", 'false');
-				setIs2Fa('false');
-				alert("2차인증이 해제되었습니다");
-				console.log('is2fa 변경 응답 데이터:', responseData);
+			if (verCode == '' || verCode.length !== 6){
+				throw("인증코드를 확인해주세요");
 			}
-			catch(error){
-				alert("qr인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
+			const faChangeApiUrl = 'http://localhost/api/2fa/turn-off';
+			const dataToUpdate = {
+				id: userId,
+				twoFactorAuthCode: verCode
+			};
+			await axiosApi.post(faChangeApiUrl, JSON.stringify(dataToUpdate),
+			{headers: {
+				'Content-Type': 'application/json',
+			}}
+			)
+			.then(response => {
+				if (response.data.error){
+					alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
+					console.error('에러 발생:', response.data.error);
+				}
+				else{
+					localStorage.setItem("is2fa", 'false');
+					setIs2Fa('false');
+					alert("2차인증이 해제되었습니다");
+					console.log('is2fa 변경 응답 데이터:', response.data);
+				}
+			})
+			.catch(error => {
+				alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
 				console.error('에러 발생:', error);
-			}
+			})
 		}
 	}
 

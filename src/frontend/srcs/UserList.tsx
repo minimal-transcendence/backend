@@ -37,7 +37,7 @@ function UserList() {
 		matchhistory: userMatchHistory[],
 	}
 
-	function checkIsFriend(id:string[], userid:string){
+	function checkIsInclude(id:string[], userid:string){
 		if (id.includes(userid)){
 			return 1;
 		}else{
@@ -60,27 +60,36 @@ function UserList() {
 		setShowProfile(true);
 		setDetailShowprofile(false);
 
+		const connectList:string[] = [];
 		socket.emit("requestAllMembers");
 		socket.on("responseAllMembers", (data) => {
-			console.log(JSON.stringify(data));
-
+			const connectCount = data.length;
+			for(let i = 0; i < connectCount ; i++){
+				if (data[i].isConnected === true)
+					connectList.push(data[i].id);
+			}
 		})
+
 		const idList:string[] = [];
-		const responseFriend = await (await fetch_refresh ('http://localhost/api/user/' + userId + '/friend')).json();
-		// const responseFriend = await axiosApi("", )
+		//const responseFriend = await (await fetch_refresh ('http://localhost/api/user/' + userId + '/friend')).json();
+		const responseData = await axiosApi.get("http://localhost/api/user/" + userId + '/friend', );
+		const responseFriend = responseData.data;
 		const friendCount = responseFriend.friendList.length;
 		for(let i = 0; i < friendCount ; i++){
 			idList.push(responseFriend.friendList[i].id);
 		}
 
-		const response = await(await fetch('http://localhost/api/user')).json();
+		const responseUserData = await axiosApi.get('http://localhost/api/user', );
+		const response = responseUserData.data;
 		const useridx = response.length;
 
 		const newDataList: userDataInterface[] = [];
 		const newModalList: boolean[] = [];
 		for(let i = 0 ; i < useridx ; i++){
-			const detailResponse = await(await fetch('http://localhost/api/user/' + response[i].id)).json();
-			const matchResponse = await(await fetch('http://localhost/api/user/' + response[i].id + '/matchhistory')).json();
+			const responseDetail = await axiosApi.get('http://localhost/api/user/' + response[i].id, );
+			const detailResponse = responseDetail.data;
+			const responseMatch = await axiosApi.get('http://localhost/api/user/' + response[i].id + '/matchhistory', );
+			const matchResponse = responseMatch.data;
 			const matchCount = matchResponse.length;
 			const newData: userDataInterface = {
 				id: detailResponse.id,
@@ -90,17 +99,17 @@ function UserList() {
 				lose: detailResponse._count.asLoser,
 				score: (parseInt(detailResponse._count.asWinner) * 10 - parseInt(detailResponse._count.asLoser) * 10),
 				lastLogin: detailResponse.lastLogin,
-				isFriend: checkIsFriend(idList, detailResponse.id),
-				isLogin: 0, //수정하기
+				isFriend: checkIsInclude(idList, detailResponse.id),
+				isLogin: checkIsInclude(connectList, detailResponse.id), //수정하기
 				matchhistory: [],
 			};
-			for(let i = 0 ; i < matchCount ; i++){
+			for(let j = 0 ; j < matchCount ; j++){
 				const newMatchData: userMatchHistory = {
-					winner: matchResponse[i].winner.nickname,
-					winnerAvatar: "/api/" + matchResponse[i].winner.avatar,
-					loser: matchResponse[i].loser.nickname,
-					loserAvatar: "/api/" + matchResponse[i].loser.avatar,
-					time: matchResponse[i].createdTime,
+					winner: matchResponse[j].winner.nickname,
+					winnerAvatar: "/api/" + matchResponse[j].winner.avatar,
+					loser: matchResponse[j].loser.nickname,
+					loserAvatar: "/api/" + matchResponse[j].loser.avatar,
+					time: matchResponse[j].createdTime,
 				};
 				newMatchData.time = newMatchData.time.slice(0,19);
 				newMatchData.time = newMatchData.time.replace('T', ' ');
@@ -141,31 +150,22 @@ function UserList() {
 			friend: userData[index].id,
 		};
 
-		try {
-			const response = await fetch(apiUrl, {
-			method: 'PATCH',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(dataToUpdate),
-			});
-
-			if (!response.ok) {
-			throw new Error('API 요청이 실패하였습니다.');
-			}
-
-			const responseData = await response.json();
-
-			console.log('Follow 응답 데이터:', responseData);
+		await axiosApi.patch(apiUrl, JSON.stringify(dataToUpdate)
+		,
+		{headers: {
+			'Content-Type': 'application/json',
+		}})
+		.then(response => {
+			console.log('Follow 성공 데이터:', response.data);
 			let copiedData = [...userData];
 			copiedData[index].isFriend = 1;
 			setData(copiedData);
-		} catch (error) {
+		})
+		.catch(error =>{
 			alert("Follow에 실패했습니다");
 			console.error('에러 발생:', error);
-		}
+		})
 	}
-
 	async function unFollow(index:number){
 		const apiUrl = 'http://localhost/api/user/' + userId + '/friend';
 		const dataToUpdate = {
@@ -174,29 +174,21 @@ function UserList() {
 			friend: userData[index].id,
 		};
 
-		try {
-			const response = await fetch(apiUrl, {
-			method: 'PATCH',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(dataToUpdate),
-			});
-
-			if (!response.ok) {
-			throw new Error('API 요청이 실패하였습니다.');
-			}
-
-			const responseData = await response.json();
-
-			console.log('unFollow 응답 데이터:', responseData);
+		await axiosApi.patch(apiUrl, JSON.stringify(dataToUpdate)
+		,
+		{headers: {
+			'Content-Type': 'application/json',
+		}})
+		.then(response => {
+			console.log('UnFollow 성공 데이터:', response.data);
 			let copiedData = [...userData];
 			copiedData[index].isFriend = 0;
 			setData(copiedData);
-		} catch (error) {
-			alert("Follow에 실패했습니다");
+		})
+		.catch(error =>{
+			alert("UnFollow에 실패했습니다");
 			console.error('에러 발생:', error);
-		}
+		})
 	}
 
 	useEffect (() => {
