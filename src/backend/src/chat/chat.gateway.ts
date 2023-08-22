@@ -1,55 +1,44 @@
-import { Logger, UseGuards, Req } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
-  // MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
-  // SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
-import { Server } from 'socket.io';
+import { Socket, Namespace } from 'socket.io';
 import { ChatRoomStoreService, Room } from '../store/store.room.service';
 import { ChatUserStoreService, User } from '../store/store.user.service';
 import { DM, ChatMessageStoreService } from '../store/store.message.service';
 import { ChatService } from './chat.service';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { PrismaService } from 'src/prisma.service';
-import { JwtService } from '@nestjs/jwt';
+import { ChatSocket } from './types';
 
-//TODO : 아직 인증 처리가 완전하지 않아서 새로고침을 했을 때, 혹은 jwtToken이 만료 되었을때... 같은 유저가 하나는 user99, 하나는 null로 찍힌다ㅠ 인증이 정상적으로 이루어지고 나서도 이렇게 되는지 확인할 것
-// @UseGuards(JwtGuard) //guard해도 연결 자체가 막히지는 않는 듯... ㄸㄹㄹ
-@WebSocketGateway(3002, {
-  cors: 'http://localhost',
-  namespace : '/chat',
-  pingInterval: 5000,
-  pingTimeout: 3000,
+@WebSocketGateway({
+	namespace: 'chat',
 })
 export class ChatGateway
   implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
 {
+	private readonly logger = new Logger(ChatGateway.name);
 	constructor(
 		private storeRoom : ChatRoomStoreService,
 		private storeUser : ChatUserStoreService,
-		private storeMessage : ChatMessageStoreService,
+		// private storeMessage : ChatMessageStoreService,
 		private chatService : ChatService,
 		private prisma : PrismaService,
-		private jwtService : JwtService,
 	){}
 	
-	@WebSocketServer() 
-	server : Server;
-	private logger: Logger = new Logger('EventsGateway');
+	@WebSocketServer() io : Namespace;
+	// private logger: Logger = new Logger('EventsGateway');
 
 	//아니면 여기서 prisma 써서 userlist 다 가져오게 할까...?
 	//여기서 async써도 괜찮은가...?
-	//TODO : 아니 생각해보니.... 이거 validation 어떻게...?
-	async afterInit(){
+	async afterInit(): Promise<void>{
 		this.logger.log('웹소켓 서버 초기화 ✅');
 
-		//DB의 모든 유저를 등록한다
 		const users = await this.prisma.user.findMany({
 			select : { 
 				id : true,
@@ -57,13 +46,13 @@ export class ChatGateway
 			}
 		});
 		users.forEach((user) => {
+			//아아니 흑흑... 메모리 릭 체크하자... map에 든 User를 어떻게 제거하는게 원래는 맞는지...
+			//일단 우리 시스템에서는 탈퇴는 없지만...!
 			this.storeUser.saveUser(
 				user.id, 
 				new User(user.id, user.nickname)
 			);
-		});
-		this.storeUser.saveUser(-1, new User(-1, "Server_Admin"));
-		this.storeRoom.saveRoom("DEFAULT", new Room(-1));	//owner id = -1 as server
+		})
 	}
 
 	async handleConnection(@ConnectedSocket() client: Socket) {
@@ -90,49 +79,49 @@ export class ChatGateway
 		/* Initialize */
 		//유저가 원래 DB에 있던 유저가 아니면 추가
 		//그 default room과 dm room에 각각 join후 필요한 정보 emit(각 소켓 별)
-		await this.chatService.newUserConnected(this.server, client, userId, client.data.nickname);
+		await this.chatService.newUserConnected(this.io, client, userId, client.data.nickname);
 		
 		client.on("sendChatMessage", (to, body) => {
 			console.log("i got it!")
-			this.chatService.sendChat(this.server, client, to, body);
+			this.chatService.sendChat(this.io, client, to, body);
 		});
-		// this.chatService.sendChat(this.server, client, "DEFAULT", "I'm coming");
+		// this.chatService.sendChat(this.io, client, "DEFAULT", "I'm coming");
 		// this.chatService.makeCurrRoomInfo("DEFAULT");
 
 		client.on("selectRoom", (room) => {
 			//async await 어렵다 어려워
-			this.chatService.userJoinRoom(this.server, client, room);
+			this.chatService.userJoinRoom(this.io, client, room);
 		});
 
 		//TODO : 무조건 password 넣는 단계가 분리되면 userJoinRoom함수 자체를 좀 더 효율적으로 정비 가능
 		client.on("sendRoomPass", (room, password) => {
-			this.chatService.userJoinRoom(this.server, client, room, password);
+			this.chatService.userJoinRoom(this.io, client, room, password);
 		});
 
 		client.on("setRoomPass", (room, password) => {
-			this.chatService.setPassword(this.server, client, room, password);
+			this.chatService.setPassword(this.io, client, room, password);
 		})
 
 		//TODO : 미완성
 		client.on("sendRoomLeave", (room) => {
-			this.chatService.userLeaveRoom(this.server, client.data.id, room);
-			this.chatService.userLeaveRoomAct(this.server, client, room);
+			this.chatService.userLeaveRoom(this.io, client.data.id, room);
+			this.chatService.userLeaveRoomAct(this.io, client, room);
 		});
 
 		//TODO : check
 		client.on("blockUser", (user) => {
-			this.chatService.blockUser(this.server, client, user);
+			this.chatService.blockUser(this.io, client, user);
 		});
 		
 		client.on("unblockUser", (user) => {
-			this.chatService.unblockUser(this.server, client, user);
+			this.chatService.unblockUser(this.io, client, user);
 		});
 
 		client.on("kickUser", (roomname, user) => {
 			const targetId = this.storeUser.getIdByNickname(user);
 			const room = this.storeRoom.findRoom(roomname);
 			if (this.chatService.checkActValidity(roomname, client.data.id, targetId)){
-				this.chatService.kickUser(this.server, roomname, targetId);
+				this.chatService.kickUser(this.io, roomname, targetId);
 			}
 		});
 		
@@ -140,7 +129,7 @@ export class ChatGateway
 			const targetId = this.storeUser.getIdByNickname(user);
 			const room = this.storeRoom.findRoom(roomname);
 			if (this.chatService.checkActValidity(roomname, client.data.id, targetId)){
-				this.chatService.banUser(this.server, roomname, targetId);
+				this.chatService.banUser(this.io, roomname, targetId);
 			}
 		});
 
@@ -148,7 +137,7 @@ export class ChatGateway
 			const targetId = this.storeUser.getIdByNickname(user);
 			const room = this.storeRoom.findRoom(roomname);
 			if (this.chatService.checkActValidity(roomname, client.data.id, targetId)){
-				this.chatService.muteUser(this.server, roomname, targetId);
+				this.chatService.muteUser(this.io, roomname, targetId);
 			}
 		});
 		
@@ -203,18 +192,18 @@ export class ChatGateway
 
 		client.on("selectDMRoom", (username) => {
 			const DMs = this.chatService.makeDMRoomMessages(client.data.nickname, username);
-			this.chatService.emitEventsToAllSockets(this.server, client.data.id, "sendDMRoomInfo", username, DMs);
+			this.chatService.emitEventsToAllSockets(this.io, client.data.id, "sendDMRoomInfo", username, DMs);
 		})
 		client.on("sendDirectMessage", (to, body) => {
 			const fromId = client.data.id;
 			const toId = this.storeUser.getIdByNickname(to);
-			this.chatService.fetchDM(this.server, fromId, toId, body);
+			this.chatService.fetchDM(this.io, fromId, toId, body);
 		});
 	}
 
 	//disconnecting, disconnect 둘다 감지 가능?
 	async handleDisconnect(@ConnectedSocket() client: Socket) {
 		this.logger.log(client.data.nickname + '나감');
-		await this.chatService.disconnectUser(this.server, client.data.id);
+		await this.chatService.disconnectUser(this.io, client.data.id);
 	}
 }

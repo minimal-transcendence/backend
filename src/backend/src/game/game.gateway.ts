@@ -1,90 +1,408 @@
-import { ConnectedSocket,
+import { Logger, UseGuards, Req } from '@nestjs/common';
+import {
+	ConnectedSocket,
+	// MessageBody,
 	OnGatewayConnection,
-	OnGatewayInit,
 	OnGatewayDisconnect,
+	OnGatewayInit,
 	SubscribeMessage,
+	// SubscribeMessage,
 	WebSocketGateway,
-	WebSocketServer } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+	WebSocketServer,
+} from '@nestjs/websockets';
+import { Namespace } from 'socket.io';
+import { GameListItem, GameSocket, KeydownPayload, OneOnOneInvite, OneOnOneAccept } from './types';
+import { GameRoom } from './GameRoom';
 import { GameService } from './game.service';
 
+// let readyPlayerCount: number = 0;
 
-//@UseGuards(JwtGuard)
-@WebSocketGateway(3002, {
-	cors : {
-		origin : 'http://localhost'
-	},
-	// namespace : '/game',
-	pingInterval : 5000,
-	pingTimeout: 3000
+@WebSocketGateway({
+	namespace: 'game',
+  pingTimeout: 2000,
+  pingInterval: 5000,
 })
-export class GameGateway implements OnGatewayInit, OnGatewayConnection{
+export class GameGateway
+  implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
+{
+  private readonly logger = new Logger(GameGateway.name);
+  private randomMatchQueue: GameSocket[] = [];
+  private gameRooms = {};
 
-	@WebSocketServer() 
-	server : Server;
-		
-	// chatNamespace: Namespace;
-	constructor (
-		private gameService : GameService,
-	){}
-	
-	async afterInit() {
-	}
+  constructor(private gameServie: GameService){}
 
-	async handleConnection(@ConnectedSocket() client: Socket) {
-		
-	}
+  @WebSocketServer() io : Namespace;
 
-	async handleDisconnection(){
+  async afterInit(): Promise<void>{
+		this.logger.log('GAME 웹소켓 서버 초기화 ✅');
 
-	}
-/*
-	일단 생각해보자.... game 은 어느시점에 들어오게 되지?
-	// Game소켓으로 접속 지점
-		1. 1:1 매치 신청
-		2. 랜덤 매치 신청
-	//신청
-	//이 시점에 상대방의 승낙을 기다리는 중입니다 <- 화면으로 넘어가는게 적절하지 않을까? 이 다음에 게임화면으로 넘어옴 (대기화면 1)
-		상대가 이미 게임 중 -> 게임 중인 상대에게는 매치를 신청할 수 없습니다 (알람)
-		상대방에게 신청이 온 것을 알림 : 수락하시겠습니까? -> 예 / 아니오
-			//상대방 수락 시 : Are you Ready? -> 카운트 다운
-			//상대방 거절 시 : 상대방이 신청을 거절하였습니다 -> (승낙대기 화면 해제)
-	
-	//랜덤매치의 경우도 마찬가지로 대기화면? or 화면 상단에 매칭 대기 중입니다 < 표시?
-	//랜덤 큐에 있다가 신청 된 경우 : OO님과의 게임이 곧 시작됩니다!
-		<- 수락 / 거절 기능을 줄 것인가?
-			//줄 경우 : 거절당한 사람은 다시 큐의 끝에? 아님 그래도 앞에 밀어넣어 줄 것인가? -> 귀찮으니까 관두자
-		// 포기하고 나가기 / 카운트 다운 후 게임 시작
-	//일단 카운트 다운에 들어간 팀은 큐에서 빠져나가야겠지?
-	
-	//게임 시작
-		//게임 중 "포기하고 나가기" or
-		//게임 끝 : 작용이 어떻게 되지? 클라이언트가 나에게 패한걸 알려주나?? --> DB에 기록
+    // Monitoring finished Game - clear game room instance
+    setInterval(() => {
+      for (let e in this.gameRooms) {
+        console.log("GameRoom:", e);
+        if (this.gameRooms[e].gameOver) {
+          const room: GameRoom = this.gameRooms[e];
+          if (room.gameStart) {
+            // todo - Save Game Result in DB
 
-		//paddle move
-		//ball move
-	//한 판 더 하시겠습니까? <- 네 / 아니오 : 거절해도 패하지 않게 처리 & 시간 지나면 자동으로 게임 수락 (랜덤매치 승낙/거절에도 쓸 수 있는 듯?)
-	//여기서 더 게임이 진행되지 않으면? 게임 소켓에서 접속 종료 -> 자동으로 채팅 화면으로 돌아가기
+            this.io.to(e).emit('gameOver', {
+              roomName: e,
+              winner: room.winner,
+              loser: room.loser
+            });
+          }
 
-	//큐를 두 개 쓰는게 안전할지도
-	//유저 정보는 chat에 있는거 갖다쓸 수 있나...? namespace 분리하려면 안 하는게 좋을 것 같음
-	//여기서 유저한테 필요한 정보...? id ... ? 화면에 뿌려주려면 승률 랭킹 아래 정도로 표시하자 그럼 안 심심할듯!
-	//player 1
-	//YSUNGWON
-	//99.9%
-	//RANK 1
-*/
+          // Set player status
+          if (room.player[0]) {
+            room.player[0].inGame = false;
+          }
+          if (room.player[1]) {
+            room.player[1].inGame = false;
+          }
 
-
-  @SubscribeMessage('oneVsOneApply')
-  handleMessage(client: any, payload: any): string {
-    return 'Hello world!';
+          // Delete GameRoom Instance
+          delete this.gameRooms[e];
+        }
+      }
+    }, 1500)
   }
-  
 
-//   @SubscribeMessage('test')
-//   sendMsgToChat(client: any): void {
+  async handleConnection(@ConnectedSocket() client: GameSocket, userId : string, ) {
+		const sockets = this.io.sockets;
+
+    client.inGame = false;
+    client.gameList = [];
+    //For TEST
+    client.userId = "def";
+    client.nickname = "def";
+    client.email = "def";
+
+		// this.logger.debug(
+		// 	`Game Socket connected with userId: ${client.userId}`
+		// );
+
+		this.logger.log(`Game Client Connected : ${client.id}`);
+		this.logger.debug(`Number of connected Game sockets: ${sockets.size}`)
+  }
+
+  async handleDisconnect(@ConnectedSocket() client: GameSocket) {
+    const sockets = this.io.sockets;
+
+    // leave game
+    if (client.inGame) {
+      for (let e in this.gameRooms) {
+        const room: GameRoom = this.gameRooms[e];
+        // If client is in game
+        if (room.player[0] || room.player[1]) {
+          // Set Room Game Over - monitoring interval will emit/clean the room
+          room.gameOver = true;
+          // if started game
+          if (room.gameStart) {
+            // Stop Inteval
+            clearInterval(room.interval);
+            // Set winner
+            const winner: GameSocket = client === room.player[0] ? room.player[1] : room.player[0];
+            room.winner = winner.id; // nickname
+            room.loser = client.id
+
+            console.log("-----Game Over-----");
+            console.log("Winner:", room.winner);
+            console.log("Loser:", room.loser);
+            console.log("-------Score-------");
+            console.log(`${room.playerScore[0]} - ${room.player[0].id}`);
+            console.log(`${room.playerScore[1]} - ${room.player[1].id}`);
+          } else {
+            this.io.to(room.name).emit('matchDecline', room.name);
+          }
+        }
+      }
+    }
+
+    // this.logger.debug(
+    //   `Game Socket disconnected with userId: ${client.userId}`
+    // );
+
+    this.logger.log(`Game Client Disconnected : ${client.id}`);
+    this.logger.debug(`Number of connected Game sockets: ${sockets.size}`)
+  }
+
+  /*-------------Random Match-----------------------*/
+
+  @SubscribeMessage('randomMatchApply')
+  handleRandomMatchApply(client: GameSocket) {
+    // client is in game
+    if (client.inGame) {
+      return;
+    }
+
+    // remove duplication
+    if (this.randomMatchQueue.includes(client)) {
+      return;
+    }
     
-//   }
-  
+    // push client in queue
+    this.randomMatchQueue.push(client);
+
+    // More than 2 players in queue
+    if (this.randomMatchQueue.length >= 2) {
+      let playerOne = this.randomMatchQueue[0];
+      let playerTwo = this.randomMatchQueue[1];
+      // if player aleady is in game
+      // delete player from queue
+      if (playerOne.inGame) {
+        this.randomMatchQueue = this.randomMatchQueue.filter(item => item !== playerOne);
+        return;
+      }
+      if (playerTwo.inGame) {
+        this.randomMatchQueue = this.randomMatchQueue.filter(item => item !== playerTwo);
+        return;
+      }
+      // Create New Game Room
+      const roomName = "room_" + playerOne.id;
+      this.gameRooms[roomName] = new GameRoom({
+        name: roomName,
+        players: [playerOne, playerTwo],
+        level: 1
+      });
+
+      playerOne.inGame = true;
+      playerTwo.inGame = true;
+
+      // console.log(this.gameRooms);
+      console.log(this.gameRooms[roomName].player[0].id);
+      console.log(this.gameRooms[roomName].player[1].id);
+      // Add Players into Game Room
+      this.gameRooms[roomName].player[0].join(roomName);
+      this.gameRooms[roomName].player[1].join(roomName);
+      // Delete Players from Random Match Queue
+      this.randomMatchQueue.splice(0, 2);
+      // Ask Match Accept
+      this.io.to(roomName).emit('matchStartCheck', roomName);
+    }
+  }
+
+  @SubscribeMessage('randomMatchCancel')
+  handleRandomMatchCancel(client: GameSocket) {
+    this.randomMatchQueue = this.randomMatchQueue.filter(item => item !== client);
+  }
+
+  /*-------------Match Accept-----------------------*/
+
+  @SubscribeMessage('matchAccept')
+  handleAccept(client: GameSocket, roomName: string) {
+    let room: GameRoom = this.gameRooms[roomName];
+
+    // check if user in the room
+    this.gameServie.validatePlayerInRoom(client, room);
+
+    // if (client.userId === room.playerOne.userId) {
+    if (client.id === room.player[0].id) {
+      room.playerAccept[0] = true;
+    }
+    // else if (client.userId === room.playerTwo.userId) {
+    else if (client.id === room.player[1].id) {
+      room.playerAccept[1] = true;
+    }
+
+    // Start Game
+    if (room.playerAccept[0] && room.playerAccept[1]) {
+      this.gameServie.startGame(this.io, room);
+    };
+    
+  }
+
+  @SubscribeMessage('matchDecline')
+  handleDecline(client: GameSocket, roomName:string) {
+    // check if user in the room
+    this.gameServie.validatePlayerInRoom(client, this.gameRooms[roomName]);
+
+    this.gameRooms[roomName].player[0].inGame = false;
+    this.gameRooms[roomName].player[1].inGame = false;
+
+    this.io.to(roomName).emit('matchDecline', roomName);
+    // delete game room
+    delete this.gameRooms[roomName];
+  }
+
+  /*---------------------One on One-----------------------------------*/
+
+  @SubscribeMessage('oneOnOneApply')
+  handleOneOnOneApply(client: GameSocket, payload: OneOnOneInvite) {
+    // Get By Nickname
+    // let toClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.to);
+
+    // Get By Id - TEST
+    // const toClient: GameSocket = this.io.sockets.get(payload.to);
+    let toClient: GameSocket;
+
+    this.io.sockets.forEach((e) => {
+      if (e.id === payload.to) {
+        toClient = e as GameSocket;
+      }
+    })
+    ////////////////////////
+
+    if (!toClient) {
+      return `ERR no such user: ${payload.to}`;
+    }
+
+    // Invitation (nickname)
+    // const invitation: GameListItem = {
+    //   from: client.nickname,
+    //   to: payload.to,
+    //   level: payload.level,
+    // }
+
+    // Invitation (id) - TEST
+    const invitation: GameListItem = {
+      from: client.id,
+      to: payload.to,
+      level: payload.level,
+    }
+
+    // 중복확인
+    for (let e in client.gameList) {
+      console.log(e);
+      console.log(invitation);
+      if (this.gameServie.objectsAreSame(client.gameList[e], invitation)) {
+        return `ERR aleady invite ${payload.to}`;
+      }
+    }
+
+    // update list on each client
+    client.gameList.push(invitation);
+    toClient.gameList.push(invitation);
+
+    // send invitation list
+    client.emit('updateGameList', client.gameList);
+    toClient.emit('updateGameList', toClient.gameList);
+
+    console.log(`${client.id} - list size: ${client.gameList.length}`);
+    console.log(`${toClient.id} - list size: ${toClient.gameList.length}`);
+  }
+
+  @SubscribeMessage('oneOnOneAccept')
+  handleOneOnOneAccept(client: GameSocket, payload: OneOnOneAccept) {
+    for (let e in client.gameList) {
+      if (client.gameList[e].from === payload.from) {
+        // Get By Nickname
+        // const fromClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.from);
+
+        // Get By Id - TEST
+        // const toClient: GameSocket = this.io.sockets.get(payload.to);
+        let fromClient: GameSocket;
+
+        this.io.sockets.forEach((e) => {
+          if (e.id === payload.from) {
+            fromClient = e as GameSocket;
+          }
+        })
+        ////////////////////////
+
+        if (!fromClient) {
+          return `ERR no such user: ${payload.from}`;
+        }
+
+        if (fromClient.inGame) {
+          return `ERR ${payload.from} is in game`;
+        }
+
+        // Create New Game Room
+        const roomName = "room_" + fromClient.id;
+        this.gameRooms[roomName] = new GameRoom({
+          name: roomName,
+          players: [fromClient, client],
+          level: payload.level
+        });
+
+        fromClient.inGame = true;
+        client.inGame = true;
+
+        // Add Players into Game Room
+        fromClient.join(roomName);
+        client.join(roomName);
+
+        console.log(this.gameRooms[roomName].player[0].id);
+        console.log(this.gameRooms[roomName].player[1].id);
+
+        // Delete Invitations from each user
+
+        // Invitation (nickname)
+        // const invitation: GameListItem = {
+        //   from: fromClient.nickname,
+        //   to: client.nickname,
+        //   level: payload.level,
+        // }
+
+        // Invitation (id) - TEST
+        const invitation: GameListItem = {
+          from: fromClient.id,
+          to: client.id,
+          level: payload.level
+        }
+
+        fromClient.gameList = fromClient.gameList.filter((item: GameListItem) => 
+          !this.gameServie.objectsAreSame(item, invitation));
+        client.gameList = client.gameList.filter((item: GameListItem) => 
+          !this.gameServie.objectsAreSame(item, invitation));
+
+        // Ask Match Accept
+        this.io.to(roomName).emit('matchStartCheck', roomName);
+
+        console.log(`${fromClient.id} - list size: ${fromClient.gameList.length}`);
+        console.log(`${client.id} - list size: ${client.gameList.length}`);
+        
+        return;
+      }
+    }
+    return `ERR no invitation from ${payload.from}`;
+  }
+
+  /*---------------------In Game--------------------------------------*/
+
+  // In Game
+  @SubscribeMessage('keydown')
+  handleKeydown(client: GameSocket, payload: KeydownPayload) {
+    // client is not in game
+    if (!client.inGame) {
+      return;
+    }
+
+    // check if user in the room
+    this.gameServie.validatePlayerInRoom(client, this.gameRooms[payload.roomName]);
+
+    let room = this.gameRooms[payload.roomName];
+
+    switch (payload.key) {
+      case 'ArrowLeft':
+        if (client === room.player[0]) {
+          room.paddleX[0] -= 7;
+          if (room.paddleX[0] <= 0) {
+            room.paddleX[0] = 0;
+          }
+        }
+        else {
+          room.paddleX[1] -= 7;
+          if (room.paddleX[1] <= 0) {
+            room.paddleX[1] = 0;
+          }
+        }
+        break;
+      case 'ArrowRight':
+        if (client === room.player[0]) {
+          room.paddleX[0] += 7;
+          if (room.paddleX[0] >= room.canvasWidth - room.paddleWidth) {
+            room.paddleX[0] = room.canvasWidth - room.paddleWidth;
+          }
+        }
+        else {
+          room.paddleX[1] += 7;
+          if (room.paddleX[1] >= room.canvasWidth - room.paddleWidth) {
+            room.paddleX[1] = room.canvasWidth - room.paddleWidth;
+          }
+        }
+        break;
+    }
+  }
+  /*-----------------------------------------------------------*/
 }

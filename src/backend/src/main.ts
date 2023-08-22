@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
+import { SocketIOAdapter } from './chat/socket-io-adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,6 +14,7 @@ async function bootstrap() {
     })
   );
   app.use(cookieParser());
+  app.useWebSocketAdapter(new SocketIOAdapter(app));
   await app.listen(3001);
 }
 bootstrap();

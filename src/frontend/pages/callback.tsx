@@ -41,6 +41,8 @@ function Callback() {
         setLogin(data.message);
         localStorage.setItem("nickname", data.nickname);
         localStorage.setItem("id", data.id);
+        localStorage.setItem("access_token", data.access_token);
+        localStorage.setItem("access_token_exp", data.access_token_exp);
         if (data.is2faEnabled === false) {
             localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('is2fa', 'false');

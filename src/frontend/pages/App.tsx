@@ -10,7 +10,7 @@ import userIcon from "../assets/user.png";
 import searchIcon from "../assets/search.png";
 import ysungwonIcon from "../assets/ysungwon.jpg";
 import Image from "next/image";
-const socket = io.connect("http://localhost:3002", {
+const socket = io.connect("http://localhost/chat", {
   query: {
     id: 1234,
     nickname: "namkim",
