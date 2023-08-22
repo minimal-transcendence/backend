@@ -1,8 +1,9 @@
 'use client'
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useContext } from "react";
 import "../pages/index.css";
-import {socket} from "../pages/Home";
+import { AppContent, AppContext } from "@/pages/App";
+// import {socket} from "../pages/Home";
 
 type StartGameData = {
   roomName: string;
@@ -33,8 +34,16 @@ type GameData = {
 
 export default function Pong() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const appContext = useContext<AppContent>(AppContext);
+  const socket: any = appContext.gameSocket;
+  
 
+  
   useEffect(() => {
+    //Socket
+    console.log("In Pong", socket);
+    
+    // console.log(socket);
     // Initialize Canvas
     if (!canvasRef.current) {
       return;
@@ -258,7 +267,7 @@ export default function Pong() {
       drawGameOver();
       inGame = false;
     })
-  }, [])
+  }, [socket])
 
   return (
     <div className="box box-center">

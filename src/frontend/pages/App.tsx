@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext, createContext } from "react";
 import "./index.css";
 import * as io from "socket.io-client";
 import Pong from "@/srcs/Pong";
@@ -7,6 +7,13 @@ import TempRandomMatch from "@/srcs/TempRandomMatch";
 const NO_SEARCH_RESULT_ERROR = "There is no room! : ";
 const NO_JOINNED_RESULT_ERROR = "No Joinned???! : ";
 const CLIENTNAME = "ysungwon";
+
+export type AppContent = {
+  gameSocket: any;
+}
+export const AppContext = createContext<AppContent>({
+  gameSocket: null,
+});
 
 export type UserOnChat = {
   id: string;
@@ -51,6 +58,22 @@ export default function App() {
       token: jwt,
     },
   });
+
+  const gameSocket = io.connect("http://localhost/game", {
+    auth: {
+      token: jwt,
+    },
+  });
+
+  // gameSocket.on('connection', (socket: any) => {
+  //   gameSocket = socket;
+  //   console.log(gameSocket);
+  // })
+
+  // gameSocket.on('disconnect', (reason : any, detail : any) => {
+  //   console.log(reason);
+  //   console.log(detail);
+  // })
 
   // const gameSocket = io.connect("http://localhost/game", {
   //   auth: {
@@ -175,7 +198,9 @@ export default function App() {
       <NavBar query={query} setQuery={setQuery} />
       <Main>
         <Box>
-          <TempRandomMatch/>
+          <AppContext.Provider value={{gameSocket: gameSocket}}>
+            <TempRandomMatch/>
+          </AppContext.Provider>
           {!error && (
             <SearchList
               results={results}
@@ -185,7 +210,9 @@ export default function App() {
           )}
           {error && <ErrorMessage message={error} />}
         </Box>
-          <Pong/>
+          <AppContext.Provider value={{gameSocket: gameSocket}}>
+            <Pong/>
+          </AppContext.Provider>
         <Box>
           <ChatRoomUser
             curOpen={curOpen}

@@ -73,9 +73,9 @@ export class GameGateway
     client.inGame = false;
     client.gameList = [];
     //For TEST
-    client.userId = "def";
-    client.nickname = "def";
-    client.email = "def";
+    // client.userId = "def";
+    // client.nickname = "def";
+    // client.email = "def";
 
 		// this.logger.debug(
 		// 	`Game Socket connected with userId: ${client.userId}`

@@ -1,7 +1,7 @@
 import { INestApplicationContext, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { IoAdapter } from '@nestjs/platform-socket.io';
-import { Server, ServerOptions } from 'socket.io';
+import { Namespace, Server, ServerOptions } from 'socket.io';
 import { ChatSocket } from './types';
 import { GameSocket } from 'src/game/types';
 
@@ -20,7 +20,7 @@ export class SocketIOAdapter extends IoAdapter {
         const server: Server = super.createIOServer(port, options);
 
         server.of('chat').use(createJwtMiddleware(jwtService, this.logger));
-        // server.of('game').use(createJwtMiddleware(jwtService, this.logger));
+        server.of('game').use(createGameMiddleware(server.of('game'), jwtService, this.logger));
 
         return server;
     }
@@ -40,6 +40,34 @@ const createJwtMiddleware = (jwtService: JwtService, logger: Logger) =>
         socket.userId = payload.id;
         socket.email = payload.email;
         // socket.inGame = false;
+        next();
+    } catch {
+        next(new Error('FORBIDDEN'));
+    }
+};
+
+const createGameMiddleware = (io: Namespace, jwtService: JwtService, logger: Logger) =>
+(socket: ChatSocket | GameSocket, next) => {
+    const token =
+        socket.handshake.auth.token || socket.handshake.headers['token'];
+
+    logger.debug(`Validating jwt token before connection: ${token}`);
+
+    try {
+        const payload = jwtService.verify(token, {
+            secret: process.env.JWT_ACCESS_TOKEN_SECRET
+        });
+        socket.userId = payload.id;
+        socket.email = payload.email;
+        // Enforce Only One Connection
+        io.sockets.forEach((e: GameSocket) => {
+            console.log(e.userId);
+            console.log(socket.userId);
+            if (e.userId === socket.userId) {
+                console.log("you already have connection");
+                throw new Error();
+            }
+        })
         next();
     } catch {
         next(new Error('FORBIDDEN'));
