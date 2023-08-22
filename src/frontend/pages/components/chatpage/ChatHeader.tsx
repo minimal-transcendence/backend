@@ -1,6 +1,12 @@
 import { useState, useContext } from "react";
 import { SocketContext } from "../../../context/socket";
-const ChatHeader = ({ currentRoomName }: { currentRoomName: string }) => {
+const ChatHeader = ({
+  currentRoomName,
+  isDM,
+}: {
+  currentRoomName: string;
+  isDM: boolean;
+}) => {
   const [roomState, setRoomState] = useState<string>("Public");
   const [password, setPassword] = useState<string>("");
   const socket = useContext(SocketContext);
@@ -64,7 +70,9 @@ const ChatHeader = ({ currentRoomName }: { currentRoomName: string }) => {
   }
   return (
     <div className="chat-message-header">
-      <h2>Chat in1 {currentRoomName} </h2>
+      <h2>
+        {isDM ? `Chat with ${currentRoomName}` : `Chat in ${currentRoomName}`}
+      </h2>
       <span>
         <div
           className="chat-message-header exit dropdown-chat"

@@ -257,7 +257,7 @@ export class ChatService {
 					from : client.data.nickname,
 					body : body,
 					at : message.at
-				});	//안 바꿔도 되
+				});
 				room.messages.push(message);
 			}
 			else
@@ -452,9 +452,15 @@ export class ChatService {
 	}
 
 	fetchDM(io : Server, from : number, to : number, body : string){
-		this.storeMessage.saveMessage(new DM(from, to, body));
-		//여기는 사실 you have 1 new message 이런거 보내주면 되는데...!
-		io.to(`$${from}`).to(`$${to}`).emit("sendAlert", "New DM", "You got 1 new message");
+		const message = new DM(from, to, body);
+		const res = {
+			from : this.storeUser.getNicknameById(from),
+			body : body,
+			at : message.at
+		};
+		this.storeMessage.saveMessage(message);
+
+		io.to([`$${from}`, `$${to}`]).emit("sendDM", this.storeUser.getNicknameById(to), res);
 	}
 
 	makeDMRoomMessages(from : string, to : string) : formedMessage[] {
@@ -464,8 +470,8 @@ export class ChatService {
 		const msg = this.storeMessage
 					.findMessagesForUser(fromId, toId)
 					.map(message => ({
-						from : from,
-						to : to,
+						from : this.storeUser.getNicknameById(message.from),
+						to : this.storeUser.getNicknameById(message.to),
 						body : message.body,
 						at : message.at
 					}));

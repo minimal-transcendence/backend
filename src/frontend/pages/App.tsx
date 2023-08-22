@@ -29,7 +29,7 @@ export type UserOnChat = {
 
 export type TempSearch = {
   roomname: string;
-  messageRecent: string;
+  lastMessage: string;
   messageNew: boolean;
   users: UserOnChat[];
 };
@@ -96,7 +96,7 @@ export default function App() {
       setTempSearchList((results) => {
         return results.map((result) => {
           if (result.roomname === roomname) {
-            result.messageRecent = `${data.from} : ${data.body}`;
+            result.lastMessage = `${data.body}`;
             if (roomname === currentRoomName) {
               result.messageNew = false;
             } else {
@@ -111,15 +111,46 @@ export default function App() {
         setMessages(() => [...messages, data]);
       }
     }
+    function sendDM(from: string, data: any) {
+      console.log(
+        `in useEffect sendDM  from<${from}> data<${JSON.stringify(
+          data,
+          null,
+          2
+        )}> 내 방은 <${currentRoomName}>`
+      );
+      if (
+        from === currentRoomName ||
+        (from === tmpLoginnickname && data.from === currentRoomName)
+      ) {
+        console.log("same froom!", currentRoomName, from);
+        setMessages(() => [...messages, data]);
+      }
 
+      // setTempSearchList((results) => {
+      //   return results.map((result) => {
+      //     if (result.roomname === roomname) {
+      //       result.messageRecent = `${data.from} : ${data.body}`;
+      //       if (roomname === currentRoomName) {
+      //         result.messageNew = false;
+      //       } else {
+      //         result.messageNew = true;
+      //       }
+      //     }
+      //     return result;
+      //   });
+      // });
+    }
+    socket.on("sendDM", sendDM);
     socket.on("sendMessage", sendMessage);
     socket.on("sendRoomMembers", sendRoomMembers);
 
     return () => {
       socket.off("sendMessage", sendMessage);
       socket.off("sendRoomMembers", sendRoomMembers);
+      socket.off("sendDM", sendDM);
     };
-  }, [currentRoomName, results]);
+  }, [currentRoomName, results, messages]);
 
   return (
     <SocketContext.Provider value={socket}>

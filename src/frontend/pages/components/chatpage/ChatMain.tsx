@@ -63,7 +63,7 @@ const ChatMain = ({
     };
   }, [currentRoomName, messages, setcurrentRoomName, socket]);
 
-  // useEffect(() => {
+  // useEffect(() => {f
   //   socket.on("messageResponse", (data: any) =>
   //     setMessages([...messages, data])
   //   );
@@ -80,7 +80,7 @@ const ChatMain = ({
 
   return (
     <div className="chat-main">
-      <ChatHeader currentRoomName={currentRoomName} />
+      <ChatHeader isDM={isDM} currentRoomName={currentRoomName} />
 
       <div className="chat-message-main">
         <ChatBody

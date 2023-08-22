@@ -33,7 +33,7 @@ export default function ChatRoomUser({
   else {
     let tmpUsers;
     if (users.length <= pageHeight) {
-      console.log(`users length가 ${users.length}이므로 1페이지 미만.`);
+      console.log(`users length if가 ${users.length}이므로 1페이지 미만.`);
       tmpUsers = users;
     } else {
       console.log(`users length가 ${users.length}이므로 1페이지 이상가능.`);

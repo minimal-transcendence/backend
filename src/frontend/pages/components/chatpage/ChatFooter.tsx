@@ -38,7 +38,17 @@ const ChatFooter = ({
     // Prevent the browser from reloading the page
     e.preventDefault();
     console.log("엔터칠때?in handl2 e", e.target.value);
-    socket.emit("sendChatMessage", currentRoomName, e.target.value);
+    if (!isDM) {
+      console.log(
+        `in footer11, isDM:${isDM} target:${DMtarget} message:${e.target.value}`
+      );
+      socket.emit("sendChatMessage", currentRoomName, e.target.value);
+    } else if (isDM) {
+      socket.emit("sendDirectMessage", DMtarget, e.target.value);
+      console.log(
+        `in footer22 isDM:${isDM} target:${DMtarget} message:${e.target.value}`
+      );
+    }
     setTextareaValue("");
   }
   const handleOnKeyPress = (e: any) => {

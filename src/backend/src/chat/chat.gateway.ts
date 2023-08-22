@@ -213,10 +213,13 @@ export class ChatGateway
     });
 
     client.on('selectDMRoom', (username) => {
+      console.log(username);
+      console.log(client.data.nickname);
       const DMs = this.chatService.makeDMRoomMessages(
         client.data.nickname,
         username,
       );
+      console.log(JSON.stringify(DMs));
       this.chatService.emitEventsToAllSockets(
         this.server,
         client.data.id,

@@ -61,14 +61,30 @@ export default function SearchListHeader({
   else {
     let tmpResults;
     if (results.length <= pageHeight) {
-      console.log(`users length가 ${results.length}이므로 1페이지 미만.`);
       tmpResults = results;
+      console.log(
+        `users length가 ${
+          results.length
+        }이므로 1페이지 미만., tmpResults : ${JSON.stringify(
+          tmpResults,
+          null,
+          2
+        )}`
+      );
     } else {
-      console.log(`results length가 ${results.length}이므로 1페이지 이상가능.`);
-
-      console.log(`현재 페이지는 ${page}이므로, `);
       const startIndex = (page - 1) * pageHeight;
       tmpResults = results.slice(startIndex, startIndex + pageHeight);
+      console.log(
+        `results length가 ${
+          results.length
+        }이므로 1페이지 이상가능., tmpResults : ${JSON.stringify(
+          tmpResults,
+          null,
+          2
+        )}`
+      );
+
+      console.log(`현재 페이지는 ${page}이므로`);
     }
 
     return (
