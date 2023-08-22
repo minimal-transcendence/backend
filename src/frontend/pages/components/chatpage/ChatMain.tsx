@@ -42,7 +42,7 @@ const ChatMain = ({
       setMessages(() => result.messages);
       setIsDM(() => false);
 
-      const roomStatusVar = roomInfo?.isPrivate ? "Private" : "Public";
+      const roomStatusVar = result?.isPrivate ? "Private" : "Public";
       console.log("roomStatus const ", roomStatusVar);
       setRoomState(() => roomStatusVar);
     }
