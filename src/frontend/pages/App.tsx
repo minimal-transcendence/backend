@@ -50,7 +50,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [messages, setMessages] = useState<any>("");
-
+  const [roomInfo, setRoomInfo] = useState<any>(null);
   useEffect(
     function () {
       function chkLogin() {
@@ -219,6 +219,8 @@ export default function App() {
               }
             </Box>
             <ChatMain
+              roomInfo={roomInfo}
+              setRoomInfo={setRoomInfo}
               messages={messages}
               setMessages={setMessages}
               currentRoomName={currentRoomName}
@@ -228,6 +230,7 @@ export default function App() {
             <Box>
               <>
                 <ChatRoomUser
+                  roomInfo={roomInfo}
                   users={roomUserList}
                   roomname={currentRoomName}
                   myNickName={tmpLoginnickname}

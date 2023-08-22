@@ -3,10 +3,12 @@ import { useEffect, useState } from "react";
 
 const pageHeight = 8;
 export default function ChatRoomUser({
+  roomInfo,
   users,
   roomname,
   myNickName,
 }: {
+  roomInfo: any;
   users: any;
   roomname: string;
   myNickName: string;
@@ -65,6 +67,7 @@ export default function ChatRoomUser({
           <ul className="userlist-lists">
             {tmpUsers.map((user: any, i: number) => (
               <ChatRoomUserInfo
+                roomInfo={roomInfo}
                 user={user}
                 key={i}
                 num={i}

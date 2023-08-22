@@ -380,14 +380,15 @@ export class ChatService {
 	banUser(io : Server, roomname : string, targetId : number){
 		const room = this.storeRoom.findRoom(roomname);
 		if (room.isOperator(targetId)){
+			console.log("banUser: " + roomname + targetId);
 			room.deleteUserFromOperators(targetId);
 			room.deleteUserFromUserlist(targetId);
-			room.addUserToBanlist(targetId);
-			this.kickUser(io, roomname, targetId);
 			//여기서 특정 시간동안 banlist에 올리고
 			//kick하고
 			//message를 보낸다
 		}
+		room.addUserToBanlist(targetId);
+		this.kickUser(io, roomname, targetId);
 	}
 
 	muteUser(io : Server, roomname: string, targetId : number){
