@@ -1,9 +1,9 @@
 import { Socket } from "socket.io"
 
 export type GameListItem = {
-    from: string,
-    to: string,
-    level: number,
+    from: string;
+    to: string;
+    mode: string;
 }
 
 type Player = {
@@ -12,9 +12,9 @@ type Player = {
 }
 
 type JwtPayload = {
-    userId: string,
-    email: string,
-    nickname: string,
+    userId: string;
+    email: string;
+    nickname: string;
 }
 
 export type KeydownPayload = {
@@ -24,18 +24,24 @@ export type KeydownPayload = {
 
 export type OneOnOneInvite = {
     to: string;
-    level: number;
+    mode: string;
 }
 
 export type OneOnOneAccept = {
     from: string;
-    level: number;
+    mode: string;
 }
 
 export type GameRoomParams = {
     name: string;
-    players: GameSocket[];
-    level: number;
+    player: GameSocket[];
+    mode: string;
 }
+
+// export type MatchStartCheckPayload = {
+//     roomName: string;
+//     playerNickname: string[];
+//     mode: string;
+// }
 
 export type GameSocket = Socket & JwtPayload & Player;

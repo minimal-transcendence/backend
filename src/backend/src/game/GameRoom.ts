@@ -9,7 +9,7 @@ export class GameRoom {
     // Room Name
     name: string;
     // Level
-    level: number;
+    mode: string;
     // Players
     player: GameSocket[];
     // Check Every Player Accept this Match
@@ -44,16 +44,16 @@ export class GameRoom {
 
     constructor({
         name,
-        players,
-        level
+        player,
+        mode
     }: GameRoomParams) {
         // Status
         this.gameStart = false;
         this.gameOver = false;
 
         this.name = name
-        this.player = [players[0], players[1]];
-        this.level = level;
+        this.player = [player[0], player[1]];
+        this.mode = mode;
         //
         this.playerAccept = [false, false];
         // Score
@@ -63,13 +63,13 @@ export class GameRoom {
         this.canvasHeight = 1600;
 
         // Set Level
-        switch(level) {
-            case 0 : // easy
+        switch(mode) {
+            case 'easy' : // easy
                 this.paddleWidth = 200;
                 this.defaultSpeedY = 4;
                 this.maxSpeedY = 10;
                 break;
-            case 2 : // hard
+            case 'hard' : // hard
                 this.paddleWidth = 100;
                 this.defaultSpeedY = 8;
                 this.maxSpeedY = 15;

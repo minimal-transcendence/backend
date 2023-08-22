@@ -11,7 +11,13 @@ import {
 	WebSocketServer,
 } from '@nestjs/websockets';
 import { Namespace } from 'socket.io';
-import { GameListItem, GameSocket, KeydownPayload, OneOnOneInvite, OneOnOneAccept } from './types';
+import { GameListItem,
+  GameSocket,
+  KeydownPayload,
+  OneOnOneInvite,
+  OneOnOneAccept,
+  // MatchStartCheckPayload
+} from './types';
 import { GameRoom } from './GameRoom';
 import { GameService } from './game.service';
 
@@ -26,7 +32,9 @@ export class GameGateway
   implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
 {
   private readonly logger = new Logger(GameGateway.name);
-  private randomMatchQueue: GameSocket[] = [];
+  private easyModeQueue: GameSocket[] = [];
+  private normalModeQueue: GameSocket[] = [];
+  private hardModeQueue: GameSocket[] = [];
   private gameRooms = {};
 
   constructor(private gameServie: GameService){}
@@ -68,26 +76,16 @@ export class GameGateway
   }
 
   async handleConnection(@ConnectedSocket() client: GameSocket, userId : string, ) {
-		const sockets = this.io.sockets;
 
     client.inGame = false;
     client.gameList = [];
-    //For TEST
-    // client.userId = "def";
-    // client.nickname = "def";
-    // client.email = "def";
 
-		// this.logger.debug(
-		// 	`Game Socket connected with userId: ${client.userId}`
-		// );
-
-		this.logger.log(`Game Client Connected : ${client.id}`);
+    const sockets = this.io.sockets;
+		this.logger.log(`Game Client Connected : ${client.nickname}`);
 		this.logger.debug(`Number of connected Game sockets: ${sockets.size}`)
   }
 
   async handleDisconnect(@ConnectedSocket() client: GameSocket) {
-    const sockets = this.io.sockets;
-
     // leave game
     if (client.inGame) {
       for (let e in this.gameRooms) {
@@ -102,8 +100,8 @@ export class GameGateway
             clearInterval(room.interval);
             // Set winner
             const winner: GameSocket = client === room.player[0] ? room.player[1] : room.player[0];
-            room.winner = winner.id; // nickname
-            room.loser = client.id
+            room.winner = winner.nickname;
+            room.loser = client.nickname
 
             console.log("-----Game Over-----");
             console.log("Winner:", room.winner);
@@ -118,72 +116,125 @@ export class GameGateway
       }
     }
 
-    // this.logger.debug(
-    //   `Game Socket disconnected with userId: ${client.userId}`
-    // );
-
-    this.logger.log(`Game Client Disconnected : ${client.id}`);
+    const sockets = this.io.sockets;
+    this.logger.log(`Game Client Disconnected : ${client.nickname}`);
     this.logger.debug(`Number of connected Game sockets: ${sockets.size}`)
   }
 
   /*-------------Random Match-----------------------*/
 
-  @SubscribeMessage('randomMatchApply')
-  handleRandomMatchApply(client: GameSocket) {
+  @SubscribeMessage('RandomMatchApply')
+  handleRandomMatchApply(client: GameSocket, mode: string) {
     // client is in game
     if (client.inGame) {
       return;
     }
 
+    // set random match queue
+    let matchQueue: GameSocket[];
+
+    switch(mode) {
+      case 'easy':
+        matchQueue = this.easyModeQueue;
+        break;
+      case 'hard':
+        matchQueue = this.hardModeQueue;
+        break;
+      default :
+        matchQueue =this.normalModeQueue;
+        break;
+    }
+
     // remove duplication
-    if (this.randomMatchQueue.includes(client)) {
+    if (matchQueue.includes(client)) {
       return;
     }
+
+    // delete client from other random match queue
+    // switch(mode) {
+    //   case 'easy':
+    //     this.normalModeQueue =
+    //       this.normalModeQueue.filter(item => item !== client);
+    //     this.hardModeQueue =
+    //       this.hardModeQueue.filter(item => item !== client);
+    //     break;
+    //   case 'hard':
+    //     this.normalModeQueue =
+    //       this.normalModeQueue.filter(item => item !== client);
+    //     this.easyModeQueue =
+    //       this.easyModeQueue.filter(item => item !== client);
+    //     break;
+    //   default :
+    //     this.normalModeQueue =
+    //       this.normalModeQueue.filter(item => item !== client);
+    //     this.hardModeQueue =
+    //       this.hardModeQueue.filter(item => item !== client);
+    //     break;
     
+    // delete client from other random match queue
+    const matchQueueList: GameSocket[][] = [
+      this.easyModeQueue,
+      this.normalModeQueue,
+      this.hardModeQueue
+    ];
+
+    matchQueueList.forEach((e) => {
+      if (e !== matchQueue) {
+        e.filter(item => item !== client);
+      }
+    })
+
     // push client in queue
-    this.randomMatchQueue.push(client);
+    matchQueue.push(client);
 
     // More than 2 players in queue
-    if (this.randomMatchQueue.length >= 2) {
-      let playerOne = this.randomMatchQueue[0];
-      let playerTwo = this.randomMatchQueue[1];
+    if (matchQueue.length >= 2) {
+      let playerOne = matchQueue[0];
+      let playerTwo = matchQueue[1];
       // if player aleady is in game
       // delete player from queue
       if (playerOne.inGame) {
-        this.randomMatchQueue = this.randomMatchQueue.filter(item => item !== playerOne);
+        matchQueue =
+          matchQueue.filter(item => item !== playerOne);
         return;
       }
       if (playerTwo.inGame) {
-        this.randomMatchQueue = this.randomMatchQueue.filter(item => item !== playerTwo);
+        matchQueue =
+          matchQueue.filter(item => item !== playerTwo);
         return;
       }
       // Create New Game Room
-      const roomName = "room_" + playerOne.id;
+      const roomName = `room_${playerOne.nickname}_${playerTwo.nickname}`;
       this.gameRooms[roomName] = new GameRoom({
         name: roomName,
-        players: [playerOne, playerTwo],
-        level: 1
+        player: [playerOne, playerTwo],
+        mode: mode
       });
 
       playerOne.inGame = true;
       playerTwo.inGame = true;
 
-      // console.log(this.gameRooms);
-      console.log(this.gameRooms[roomName].player[0].id);
-      console.log(this.gameRooms[roomName].player[1].id);
+      console.log("create game room:", roomName);
+
       // Add Players into Game Room
-      this.gameRooms[roomName].player[0].join(roomName);
-      this.gameRooms[roomName].player[1].join(roomName);
+      playerOne.join(roomName);
+      playerTwo.join(roomName);
       // Delete Players from Random Match Queue
-      this.randomMatchQueue.splice(0, 2);
+      matchQueue.splice(0, 2);
       // Ask Match Accept
-      this.io.to(roomName).emit('matchStartCheck', roomName);
+      this.io.to(roomName).emit('matchStartCheck', {
+        roomName: roomName,
+        playerNickname: [playerOne.nickname, playerTwo.nickname],
+        mode: mode
+      });
     }
   }
 
   @SubscribeMessage('randomMatchCancel')
   handleRandomMatchCancel(client: GameSocket) {
-    this.randomMatchQueue = this.randomMatchQueue.filter(item => item !== client);
+    this.easyModeQueue = this.easyModeQueue.filter(item => item !== client);
+    this.normalModeQueue = this.normalModeQueue.filter(item => item !== client);
+    this.hardModeQueue = this.hardModeQueue.filter(item => item !== client);
   }
 
   /*-------------Match Accept-----------------------*/
@@ -229,17 +280,17 @@ export class GameGateway
   @SubscribeMessage('oneOnOneApply')
   handleOneOnOneApply(client: GameSocket, payload: OneOnOneInvite) {
     // Get By Nickname
-    // let toClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.to);
+    let toClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.to);
 
     // Get By Id - TEST
     // const toClient: GameSocket = this.io.sockets.get(payload.to);
-    let toClient: GameSocket;
+    // let toClient: GameSocket;
 
-    this.io.sockets.forEach((e) => {
-      if (e.id === payload.to) {
-        toClient = e as GameSocket;
-      }
-    })
+    // this.io.sockets.forEach((e) => {
+    //   if (e.id === payload.to) {
+    //     toClient = e as GameSocket;
+    //   }
+    // })
     ////////////////////////
 
     if (!toClient) {
@@ -247,23 +298,21 @@ export class GameGateway
     }
 
     // Invitation (nickname)
+    const invitation: GameListItem = {
+      from: client.nickname,
+      to: payload.to,
+      mode: payload.mode,
+    }
+
+    // Invitation (id) - TEST
     // const invitation: GameListItem = {
-    //   from: client.nickname,
+    //   from: client.id,
     //   to: payload.to,
     //   level: payload.level,
     // }
 
-    // Invitation (id) - TEST
-    const invitation: GameListItem = {
-      from: client.id,
-      to: payload.to,
-      level: payload.level,
-    }
-
     // 중복확인
     for (let e in client.gameList) {
-      console.log(e);
-      console.log(invitation);
       if (this.gameServie.objectsAreSame(client.gameList[e], invitation)) {
         return `ERR aleady invite ${payload.to}`;
       }
@@ -277,8 +326,8 @@ export class GameGateway
     client.emit('updateGameList', client.gameList);
     toClient.emit('updateGameList', toClient.gameList);
 
-    console.log(`${client.id} - list size: ${client.gameList.length}`);
-    console.log(`${toClient.id} - list size: ${toClient.gameList.length}`);
+    console.log(`${client.nickname} - list size: ${client.gameList.length}`);
+    console.log(`${toClient.nickname} - list size: ${toClient.gameList.length}`);
   }
 
   @SubscribeMessage('oneOnOneAccept')
@@ -286,17 +335,17 @@ export class GameGateway
     for (let e in client.gameList) {
       if (client.gameList[e].from === payload.from) {
         // Get By Nickname
-        // const fromClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.from);
+        const fromClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.from);
 
         // Get By Id - TEST
         // const toClient: GameSocket = this.io.sockets.get(payload.to);
-        let fromClient: GameSocket;
+        // let fromClient: GameSocket;
 
-        this.io.sockets.forEach((e) => {
-          if (e.id === payload.from) {
-            fromClient = e as GameSocket;
-          }
-        })
+        // this.io.sockets.forEach((e) => {
+        //   if (e.id === payload.from) {
+        //     fromClient = e as GameSocket;
+        //   }
+        // })
         ////////////////////////
 
         if (!fromClient) {
@@ -308,11 +357,11 @@ export class GameGateway
         }
 
         // Create New Game Room
-        const roomName = "room_" + fromClient.id;
+        const roomName = `room_${fromClient.nickname}_${client.nickname}`;
         this.gameRooms[roomName] = new GameRoom({
           name: roomName,
-          players: [fromClient, client],
-          level: payload.level
+          player: [fromClient, client],
+          mode: payload.mode
         });
 
         fromClient.inGame = true;
@@ -322,24 +371,23 @@ export class GameGateway
         fromClient.join(roomName);
         client.join(roomName);
 
-        console.log(this.gameRooms[roomName].player[0].id);
-        console.log(this.gameRooms[roomName].player[1].id);
+        console.log("create game room:", roomName);
 
         // Delete Invitations from each user
 
         // Invitation (nickname)
-        // const invitation: GameListItem = {
-        //   from: fromClient.nickname,
-        //   to: client.nickname,
-        //   level: payload.level,
-        // }
+        const invitation: GameListItem = {
+          from: fromClient.nickname,
+          to: client.nickname,
+          mode: payload.mode,
+        }
 
         // Invitation (id) - TEST
-        const invitation: GameListItem = {
-          from: fromClient.id,
-          to: client.id,
-          level: payload.level
-        }
+        // const invitation: GameListItem = {
+        //   from: fromClient.id,
+        //   to: client.id,
+        //   level: payload.level
+        // }
 
         fromClient.gameList = fromClient.gameList.filter((item: GameListItem) => 
           !this.gameServie.objectsAreSame(item, invitation));
@@ -347,7 +395,11 @@ export class GameGateway
           !this.gameServie.objectsAreSame(item, invitation));
 
         // Ask Match Accept
-        this.io.to(roomName).emit('matchStartCheck', roomName);
+        this.io.to(roomName).emit('matchStartCheck', {
+          roomName: roomName,
+          playerNickname: [fromClient.nickname, client.nickname],
+          mode: payload.mode
+        });
 
         console.log(`${fromClient.id} - list size: ${fromClient.gameList.length}`);
         console.log(`${client.id} - list size: ${client.gameList.length}`);
@@ -357,6 +409,8 @@ export class GameGateway
     }
     return `ERR no invitation from ${payload.from}`;
   }
+
+  // @SubscribeMessage('oneOnOneDecline') - todo
 
   /*---------------------In Game--------------------------------------*/
 

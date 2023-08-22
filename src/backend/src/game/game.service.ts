@@ -24,7 +24,7 @@ export class GameService {
     // send game data for Init
       io.to(room.name).emit('startGame', {
       roomName: room.name,
-      level: room.level,
+      mode: room.mode,
       canvasWidth: room.canvasWidth,
       canvasHeight: room.canvasHeight,
       paddleWidth: room.paddleWidth,
@@ -86,15 +86,15 @@ export class GameService {
         // Game Over
         if (room.playerScore[1] >= 3) {
           clearInterval(room.interval);
-          room.winner = room.player[1].id;
-          room.loser = room.player[0].id;
+          room.winner = room.player[1].nickname;
+          room.loser = room.player[0].nickname;
           room.gameOver = true;
           console.log("-----Game Over-----");
           console.log("Winner:", room.winner);
           console.log("Loser:", room.loser);
           console.log("-------Score-------");
-          console.log(`${room.playerScore[0]} - ${room.player[0].id}`);
-          console.log(`${room.playerScore[1]} - ${room.player[1].id}`);
+          console.log(`${room.playerScore[0]} - ${room.player[0].nickname}`);
+          console.log(`${room.playerScore[1]} - ${room.player[1].nickname}`);
           return;
         }
         // Reset Ball
@@ -126,15 +126,15 @@ export class GameService {
         // Game Over
         if (room.playerScore[0] >= 3) {
           clearInterval(room.interval);
-          room.winner = room.player[0].id;
-          room.loser = room.player[1].id;
+          room.winner = room.player[0].nickname;
+          room.loser = room.player[1].nickname;
           room.gameOver = true;
           console.log("-----Game Over-----");
           console.log("Winner:", room.winner);
           console.log("Loser:", room.loser);
           console.log("-------Score-------");
-          console.log(`${room.playerScore[0]} - ${room.player[0].id}`);
-          console.log(`${room.playerScore[1]} - ${room.player[1].id}`);
+          console.log(`${room.playerScore[0]} - ${room.player[0].nickname}`);
+          console.log(`${room.playerScore[1]} - ${room.player[1].nickname}`);
           return;
         }
         // Reset Ball
@@ -148,8 +148,7 @@ export class GameService {
 
   getSocketByNickname(io: Namespace, nickname: string): GameSocket | null {
     io.sockets.forEach((e: any) => {
-      if (e.nickname=== nickname) {
-        // toClient = e as GameSocket;
+      if (e.nickname === nickname) {
         return e as GameSocket;
       }
     })
