@@ -23,6 +23,7 @@ const ChatMain = ({
   const [isDM, setIsDM] = useState<boolean>(false);
   const [DMtarget, setDMtarget] = useState<string>("");
   const [roomInfo, setRoomInfo] = useState<any>(null);
+  const [roomState, setRoomState] = useState<string>("");
   const lastMessageRef = useRef<null | HTMLElement>(null);
   const socket = useContext(SocketContext);
 
@@ -40,6 +41,10 @@ const ChatMain = ({
       setcurrentRoomName(() => result.roomname);
       setMessages(() => result.messages);
       setIsDM(() => false);
+
+      const roomStatusVar = roomInfo?.isPrivate ? "Private" : "Public";
+      console.log("roomStatus const ", roomStatusVar);
+      setRoomState(() => roomStatusVar);
     }
     function sendDMRoomInfo(target: any, messages: any) {
       console.log(
@@ -83,6 +88,8 @@ const ChatMain = ({
     <div className="chat-main">
       <ChatHeader
         roomInfo={roomInfo}
+        roomState={roomState}
+        setRoomState={setRoomState}
         myNickName={myNickName}
         isDM={isDM}
         currentRoomName={currentRoomName}

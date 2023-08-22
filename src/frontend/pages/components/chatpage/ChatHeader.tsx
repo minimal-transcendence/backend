@@ -2,16 +2,19 @@ import { useState, useContext } from "react";
 import { SocketContext } from "../../../context/socket";
 const ChatHeader = ({
   roomInfo,
+  roomState,
+  setRoomState,
   currentRoomName,
   myNickName,
   isDM,
 }: {
   roomInfo: any;
+  roomState: string;
+  setRoomState: any;
   currentRoomName: string;
   myNickName: string;
   isDM: boolean;
 }) => {
-  const [roomState, setRoomState] = useState<string>("Public");
   const [password, setPassword] = useState<string>("");
   const socket = useContext(SocketContext);
 
