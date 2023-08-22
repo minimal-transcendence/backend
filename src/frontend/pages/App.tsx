@@ -74,7 +74,7 @@ export default function App() {
   useEffect(() => {
     function sendRoomMembers(result: any) {
       console.log(
-        "in useEffect sendRoomMembers",
+        "in useEffect sendRoomMembers zzzzz",
         JSON.stringify(result, null, 2)
       );
       setRoomUserList(() => result);
@@ -85,7 +85,7 @@ export default function App() {
 
     function sendMessage(roomname: string, data: any) {
       console.log(
-        `in useEffect sendMessage1  from<${
+        `in useEffect sendMessage ??111  from<${
           data.from
         }> roomname<${roomname}> body<${JSON.stringify(
           data,
@@ -126,31 +126,48 @@ export default function App() {
         console.log("same froom!", currentRoomName, from);
         setMessages(() => [...messages, data]);
       }
-
-      // setTempSearchList((results) => {
-      //   return results.map((result) => {
-      //     if (result.roomname === roomname) {
-      //       result.messageRecent = `${data.from} : ${data.body}`;
-      //       if (roomname === currentRoomName) {
-      //         result.messageNew = false;
-      //       } else {
-      //         result.messageNew = true;
-      //       }
-      //     }
-      //     return result;
-      //   });
-      // });
     }
+    function youAreKickedOut(result: any) {
+      console.log(
+        "in useEffect youAreKickedOut",
+        JSON.stringify(result, null, 2)
+      );
+    }
+    function youAreBanned(result: any) {
+      console.log("in useEffect youAreBanned", JSON.stringify(result, null, 2));
+    }
+    function wrongPassword(result: any) {
+      console.log(
+        "in useEffect wrongPassword",
+        JSON.stringify(result, null, 2)
+      );
+    }
+    function sendAlert(alertTitle: string, alertBody: string) {
+      console.log(
+        "in useEffect sendAlert",
+        alertTitle,
+        JSON.stringify(alertBody, null, 2)
+      );
+    }
+
+    socket.on("youAreKickedOut", youAreKickedOut);
+    socket.on("youAreBanned", youAreBanned);
+    socket.on("wrongPassword", wrongPassword);
+    socket.on("sendAlert", sendAlert);
     socket.on("sendDM", sendDM);
     socket.on("sendMessage", sendMessage);
     socket.on("sendRoomMembers", sendRoomMembers);
 
     return () => {
+      socket.off("youAreKickedOut", youAreKickedOut);
+      socket.off("youAreBanned", youAreBanned);
+      socket.off("wrongPassword", wrongPassword);
+      socket.off("sendAlert", sendAlert);
       socket.off("sendMessage", sendMessage);
       socket.off("sendRoomMembers", sendRoomMembers);
       socket.off("sendDM", sendDM);
     };
-  }, [currentRoomName, results, messages]);
+  }, [currentRoomName, results, messages, socket]);
 
   return (
     <SocketContext.Provider value={socket}>
