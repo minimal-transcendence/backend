@@ -360,7 +360,11 @@ export class ChatService {
 		targetUser.currentRoom = "DEFAULT";
 		this.userJoinRoomAct(io, targetUser, "DEFAULT");
 		const body = `${targetUser.nickname} is Kicked Out`;
-		io.to(roomname).emit("sendMessage", "server", body);	//쫓겨나는 사람은 제하는게 좋을지도
+		io.to(roomname).emit("sendMessage", roomname, {
+			from : "server",
+			body : body,
+			at : Date.now()
+		});	//쫓겨나는 사람은 제하는게 좋을지도
 		io.to(roomname).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
 		room.storeMessage(-1, body);
 		const sockets = await io.in(`$${targetId}`).fetchSockets();
@@ -574,6 +578,7 @@ export class ChatService {
 		return (res)
 	}
 
+	//check if "to" should be replaced with roomname
 	async sendActResultToTarget(io : Server, roomname : string, target : number, operation: string){
 		let notice : string;
 		if (operation === "kick")
@@ -583,7 +588,11 @@ export class ChatService {
 		else if (operation === "mute")
 			notice = "Muted";
 		const body = `You are ${notice} from Room "${roomname}"`
-		await this.emitEventsToAllSockets(io, target, "sendMessage", "server", body);
+		await this.emitEventsToAllSockets(io, target, "sendMessage", roomname, {
+				from : "server",
+				body : body,
+				at : Date.now()
+		});
 		// const sockets = await io.in(`$${target}`).fetchSockets();
 		// sockets.forEach((socket) => {
 		// 	socket.emit("sendMessage", "server", body);
