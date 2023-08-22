@@ -151,7 +151,7 @@ export class ChatGateway
       if (
         this.chatService.checkActValidity(client, roomname, client.data.id, targetId)
       ) {
-        this.chatService.muteUser(this.server, roomname, targetId);
+        this.chatService.muteUser(this.server, client, roomname, targetId);
       }
     });
 
@@ -163,9 +163,9 @@ export class ChatGateway
       if (
         this.chatService.checkActValidity(client, roomname, client.data.id, targetId)
       ) {
-		this.server.to(roomname).emit("sendCurrRoomInfo", this.chatService.makeCurrRoomInfo(roomname));
-		// client.emit("sendAlert", "[ NOTICE ]", `Add ${user} to the Operator`);
+        // client.emit("sendAlert", "[ NOTICE ]", `Add ${user} to the Operator`);
         room.addUserToOperators(targetId);
+        this.server.to(roomname).emit("sendCurrRoomInfo", this.chatService.makeCurrRoomInfo(roomname));
       }
     });
 
@@ -178,9 +178,9 @@ export class ChatGateway
       if (
         this.chatService.checkActValidity(client, roomname, client.data.id, targetId)
       ) {
-		this.server.to(roomname).emit("sendCurrRoomInfo", this.chatService.makeCurrRoomInfo(roomname));
-		// client.emit("sendAlert", "[ NOTICE ]", `Delete ${user} to the Operator`);
+        // client.emit("sendAlert", "[ NOTICE ]", `Delete ${user} to the Operator`);
         room.deleteUserFromOperators(targetId);
+        this.server.to(roomname).emit("sendCurrRoomInfo", this.chatService.makeCurrRoomInfo(roomname));
       }
     });
 
