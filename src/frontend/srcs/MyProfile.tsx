@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axiosApi, { fetch_refresh } from "./FetchInterceptor";
 
 function MyProfile() {
 	const [newNickname, setNewNickname] = useState('');

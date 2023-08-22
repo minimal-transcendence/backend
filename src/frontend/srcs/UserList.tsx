@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import axiosApi, { fetch_refresh } from "./FetchInterceptor";
 import styles from "../styles/UserListStyle.module.css";
 import styles_profile from "../styles/UserProfileStyle.module.css";
+import { Socket } from 'socket.io-client';
+import * as io from "socket.io-client";
+
 
 function UserList() {
 	const [showModals, setShowModals] = useState<boolean[]>([]);
@@ -41,14 +45,29 @@ function UserList() {
 		}
 	}
 
+	const socket = io.connect("http://localhost:3002", {
+	query: {
+		id: 1234,
+		nickname: "namkim",
+	},
+	});
+
+	//갱신용 reloadData 만들기
+
 	const reloadData = async() => {
 		setData([]);
 		setShowModals([]);
 		setShowProfile(true);
 		setDetailShowprofile(false);
 
+		socket.emit("requestAllMembers");
+		socket.on("responseAllMembers", (data) => {
+			console.log(JSON.stringify(data));
+
+		})
 		const idList:string[] = [];
-		const responseFriend = await (await fetch ('http://localhost/api/user/' + userId + '/friend')).json();
+		const responseFriend = await (await fetch_refresh ('http://localhost/api/user/' + userId + '/friend')).json();
+		// const responseFriend = await axiosApi("", )
 		const friendCount = responseFriend.friendList.length;
 		for(let i = 0; i < friendCount ; i++){
 			idList.push(responseFriend.friendList[i].id);
@@ -72,7 +91,7 @@ function UserList() {
 				score: (parseInt(detailResponse._count.asWinner) * 10 - parseInt(detailResponse._count.asLoser) * 10),
 				lastLogin: detailResponse.lastLogin,
 				isFriend: checkIsFriend(idList, detailResponse.id),
-				isLogin: 0,
+				isLogin: 0, //수정하기
 				matchhistory: [],
 			};
 			for(let i = 0 ; i < matchCount ; i++){
@@ -117,7 +136,6 @@ function UserList() {
 	async function follow(index:number){
 		const apiUrl = 'http://localhost/api/user/' + userId + '/friend';
 		const dataToUpdate = {
-			// 업데이트하고자 하는 데이터 객체
 			id: userId,
 			isAdd: true,
 			friend: userData[index].id,
@@ -142,7 +160,6 @@ function UserList() {
 			let copiedData = [...userData];
 			copiedData[index].isFriend = 1;
 			setData(copiedData);
-			reloadData();
 		} catch (error) {
 			alert("Follow에 실패했습니다");
 			console.error('에러 발생:', error);
@@ -152,7 +169,6 @@ function UserList() {
 	async function unFollow(index:number){
 		const apiUrl = 'http://localhost/api/user/' + userId + '/friend';
 		const dataToUpdate = {
-			// 업데이트하고자 하는 데이터 객체
 			id: userId,
 			isAdd: false,
 			friend: userData[index].id,
@@ -175,9 +191,8 @@ function UserList() {
 
 			console.log('unFollow 응답 데이터:', responseData);
 			let copiedData = [...userData];
-			copiedData[index].isFriend = 1;
+			copiedData[index].isFriend = 0;
 			setData(copiedData);
-			reloadData();
 		} catch (error) {
 			alert("Follow에 실패했습니다");
 			console.error('에러 발생:', error);

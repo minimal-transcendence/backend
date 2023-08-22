@@ -10,6 +10,8 @@ import { MatchModule } from './match/match.module';
 // import { ChatModule } from './chat/chat.module';
 import { GameGateway } from './game/game.gateway';
 import { GameService } from './game/game.service';
+import { ChatModule } from './chat/chat.module';
+import { StoreModule } from './store/store.module';
 // import { GameStoreService } from './game/game.store.service';
 // import { GameModule } from './game/game.module';
 
@@ -19,6 +21,8 @@ import { GameService } from './game/game.service';
     TwoFactorAuthModule,
     UserServiceModule,
     MatchModule,
+    ChatModule,
+    StoreModule
     //ChatModule,
     // GameModule,
   ],
