@@ -38,17 +38,17 @@ function UserList() {
 	}
 
 	function checkIsInclude(id:string[], userid:string){
-		if (id.includes(userid)){
+		if (id.includes(userid.toString())){
 			return 1;
 		}else{
 			return 0;
 		}
 	}
 
-	const socket = io.connect("http://localhost:3002", {
+	const socket = io.connect("http://localhost:3002", { // 나중에 빼야함
 	query: {
-		id: 1234,
-		nickname: "namkim",
+		id: userId,
+		nickname: userNickname,
 	},
 	});
 
@@ -59,16 +59,22 @@ function UserList() {
 		setShowModals([]);
 		setShowProfile(true);
 		setDetailShowprofile(false);
+		setConnectList([]);
 
-		const connectList:string[] = [];
+		const conList:string[] = [];
 		socket.emit("requestAllMembers");
-		socket.on("responseAllMembers", (data) => {
-			const connectCount = data.length;
-			for(let i = 0; i < connectCount ; i++){
+		 socket.on("responseAllMembers", async (data) => {
+			for(let i = 0; i < data.length ; i++){
 				if (data[i].isConnected === true)
-					connectList.push(data[i].id);
+				conList.push((data[i].id).toString());
 			}
+			setConnectList(conList);
 		})
+		// 로그인
+		socket.on("userUpdate", (userid : number) => {
+			console.log(userid);
+		})
+		//로그아웃
 
 		const idList:string[] = [];
 		//const responseFriend = await (await fetch_refresh ('http://localhost/api/user/' + userId + '/friend')).json();
@@ -76,9 +82,8 @@ function UserList() {
 		const responseFriend = responseData.data;
 		const friendCount = responseFriend.friendList.length;
 		for(let i = 0; i < friendCount ; i++){
-			idList.push(responseFriend.friendList[i].id);
+			idList.push((responseFriend.friendList[i].id).toString());
 		}
-
 		const responseUserData = await axiosApi.get('http://localhost/api/user', );
 		const response = responseUserData.data;
 		const useridx = response.length;
@@ -100,9 +105,10 @@ function UserList() {
 				score: (parseInt(detailResponse._count.asWinner) * 10 - parseInt(detailResponse._count.asLoser) * 10),
 				lastLogin: detailResponse.lastLogin,
 				isFriend: checkIsInclude(idList, detailResponse.id),
-				isLogin: checkIsInclude(connectList, detailResponse.id), //수정하기
+				isLogin: checkIsInclude(conList, detailResponse.id),
 				matchhistory: [],
 			};
+			console.log(newData.id, " ", newData.nickname, " ",newData.isLogin);
 			for(let j = 0 ; j < matchCount ; j++){
 				const newMatchData: userMatchHistory = {
 					winner: matchResponse[j].winner.nickname,
@@ -156,10 +162,15 @@ function UserList() {
 			'Content-Type': 'application/json',
 		}})
 		.then(response => {
-			console.log('Follow 성공 데이터:', response.data);
-			let copiedData = [...userData];
-			copiedData[index].isFriend = 1;
-			setData(copiedData);
+			if (response.data.error){
+				alert("Follow에 실패했습니다");
+				console.error('에러 발생:', response.data.error);
+			}else{
+				console.log('Follow 성공 데이터:', response.data);
+				let copiedData = [...userData];
+				copiedData[index].isFriend = 1;
+				setData(copiedData);
+			}
 		})
 		.catch(error =>{
 			alert("Follow에 실패했습니다");
@@ -180,10 +191,15 @@ function UserList() {
 			'Content-Type': 'application/json',
 		}})
 		.then(response => {
-			console.log('UnFollow 성공 데이터:', response.data);
-			let copiedData = [...userData];
-			copiedData[index].isFriend = 0;
-			setData(copiedData);
+			if (response.data.error){
+				alert("UnFollow에 실패했습니다");
+				console.error('에러 발생:', response.data.error);
+			}else{
+				console.log('UnFollow 성공 데이터:', response.data);
+				let copiedData = [...userData];
+				copiedData[index].isFriend = 0;
+				setData(copiedData);
+			}
 		})
 		.catch(error =>{
 			alert("UnFollow에 실패했습니다");
