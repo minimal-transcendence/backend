@@ -38,6 +38,7 @@ export default function App() {
   const [curOpen, setCurOpen] = useState<number>(-1);
   // const [userId, setUserId] = useState<any>(null);
   const [jwt, setJwt] = useState<string>('');
+  const [nickname, setNickname] = useState<string>('');
 
   // const [socket, setSocket] = useState<any>();
 
@@ -60,6 +61,9 @@ export default function App() {
   });
 
   const gameSocket = io.connect("http://localhost/game", {
+    query: {
+      "nickname": nickname,
+    },
     auth: {
       token: jwt,
     },
@@ -86,6 +90,11 @@ export default function App() {
     const item = localStorage.getItem("access_token");
     if (item) {
       setJwt(item);
+    }
+
+    const nick = localStorage.getItem("nickname");
+    if (nick) {
+      setNickname(nick);
     }
   }, []);
 

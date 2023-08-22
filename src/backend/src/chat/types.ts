@@ -1,9 +1,12 @@
 import { Socket } from "socket.io"
 
 type JwtPayload = {
-    userId: string,
-    email: string,
-    nickname: string,
+    userId: string;
+    email: string;
 }
 
-export type ChatSocket = Socket & JwtPayload;
+type AuthSocket = {
+    nickname: string;
+}
+
+export type ChatSocket = Socket & JwtPayload & AuthSocket;

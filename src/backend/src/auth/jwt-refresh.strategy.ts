@@ -40,8 +40,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
     if (user) {
       return ({
         id: payload.id,
-        email: payload.email,
-        nickname: payload.nickname
+        email: payload.email
       });
     }
   }

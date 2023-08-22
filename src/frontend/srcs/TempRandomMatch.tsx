@@ -7,9 +7,9 @@ export default function TempRandomMatch() {
 
     const socket = useContext(AppContext).gameSocket;
 
-    socket.on('matchStartCheck', (payload: string) => {
-        roomName = payload;
-        console.log(`${payload} is checking`);
+    socket.on('matchStartCheck', (payload: any) => {
+        roomName = payload.roomName;
+        console.log(`${payload.roomName} is checking`);
     });
 
     socket.on('matchDecline', (payload: string) => {
@@ -17,7 +17,11 @@ export default function TempRandomMatch() {
     })
 
     const handleRandom = () => {
-        socket.emit('randomMatchApply');
+        // socket.emit('randomMatchApply');
+        // socket.emit('randomMatchApply', 'easy');
+        // socket.emit('randomMatchApply', 'normal');
+        socket.emit('randomMatchApply', 'hard');
+        
     }
 
     const handleAccept = () => {

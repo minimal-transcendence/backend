@@ -123,9 +123,10 @@ export class GameGateway
 
   /*-------------Random Match-----------------------*/
 
-  @SubscribeMessage('RandomMatchApply')
+  @SubscribeMessage('randomMatchApply')
   handleRandomMatchApply(client: GameSocket, mode: string) {
     // client is in game
+    console.log(mode);
     if (client.inGame) {
       return;
     }
@@ -186,6 +187,10 @@ export class GameGateway
 
     // push client in queue
     matchQueue.push(client);
+
+    console.log(this.easyModeQueue.length);
+    console.log(this.normalModeQueue.length);
+    console.log(this.hardModeQueue.length);
 
     // More than 2 players in queue
     if (matchQueue.length >= 2) {

@@ -36,13 +36,11 @@ export class TwoFactorAuthController {
 
         const access_token = await this.authService.generateAccessToken({
             id: user.id,
-            email: user.email,
-            nickname: user.nickname
+            email: user.email
         });
         const refresh_token = await this.authService.generateRefreshToken({
             id: user.id,
-            email: user.email,
-            nickname: user.nickname
+            email: user.email
         });
 
         // hashing refresh token

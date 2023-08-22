@@ -7,6 +7,7 @@ export type GameListItem = {
 }
 
 type Player = {
+    nickname: string;
     inGame: boolean;
     gameList: GameListItem[];
 }
@@ -14,7 +15,6 @@ type Player = {
 type JwtPayload = {
     userId: string;
     email: string;
-    nickname: string;
 }
 
 export type KeydownPayload = {

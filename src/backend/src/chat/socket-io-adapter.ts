@@ -28,17 +28,23 @@ export class SocketIOAdapter extends IoAdapter {
 
 const createJwtMiddleware = (jwtService: JwtService, logger: Logger) =>
 (socket: ChatSocket | GameSocket, next) => {
-    const token =
-        socket.handshake.auth.token || socket.handshake.headers['token'];
-
-    logger.debug(`Validating jwt token before connection: ${token}`);
+    const token = socket.handshake.auth.token;
+    if (!token) {
+        return;
+    }
+    const nickname = socket.handshake.query.nickname as string;
 
     try {
+        if (!token) {
+            throw new Error();
+        }
+        logger.debug(`Validating jwt token before connection: ${token}`);
         const payload = jwtService.verify(token, {
             secret: process.env.JWT_ACCESS_TOKEN_SECRET
         });
         socket.userId = payload.id;
         socket.email = payload.email;
+        socket.nickname = nickname;
         // socket.inGame = false;
         next();
     } catch {
@@ -48,17 +54,20 @@ const createJwtMiddleware = (jwtService: JwtService, logger: Logger) =>
 
 const createGameMiddleware = (io: Namespace, jwtService: JwtService, logger: Logger) =>
 (socket: ChatSocket | GameSocket, next) => {
-    const token =
-        socket.handshake.auth.token || socket.handshake.headers['token'];
-
-    logger.debug(`Validating jwt token before connection: ${token}`);
+    const token = socket.handshake.auth.token;
+    const nickname = socket.handshake.query.nickname as string;
 
     try {
+        if (!token) {
+            throw new Error();
+        }
+        logger.debug(`Validating jwt token before connection: ${token}`);
         const payload = jwtService.verify(token, {
             secret: process.env.JWT_ACCESS_TOKEN_SECRET
         });
         socket.userId = payload.id;
         socket.email = payload.email;
+        socket.nickname = nickname;
         // Enforce Only One Connection
         io.sockets.forEach((e: GameSocket) => {
             console.log(e.userId);
