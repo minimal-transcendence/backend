@@ -1,10 +1,14 @@
 import { useState, useContext } from "react";
 import { SocketContext } from "../../../context/socket";
 const ChatHeader = ({
+  roomInfo,
   currentRoomName,
+  myNickName,
   isDM,
 }: {
+  roomInfo: any;
   currentRoomName: string;
+  myNickName: string;
   isDM: boolean;
 }) => {
   const [roomState, setRoomState] = useState<string>("Public");
@@ -19,9 +23,16 @@ const ChatHeader = ({
   const onSubmit = (event: any, value: string, currentRoomName: string) => {
     event.preventDefault();
     console.log("패스워드바꾸려고 ", value);
-    socket.emit("setRoomPass", currentRoomName, value);
+
+    const chkAuth =
+      myNickName === roomInfo.owner || roomInfo.operators.includes(myNickName);
+
+    if (chkAuth) {
+      console.log("비번 바꾸기 가능");
+      socket.emit("setRoomPass", currentRoomName, value);
+      setRoomState("Public");
+    }
     setPassword("");
-    setRoomState("Public");
   };
   function handleMenu(event: any, currentRoomName: string) {
     if (event.target.dataset.name) {
@@ -44,7 +55,14 @@ const ChatHeader = ({
             currentRoomName,
             event.target.dataset.name
           );
-          setRoomState("Public");
+          const chkAuth =
+            myNickName === roomInfo.owner ||
+            roomInfo.operators.includes(myNickName);
+          if (chkAuth) {
+            console.log("권한있음. public으로 전환");
+            setRoomState("Public");
+            socket.emit("setRoomPublic", currentRoomName);
+          }
         }
       } else if (event.target.dataset.name === "password") {
         {
@@ -61,7 +79,14 @@ const ChatHeader = ({
             currentRoomName,
             event.target.dataset.name
           );
-          setRoomState("Private");
+          const chkAuth =
+            myNickName === roomInfo.owner ||
+            roomInfo.operators.includes(myNickName);
+          if (chkAuth) {
+            console.log("권한있음. private로 전환");
+            setRoomState("Private");
+            socket.emit("setRoomPrivate", currentRoomName);
+          }
         }
       }
     } else {
