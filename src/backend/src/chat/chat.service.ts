@@ -464,7 +464,12 @@ export class ChatService {
 
 	//TODO : 이 모든 Getter들... 에러처리를 생각해야
 	getAllRoomList() : roomInfo[] {
-		const roomlist = Array.from(this.storeRoom.rooms.keys());
+		// const roomlist = Array.from(this.storeRoom.rooms.keys());
+		const roomlist = [];
+		this.storeRoom.rooms.forEach((value, key) => {
+			if (!value.isPrivate)
+				roomlist.push(key);
+		})
 		return (this.makeRoomInfo(roomlist));
 	}
 
