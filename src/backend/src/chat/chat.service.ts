@@ -183,6 +183,7 @@ export class ChatService {
 	//(CLOSE) 한 유저가 여러 소켓을 가진 경우에 대해 : 모든 창에 경고를 띄울 필요 있을까? -> 창하나만
 	//하지만 join은 전부 처리해줘야 (CLOSE)
 	JoinRoomBanCheck(io : Server, client:Socket, room : Room) : boolean {
+		console.log(room.banlist);
 		if (room.isBanned(client.data.id)){
 			client.emit("sendAlert", "Banned User", "You are not allowed to join this room");
 			return (false);
@@ -239,6 +240,30 @@ export class ChatService {
 			room.updatePassword(password);
 		else
 			client.emit("sendAlert", "Alert", "You have no authority");
+	}
+
+	setRoomStatus(io : Server, client : Socket, roomname : string, toPrivate : boolean) {
+		const room = this.storeRoom.findRoom(roomname);
+		if (room.isOwner(client.data.id)){
+			if (toPrivate) {
+				if (room.isPrivate)
+					client.emit("sendAlert", "[ Alert ]", 'Room is already Private');
+				else {
+					room.isPrivate = true;
+					io.to(roomname).emit("sendCurrRoomInfo", this.makeCurrRoomInfo(roomname));
+				}
+			}
+			else {
+				if (room.isPrivate) {
+					room.isPrivate = false;
+					io.to(roomname).emit("sendCurrRoomInfo", this.makeCurrRoomInfo(roomname));
+				}
+				else
+					client.emit("sendAlert", "[ Alert ]", 'Room is already Public');
+			}
+		}
+		else
+			client.emit("sendAlert", "[ Alert ]", "Only owner can set room status");
 	}
 
 	//만약 없는 방일 때 -> throw Error

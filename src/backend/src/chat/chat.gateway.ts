@@ -151,7 +151,7 @@ export class ChatGateway
       if (
         this.chatService.checkActValidity(client, roomname, client.data.id, targetId)
       ) {
-        this.chatService.muteUser(this.server, roomname, targetId);
+        this.chatService.muteUser(this.server, client, roomname, targetId);
       }
     });
 
@@ -237,7 +237,15 @@ export class ChatGateway
       const toId = this.storeUser.getIdByNickname(to);
       this.chatService.fetchDM(this.server, fromId, toId, body);
     });
+	client.on('setRoomPrivate', (roomname) => {
+		this.chatService.setRoomStatus(this.server, client, roomname, true);
+	})
+	
+	client.on('setRoomPublic', (roomname) => {
+		this.chatService.setRoomStatus(this.server, client, roomname, false);
+	})
   }
+
 
   //disconnecting, disconnect 둘다 감지 가능?
   async handleDisconnect(@ConnectedSocket() client: Socket) {
