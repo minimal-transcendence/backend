@@ -5,11 +5,13 @@ import ysungwonIcon from "../../../assets/ysungwon.jpg";
 import Image from "next/image";
 
 export default function ChatRoomUserInfo({
+  roomInfo,
   user,
   num,
   roomname,
   myNickName,
 }: {
+  roomInfo: any;
   user: any;
   num: number;
   roomname: string;
@@ -22,6 +24,7 @@ export default function ChatRoomUserInfo({
       console.log(
         `${myNickName}가 ${user?.nickname}를 ${roomname}에서 ${event.target.dataset.name}클릭!!!`
       );
+      console.log(`roomInfo : ${JSON.stringify(roomInfo, null, 2)}`);
       const targetnickname = user?.nickname;
       if (event.target.dataset.name === "kick") {
         console.log("target nickname : " + targetnickname);
