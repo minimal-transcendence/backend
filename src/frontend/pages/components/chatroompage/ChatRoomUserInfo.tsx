@@ -26,17 +26,22 @@ export default function ChatRoomUserInfo({
       if (event.target.dataset.name === "kick") {
         console.log("target nickname : " + targetnickname);
         socket.emit("kickUser", roomname, targetnickname);
-      } else if (event.target.dataset.name === "ban")
+      } else if (event.target.dataset.name === "ban") {
+        console.log("in banUser ", roomname, targetnickname);
         socket.emit("banUser", roomname, targetnickname);
-      else if (event.target.dataset.name === "mute")
+      } else if (event.target.dataset.name === "mute") {
+        console.log("in muteUser ", roomname, targetnickname);
         socket.emit("muteUser", roomname, targetnickname);
-      else if (event.target.dataset.name === "block")
+      } else if (event.target.dataset.name === "block") {
+        console.log("in blockUser ", targetnickname);
         socket.emit("blockUser", targetnickname);
-      else if (event.target.dataset.name === "opAdd")
+      } else if (event.target.dataset.name === "opAdd") {
+        console.log("in addOperator ", roomname, targetnickname);
         socket.emit("addOperator", roomname, targetnickname);
-      else if (event.target.dataset.name === "opDelete")
+      } else if (event.target.dataset.name === "opDelete") {
+        console.log("in deleteOperator ", roomname, targetnickname);
         socket.emit("deleteOperator", roomname, targetnickname);
-      else if (event.target.dataset.name === "dmApply")
+      } else if (event.target.dataset.name === "dmApply")
         socket.emit("selectDMRoom", targetnickname);
       else if (event.target.dataset.name === "oneVsOne")
         socket.emit("oneVsOneApply", targetnickname, "oneVsOne", 2);
