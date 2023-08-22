@@ -382,17 +382,35 @@ export class ChatService {
 		if (room.isOperator(targetId)){
 			room.deleteUserFromOperators(targetId);
 			room.deleteUserFromUserlist(targetId);
-			room.addUserToBanlist(targetId);
-			this.kickUser(io, roomname, targetId);
 			//여기서 특정 시간동안 banlist에 올리고
 			//kick하고
 			//message를 보낸다
 		}
+		room.addUserToBanlist(targetId);
+		this.kickUser(io, roomname, targetId);
 	}
 
-	muteUser(io : Server, roomname: string, targetId : number){
+	muteUser(io : Server, client : Socket, roomname: string, targetId : number){
 		const room = this.storeRoom.findRoom(roomname);
-		room.addUserToMutelist(targetId);	
+		if (room.isMuted(targetId))
+			client.emit("sendMessage", roomname, {
+				from : "server",
+				body : `${this.storeUser.getNicknameById(targetId)} is already muted`,
+				at : Date.now()
+		})
+		else{
+			room.addUserToMutelist(targetId);
+			this.emitEventsToAllSockets(io, targetId, "sendMessage", roomname, {
+				from : "server",
+				body : `You are temporaily muted by ${client.data.nickname}`,
+				at : Date.now()
+			})
+			io.to(roomname).except(`$${targetId}`).emit("sendMessage", roomname, {
+				from : "server",
+				body :	`${this.storeUser.getNicknameById(targetId)} is temporaily muted`,
+				at : Date.now()
+			})
+		}
 	}
 
 	blockUser(io : Server, client : Socket, target : string) {
