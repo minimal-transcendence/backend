@@ -436,6 +436,14 @@ export class ChatService {
 				body :	`${this.storeUser.getNicknameById(targetId)} is temporaily muted`,
 				at : Date.now()
 			})
+			setTimeout(() => {
+				room.deleteUserFromMutelist(targetId);
+				this.emitEventsToAllSockets(io, targetId, "sendMessage", roomname, {
+					from : "server",
+					body : `You are now unmuted `,
+					at : Date.now()
+				})
+			}, 20000);
 		}
 	}
 
