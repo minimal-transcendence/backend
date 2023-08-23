@@ -62,6 +62,7 @@ export default function App() {
             nickname: tmpLoginnickname,
           };
           socket.connect();
+          console.log("in chkLogin ", socket);
           socket.emit("sendnicknameID", {
             id: tmpLoginID,
             nickname: tmpLoginnickname,

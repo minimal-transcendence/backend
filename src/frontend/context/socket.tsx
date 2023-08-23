@@ -8,5 +8,8 @@ export const socket = io.connect("http://localhost:3002", {
     nickname: "namkim",
   },
   autoConnect: false,
+  auth: {
+    token: "hi",
+  },
 });
 export const SocketContext = React.createContext<Socket>(socket);
