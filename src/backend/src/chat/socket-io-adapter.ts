@@ -20,7 +20,7 @@ export class SocketIOAdapter extends IoAdapter {
         const server: Server = super.createIOServer(port, options);
 
         server.of('chat').use(createJwtMiddleware(jwtService, this.logger));
-        // server.of('game').use(createGameMiddleware(server.of('game'), jwtService, this.logger));
+        server.of('game').use(createGameMiddleware(server.of('game'), jwtService, this.logger));
 
         return server;
     }

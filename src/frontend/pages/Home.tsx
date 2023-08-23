@@ -3,14 +3,6 @@ import { useRouter } from "next/router";
 import UserList from "../srcs/UserList";
 import MyProfile from "../srcs/MyProfile";
 import App from "./App";
-// import * as io from "socket.io-client";
-
-// export const socket = io.connect("http://localhost/game", {
-// 	auth: {
-// 		token: "this is jwt token from game client",
-// 	},
-// });
-
 function Home() {
   const router = useRouter();
   const [greeting, setGreeting] = useState<string[]>(["hihi", "hello", "안녕"]);
