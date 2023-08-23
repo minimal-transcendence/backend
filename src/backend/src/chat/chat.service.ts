@@ -214,7 +214,7 @@ export class ChatService {
 				client.emit("sendAlert", "Alert", "This room is Private");
 				return ;
 			}
-			const pwExist = password? true : false;
+			const pwExist = room.password? true : false ;
 			if (pwExist) {
 				if (password){
 					if (room.isPassword(password)){
@@ -236,8 +236,11 @@ export class ChatService {
 
 	setPassword(io: Server, client : Socket, roomname : string, password : string){
 		const room = this.storeRoom.findRoom(roomname);
-		if (room.isOwner(client.data.id))
+		console.log("set password attempt");
+		if (room.isOwner(client.data.id)){
 			room.updatePassword(password);
+			console.log("password updated");
+		}
 		else
 			client.emit("sendAlert", "Alert", "You have no authority");
 	}
