@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, createContext } from "react";
 
 import * as io from "socket.io-client";
 import ModalBasic from "./components/modalpage/modal";
@@ -9,9 +9,11 @@ import GameList from "./components/gamelistpage/GameList";
 import ChatMain from "./components/chatpage/ChatMain";
 import SearchList from "./components/searchlistpage/SearchList";
 import ChatRoomUser from "./components/chatroompage/ChatRoom";
-import { SocketContext, socket } from "../context/socket";
+// import { socket } from "../context/socket";
 // import searchIcon from "./assets/search.png";
 import Image from "next/image";
+import { setItems } from "@/srcs/SocketRefresh";
+import Pong from "@/srcs/Pong";
 
 // export const socket = io.connect("http://localhost:3002", {
 //   query: {
@@ -20,6 +22,15 @@ import Image from "next/image";
 //   },
 //   autoConnect: false,
 // });
+
+export type SocketContent = {
+  chatSocket: any;
+  gameSocket: any;
+}
+export const SocketContext = createContext<SocketContent>({
+  chatSocket: null,
+  gameSocket: null,
+});
 
 export type UserOnChat = {
   id: string;
@@ -50,6 +61,52 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [messages, setMessages] = useState<any>("");
+
+  // seunchoi
+  const [jwt, setJwt] = useState<string>('');
+  const [jwtExp, setJwtExp] = useState<string>('');
+  const [nickname, setNickname] = useState<string>('');
+  const [gameLoad, setGameLoad] = useState<boolean>(false);
+
+  // ERR - 렌더링 될 때마다 계속 소켓을 생성함
+  /*
+  검색 Input에 의해 App컴포넌트가 리렌더링 될 때마다 소켓 생성
+  => 컴포넌트를 나눠서 렌더링 하도록 해야할 듯 (<SearchBar/>, <Chat/>)
+  */
+  // const chatSocket = io.connect("http://localhost/chat", {
+  //   query: {
+  //     "nickname": nickname,
+  //   },
+  //   auth: {
+  //     token: jwt,
+  //   },
+  //   autoConnect: false,
+  // });
+
+  const socket = io.connect("http://localhost/chat", {
+    query: {
+      id: 1234,
+      nickname: "namkim",
+    },
+    autoConnect: false,
+  });
+
+  const gameSocket = io.connect("http://localhost/game", {
+    query: {
+      "nickname": nickname,
+    },
+    auth: {
+      token: jwt,
+    },
+  });
+
+  useEffect(() => {
+	  setItems(setJwt, setJwtExp);
+    const nick = localStorage.getItem("nickname");
+    if (nick) {
+      setNickname(nick);
+    }
+  }, [])
 
   useEffect(
     function () {
@@ -169,8 +226,15 @@ export default function App() {
     };
   }, [currentRoomName, results, messages, socket]);
 
+  const handleGameOnOff = () => {
+    setGameLoad(!gameLoad);
+  }
+
   return (
-    <SocketContext.Provider value={socket}>
+    <SocketContext.Provider value={{
+      chatSocket: socket,
+      gameSocket: gameSocket,
+    }}>
       {!tmpIsLoggedIn ? (
         <TempLogin
           tmpLoginID={tmpLoginID}
@@ -202,6 +266,9 @@ export default function App() {
           />
           <Main>
             <Box>
+              <button onClick={handleGameOnOff}>
+                게임 on/off
+              </button>
               {
                 <>
                   <SearchList
@@ -218,13 +285,15 @@ export default function App() {
                 </>
               }
             </Box>
-            <ChatMain
+            {gameLoad ?
+            (<Pong/>) :
+            (<ChatMain
               messages={messages}
               setMessages={setMessages}
               currentRoomName={currentRoomName}
               setcurrentRoomName={setcurrentRoomName}
               myNickName={tmpLoginnickname}
-            />
+            />)}
             <Box>
               <>
                 <ChatRoomUser

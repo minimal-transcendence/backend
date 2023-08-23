@@ -4,9 +4,10 @@ export type Mode = {
 }
 
 export type ChallengeInfo = {
-	from : number;
-	to : number;
-	mode : number;
+	from : string;
+	to : string;
+	paddlemode : number;
+	speedmode : number
 }
 //random match queue
 //Map<number, array?> 먼저 Map<number, number> 로?

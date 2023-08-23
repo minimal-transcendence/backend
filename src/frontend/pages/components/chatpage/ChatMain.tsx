@@ -3,8 +3,9 @@ import ChatHeader from "./ChatHeader";
 import ChatBody from "./ChatBody";
 // import ChatBody from "./ChatBody";
 import ChatFooter from "./ChatFooter";
+import { SocketContext } from "@/pages/App";
 
-import { SocketContext } from "../../../context/socket";
+// import { SocketContext } from "../../../context/socket";
 const ChatMain = ({
   currentRoomName,
   setcurrentRoomName,
@@ -25,7 +26,7 @@ const ChatMain = ({
   const [roomInfo, setRoomInfo] = useState<any>(null);
   const [roomState, setRoomState] = useState<string>("");
   const lastMessageRef = useRef<null | HTMLElement>(null);
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
 
   useEffect(() => {
     function sendCurrRoomInfo(result: any) {

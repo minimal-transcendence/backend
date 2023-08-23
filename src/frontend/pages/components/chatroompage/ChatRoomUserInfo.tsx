@@ -1,8 +1,9 @@
 import { useEffect, useState, useContext } from "react";
-import { SocketContext } from "../../../context/socket";
+// import { SocketContext } from "../../../context/socket";
 import menuIcon from "../../../assets/menu.png";
 import ysungwonIcon from "../../../assets/ysungwon.jpg";
 import Image from "next/image";
+import { SocketContext } from "@/pages/App";
 
 export default function ChatRoomUserInfo({
   user,
@@ -15,7 +16,7 @@ export default function ChatRoomUserInfo({
   roomname: string;
   myNickName: string;
 }) {
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
 
   function handleMenu(event: any) {
     if (event.target.dataset.name) {

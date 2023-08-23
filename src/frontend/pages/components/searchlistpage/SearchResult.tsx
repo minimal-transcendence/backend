@@ -1,5 +1,6 @@
+import { SocketContext } from "@/pages/App";
 import { useEffect, useState, useContext } from "react";
-import { SocketContext } from "../../../context/socket";
+// import { SocketContext } from "../../../context/socket";
 export default function SearchResult({
   el,
   onSelectRoom,
@@ -7,7 +8,7 @@ export default function SearchResult({
   el: any;
   onSelectRoom: any;
 }) {
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
 
   return (
     <li onClick={() => onSelectRoom(event, el)}>

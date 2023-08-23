@@ -1,7 +1,8 @@
+import { SocketContext } from "@/pages/App";
 import Logo from "./NavBarLogo";
 import Menu from "./NavBarMenu";
 import Search from "./NavBarSearch";
-import { SocketContext } from "../../../context/socket";
+// import { SocketContext } from "../../../context/socket";
 import { useState, useContext } from "react";
 export default function NavBar({
   query,
@@ -17,7 +18,7 @@ export default function NavBar({
   setLeftHeader: any;
   setError: any;
 }) {
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
   console.log("navebar ");
   return (
     <nav className="nav-bar">

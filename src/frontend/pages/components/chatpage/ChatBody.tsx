@@ -1,7 +1,8 @@
 import { useState, useContext } from "react";
-import { SocketContext } from "../../../context/socket";
+// import { SocketContext } from "../../../context/socket";
 import ysungwonIcon from "../../../assets/ysungwon.jpg";
 import Image from "next/image";
+import { SocketContext } from "@/pages/App";
 const ChatBody = ({
   messages,
   typingStatus,
@@ -13,7 +14,7 @@ const ChatBody = ({
   lastMessageRef: any;
   myNickName: string;
 }) => {
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
   if (messages?.length === 0) return;
   // console.log(
   //   `in body, messages length : ${messages.length} ${JSON.stringify(

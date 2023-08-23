@@ -1,11 +1,12 @@
 import GameListHeader from "./GameListHeader";
 import GameListBody from "./GameListBody";
 import { useState, useEffect, useContext } from "react";
-import { SocketContext } from "../../../context/socket";
+import { SocketContext } from "@/pages/App";
+// import { SocketContext } from "../../../context/socket";
 
 const pageHeight = 8;
 export default function GameList({ myNickName }: { myNickName: string }) {
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
   const [gameList, setGameList] = useState<any>([]);
 
   const [page, setPage] = useState<number>(1);

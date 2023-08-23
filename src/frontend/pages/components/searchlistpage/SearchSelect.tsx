@@ -1,5 +1,6 @@
+import { SocketContext } from "@/pages/App";
 import { useContext } from "react";
-import { SocketContext } from "../../../context/socket";
+// import { SocketContext } from "../../../context/socket";
 export default function SearchSelect({
   query,
   leftHeader,
@@ -9,7 +10,7 @@ export default function SearchSelect({
   leftHeader: any;
   setLeftHeader: any;
 }) {
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
 
   return (
     <>

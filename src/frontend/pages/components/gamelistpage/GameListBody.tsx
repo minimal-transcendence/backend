@@ -1,6 +1,7 @@
+import { SocketContext } from "@/pages/App";
 import GameListItemInfo from "./GameListItemInfo";
 import { useContext } from "react";
-import { SocketContext } from "../../../context/socket";
+// import { SocketContext } from "../../../context/socket";
 export default function GameListBody({
   myNickName,
   tmpList,
@@ -8,7 +9,7 @@ export default function GameListBody({
   myNickName: string;
   tmpList: any;
 }) {
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
   if (tmpList?.length === 0 || !tmpList) {
     console.log("gamelengh 0");
     return;

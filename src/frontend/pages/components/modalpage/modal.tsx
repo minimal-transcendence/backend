@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useContext } from "react";
-import { SocketContext } from "../../../context/socket";
+// import { SocketContext } from "../../../context/socket";
 import "../../index.css";
+import { SocketContext } from "@/pages/App";
 
 export default function ModalBasic({
   setIsOpenModal,
@@ -12,7 +13,7 @@ export default function ModalBasic({
   innerText: string;
 }) {
   // 모달 끄기
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
   const [passWord, setPassWord] = useState("");
   const [disabled, setDisabled] = useState(false);
 

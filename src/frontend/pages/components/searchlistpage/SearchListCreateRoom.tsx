@@ -1,12 +1,13 @@
+import { SocketContext } from "@/pages/App";
 import { useEffect, useState, useContext } from "react";
-import { SocketContext } from "../../../context/socket";
+// import { SocketContext } from "../../../context/socket";
 
 export default function SearchListCreateRoom({
   setroomnameModal,
 }: {
   setroomnameModal: any;
 }) {
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
   const [roomname, setroomname] = useState("");
   const [disabled, setDisabled] = useState(false);
 

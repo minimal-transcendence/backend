@@ -1,5 +1,6 @@
+import { SocketContext } from "@/pages/App";
 import { useState, useContext } from "react";
-import { SocketContext } from "../../../context/socket";
+// import { SocketContext } from "../../../context/socket";
 const ChatHeader = ({
   roomInfo,
   roomState,
@@ -16,7 +17,7 @@ const ChatHeader = ({
   isDM: boolean;
 }) => {
   const [password, setPassword] = useState<string>("");
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
 
   const handleExit = (event: any, currentroomname: string) => {
     event.preventDefault();

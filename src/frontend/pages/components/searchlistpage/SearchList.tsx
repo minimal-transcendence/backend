@@ -1,9 +1,10 @@
 import { useEffect, useState, useContext } from "react";
-import { SocketContext } from "../../../context/socket";
+// import { SocketContext } from "../../../context/socket";
 
 import SearchListCreateRoom from "./SearchListCreateRoom";
 import ErrorMessage from "./ErrorMessage";
 import SearchListHeader from "./SearchListHeader";
+import { SocketContext } from "@/pages/App";
 const NO_SEARCH_RESULT_ERROR = "There is no room! : ";
 export default function SearchList({
   results,
@@ -24,7 +25,7 @@ export default function SearchList({
   setIsOpenModal: any;
   setTempSearchList: any;
 }) {
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
   console.log("in searchList ", results);
   useEffect(() => {
     function requestPassword(roomname: string) {

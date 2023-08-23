@@ -204,10 +204,16 @@ export class UserService {
 			},
 			select : {
 				winner : {
-					select : { nickname : true }
+					select : { 
+						nickname : true,
+						avatar : true
+					}
 				},
 				loser : {
-					select : { nickname : true }
+					select : {
+						nickname : true,
+						avatar : true
+					}
 				},
 				createdTime : true
 			},
