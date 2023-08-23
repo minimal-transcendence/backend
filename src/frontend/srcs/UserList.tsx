@@ -15,6 +15,7 @@ function UserList() {
 	const [userId, setUserID] = useState<string | null>(localStorage.getItem("id"));
 	const [userData, setData] = useState<userDataInterface[]>([]);
 	const [connectList, setConnectList] = useState<string[]>([]);
+	const [friendList, setFriendList] = useState<string[]>([]);
 
 	interface userMatchHistory{
 		winner: string,
@@ -60,8 +61,9 @@ function UserList() {
 		setShowProfile(true);
 		setDetailShowprofile(false);
 		setConnectList([]);
+		setFriendList([]);
 
-		const conList:string[] = [];
+		let conList:string[] = [];
 		socket.emit("requestAllMembers");
 		 socket.on("responseAllMembers", async (data) => {
 			for(let i = 0; i < data.length ; i++){
@@ -70,13 +72,8 @@ function UserList() {
 			}
 			setConnectList(conList);
 		})
-		// 로그인
-		socket.on("userUpdate", (userid : number) => {
-			console.log(userid);
-		})
-		//로그아웃
 
-		const idList:string[] = [];
+		let idList:string[] = [];
 		//const responseFriend = await (await fetch_refresh ('http://localhost/api/user/' + userId + '/friend')).json();
 		const responseData = await axiosApi.get("http://localhost/api/user/" + userId + '/friend', );
 		const responseFriend = responseData.data;
@@ -84,6 +81,7 @@ function UserList() {
 		for(let i = 0; i < friendCount ; i++){
 			idList.push((responseFriend.friendList[i].id).toString());
 		}
+		setFriendList(idList);
 		const responseUserData = await axiosApi.get('http://localhost/api/user', );
 		const response = responseUserData.data;
 		const useridx = response.length;
@@ -108,7 +106,6 @@ function UserList() {
 				isLogin: checkIsInclude(conList, detailResponse.id),
 				matchhistory: [],
 			};
-			console.log(newData.id, " ", newData.nickname, " ",newData.isLogin);
 			for(let j = 0 ; j < matchCount ; j++){
 				const newMatchData: userMatchHistory = {
 					winner: matchResponse[j].winner.nickname,
@@ -209,6 +206,64 @@ function UserList() {
 
 	useEffect (() => {
 		reloadData();
+		//로그인
+		socket.on("userLogin", async (userid : number) => {
+			let isChange = 0;
+			let copiedData = [...userData];
+			for(let i = 0; i <= copiedData.length ; i++)
+			{
+				if(copiedData[i].id == userid.toString()){
+					copiedData[i].isLogin = 1;
+					isChange = 1;
+					break;
+				}
+			}
+			if (isChange == 0){
+			const responseDetail = await axiosApi.get('http://localhost/api/user/' + userid, );
+			const detailResponse = responseDetail.data;
+			const responseMatch = await axiosApi.get('http://localhost/api/user/' + userid + '/matchhistory', );
+			const matchResponse = responseMatch.data;
+			const matchCount = matchResponse.length;
+			const newData: userDataInterface = {
+				id: detailResponse.id,
+				nickname: detailResponse.nickname,
+				userProfileURL: "/api/" + detailResponse.avatar,
+				win: detailResponse._count.asWinner,
+				lose: detailResponse._count.asLoser,
+				score: (parseInt(detailResponse._count.asWinner) * 10 - parseInt(detailResponse._count.asLoser) * 10),
+				lastLogin: detailResponse.lastLogin,
+				isFriend: checkIsInclude(friendList, detailResponse.id),
+				isLogin: 1,
+				matchhistory: [],
+			};
+			for(let j = 0 ; j < matchCount ; j++){
+				const newMatchData: userMatchHistory = {
+					winner: matchResponse[j].winner.nickname,
+					winnerAvatar: "/api/" + matchResponse[j].winner.avatar,
+					loser: matchResponse[j].loser.nickname,
+					loserAvatar: "/api/" + matchResponse[j].loser.avatar,
+					time: matchResponse[j].createdTime,
+				};
+				newMatchData.time = newMatchData.time.slice(0,19);
+				newMatchData.time = newMatchData.time.replace('T', ' ');
+				newData.matchhistory.push(newMatchData);
+			}
+			copiedData.push(newData);
+			}
+			setData(copiedData);
+		})
+		//로그아웃
+		socket.on("userLogout", (userid : number) => {
+			let copiedData = [...userData];
+			for(let i = 0; i <= copiedData.length ; i++)
+			{
+				if(copiedData[i].id == userid.toString()){
+					copiedData[i].isLogin = 0;
+					break;
+				}
+			}
+			setData(copiedData);
+		})
 		}, []);
 
 	function getDetailProfile(index:number){
