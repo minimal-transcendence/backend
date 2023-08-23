@@ -78,7 +78,7 @@ export class GameGateway
 				delete this.gameRooms[e];
 				}
 			}
-		}, 1500)
+		}, 1000)
 	}
 
 	handleConnection(@ConnectedSocket() client: GameSocket, userId : string, ) {
