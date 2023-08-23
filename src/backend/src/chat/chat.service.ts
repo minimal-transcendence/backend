@@ -72,21 +72,23 @@ export class ChatService {
 		console.log("new user" + JSON.stringify(user));
 		// console.log("new user" + user);
 		user.connected = true;
+		const mappedUserlist = [];
+		user.blocklist.forEach((bId) => {
+			mappedUserlist.push(this.storeUser.getNicknameById(bId));
+		})
+		client.emit("sendBlocklist", mappedUserlist);
 		await this.userJoinRoomAct(io, user, "DEFAULT");	//이게 마지막에 실행된다... 안돼...
 		user.currentRoom = "DEFAULT";
-		
-		//datarace... 괜찮을까
-		//TODO: 전체방은 챗방 목록에 뜨게 할건지?(안하면 전체방 다시 돌아가고 싶을 때 어떻게 할지!)
-		// const roomInfo : roomInfo[] = this.makeRoomInfo(user.joinlist);
-		// const userInfo : userInfo[] = this.makeRoomUserInfo("DEFAULT");
-		// const currRoomInfo : currRoomInfo = this.makeCurrRoomInfo("DEFAULT");
-		// client.emit("init", userInfo, roomInfo, currRoomInfo);
-
-		// //LOG : //
-		// console.log("ROOM INFO " + JSON.stringify(roomInfo));
-		// console.log("USER INFO " + JSON.stringify(userInfo));
-		// console.log("CURR ROOM " + JSON.stringify(currRoomInfo));
 	}
+
+	// async updateBlocklist(io : Server, client : Socket, targetId? : number){
+	// 	const user = this.storeUser.findUserById(client.data.id);
+	// 	if (targetId) {
+
+	// 	}
+		
+	// 	client.emit("updateBlocklist", );
+	// }
 
 	//유저가 나갈 때
 	//disconnectinga
@@ -337,15 +339,23 @@ export class ChatService {
 				console.log("userLeaveRoom : enter --------------------------------------------3")
 				const newOwner = room.userlist.values().next().value;
 				room.updateOwner(newOwner);	//되는지 체크 : 아무나 owner로 올림!
+				io.to(roomname).emit("sendCurrRoomInfo", this.makeCurrRoomInfo(roomname));
 			}
-			if (room.isOperator(userId))
+			if (room.isOperator(userId)){
 				room.deleteUserFromOperators(userId);	//처음에는 owner는 owner역할만 하지만, 첫 owner가 나갈 때  새로  들어오는  newOwner는 중복일 수  있음
+				io.to(roomname).emit("sendCurrRoomInfo", this.makeCurrRoomInfo(roomname));
+			}
 			console.log("userLeaveRoom : enter --------------------------------------------4")
 			thisUser.joinlist.delete(roomname);
 			room.deleteUserFromUserlist(userId);
-			const body = `Good bye ${thisUser.nickname}`
-			io.to(roomname).emit("sendMessage", body);
-			room.messages.push(new Message(-1, body));
+			const body = `Good bye ${thisUser.nickname}`;
+			const msg = new Message(-1, body);
+			io.to(roomname).emit("sendMessage", roomname, {
+				from : "Server",
+				body : body,
+				at : msg.at
+			});
+			room.messages.push(msg);
 			//해당방의 모든 소켓을 모아서, 소켓 유저아이디로 유저 객체에 접근 -> currRoom을 확인하고 보내기 vs 클라이언트가 처리하기
 			io.to(roomname).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
 			console.log("userLeaveRoom : enter --------------------------------------------5")
@@ -458,6 +468,8 @@ export class ChatService {
 		else {
 			(thisUser.addUserToBlocklist(targetId));
 			client.emit("sendAlert", "Notice", `Successfully block ${target}`);
+			// client.emit("updateBlocklist", target);
+			// client.emit("sendRoomMembers", )	//꼭 다시 보내줘야 하는지...?
 		}
 	}
 
