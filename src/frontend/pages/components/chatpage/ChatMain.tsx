@@ -6,12 +6,16 @@ import ChatFooter from "./ChatFooter";
 
 import { SocketContext } from "../../../context/socket";
 const ChatMain = ({
+  roomInfo,
+  setRoomInfo,
   currentRoomName,
   setcurrentRoomName,
   myNickName,
   messages,
   setMessages,
 }: {
+  roomInfo: any;
+  setRoomInfo: any;
   currentRoomName: string;
   setcurrentRoomName: any;
   myNickName: string;
@@ -22,7 +26,7 @@ const ChatMain = ({
   const [typingStatus, setTypingStatus] = useState("");
   const [isDM, setIsDM] = useState<boolean>(false);
   const [DMtarget, setDMtarget] = useState<string>("");
-  const [roomInfo, setRoomInfo] = useState<any>(null);
+
   const [roomState, setRoomState] = useState<string>("");
   const lastMessageRef = useRef<null | HTMLElement>(null);
   const socket = useContext(SocketContext);

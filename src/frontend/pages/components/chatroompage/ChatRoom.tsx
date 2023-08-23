@@ -4,10 +4,14 @@ import { useEffect, useState } from "react";
 const pageHeight = 8;
 export default function ChatRoomUser({
   users,
+  roomInfo,
+  setRoomInfo,
   roomname,
   myNickName,
 }: {
   users: any;
+  roomInfo: any;
+  setRoomInfo: any;
   roomname: string;
   myNickName: string;
 }) {
@@ -68,6 +72,8 @@ export default function ChatRoomUser({
                 user={user}
                 key={i}
                 num={i}
+                roomInfo={roomInfo}
+                setRoomInfo={setRoomInfo}
                 roomname={roomname}
                 myNickName={myNickName}
               />

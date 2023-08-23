@@ -33,6 +33,7 @@ const ChatHeader = ({
     if (chkAuth) {
       console.log("비번 바꾸기 가능");
       socket.emit("setRoomPass", currentRoomName, value);
+      socket.emit("setRoomPublic", currentRoomName);
       setRoomState("Public");
     }
     setPassword("");

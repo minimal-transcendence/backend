@@ -7,11 +7,15 @@ import Image from "next/image";
 export default function ChatRoomUserInfo({
   user,
   num,
+  roomInfo,
+  setRoomInfo,
   roomname,
   myNickName,
 }: {
   user: any;
   num: number;
+  roomInfo: any;
+  setRoomInfo: any;
   roomname: string;
   myNickName: string;
 }) {
@@ -63,7 +67,10 @@ export default function ChatRoomUserInfo({
         />
       </div>
       <p className="userlist-username">
-        {user?.nickname} {user?.nickname === myNickName ? "🎆" : ""}
+        {roomInfo?.owner === user?.nickname ? "🔱" : ""}
+        {roomInfo?.operators.includes(user?.nickname) ? "⚜️" : ""}{" "}
+        {user?.nickname}
+        {user?.nickname === myNickName ? "🎆" : ""}
       </p>
       <div className="userlist-KBOM-box">
         <div className="dropdown">

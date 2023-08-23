@@ -50,7 +50,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [messages, setMessages] = useState<any>("");
-
+  const [roomInfo, setRoomInfo] = useState<any>(null);
   useEffect(
     function () {
       function chkLogin() {
@@ -86,7 +86,7 @@ export default function App() {
     function sendMessage(roomname: string, data: any) {
       console.log(
         `in useEffect sendMessage ??111  from<${
-          data.from
+          data?.from
         }> roomname<${roomname}> body<${JSON.stringify(
           data,
           null,
@@ -219,6 +219,8 @@ export default function App() {
               }
             </Box>
             <ChatMain
+              roomInfo={roomInfo}
+              setRoomInfo={setRoomInfo}
               messages={messages}
               setMessages={setMessages}
               currentRoomName={currentRoomName}
@@ -228,6 +230,8 @@ export default function App() {
             <Box>
               <>
                 <ChatRoomUser
+                  roomInfo={roomInfo}
+                  setRoomInfo={setRoomInfo}
                   users={roomUserList}
                   roomname={currentRoomName}
                   myNickName={tmpLoginnickname}
