@@ -13,7 +13,7 @@ const ChatMain = ({
   myNickName,
   messages,
   setMessages,
-  blocklist
+  blocklist,
 }: {
   roomInfo: any;
   setRoomInfo: any;
@@ -22,7 +22,7 @@ const ChatMain = ({
   myNickName: string;
   messages: any;
   setMessages: any;
-  blocklist : string[];
+  blocklist: string[];
 }) => {
   const [textareaValue, setTextareaValue] = useState("");
   const [typingStatus, setTypingStatus] = useState("");
@@ -45,20 +45,8 @@ const ChatMain = ({
       );
       setRoomInfo(() => result);
       setcurrentRoomName(() => result.roomname);
-	  const filteredMessage : any[] = [];
-	  console.log("messages1 : " + JSON.stringify(result.messages));
-	  function filter(messages : any) {
-		console.log("messages : " + JSON.stringify(messages));
-		messages?.forEach((element : any) => {
-			console.log(element.from);
-			if (!blocklist.find((b) => {
-				b === element.from
-			}))
-				filteredMessage.push(element);
-		});
-	  }
-	  filter(result.messages)
-      setMessages(() => filteredMessage);
+
+      setMessages(() => result.messages);
       setIsDM(() => false);
       setRoomState(() => (result?.isPrivate ? "Private" : "Public"));
     }
@@ -113,6 +101,7 @@ const ChatMain = ({
 
       <div className="chat-message-main">
         <ChatBody
+          blocklist={blocklist}
           messages={messages}
           typingStatus={typingStatus}
           lastMessageRef={lastMessageRef}

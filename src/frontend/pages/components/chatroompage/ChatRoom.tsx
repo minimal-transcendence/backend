@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 const pageHeight = 8;
 export default function ChatRoomUser({
   users,
+  blocklist,
   roomInfo,
   setRoomInfo,
   roomname,
   myNickName,
 }: {
   users: any;
+  blocklist: any;
   roomInfo: any;
   setRoomInfo: any;
   roomname: string;
@@ -21,12 +23,25 @@ export default function ChatRoomUser({
   const [leftArrow, setLeftArrow] = useState<boolean>(false);
   const [rightArrow, setRightArrow] = useState<boolean>(false);
 
+  const filtered: string[] = [];
+  users?.forEach((user: any) => {
+    console.log("blocklist in user : " + JSON.stringify(blocklist));
+    console.log("user ", JSON.stringify(user, null, 2));
+    if (
+      !blocklist.find((b: string) => {
+        return b === user["nickname"];
+      })
+    )
+      filtered.push(user);
+  });
+  console.log("filtered : " + JSON.stringify(filtered));
+
   useEffect(
     function () {
       function a() {
-        if (users?.length > page * pageHeight) setRightArrow(() => true);
+        if (filtered?.length > page * pageHeight) setRightArrow(() => true);
         if (page > 1) setLeftArrow(() => true);
-        if (users?.length <= page * pageHeight) setRightArrow(() => false);
+        if (filtered?.length <= page * pageHeight) setRightArrow(() => false);
         if (page === 1) setLeftArrow(() => false);
       }
       a();
@@ -36,15 +51,15 @@ export default function ChatRoomUser({
   if (!users || !roomname) return;
   else {
     let tmpUsers;
-    if (users.length <= pageHeight) {
-      console.log(`users length if가 ${users.length}이므로 1페이지 미만.`);
-      tmpUsers = users;
+    if (filtered.length <= pageHeight) {
+      console.log(`users length if가 ${filtered.length}이므로 1페이지 미만.`);
+      tmpUsers = filtered;
     } else {
       console.log(`users length가 ${users.length}이므로 1페이지 이상가능.`);
 
       console.log(`현재 페이지는 ${page}이므로, `);
       const startIndex = (page - 1) * pageHeight;
-      tmpUsers = users.slice(startIndex, startIndex + 8);
+      tmpUsers = filtered.slice(startIndex, startIndex + 8);
     }
     return (
       <>

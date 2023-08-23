@@ -74,23 +74,21 @@ export default function App() {
   );
 
   useEffect(() => {
+    function sendBlocklist(blocklist: string[]) {
+      console.log("sendBlocklist update + " + JSON.stringify(blocklist));
+      setBlocklist(() => blocklist);
+    }
+    function updateBlocklist(target: string) {
+      console.log("updateBlocklist update");
+      setBlocklist(() => [...blocklist, target]);
+    }
     function sendRoomMembers(result: any) {
       console.log(
         "in useEffect sendRoomMembers zzzzz",
         JSON.stringify(result, null, 2)
       );
-      const filtered: string[] = [];
-      result?.forEach((element: any) => {
-        console.log("blocklist in user : " + JSON.stringify(blocklist));
-        if (
-          !blocklist.find((b: string) => {
-            b === element["nickname"];
-          })
-        )
-          filtered.push(element);
-      });
-      console.log("filtered : " + JSON.stringify(filtered));
-      setRoomUserList(() => filtered);
+
+      setRoomUserList(() => result);
       setLeftHeader(() => "joined");
       // setcurrentRoomName(() => result[0].roomname);
       setQuery("");
@@ -162,15 +160,9 @@ export default function App() {
         JSON.stringify(alertBody, null, 2)
       );
     }
-    function sendBlocklist(blocklist: string[]) {
-      console.log("sendBlocklist update + " + JSON.stringify(blocklist));
-      setBlocklist(() => blocklist);
-    }
-    function updateBlocklist(target: string) {
-      console.log("updateBlocklist update");
-      setBlocklist(() => [...blocklist, target]);
-    }
 
+    socket.on("sendBlocklist", sendBlocklist);
+    socket.on("updateBlocklist", updateBlocklist);
     socket.on("youAreKickedOut", youAreKickedOut);
     socket.on("youAreBanned", youAreBanned);
     socket.on("wrongPassword", wrongPassword);
@@ -178,10 +170,10 @@ export default function App() {
     socket.on("sendDM", sendDM);
     socket.on("sendMessage", sendMessage);
     socket.on("sendRoomMembers", sendRoomMembers);
-    socket.on("sendBlocklist", sendBlocklist);
-    socket.on("updateBlocklist", updateBlocklist);
 
     return () => {
+      socket.off("sendBlocklist", sendBlocklist);
+      socket.off("updateBlocklist", updateBlocklist);
       socket.off("youAreKickedOut", youAreKickedOut);
       socket.off("youAreBanned", youAreBanned);
       socket.off("wrongPassword", wrongPassword);
@@ -189,10 +181,8 @@ export default function App() {
       socket.off("sendMessage", sendMessage);
       socket.off("sendRoomMembers", sendRoomMembers);
       socket.off("sendDM", sendDM);
-      socket.off("sendBlocklist", sendBlocklist);
-      socket.off("updateBlocklist", updateBlocklist);
     };
-  }, [currentRoomName, results, messages, socket, blocklist]);
+  }, [currentRoomName, results, messages, socket]);
 
   return (
     <SocketContext.Provider value={socket}>
@@ -256,6 +246,7 @@ export default function App() {
             <Box>
               <>
                 <ChatRoomUser
+                  blocklist={blocklist}
                   roomInfo={roomInfo}
                   setRoomInfo={setRoomInfo}
                   users={roomUserList}

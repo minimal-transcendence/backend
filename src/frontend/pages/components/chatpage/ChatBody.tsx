@@ -4,29 +4,39 @@ import ysungwonIcon from "../../../assets/ysungwon.jpg";
 import Image from "next/image";
 const ChatBody = ({
   messages,
+  blocklist,
   typingStatus,
   lastMessageRef,
   myNickName,
 }: {
   messages: any;
+  blocklist: any;
   typingStatus: string;
   lastMessageRef: any;
   myNickName: string;
 }) => {
   const socket = useContext(SocketContext);
+
+  const filteredMessage: any[] = [];
+  console.log("messages1 : " + JSON.stringify(messages));
+  function filter(messages: any) {
+    console.log("messages : " + JSON.stringify(messages));
+    messages?.forEach((element: any) => {
+      console.log(element.from);
+      if (
+        !blocklist.find((b: any) => {
+          return b === element.from;
+        })
+      )
+        filteredMessage.push(element);
+    });
+  }
+
   if (messages?.length === 0) return;
-  // console.log(
-  //   `in body, messages length : ${messages.length} ${JSON.stringify(
-  //     messages,
-  //     null,
-  //     2
-  //   )}`
-  // );
-  // console.log("in body2 ", messages[0].from);
 
   return (
     <div className="chat-message-body">
-      {messages?.map((message: any, i: number) =>
+      {filteredMessage?.map((message: any, i: number) =>
         message["from"] === myNickName ? (
           <div
             className={`sender-${
