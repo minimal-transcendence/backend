@@ -3,6 +3,7 @@ import "./index.css";
 import * as io from "socket.io-client";
 import Pong from "@/srcs/Pong";
 import TempRandomMatch from "@/srcs/TempRandomMatch";
+import { setItems } from "@/srcs/SocketRefresh";
 
 const NO_SEARCH_RESULT_ERROR = "There is no room! : ";
 const NO_JOINNED_RESULT_ERROR = "No Joinned???! : ";
@@ -87,18 +88,7 @@ export default function App() {
   // });
 
   useEffect(() => {
-    // setUserId(() => localStorage.getItem("id"));
-    const item = localStorage.getItem("access_token");
-    if (item) {
-      setJwt(item);
-    }
-
-    const jwtExpItem = localStorage.getItem("access_token_exp");
-    if (jwtExpItem) {
-      console.log(jwtExpItem);
-      setJwtExp(jwtExpItem);
-    }
-
+	setItems(setJwt, setJwtExp);
     const nick = localStorage.getItem("nickname");
     if (nick) {
       setNickname(nick);
