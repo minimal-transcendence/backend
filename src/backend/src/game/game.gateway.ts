@@ -252,6 +252,7 @@ export class GameGateway
 
   @SubscribeMessage('oneOnOneApply')
   handleOneOnOneApply(client: GameSocket, payload: Invitation) {
+	console.log(payload.to);
     // Get By Nickname
     const toClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.to);
 
@@ -403,5 +404,70 @@ export class GameGateway
         break;
     }
   }
-  /*-----------------------------------------------------------*/
+  /*-----------------------Nickname Changed------------------------------*/
+  @SubscribeMessage('nicknameChanged')
+  handleNicknameChanged(client: GameSocket, nickname: string) {
+	const sockets = this.io.sockets;
+	const oldNickname = client.nickname;
+
+	/*
+	얕은 복사가 이뤄졌기 때문에 Invitation 객체가 수정되면 이 객체를 가지고 있는 다른 invitationList도 값이 변경됨.
+	=> 주소값을 공유하고 있는 형태
+	*/
+	client.invitationList.forEach((invit: Invitation) => {
+		if (invit.from === oldNickname) {
+			invit.from = nickname;
+		} else if (invit.to === oldNickname) {
+			invit.to = nickname;
+		}
+	});
+
+	// emit
+	sockets.forEach((socket: GameSocket) => {
+		socket.invitationList.forEach((invit: Invitation) => {
+			if (invit.from === nickname || invit.to === nickname) {
+				socket.emit('updateInvitationList', socket.invitationList);
+				return false;
+			}
+		});
+	});
+
+	// Set client's new nickname
+	console.log(`${client.nickname} is now ${nickname}`);
+	client.nickname = nickname;
+  }
+
+//   @SubscribeMessage('nicknameChanged')
+//   handleNicknameChanged(client: GameSocket, nickname: string) {
+// 	const sockets = this.io.sockets;
+// 	const oldNickname = client.nickname;
+
+// 	sockets.forEach((socket: GameSocket) => {
+// 		console.log("In loop", socket.nickname);
+// 		console.log("Invt List", socket.invitationList);
+// 		let listChanged = false;
+
+// 		socket.invitationList.forEach((invit: Invitation) => {
+// 			if (invit.from === oldNickname) {
+// 				console.log("In from", socket.nickname);
+// 				invit.from = nickname;
+// 				listChanged = true;
+// 			}
+// 			if (invit.to === oldNickname) {
+// 				console.log("In to", socket.nickname);
+// 				invit.to = nickname;
+// 				listChanged = true;
+// 			}
+// 		});
+
+// 		if (listChanged) {
+// 			socket.emit('updateInvitationList', socket.invitationList);
+// 			console.log("In emit", socket.nickname);
+// 		};
+// 	});
+
+// 	// Set client's new nickname
+// 	console.log(`${client.nickname} is now ${nickname}`);
+// 	client.nickname = nickname;
+//   }
 }

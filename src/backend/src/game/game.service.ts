@@ -147,13 +147,16 @@ export class GameService {
     }
   }
 
-  getSocketByNickname(io: Namespace, nickname: string): GameSocket | null {
-    io.sockets.forEach((e: any) => {
-      if (e.nickname === nickname) {
-        return e as GameSocket;
+  getSocketByNickname(io: Namespace, nickname: string): GameSocket {
+    let found: GameSocket;
+
+    io.sockets.forEach((socket: GameSocket) => {
+      if (socket.nickname === nickname) {
+        found = socket;
       }
-    })
-    return null;
+    });
+
+    return found;
   }
 
   objectsAreSame(x: Object, y: Object): boolean {
