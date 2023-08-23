@@ -221,11 +221,9 @@ export class GameGateway
     // check if user in the room
     this.gameServie.validatePlayerInRoom(client, room);
 
-    // if (client.userId === room.playerOne.userId) {
     if (client.id === room.player[0].id) {
       room.playerAccept[0] = true;
     }
-    // else if (client.userId === room.playerTwo.userId) {
     else if (client.id === room.player[1].id) {
       room.playerAccept[1] = true;
     }
@@ -257,45 +255,20 @@ export class GameGateway
     // Get By Nickname
     const toClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.to);
 
-    // Get By Id - TEST
-    // const toClient: GameSocket = this.io.sockets.get(payload.to);
-    // let toClient: GameSocket;
-
-    // this.io.sockets.forEach((e) => {
-    //   if (e.id === payload.to) {
-    //     toClient = e as GameSocket;
-    //   }
-    // })
-    ////////////////////////
-
     if (!toClient) {
       return `ERR no such user: ${payload.to}`;
     }
 
-    // Invitation (nickname)
-    const invitation: Invitation = {
-      from: client.nickname,
-      to: payload.to,
-      mode: payload.mode,
-    }
-
-    // Invitation (id) - TEST
-    // const invitation: GameListItem = {
-    //   from: client.id,
-    //   to: payload.to,
-    //   level: payload.level,
-    // }
-
     // 중복확인
     for (let e in client.invitationList) {
-      if (this.gameServie.objectsAreSame(client.invitationList[e], invitation)) {
+      if (this.gameServie.objectsAreSame(client.invitationList[e], payload)) {
         return `ERR aleady invite ${payload.to}`;
       }
     }
 
     // update list on each client
-    client.invitationList.push(invitation);
-    toClient.invitationList.push(invitation);
+    client.invitationList.push(payload);
+    toClient.invitationList.push(payload);
 
     // send invitation list
     client.emit('updateInvitationList', client.invitationList);
@@ -309,19 +282,14 @@ export class GameGateway
   handleOneOnOneAccept(client: GameSocket, payload: Invitation) {
     for (let e in client.invitationList) {
       if (client.invitationList[e].from === payload.from) {
+		// delete invitation from client
+		client.invitationList = client.invitationList.filter((item: Invitation) => 
+		!this.gameServie.objectsAreSame(item, payload));
+		// send invitation list to client
+		client.emit('updateInvitationList', client.invitationList);
+
         // Get By Nickname
         const fromClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.from);
-
-        // Get By Id - TEST
-        // const toClient: GameSocket = this.io.sockets.get(payload.to);
-        // let fromClient: GameSocket;
-
-        // this.io.sockets.forEach((e) => {
-        //   if (e.id === payload.from) {
-        //     fromClient = e as GameSocket;
-        //   }
-        // })
-        ////////////////////////
 
         if (!fromClient) {
           return `ERR no such user: ${payload.from}`;
@@ -348,29 +316,10 @@ export class GameGateway
 
         console.log("create game room:", roomName);
 
-        // Delete Invitations from each user
-
-        // Invitation (nickname)
-        const invitation: Invitation = {
-          from: fromClient.nickname,
-          to: client.nickname,
-          mode: payload.mode,
-        }
-
-        // Invitation (id) - TEST
-        // const invitation: GameListItem = {
-        //   from: fromClient.id,
-        //   to: client.id,
-        //   level: payload.level
-        // }
-
+        // Delete Invitations from fromClient
         fromClient.invitationList = fromClient.invitationList.filter((item: Invitation) => 
-          !this.gameServie.objectsAreSame(item, invitation));
-        client.invitationList = client.invitationList.filter((item: Invitation) => 
-          !this.gameServie.objectsAreSame(item, invitation));
-
-		// send invitation list
-		client.emit('updateInvitationList', client.invitationList);
+          !this.gameServie.objectsAreSame(item, payload));
+		// send invitation list to fromClient
 		fromClient.emit('updateInvitationList', fromClient.invitationList);
 
         // Ask Match Accept
