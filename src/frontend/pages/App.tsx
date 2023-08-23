@@ -51,6 +51,8 @@ export default function App() {
   const [error, setError] = useState<string>("");
   const [messages, setMessages] = useState<any>("");
   const [roomInfo, setRoomInfo] = useState<any>(null);
+  const [blocklist, setBlocklist] = useState<any>([]);
+
   useEffect(
     function () {
       function chkLogin() {
@@ -77,7 +79,18 @@ export default function App() {
         "in useEffect sendRoomMembers zzzzz",
         JSON.stringify(result, null, 2)
       );
-      setRoomUserList(() => result);
+      const filtered: string[] = [];
+      result?.forEach((element: any) => {
+        console.log("blocklist in user : " + JSON.stringify(blocklist));
+        if (
+          !blocklist.find((b: string) => {
+            b === element["nickname"];
+          })
+        )
+          filtered.push(element);
+      });
+      console.log("filtered : " + JSON.stringify(filtered));
+      setRoomUserList(() => filtered);
       setLeftHeader(() => "joined");
       // setcurrentRoomName(() => result[0].roomname);
       setQuery("");
@@ -149,6 +162,14 @@ export default function App() {
         JSON.stringify(alertBody, null, 2)
       );
     }
+    function sendBlocklist(blocklist: string[]) {
+      console.log("sendBlocklist update + " + JSON.stringify(blocklist));
+      setBlocklist(() => blocklist);
+    }
+    function updateBlocklist(target: string) {
+      console.log("updateBlocklist update");
+      setBlocklist(() => [...blocklist, target]);
+    }
 
     socket.on("youAreKickedOut", youAreKickedOut);
     socket.on("youAreBanned", youAreBanned);
@@ -157,6 +178,8 @@ export default function App() {
     socket.on("sendDM", sendDM);
     socket.on("sendMessage", sendMessage);
     socket.on("sendRoomMembers", sendRoomMembers);
+    socket.on("sendBlocklist", sendBlocklist);
+    socket.on("updateBlocklist", updateBlocklist);
 
     return () => {
       socket.off("youAreKickedOut", youAreKickedOut);
@@ -166,8 +189,10 @@ export default function App() {
       socket.off("sendMessage", sendMessage);
       socket.off("sendRoomMembers", sendRoomMembers);
       socket.off("sendDM", sendDM);
+      socket.off("sendBlocklist", sendBlocklist);
+      socket.off("updateBlocklist", updateBlocklist);
     };
-  }, [currentRoomName, results, messages, socket]);
+  }, [currentRoomName, results, messages, socket, blocklist]);
 
   return (
     <SocketContext.Provider value={socket}>
@@ -226,6 +251,7 @@ export default function App() {
               currentRoomName={currentRoomName}
               setcurrentRoomName={setcurrentRoomName}
               myNickName={tmpLoginnickname}
+              blocklist={blocklist}
             />
             <Box>
               <>
