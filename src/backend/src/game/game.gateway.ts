@@ -411,7 +411,7 @@ export class GameGateway
     }
   }
   /*-----------------------Nickname Changed------------------------------*/
-  @SubscribeMessage('nicknameChanged')
+  @SubscribeMessage('changeNick')
   handleNicknameChanged(client: GameSocket, nickname: string) {
 	const sockets = this.io.sockets;
 	const oldNickname = client.nickname;
