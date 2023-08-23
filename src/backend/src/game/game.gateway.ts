@@ -16,6 +16,7 @@ import {
 } from './types';
 import { GameRoom } from './GameRoom';
 import { GameService } from './game.service';
+import { MatchService } from 'src/match/match.service';
 
 // let readyPlayerCount: number = 0;
 
@@ -35,7 +36,10 @@ export class GameGateway
 	}
 	private gameRooms = {};
 
-	constructor(private gameServie: GameService){}
+	constructor(
+		private gameService: GameService,
+		private matchService: MatchService
+	){}
 
 	@WebSocketServer()
 	io : Namespace;
@@ -50,12 +54,15 @@ export class GameGateway
 				if (this.gameRooms[e].gameOver) {
 				const room: GameRoom = this.gameRooms[e];
 				if (room.gameStart) {
-					// todo - Save Game Result in DB
-
+					// Save Game Result in DB
+					this.matchService.createMatchHistory({
+						winnerId: parseInt(room.winner.userId),
+						loserId: parseInt(room.loser.userId)
+					})
 					this.io.to(e).emit('gameOver', {
 					roomName: e,
-					winner: room.winner,
-					loser: room.loser
+					winner: room.winner.nickname,
+					loser: room.loser.nickname
 					});
 				}
 
@@ -98,13 +105,12 @@ export class GameGateway
 						// Stop Inteval
 						clearInterval(room.interval);
 						// Set winner
-						const winner: GameSocket = client === room.player[0] ? room.player[1] : room.player[0];
-						room.winner = winner.nickname;
-						room.loser = client.nickname
+						room.winner = client === room.player[0] ? room.player[1] : room.player[0];
+						room.loser = client;
 
 						console.log("-----Game Over-----");
-						console.log("Winner:", room.winner);
-						console.log("Loser:", room.loser);
+						console.log("Winner:", room.winner.nickname);
+						console.log("Loser:", room.loser.nickname);
 						console.log("-------Score-------");
 						console.log(`${room.playerScore[0]} - ${room.player[0].id}`);
 						console.log(`${room.playerScore[1]} - ${room.player[1].id}`);
@@ -219,7 +225,7 @@ export class GameGateway
     let room: GameRoom = this.gameRooms[roomName];
 
     // check if user in the room
-    this.gameServie.validatePlayerInRoom(client, room);
+    this.gameService.validatePlayerInRoom(client, room);
 
     if (client.id === room.player[0].id) {
       room.playerAccept[0] = true;
@@ -230,7 +236,7 @@ export class GameGateway
 
     // Start Game
     if (room.playerAccept[0] && room.playerAccept[1]) {
-      this.gameServie.startGame(this.io, room);
+      this.gameService.startGame(this.io, room);
     };
     
   }
@@ -238,7 +244,7 @@ export class GameGateway
   @SubscribeMessage('matchDecline')
   handleDecline(client: GameSocket, roomName:string) {
     // check if user in the room
-    this.gameServie.validatePlayerInRoom(client, this.gameRooms[roomName]);
+    this.gameService.validatePlayerInRoom(client, this.gameRooms[roomName]);
 
     this.gameRooms[roomName].player[0].inGame = false;
     this.gameRooms[roomName].player[1].inGame = false;
@@ -254,7 +260,7 @@ export class GameGateway
   handleOneOnOneApply(client: GameSocket, payload: Invitation) {
 	console.log(payload.to);
     // Get By Nickname
-    const toClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.to);
+    const toClient: GameSocket = this.gameService.getSocketByNickname(this.io, payload.to);
 
     if (!toClient) {
       return `ERR no such user: ${payload.to}`;
@@ -262,7 +268,7 @@ export class GameGateway
 
     // 중복확인
     for (let e in client.invitationList) {
-      if (this.gameServie.objectsAreSame(client.invitationList[e], payload)) {
+      if (this.gameService.objectsAreSame(client.invitationList[e], payload)) {
         return `ERR aleady invite ${payload.to}`;
       }
     }
@@ -285,12 +291,12 @@ export class GameGateway
       if (client.invitationList[e].from === payload.from) {
 		// delete invitation from client
 		client.invitationList = client.invitationList.filter((item: Invitation) => 
-		!this.gameServie.objectsAreSame(item, payload));
+		!this.gameService.objectsAreSame(item, payload));
 		// send invitation list to client
 		client.emit('updateInvitationList', client.invitationList);
 
         // Get By Nickname
-        const fromClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.from);
+        const fromClient: GameSocket = this.gameService.getSocketByNickname(this.io, payload.from);
 
         if (!fromClient) {
           return `ERR no such user: ${payload.from}`;
@@ -319,7 +325,7 @@ export class GameGateway
 
         // Delete Invitations from fromClient
         fromClient.invitationList = fromClient.invitationList.filter((item: Invitation) => 
-          !this.gameServie.objectsAreSame(item, payload));
+          !this.gameService.objectsAreSame(item, payload));
 		// send invitation list to fromClient
 		fromClient.emit('updateInvitationList', fromClient.invitationList);
 
@@ -343,16 +349,16 @@ export class GameGateway
   handleOneOnOneDecline(client: GameSocket, payload: Invitation) {
 	// delete invitation from client
 	client.invitationList = client.invitationList.filter((item: Invitation) => 
-		!this.gameServie.objectsAreSame(item, payload));
+		!this.gameService.objectsAreSame(item, payload));
 	// emit updated list
 	client.emit('updateInvitationList', client.invitationList);
 
 	// Get another player socket by nickname
-    const fromClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.to);
+    const fromClient: GameSocket = this.gameService.getSocketByNickname(this.io, payload.to);
 	if (fromClient) {
 		// delete invitation from client
 		fromClient.invitationList = fromClient.invitationList.filter((item: Invitation) => 
-		!this.gameServie.objectsAreSame(item, payload));
+		!this.gameService.objectsAreSame(item, payload));
 		// emit updated list
 		fromClient.emit('updateInvitationList', fromClient.invitationList);
 	}
@@ -369,7 +375,7 @@ export class GameGateway
     }
 
     // check if user in the room
-    this.gameServie.validatePlayerInRoom(client, this.gameRooms[payload.roomName]);
+    this.gameService.validatePlayerInRoom(client, this.gameRooms[payload.roomName]);
 
     let room = this.gameRooms[payload.roomName];
 

@@ -45,7 +45,6 @@ const createJwtMiddleware = (jwtService: JwtService, logger: Logger) =>
         socket.userId = payload.id;
         socket.email = payload.email;
         socket.nickname = nickname;
-        // socket.inGame = false;
         next();
     } catch {
         next(new Error('FORBIDDEN'));

@@ -87,12 +87,12 @@ export class GameService {
         // Game Over
         if (room.playerScore[1] >= 3) {
           clearInterval(room.interval);
-          room.winner = room.player[1].nickname;
-          room.loser = room.player[0].nickname;
+          room.winner = room.player[1];
+          room.loser = room.player[0];
           room.gameOver = true;
           console.log("-----Game Over-----");
-          console.log("Winner:", room.winner);
-          console.log("Loser:", room.loser);
+          console.log("Winner:", room.winner.nickname);
+          console.log("Loser:", room.loser.nickname);
           console.log("-------Score-------");
           console.log(`${room.playerScore[0]} - ${room.player[0].nickname}`);
           console.log(`${room.playerScore[1]} - ${room.player[1].nickname}`);
@@ -127,12 +127,12 @@ export class GameService {
         // Game Over
         if (room.playerScore[0] >= 3) {
           clearInterval(room.interval);
-          room.winner = room.player[0].nickname;
-          room.loser = room.player[1].nickname;
+          room.winner = room.player[0];
+          room.loser = room.player[1];
           room.gameOver = true;
           console.log("-----Game Over-----");
-          console.log("Winner:", room.winner);
-          console.log("Loser:", room.loser);
+          console.log("Winner:", room.winner.nickname);
+          console.log("Loser:", room.loser.nickname);
           console.log("-------Score-------");
           console.log(`${room.playerScore[0]} - ${room.player[0].nickname}`);
           console.log(`${room.playerScore[1]} - ${room.player[1].nickname}`);

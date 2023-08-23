@@ -106,7 +106,7 @@ export class ChatGateway
 		this.logger.log(`Client Connected : ${client.id}`);
 		this.logger.debug(`Number of connected sockets: ${sockets.size}`)
 
-		this.io.emit('hello', `from ${client.userId} ${client.email}`);
+		// this.io.emit('hello', `from ${client.userId} ${client.email}`);
 
 		// const userId = client.handshake.auth.userID;	//근데 근본적으로 조작(?) 하면 이런 식으로 인증하는 의미가 없다
 						//최종적으로는 jwtToken으로 connection도 guard해야됨

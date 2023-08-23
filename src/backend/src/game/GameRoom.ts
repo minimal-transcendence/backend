@@ -37,8 +37,10 @@ export class GameRoom {
     defaultSpeedY: number;
 
     // Game Result
-    winner: string; // winners nickname
-    loser: string;
+    // winner: string; // winners nickname
+    // loser: string;
+    winner: GameSocket;
+    loser: GameSocket;
     // Score
     playerScore: number[];
 
@@ -99,10 +101,5 @@ export class GameRoom {
         this.speedX = 0;
 
         this.maxSpeedX = this.canvasWidth / 150
-        
-
-        // Game Result
-        this.winner =  ""; // winners nickname
-        this.loser = "";
     }
 }

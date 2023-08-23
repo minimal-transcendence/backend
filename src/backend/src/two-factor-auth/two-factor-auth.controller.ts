@@ -63,7 +63,6 @@ export class TwoFactorAuthController {
         return res.send({
             message: 'new jwt generated',
             access_token: access_token,
-            access_token_exp: process.env.JWT_ACCESS_EXPIRATION_TIME,
         });
     }
 

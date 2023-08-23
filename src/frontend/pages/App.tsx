@@ -57,6 +57,9 @@ export default function App() {
   => 컴포넌트를 나눠서 렌더링 하도록 해야할 듯 (<SearchBar/>, <Chat/>)
   */
   const socket = io.connect("http://localhost/chat", {
+    query: {
+      "nickname": nickname,
+    },
     auth: {
       token: jwt,
     },

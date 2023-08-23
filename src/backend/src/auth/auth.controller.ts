@@ -68,8 +68,7 @@ export class AuthController {
             email: user.email,
             nickname: user.nickname,
             is2faEnabled: false,
-            access_token: access_token,
-            access_token_exp: process.env.JWT_ACCESS_EXPIRATION_TIME,
+            access_token: access_token
         });
     }
 
