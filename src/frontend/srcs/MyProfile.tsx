@@ -81,7 +81,7 @@ function MyProfile() {
 				setImageUrl(null);
 				setSelectedFile(null);
 				alert("프로필 사진이 변경되었습니다");
-			} 
+			}
 			catch (error) {
 			console.error('Error uploading image:', error);
 			alert("에러 발생 :" + error);
@@ -153,61 +153,55 @@ function MyProfile() {
 
 	return (
 			<div>
-				<>
+				<div>
+				<h2>내 프로필</h2>
+				{avatarURL && (
+					<img src={avatarURL} width="100" height = "100" ></img>
+				)}
+				</div>
+				<div>
+					닉네임
+					<br/>
+					{userNickname !== null ?
+					(<input placeholder={userNickname} type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)
+					:
+					(<input type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)}
+				</div>
+				<div>
+					프로필 사진
+					<br/>
+					<input type="file" accept='image/*' onChange={handleFileChange}></input>
+					<br/>
+					{imageUrl && <img src={imageUrl} alt="profile image" width="100" height = "100" />}
+				</div>
+				<div>
+					2차인증 여부
+					<br/>
+						<input
+						type="checkbox"
+						checked={checkIs2Fa}
+						onChange={() => setCheckIs2Fa(!checkIs2Fa)}
+						/>
+						<span className="slider"></span>
 					<div>
-						<h2>내 프로필</h2>
-						{avatarURL && (
-							<img src={avatarURL} width="100" height = "100" ></img>
-						)}
-						<div>
-							<div>
-								<div>
-								닉네임
-								<br/>
-								{userNickname !== null ?
-								(<input placeholder={userNickname} type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)
-								:
-								(<input type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)}
-								</div>
-								<div>
-									프로필 사진
-									<br/>
-									<input type="file" accept='image/*' onChange={handleFileChange}></input>
-									<br/>
-									{imageUrl && <img src={imageUrl} alt="profile image" width="100" height = "100" />}
-								</div>
-								<div>
-									2차인증 여부
-									<br/>
-										<input
-										type="checkbox"
-										checked={checkIs2Fa}
-										onChange={() => setCheckIs2Fa(!checkIs2Fa)}
-										/>
-										<span className="slider"></span>
-									<div>
-										<img
-										src='http://localhost/api/2fa/qrcode'
-										alt="qr image"
-										width="100"
-										height="100"
-										onError={(e: React.SyntheticEvent<HTMLImageElement>) => e.currentTarget.style.display = 'none'}
-										/>
-									</div>
-									<div>
-										{(is2Fa === 'true' && checkIs2Fa === false || is2Fa === 'false' && checkIs2Fa === true) && (
-											<span>변경사항 적용을 위해 OTP코드를 입력하세요</span>
-										)}
-									</div>
-									<div>
-										<input placeholder="띄워쓰기 제외한 6자리" type="text" value={verCode} onChange={(e) => setVerCode(e.target.value)} />
-									</div>
-								</div>
-								<button onClick={fixProfile}>저장</button>
-							</div>
-						</div>
+						<img
+						src='http://localhost/api/2fa/qrcode'
+						alt="qr image"
+						width="100"
+						height="100"
+						onError={(e: React.SyntheticEvent<HTMLImageElement>) => e.currentTarget.style.display = 'none'}
+						/>
 					</div>
-				</>
+					<div>
+						{(is2Fa === 'true' && checkIs2Fa === false || is2Fa === 'false' && checkIs2Fa === true) && (
+							<span>변경사항 적용을 위해 OTP코드를 입력하세요</span>
+						)}
+					</div>
+					<div>
+						<input placeholder="띄워쓰기 제외한 6자리" type="text" value={verCode} onChange={(e) => setVerCode(e.target.value)} />
+					</div>
+				</div>
+				<button onClick={fixProfile}>저장</button>
 			</div>
 	)}
 
