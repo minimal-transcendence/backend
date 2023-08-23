@@ -1,6 +1,10 @@
-import { useEffect, useState, useLayoutEffect } from "react";
-
+import { useEffect, useState, createContext, useLayoutEffect } from "react";
+import "./index.css";
 import * as io from "socket.io-client";
+import Pong from "@/srcs/Pong";
+import TempRandomMatch from "@/srcs/TempRandomMatch";
+import { setItems } from "@/srcs/SocketRefresh";
+
 import ModalBasic from "./modal";
 
 import TempLogin from "./tempLogin";
@@ -10,20 +14,27 @@ import userIcon from "../assets/user.png";
 import searchIcon from "../assets/search.png";
 import ysungwonIcon from "../assets/ysungwon.jpg";
 import Image from "next/image";
-const socket = io.connect("http://localhost:3002", {
+const socket = io.connect("http://localhost/chat", {
   query: {
     id: 1234,
     nickname: "namkim",
   },
   autoConnect: false,
 });
-// socket.on("welcomeMessage", (message) => {
-//   console.log(`i got message : ${message}`);
-// });
+socket.on("welcomeMessage", (message) => {
+  console.log(`i got message : ${message}`);
+});
 
 const NO_SEARCH_RESULT_ERROR = "There is no room! : ";
 const NO_JOINNED_RESULT_ERROR = "No Joinned???! : ";
 let CLIENTNAME: string;
+
+export type AppContent = {
+  gameSocket: any;
+}
+export const AppContext = createContext<AppContent>({
+  gameSocket: null,
+});
 
 export type UserOnChat = {
   id: string;
@@ -46,6 +57,15 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
   const [curOpen, setCurOpen] = useState<number>(-1);
+  // const [userId, setUserId] = useState<any>(null);
+  const [jwt, setJwt] = useState<string>('');
+  const [jwtExp, setJwtExp] = useState<string>('');
+  const [nickname, setNickname] = useState<string>('');
+  const [gameCanvas, setGameCanvas] = useState<boolean>(false);
+
+  // const [socket, setSocket] = useState<any>();
+
+  // isLoading;
   const [roomUserList, setRoomUserList] = useState<any>(null);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isOpenModal3, setIsOpenModal3] = useState(false);
@@ -58,6 +78,10 @@ export default function App() {
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [leftHeader, setLeftHeader] = useState<string>("");
 
+  const handleGameCanvas = () => {
+    setGameCanvas(!gameCanvas);
+  }
+
   function handleSelectRoom(event: any, room: any) {
     setSelectedRoom(room);
     setroomnameModal(room.roomname);
@@ -68,6 +92,37 @@ export default function App() {
 
     setRoomUserList(null);
   }
+
+  // ERR - 렌더링 될 때마다 계속 소켓을 생성함
+  /*
+  검색 Input에 의해 App컴포넌트가 리렌더링 될 때마다 소켓 생성
+  => 컴포넌트를 나눠서 렌더링 하도록 해야할 듯 (<SearchBar/>, <Chat/>)
+  */
+  const socket = io.connect("http://localhost/chat", {
+    query: {
+      "nickname": nickname,
+    },
+    auth: {
+      token: jwt,
+    },
+  });
+
+  const gameSocket = io.connect("http://localhost/game", {
+    query: {
+      "nickname": nickname,
+    },
+    auth: {
+      token: jwt,
+    },
+  });
+
+  useEffect(() => {
+	  setItems(setJwt, setJwtExp);
+    const nick = localStorage.getItem("nickname");
+    if (nick) {
+      setNickname(nick);
+    }
+  }, [])
 
   useEffect(
     function () {
@@ -219,6 +274,9 @@ export default function App() {
       <NavBar query={query} setQuery={setQuery} />
       <Main>
         <Box>
+          <button onClick={handleGameCanvas}>
+            게임 on/off
+          </button>
           {
             <SearchList
               results={results}
@@ -230,11 +288,15 @@ export default function App() {
             />
           }
         </Box>
-        <CenterBox
+        {gameCanvas ?
+        (<AppContext.Provider value={{gameSocket: gameSocket}}>
+        <Pong/>
+        </AppContext.Provider>) :
+        (<CenterBox
           currentroomname={currentroomname}
           tmpLoginID={tmpLoginID}
           tmpLoginnickname={tmpLoginnickname}
-        />
+        />)}
         <Box>
           <ChatRoomUser
             curOpen={curOpen}
@@ -634,8 +696,10 @@ function ChatRoomUserInfo({
         `${tmpLoginnickname}가 ${user.nickname}를 ${roomname}에서 ${event.target.dataset.name}클릭!!!`
       );
       const targetnickname = user.nickname;
-      if (event.target.dataset.name === "kick")
-        socket.emit("kickUser", roomname, targetnickname);
+      if (event.target.dataset.name === "kick"){
+		console.log("target nickname : " + targetnickname);  
+		socket.emit("kickUser", roomname, targetnickname);
+	  }
       else if (event.target.dataset.name === "ban")
         socket.emit("banUser", roomname, targetnickname);
       else if (event.target.dataset.name === "mute")

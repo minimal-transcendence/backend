@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Socket } from 'socket.io';
 import { Message } from './store.message.service';
 
 console.log('tt');
@@ -162,7 +161,7 @@ export class ChatRoomStoreService implements RoomStore{
 	}
 
 	//
-	findQueryMatchRoomNames(query : string) : string[] {
+	findQueryMatchRoomNames(query : string | null) : string[] {
 		const res = [];
 		this.rooms.forEach((_, key) => {
 			if (key.includes(query)){

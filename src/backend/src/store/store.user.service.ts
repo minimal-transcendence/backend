@@ -99,11 +99,7 @@ export class ChatUserStoreService implements UserStore{
 
 	//TODO: 이건 안되면 through를 해야하나...?
 	getIdByNickname(nickname : string) : number {
-		this.findAllUser().forEach((user) => {
-			if (user.nickname === nickname){
-				return (user.id);
-			}
-		})
-		return (-1);	//Error_code?	//전역 상수 어떻게 정의?	//number를 undefined로 할 수 있냐구...?ㅠㅠ
+		const res = this.findAllUser().find((user) => user.nickname === nickname);
+		return (res ? res.id : -1);	//Error_code?	//전역 상수 어떻게 정의?	//number를 undefined로 할 수 있냐구...?ㅠㅠ
 	}
 }

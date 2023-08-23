@@ -29,6 +29,9 @@ export class MatchService {
 				where : { id : data.winnerId },
 				data: { score: { increment: 1 } }
 			})
-		]);
+		]).catch((error) => {
+			console.log("failed to update matchhistory")
+			return { error : "failed to update matchhistory"};
+		});
 	}
 }

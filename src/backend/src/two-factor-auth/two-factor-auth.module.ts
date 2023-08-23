@@ -7,22 +7,11 @@ import { PrismaService } from 'src/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { JwtModule } from '@nestjs/jwt';
 import { HttpModule } from '@nestjs/axios';
-// import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     forwardRef(()=>AuthModule),
     HttpModule,
-    // JwtModule.registerAsync({
-    //   imports: [ConfigModule],
-    //   useFactory: async (configService: ConfigService) => ({
-    //       secret: configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
-    //       signOptions: {
-    //           expiresIn: configService.get<string>('JWT_ACCESS_EXPIRATION_TIME'),
-    //       },
-    //   }),
-    //   inject: [ConfigService],
-    // }),
     JwtModule.register({
       secret: process.env.JWT_ACCESS_TOKEN_SECRET,
       signOptions: {
@@ -31,7 +20,6 @@ import { HttpModule } from '@nestjs/axios';
     }),
   ],
   providers: [
-    // ConfigService,
     TwoFactorAuthService,
     AuthService,
 	UserService,
