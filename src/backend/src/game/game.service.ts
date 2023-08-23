@@ -24,6 +24,7 @@ export class GameService {
     // send game data for Init
       io.to(room.name).emit('startGame', {
       roomName: room.name,
+      player: [room.player[0].nickname, room.player[1].nickname],
       mode: room.mode,
       canvasWidth: room.canvasWidth,
       canvasHeight: room.canvasHeight,

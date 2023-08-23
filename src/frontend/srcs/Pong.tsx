@@ -7,7 +7,8 @@ import { AppContent, AppContext } from "@/pages/App";
 
 type StartGameData = {
   roomName: string;
-  level: number;
+  player: string[]
+  mode: string;
   canvasWidth: number;
   canvasHeight: number;
   paddleWidth: number;
@@ -71,9 +72,10 @@ export default function Pong() {
     let interval: any;
 
     let roomName: string;
-    let level: number;
+    let mode: string;
     let winner: string;
     let loser: string;
+    let player: string[];
 
     // Score
     let score: number[] = [0, 0];
@@ -130,8 +132,6 @@ export default function Pong() {
       context.fillText("Game Over", 10, (canvas.height / 2) - 290);
       context.fillText(`Winner: ${winner}`, 10, (canvas.height / 2) - 200);
       context.fillText(`Loser: ${loser}`, 10, (canvas.height / 2) - 110);
-      context.fillText(score[1].toString(), 10, (canvas.height / 2) - 20);
-      context.fillText(score[0].toString(), 10, (canvas.height / 2) + 70);
       // context.fill();
     }
 
@@ -166,8 +166,8 @@ export default function Pong() {
     const drawScore = () => {
       context.font = "70px serif";
       context.fillStyle = "grey";
-      context.fillText(score[1].toString(), 10, (canvas.height / 2) - 20);
-      context.fillText(score[0].toString(), 10, (canvas.height / 2) + 70);
+      context.fillText(`${player[1]}: ${score[1].toString()}`, 10, (canvas.height / 2) - 20);
+      context.fillText(`${player[0]}: ${score[0].toString()}`, 10, (canvas.height / 2) + 70);
     }
 
     // Draw All Context
@@ -189,7 +189,8 @@ export default function Pong() {
     socket.on("startGame", (payload: StartGameData) => {
       inGame = true;
       roomName = payload.roomName;
-      level = payload.level
+      player = payload.player;
+      mode = payload.mode,
       canvas.width = payload.canvasWidth;
       canvas.height = payload.canvasHeight;
       paddleWidth = payload.paddleWidth;

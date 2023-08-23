@@ -17,10 +17,10 @@ export default function TempRandomMatch() {
     })
 
     const handleRandom = () => {
-        // socket.emit('randomMatchApply');
+        socket.emit('randomMatchApply');
         // socket.emit('randomMatchApply', 'easy');
         // socket.emit('randomMatchApply', 'normal');
-        socket.emit('randomMatchApply', 'hard');
+        // socket.emit('randomMatchApply', 'hard');
         
     }
 
@@ -32,10 +32,17 @@ export default function TempRandomMatch() {
         socket.emit('matchDecline', `${roomName}`);
     }
 
+    const handleRandomCancel = () => {
+        socket.emit('randomMatchCancel');
+    }
+
     return (
         <div>
             <button onClick={handleRandom}>
                 랜덤매치
+            </button>
+            <button onClick={handleRandomCancel}>
+                랜덤매치취소
             </button>
             <button onClick={handleAccept}>
                 수락

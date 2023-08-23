@@ -1,6 +1,6 @@
 import { Socket } from "socket.io"
 
-export type GameListItem = {
+export type Invitation = {
     from: string;
     to: string;
     mode: string;
@@ -9,7 +9,7 @@ export type GameListItem = {
 type Player = {
     nickname: string;
     inGame: boolean;
-    gameList: GameListItem[];
+    invitationList: Invitation[];
 }
 
 type JwtPayload = {
@@ -22,15 +22,15 @@ export type KeydownPayload = {
     key: string;
 }
 
-export type OneOnOneInvite = {
-    to: string;
-    mode: string;
-}
+// export type OneOnOneInvite = {
+//     to: string;
+//     mode: string;
+// }
 
-export type OneOnOneAccept = {
-    from: string;
-    mode: string;
-}
+// export type OneOnOneAccept = {
+//     from: string;
+//     mode: string;
+// }
 
 export type GameRoomParams = {
     name: string;

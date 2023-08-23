@@ -1,22 +1,18 @@
-import { Logger, UseGuards, Req } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import {
 	ConnectedSocket,
-	// MessageBody,
 	OnGatewayConnection,
 	OnGatewayDisconnect,
 	OnGatewayInit,
 	SubscribeMessage,
-	// SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer,
 } from '@nestjs/websockets';
 import { Namespace } from 'socket.io';
-import { GameListItem,
-  GameSocket,
-  KeydownPayload,
-  OneOnOneInvite,
-  OneOnOneAccept,
-  // MatchStartCheckPayload
+import { 
+	Invitation,
+  	GameSocket,
+  	KeydownPayload
 } from './types';
 import { GameRoom } from './GameRoom';
 import { GameService } from './game.service';
@@ -25,101 +21,104 @@ import { GameService } from './game.service';
 
 @WebSocketGateway({
 	namespace: 'game',
-  pingTimeout: 2000,
-  pingInterval: 5000,
+	pingTimeout: 2000,
+	pingInterval: 5000,
 })
 export class GameGateway
-  implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
+	implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
 {
-  private readonly logger = new Logger(GameGateway.name);
-  private easyModeQueue: GameSocket[] = [];
-  private normalModeQueue: GameSocket[] = [];
-  private hardModeQueue: GameSocket[] = [];
-  private gameRooms = {};
+	private readonly logger = new Logger(GameGateway.name);
+	private randomMatchQueue = {
+		easy: [],
+		normal: [],
+		hard: []
+	}
+	private gameRooms = {};
 
-  constructor(private gameServie: GameService){}
+	constructor(private gameServie: GameService){}
 
-  @WebSocketServer() io : Namespace;
+	@WebSocketServer()
+	io : Namespace;
 
-  async afterInit(): Promise<void>{
+	afterInit(){
 		this.logger.log('GAME 웹소켓 서버 초기화 ✅');
 
-    // Monitoring finished Game - clear game room instance
-    setInterval(() => {
-      for (let e in this.gameRooms) {
-        console.log("GameRoom:", e);
-        if (this.gameRooms[e].gameOver) {
-          const room: GameRoom = this.gameRooms[e];
-          if (room.gameStart) {
-            // todo - Save Game Result in DB
+		// Monitoring finished Game - clear game room instance
+		setInterval(() => {
+			for (let e in this.gameRooms) {
+				console.log("GameRoom:", e);
+				if (this.gameRooms[e].gameOver) {
+				const room: GameRoom = this.gameRooms[e];
+				if (room.gameStart) {
+					// todo - Save Game Result in DB
 
-            this.io.to(e).emit('gameOver', {
-              roomName: e,
-              winner: room.winner,
-              loser: room.loser
-            });
-          }
+					this.io.to(e).emit('gameOver', {
+					roomName: e,
+					winner: room.winner,
+					loser: room.loser
+					});
+				}
 
-          // Set player status
-          if (room.player[0]) {
-            room.player[0].inGame = false;
-          }
-          if (room.player[1]) {
-            room.player[1].inGame = false;
-          }
+				// Set player status
+				if (room.player[0]) {
+					room.player[0].inGame = false;
+				}
+				if (room.player[1]) {
+					room.player[1].inGame = false;
+				}
 
-          // Delete GameRoom Instance
-          delete this.gameRooms[e];
-        }
-      }
-    }, 1500)
-  }
+				// Delete GameRoom Instance
+				delete this.gameRooms[e];
+				}
+			}
+		}, 1500)
+	}
 
-  async handleConnection(@ConnectedSocket() client: GameSocket, userId : string, ) {
+	handleConnection(@ConnectedSocket() client: GameSocket, userId : string, ) {
 
-    client.inGame = false;
-    client.gameList = [];
+		client.inGame = false;
+		client.invitationList = [];
 
-    const sockets = this.io.sockets;
+		const sockets = this.io.sockets;
 		this.logger.log(`Game Client Connected : ${client.nickname}`);
 		this.logger.debug(`Number of connected Game sockets: ${sockets.size}`)
   }
 
-  async handleDisconnect(@ConnectedSocket() client: GameSocket) {
-    // leave game
-    if (client.inGame) {
-      for (let e in this.gameRooms) {
-        const room: GameRoom = this.gameRooms[e];
-        // If client is in game
-        if (room.player[0] || room.player[1]) {
-          // Set Room Game Over - monitoring interval will emit/clean the room
-          room.gameOver = true;
-          // if started game
-          if (room.gameStart) {
-            // Stop Inteval
-            clearInterval(room.interval);
-            // Set winner
-            const winner: GameSocket = client === room.player[0] ? room.player[1] : room.player[0];
-            room.winner = winner.nickname;
-            room.loser = client.nickname
+	handleDisconnect(@ConnectedSocket() client: GameSocket) {
+		// leave game
+		if (client.inGame) {
+			for (let e in this.gameRooms) {
+				const room: GameRoom = this.gameRooms[e];
+				// If client is in game
+				if (room.player[0] || room.player[1]) {
+					// Set Room Game Over - monitoring interval will emit/clean the room
+					room.gameOver = true;
+					// if started game
+					if (room.gameStart) {
+						// Stop Inteval
+						clearInterval(room.interval);
+						// Set winner
+						const winner: GameSocket = client === room.player[0] ? room.player[1] : room.player[0];
+						room.winner = winner.nickname;
+						room.loser = client.nickname
 
-            console.log("-----Game Over-----");
-            console.log("Winner:", room.winner);
-            console.log("Loser:", room.loser);
-            console.log("-------Score-------");
-            console.log(`${room.playerScore[0]} - ${room.player[0].id}`);
-            console.log(`${room.playerScore[1]} - ${room.player[1].id}`);
-          } else {
-            this.io.to(room.name).emit('matchDecline', room.name);
-          }
-        }
-      }
-    }
+						console.log("-----Game Over-----");
+						console.log("Winner:", room.winner);
+						console.log("Loser:", room.loser);
+						console.log("-------Score-------");
+						console.log(`${room.playerScore[0]} - ${room.player[0].id}`);
+						console.log(`${room.playerScore[1]} - ${room.player[1].id}`);
+					} else {
+						this.io.to(room.name).emit('matchDecline', room.name);
+					}
+				}
+			}
+		}
 
-    const sockets = this.io.sockets;
-    this.logger.log(`Game Client Disconnected : ${client.nickname}`);
-    this.logger.debug(`Number of connected Game sockets: ${sockets.size}`)
-  }
+		const sockets = this.io.sockets;
+		this.logger.log(`Game Client Disconnected : ${client.nickname}`);
+		this.logger.debug(`Number of connected Game sockets: ${sockets.size}`)
+	}
 
   /*-------------Random Match-----------------------*/
 
@@ -131,66 +130,33 @@ export class GameGateway
       return;
     }
 
-    // set random match queue
-    let matchQueue: GameSocket[];
+	// if no matched mode, set default mode to normal
+	if (!mode || (mode !== "easy" && mode !== "normal" && mode !== "hard")) {
+		mode = "normal";
+		console.log(`mode set to default: ${mode}`);
+	}
 
-    switch(mode) {
-      case 'easy':
-        matchQueue = this.easyModeQueue;
-        break;
-      case 'hard':
-        matchQueue = this.hardModeQueue;
-        break;
-      default :
-        matchQueue =this.normalModeQueue;
-        break;
-    }
+    // set random match queue
+	let matchQueue: GameSocket[] = this.randomMatchQueue[mode];
 
     // remove duplication
     if (matchQueue.includes(client)) {
       return;
     }
 
-    // delete client from other random match queue
-    // switch(mode) {
-    //   case 'easy':
-    //     this.normalModeQueue =
-    //       this.normalModeQueue.filter(item => item !== client);
-    //     this.hardModeQueue =
-    //       this.hardModeQueue.filter(item => item !== client);
-    //     break;
-    //   case 'hard':
-    //     this.normalModeQueue =
-    //       this.normalModeQueue.filter(item => item !== client);
-    //     this.easyModeQueue =
-    //       this.easyModeQueue.filter(item => item !== client);
-    //     break;
-    //   default :
-    //     this.normalModeQueue =
-    //       this.normalModeQueue.filter(item => item !== client);
-    //     this.hardModeQueue =
-    //       this.hardModeQueue.filter(item => item !== client);
-    //     break;
-    
-    // delete client from other random match queue
-    const matchQueueList: GameSocket[][] = [
-      this.easyModeQueue,
-      this.normalModeQueue,
-      this.hardModeQueue
-    ];
-
-    matchQueueList.forEach((e) => {
-      if (e !== matchQueue) {
-        e.filter(item => item !== client);
-      }
-    })
+	// delete client from other random match queue
+	for (let e in this.randomMatchQueue) {
+		if (e !== mode) {
+			this.randomMatchQueue[e] = this.randomMatchQueue[e].filter(item => item !== client);
+		}
+	}
 
     // push client in queue
     matchQueue.push(client);
 
-    console.log(this.easyModeQueue.length);
-    console.log(this.normalModeQueue.length);
-    console.log(this.hardModeQueue.length);
+	console.log(this.randomMatchQueue["easy"].length);
+	console.log(this.randomMatchQueue["normal"].length);
+	console.log(this.randomMatchQueue["hard"].length);
 
     // More than 2 players in queue
     if (matchQueue.length >= 2) {
@@ -237,9 +203,13 @@ export class GameGateway
 
   @SubscribeMessage('randomMatchCancel')
   handleRandomMatchCancel(client: GameSocket) {
-    this.easyModeQueue = this.easyModeQueue.filter(item => item !== client);
-    this.normalModeQueue = this.normalModeQueue.filter(item => item !== client);
-    this.hardModeQueue = this.hardModeQueue.filter(item => item !== client);
+	for (const e in this.randomMatchQueue) {
+		this.randomMatchQueue[e] = this.randomMatchQueue[e].filter(item => item !== client);
+	}
+
+	console.log(this.randomMatchQueue["easy"].length);
+	console.log(this.randomMatchQueue["normal"].length);
+	console.log(this.randomMatchQueue["hard"].length);
   }
 
   /*-------------Match Accept-----------------------*/
@@ -283,9 +253,9 @@ export class GameGateway
   /*---------------------One on One-----------------------------------*/
 
   @SubscribeMessage('oneOnOneApply')
-  handleOneOnOneApply(client: GameSocket, payload: OneOnOneInvite) {
+  handleOneOnOneApply(client: GameSocket, payload: Invitation) {
     // Get By Nickname
-    let toClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.to);
+    const toClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.to);
 
     // Get By Id - TEST
     // const toClient: GameSocket = this.io.sockets.get(payload.to);
@@ -303,7 +273,7 @@ export class GameGateway
     }
 
     // Invitation (nickname)
-    const invitation: GameListItem = {
+    const invitation: Invitation = {
       from: client.nickname,
       to: payload.to,
       mode: payload.mode,
@@ -317,28 +287,28 @@ export class GameGateway
     // }
 
     // 중복확인
-    for (let e in client.gameList) {
-      if (this.gameServie.objectsAreSame(client.gameList[e], invitation)) {
+    for (let e in client.invitationList) {
+      if (this.gameServie.objectsAreSame(client.invitationList[e], invitation)) {
         return `ERR aleady invite ${payload.to}`;
       }
     }
 
     // update list on each client
-    client.gameList.push(invitation);
-    toClient.gameList.push(invitation);
+    client.invitationList.push(invitation);
+    toClient.invitationList.push(invitation);
 
     // send invitation list
-    client.emit('updateGameList', client.gameList);
-    toClient.emit('updateGameList', toClient.gameList);
+    client.emit('updateInvitationList', client.invitationList);
+    toClient.emit('updateInvitationList', toClient.invitationList);
 
-    console.log(`${client.nickname} - list size: ${client.gameList.length}`);
-    console.log(`${toClient.nickname} - list size: ${toClient.gameList.length}`);
+    console.log(`${client.nickname} - list size: ${client.invitationList.length}`);
+    console.log(`${toClient.nickname} - list size: ${toClient.invitationList.length}`);
   }
 
   @SubscribeMessage('oneOnOneAccept')
-  handleOneOnOneAccept(client: GameSocket, payload: OneOnOneAccept) {
-    for (let e in client.gameList) {
-      if (client.gameList[e].from === payload.from) {
+  handleOneOnOneAccept(client: GameSocket, payload: Invitation) {
+    for (let e in client.invitationList) {
+      if (client.invitationList[e].from === payload.from) {
         // Get By Nickname
         const fromClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.from);
 
@@ -381,7 +351,7 @@ export class GameGateway
         // Delete Invitations from each user
 
         // Invitation (nickname)
-        const invitation: GameListItem = {
+        const invitation: Invitation = {
           from: fromClient.nickname,
           to: client.nickname,
           mode: payload.mode,
@@ -394,9 +364,9 @@ export class GameGateway
         //   level: payload.level
         // }
 
-        fromClient.gameList = fromClient.gameList.filter((item: GameListItem) => 
+        fromClient.invitationList = fromClient.invitationList.filter((item: Invitation) => 
           !this.gameServie.objectsAreSame(item, invitation));
-        client.gameList = client.gameList.filter((item: GameListItem) => 
+        client.invitationList = client.invitationList.filter((item: Invitation) => 
           !this.gameServie.objectsAreSame(item, invitation));
 
         // Ask Match Accept
@@ -406,8 +376,8 @@ export class GameGateway
           mode: payload.mode
         });
 
-        console.log(`${fromClient.id} - list size: ${fromClient.gameList.length}`);
-        console.log(`${client.id} - list size: ${client.gameList.length}`);
+        console.log(`${fromClient.id} - list size: ${fromClient.invitationList.length}`);
+        console.log(`${client.id} - list size: ${client.invitationList.length}`);
         
         return;
       }
@@ -415,7 +385,24 @@ export class GameGateway
     return `ERR no invitation from ${payload.from}`;
   }
 
-  // @SubscribeMessage('oneOnOneDecline') - todo
+  @SubscribeMessage('oneOnOneDecline')
+  handleOneOnOneDecline(client: GameSocket, payload: Invitation) {
+	// delete invitation from client
+	client.invitationList = client.invitationList.filter((item: Invitation) => 
+		!this.gameServie.objectsAreSame(item, payload));
+	// emit updated list
+	client.emit('updateInvitationList', client.invitationList);
+
+	// Get another player socket by nickname
+    const fromClient: GameSocket = this.gameServie.getSocketByNickname(this.io, payload.to);
+	if (fromClient) {
+		// delete invitation from client
+		fromClient.invitationList = fromClient.invitationList.filter((item: Invitation) => 
+		!this.gameServie.objectsAreSame(item, payload));
+		// emit updated list
+		fromClient.emit('updateInvitationList', fromClient.invitationList);
+	}
+  }
 
   /*---------------------In Game--------------------------------------*/
 
