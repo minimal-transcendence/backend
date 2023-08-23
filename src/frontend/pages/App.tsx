@@ -38,6 +38,7 @@ export default function App() {
   const [curOpen, setCurOpen] = useState<number>(-1);
   // const [userId, setUserId] = useState<any>(null);
   const [jwt, setJwt] = useState<string>('');
+  const [jwtExp, setJwtExp] = useState<string>('');
   const [nickname, setNickname] = useState<string>('');
 
   // const [socket, setSocket] = useState<any>();
@@ -90,6 +91,12 @@ export default function App() {
     const item = localStorage.getItem("access_token");
     if (item) {
       setJwt(item);
+    }
+
+    const jwtExpItem = localStorage.getItem("access_token_exp");
+    if (jwtExpItem) {
+      console.log(jwtExpItem);
+      setJwtExp(jwtExpItem);
     }
 
     const nick = localStorage.getItem("nickname");

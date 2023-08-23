@@ -195,7 +195,7 @@ export class GameGateway
       // Ask Match Accept
       this.io.to(roomName).emit('matchStartCheck', {
         roomName: roomName,
-        playerNickname: [playerOne.nickname, playerTwo.nickname],
+        player: [playerOne.nickname, playerTwo.nickname],
         mode: mode
       });
     }
@@ -369,10 +369,14 @@ export class GameGateway
         client.invitationList = client.invitationList.filter((item: Invitation) => 
           !this.gameServie.objectsAreSame(item, invitation));
 
+		// send invitation list
+		client.emit('updateInvitationList', client.invitationList);
+		fromClient.emit('updateInvitationList', fromClient.invitationList);
+
         // Ask Match Accept
         this.io.to(roomName).emit('matchStartCheck', {
           roomName: roomName,
-          playerNickname: [fromClient.nickname, client.nickname],
+          player: [fromClient.nickname, client.nickname],
           mode: payload.mode
         });
 

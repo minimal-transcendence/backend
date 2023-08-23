@@ -1,5 +1,13 @@
 import { useEffect, useState, useContext } from "react";
 import { useRouter } from "next/router";
+import jwt_decode from "jwt-decode";
+
+type JwtPayload = {
+    id: number;
+    email: string;
+    iat: number;
+    exp: number;
+}
 
 function Callback() {
     const router = useRouter();
@@ -42,7 +50,9 @@ function Callback() {
         localStorage.setItem("nickname", data.nickname);
         localStorage.setItem("id", data.id);
         localStorage.setItem("access_token", data.access_token);
-        localStorage.setItem("access_token_exp", data.access_token_exp);
+        const jwtDecode = jwt_decode<JwtPayload>(data.access_token);
+        localStorage.setItem("access_token_exp", jwtDecode.exp.toString());
+        // localStorage.setItem("access_token_exp", data.access_token_exp);
         if (data.is2faEnabled === false) {
             localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('is2fa', 'false');
