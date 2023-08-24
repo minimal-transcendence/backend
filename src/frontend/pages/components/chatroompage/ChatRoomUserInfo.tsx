@@ -11,6 +11,7 @@ export default function ChatRoomUserInfo({
   setRoomInfo,
   roomname,
   myNickName,
+  id,
 }: {
   user: any;
   num: number;
@@ -18,8 +19,15 @@ export default function ChatRoomUserInfo({
   setRoomInfo: any;
   roomname: string;
   myNickName: string;
+  id: any;
 }) {
   const socket = useContext(SocketContext);
+
+  // async function getImgURL(id: string) {
+  //   const thisUser = await fetch("http://localhost/api/user/" + id);
+  //   const data = await thisUser.json();
+  //   console.log("/api/" + data.avatar);
+  // }
 
   function handleMenu(event: any) {
     if (event.target.dataset.name) {
@@ -53,7 +61,7 @@ export default function ChatRoomUserInfo({
       console.log("you click other");
     }
   }
-
+  // getImgURL(id);
   return (
     <li>
       <div className="userlist-avatar">

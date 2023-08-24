@@ -468,6 +468,11 @@ export class ChatService {
 		else {
 			(thisUser.addUserToBlocklist(targetId));
 			client.emit("sendAlert", "Notice", `Successfully block ${target}`);
+			const blocklist = [];
+			thisUser.blocklist.forEach((user) => 
+					blocklist.push(this.storeUser.getNicknameById(user)));
+			console.log(blocklist);
+			client.emit("sendBlocklist", blocklist);
 			// client.emit("updateBlocklist", target);
 			// client.emit("sendRoomMembers", )	//꼭 다시 보내줘야 하는지...?
 		}

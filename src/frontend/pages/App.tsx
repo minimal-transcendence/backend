@@ -49,7 +49,7 @@ export default function App() {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
-  const [messages, setMessages] = useState<any>("");
+  const [messages, setMessages] = useState<any>([]);
   const [roomInfo, setRoomInfo] = useState<any>(null);
   const [blocklist, setBlocklist] = useState<any>([]);
 
@@ -75,9 +75,9 @@ export default function App() {
   );
 
   useEffect(() => {
-    function sendBlocklist(blocklist: string[]) {
-      console.log("sendBlocklist update + " + JSON.stringify(blocklist));
-      setBlocklist(() => blocklist);
+    function sendBlocklist(result: any) {
+      console.log("sendBlocklist update + " + JSON.stringify(result));
+      setBlocklist(() => result);
     }
     function updateBlocklist(target: string) {
       console.log("updateBlocklist update");
@@ -247,6 +247,7 @@ export default function App() {
             <Box>
               <>
                 <ChatRoomUser
+                  id={tmpLoginID}
                   blocklist={blocklist}
                   roomInfo={roomInfo}
                   setRoomInfo={setRoomInfo}
