@@ -123,6 +123,17 @@ export class Room {
 	storeMessage(from : number, body : string){
 		this.messages.push(new Message(from, body));
 	}
+
+	getLastMessage(blocklist : Set<number>) : Message {
+		if (!blocklist || blocklist.size === 0)
+			return (this.messages[this.messages.length - 1]);
+		const length = this.messages.length;
+		for (let i = length - 1 ; i >= 0 ; i--) {
+			if (!blocklist.has(this.messages[i]?.from))
+				return (this.messages[i]);
+		}
+		return (null);	//might cause error
+	}
 }
 
 interface RoomStore {

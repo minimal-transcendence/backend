@@ -152,7 +152,7 @@ export class ChatService {
 		user.currentRoom = roomname;
 		const currRoomInfo = this.makeCurrRoomInfo(roomname);
 		const roomMembers = this.makeRoomUserInfo(roomname);
-		const roomInfo = this.makeRoomInfo(user.joinlist);
+		const roomInfo = this.makeRoomInfo(user.blocklist, user.joinlist);
 		console.log("userJoinRoomAct : enter --------------------------------------------3")
 		//연산이.... 좀 더 들긴하지만 새 방이 만들어질때를 생각하면 이게 최선이다...
 		// this.emitEventsToAllSockets(io, user.id, "sendRoomList", this.makeRoomInfo(user.joinlist));
@@ -486,19 +486,20 @@ export class ChatService {
 	}
 
 	//TODO : 이 모든 Getter들... 에러처리를 생각해야
-	getAllRoomList() : roomInfo[] {
+	getAllRoomList(userid : number) : roomInfo[] {
+		const blocklist = this.storeUser.findUserById(userid).blocklist;
 		// const roomlist = Array.from(this.storeRoom.rooms.keys());
 		const roomlist = [];
 		this.storeRoom.rooms.forEach((value, key) => {
 			if (!value.isPrivate)
 				roomlist.push(key);
 		})
-		return (this.makeRoomInfo(roomlist));
+		return (this.makeRoomInfo(blocklist, roomlist));
 	}
 
 	getUserRoomList(userId : number) : roomInfo[] {
 		const thisUser = this.storeUser.findUserById(userId);
-		return (this.makeRoomInfo(thisUser.joinlist));
+		return (this.makeRoomInfo(thisUser.blocklist, thisUser.joinlist));
 	}
 
 	//얘는 사실 딱히 최근 메세지 필요없는 것 같은데...(굳이 따지자면 방장이랑 참여인원이 있어야 하는게 아닐까?)
@@ -582,13 +583,13 @@ export class ChatService {
 
 	//TODO : 이하 util함수들 datarace 등 에러처리 어떻게 할지 // 아니 애초에 datarace가 나나...? 노드는 싱글 스레드(...) 소켓은 멀티플렉싱 으으으으
 	//TODO : array나 set... 이렇게 되나...? error check
-	makeRoomInfo(roomlist : string[] | Set<string>) : roomInfo[] {
+	makeRoomInfo(blocklist : Set<number>, roomlist : string[] | Set<string>) : roomInfo[] {
 		const res = [];
 		roomlist.forEach((room : string) => {
-			const messages = this.storeRoom.findRoom(room).messages;
+			const message = this.storeRoom.findRoom(room).getLastMessage(blocklist);
 			res.push({
 				roomname : room,
-				lastMessage : messages[messages.length - 1].body	//body만 보내도록
+				lastMessage : message.body	//body만 보내도록
 			})
 		})
 		return res;

@@ -185,7 +185,7 @@ export class ChatGateway
     });
 
     client.on('requestAllRoomList', () => {
-      const roomInfo = this.chatService.getAllRoomList();
+      const roomInfo = this.chatService.getAllRoomList(client.data.id);
       client.emit('sendRoomList', roomInfo);
     });
 
