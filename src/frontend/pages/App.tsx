@@ -88,20 +88,8 @@ export default function App() {
         "in useEffect sendRoomMembers zzzzz",
         JSON.stringify(result, null, 2)
       );
-      const res = result.map(async (e: any) => {
-        const thisUser = await fetch("http://localhost/api/user/" + e.id);
-        const imgURL = await thisUser
-          .json()
-          .then((res) => {
-            return res;
-          })
-          .then((res) => {
-            return res.avatar;
-          });
-        console.log("imgURL : " + imgURL);
-        return { ...e, url: "/api/" + res.avatar };
-      });
-      setRoomUserList(() => res);
+
+      setRoomUserList(() => result);
       setLeftHeader(() => "joined");
       // setcurrentRoomName(() => result[0].roomname);
       setQuery("");

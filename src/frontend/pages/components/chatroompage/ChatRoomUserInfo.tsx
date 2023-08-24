@@ -61,7 +61,6 @@ export default function ChatRoomUserInfo({
       console.log("you click other");
     }
   }
-  console.log("userInfo : " + JSON.stringify(user));
   // getImgURL(id);
   return (
     <li>
@@ -69,7 +68,7 @@ export default function ChatRoomUserInfo({
         {/* <img src={ysungwonIcon} width="32" height="32" /> */}
         <Image
           className="avatar-img"
-          src={user?.url}
+          src={ysungwonIcon}
           width="32"
           height="32"
           alt="avataricon"
