@@ -46,12 +46,12 @@ function UserList() {
 		}
 	}
 
-	const socket = io.connect("http://localhost:3002", { // 나중에 빼야함
+	/* const socket = io.connect("http://localhost:3002", { // 나중에 빼야함
 	query: {
 		id: userId,
 		nickname: userNickname,
 	},
-	});
+	}); */
 
 	//갱신용 reloadData 만들기
 
@@ -63,7 +63,7 @@ function UserList() {
 		setConnectList([]);
 		setFriendList([]);
 
-		let conList:string[] = [];
+		/* let conList:string[] = [];
 		socket.emit("requestAllMembers");
 		 socket.on("responseAllMembers", async (data) => {
 			for(let i = 0; i < data.length ; i++){
@@ -71,7 +71,7 @@ function UserList() {
 				conList.push((data[i].id).toString());
 			}
 			setConnectList(conList);
-		})
+		}) */
 
 		let idList:string[] = [];
 		//const responseFriend = await (await fetch_refresh ('http://localhost/api/user/' + userId + '/friend')).json();
@@ -103,7 +103,8 @@ function UserList() {
 				score: (parseInt(detailResponse._count.asWinner) * 10 - parseInt(detailResponse._count.asLoser) * 10),
 				lastLogin: detailResponse.lastLogin,
 				isFriend: checkIsInclude(idList, detailResponse.id),
-				isLogin: checkIsInclude(conList, detailResponse.id),
+				//isLogin: checkIsInclude(conList, detailResponse.id),
+				isLogin: 0,
 				matchhistory: [],
 			};
 			for(let j = 0 ; j < matchCount ; j++){
@@ -207,7 +208,7 @@ function UserList() {
 	useEffect (() => {
 		reloadData();
 		//로그인
-		socket.on("userLogin", async (userid : number) => {
+		/* socket.on("userLogin", async (userid : number) => {
 			let isChange = 0;
 			let copiedData = [...userData];
 			for(let i = 0; i <= copiedData.length ; i++)
@@ -263,7 +264,7 @@ function UserList() {
 				}
 			}
 			setData(copiedData);
-		})
+		})*/
 		}, []);
 
 	function getDetailProfile(index:number){
