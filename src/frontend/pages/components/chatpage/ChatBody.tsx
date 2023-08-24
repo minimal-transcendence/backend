@@ -18,11 +18,15 @@ const ChatBody = ({
   const socket = useContext(SocketContext);
 
   const filteredMessage: any[] = [];
-  console.log("messages1 : " + JSON.stringify(messages));
+  console.log(
+    "blocklist : ",
+    blocklist,
+    "messages1 : " + JSON.stringify(messages)
+  );
   function filter(messages: any) {
     console.log("messages : " + JSON.stringify(messages));
     messages?.forEach((message: any) => {
-      console.log("message " + message);
+      console.log("message " + JSON.stringify(message, null, 2));
       if (
         !blocklist.find((b: any) => {
           return b === message.from;

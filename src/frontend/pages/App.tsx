@@ -75,9 +75,9 @@ export default function App() {
   );
 
   useEffect(() => {
-    function sendBlocklist(blocklist: string[]) {
-      console.log("sendBlocklist update + " + JSON.stringify(blocklist));
-      setBlocklist(() => blocklist);
+    function sendBlocklist(result: any) {
+      console.log("sendBlocklist update + " + JSON.stringify(result));
+      setBlocklist(() => result);
     }
     function updateBlocklist(target: string) {
       console.log("updateBlocklist update");
