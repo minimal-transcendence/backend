@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import UserList from "../srcs/UserList";
 import MyProfile from "../srcs/MyProfile";
-// import App from "./App";
+import App from "./App";
+
 function Home() {
   const router = useRouter();
   const [myProfileModal, setMyProfileModal] = useState<boolean>(false);
