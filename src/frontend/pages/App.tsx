@@ -49,7 +49,7 @@ export default function App() {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
-  const [messages, setMessages] = useState<any>("");
+  const [messages, setMessages] = useState<any>([]);
   const [roomInfo, setRoomInfo] = useState<any>(null);
   const [blocklist, setBlocklist] = useState<any>([]);
 

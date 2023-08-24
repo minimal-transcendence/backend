@@ -21,17 +21,18 @@ const ChatBody = ({
   console.log("messages1 : " + JSON.stringify(messages));
   function filter(messages: any) {
     console.log("messages : " + JSON.stringify(messages));
-    messages?.forEach((element: any) => {
-      console.log(element.from);
+    messages?.forEach((message: any) => {
+      console.log("message " + message);
       if (
         !blocklist.find((b: any) => {
-          return b === element.from;
+          return b === message.from;
         })
       )
-        filteredMessage.push(element);
+        filteredMessage.push(message);
     });
   }
-
+  filter(messages);
+  console.log("filteredMessage ", filteredMessage);
   if (messages?.length === 0) return;
 
   return (
