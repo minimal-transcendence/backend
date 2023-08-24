@@ -64,13 +64,12 @@ networks:
 volumes:
   postgresql_volume:
     external: false
-# for dev
+  # for dev
   nestjs_volume:
     driver_opts:
       type: none
       device: /Users/${NEST_PATH}/src/backend
       o: bind
-
 #     name: postgresql_volume
 #     driver_opts:
 #       type: none

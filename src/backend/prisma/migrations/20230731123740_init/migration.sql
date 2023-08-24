@@ -11,6 +11,7 @@ CREATE TABLE "User" (
     "refreshToken" TEXT,
     "tokenExp" INTEGER,
     "otpSecret" TEXT,
+    "isOtpVerified" BOOLEAN NOT NULL DEFAULT false,
     "is2faEnabled" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")

@@ -12,7 +12,7 @@ import { StoreModule } from 'src/store/store.module';
 	],
 	providers: [
 		ChatService,
-		ChatGateway, 
+		ChatGateway,
 		JwtGuard,
 		JwtService,
 		PrismaService
