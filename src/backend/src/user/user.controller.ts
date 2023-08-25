@@ -87,7 +87,7 @@ export class UserController {
 }
 
 //TODO : discuss router & authorization
-@Controller('app/photo/:img')
+@Controller('photo/:img')
 export class avatarController {
 	constructor(private readonly userService: UserService) {}
 

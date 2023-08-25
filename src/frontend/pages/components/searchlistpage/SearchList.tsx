@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { SocketContext } from "../../../context/socket";
+import { SocketContext } from "@/pages/App";
 
 import SearchListCreateRoom from "./SearchListCreateRoom";
 import ErrorMessage from "./ErrorMessage";
@@ -24,7 +24,7 @@ export default function SearchList({
   setIsOpenModal: any;
   setTempSearchList: any;
 }) {
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
   console.log("in searchList ", results);
   useEffect(() => {
     function requestPassword(roomname: string) {

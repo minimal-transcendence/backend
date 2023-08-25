@@ -3,13 +3,13 @@ import logOutIcon from "../../../assets/logout.png";
 import userIcon from "../../../assets/user.png";
 import contestIcon from "../../../assets/contest.png";
 
-import { SocketContext } from "../../../context/socket";
+import { SocketContext } from "@/pages/App";
 import Image from "next/image";
 export default function Menu() {
   const [easy, setEasy] = useState<boolean>(false);
   const [normal, setNormal] = useState<boolean>(false);
   const [hard, setHard] = useState<boolean>(false);
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
   function handleMenu(event: any) {
     if (event.target.dataset.name) {
       console.log(`${event.target.dataset.name}클릭!!!`);

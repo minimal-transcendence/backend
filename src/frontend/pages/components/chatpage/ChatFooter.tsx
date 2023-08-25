@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { SocketContext } from "../../../context/socket";
+import { SocketContext } from "@/pages/App";
 const ChatFooter = ({
   currentRoomName,
   textareaValue,
@@ -13,7 +13,7 @@ const ChatFooter = ({
   isDM: boolean;
   DMtarget: string;
 }) => {
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
 
   function handleSubmit(e: any) {
     e.preventDefault();

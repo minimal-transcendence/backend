@@ -3,7 +3,7 @@ CREATE TABLE "User" (
     "id" INTEGER NOT NULL,
     "nickname" TEXT,
     "email" TEXT,
-    "avatar" TEXT NOT NULL DEFAULT 'app/photo/default.png',
+    "avatar" TEXT NOT NULL DEFAULT 'path',
     "score" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "lastLogin" TIMESTAMP(3) NOT NULL,
@@ -11,7 +11,6 @@ CREATE TABLE "User" (
     "refreshToken" TEXT,
     "tokenExp" INTEGER,
     "otpSecret" TEXT,
-    "isOtpVerified" BOOLEAN NOT NULL DEFAULT false,
     "is2faEnabled" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")

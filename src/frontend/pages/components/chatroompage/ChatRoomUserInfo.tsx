@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { SocketContext } from "../../../context/socket";
+import { SocketContext } from "@/pages/App";
 import menuIcon from "../../../assets/menu.png";
 import ysungwonIcon from "../../../assets/ysungwon.jpg";
 import Image from "next/image";
@@ -21,7 +21,7 @@ export default function ChatRoomUserInfo({
   myNickName: string;
   id: any;
 }) {
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
 
   // async function getImgURL(id: string) {
   //   const thisUser = await fetch("http://localhost/api/user/" + id);

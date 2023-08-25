@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import jwt_decode from "jwt-decode";
 import styles from "../styles/CallBackStyle.module.css";
+
+type JwtPayload = {
+  id: number;
+  email: string;
+  iat: number;
+  exp: number;
+}
 
 function Callback() {
   const router = useRouter();
@@ -35,6 +43,9 @@ function Callback() {
         await fetch("http://localhost/api/user/" + data.id)
       ).json();
       localStorage.setItem("access_token", data.access_token);
+      // Decode token to get expired time
+      const jwtDecode = jwt_decode<JwtPayload>(data.access_token);
+      localStorage.setItem("access_token_exp", jwtDecode.exp.toString());
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("is2fa", "false");
       localStorage.setItem("avatar", "/api/" + detailResponse.avatar);
