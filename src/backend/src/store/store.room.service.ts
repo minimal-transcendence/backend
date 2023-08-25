@@ -66,8 +66,6 @@ export class Room {
 
 	updateOwner(newOwner : number){
 		this.owner = newOwner;
-		// this.operators.delete(oldOwner);
-		// this.operators.add(newOwner);
 	}
 
 	//후... 이거 묶을 걸 그랬나ㅠ
@@ -76,12 +74,12 @@ export class Room {
 	}
 
 	addUserToBanlist(userid : number){
-		//여기서 setTimeOut을 하면... 내가 원하는 대로 실행이 됨...?
-		//CHECK : 필수ㅠㅠ
 		this.banlist.add(userid);
-		setTimeout((userid : number) => {
+		setTimeout(() => {
+			//
+			console.log(`${userid} is released!`);
 			this.banlist.delete(userid);
-		}, 60000);	//60초 뒤에...
+		}, 20000);
 	}
 
 	deleteUserFromUserlist(userid : number){
@@ -98,15 +96,15 @@ export class Room {
 
 	addUserToMutelist(userid : number){
 		this.mutelist.add(userid);
-		setTimeout((userid : number) => {
-			this.mutelist.delete(userid);
-		}, 60000);
+		// setTimeout(() => {
+		// 	this.mutelist.delete(userid);
+		// }, 20000);
 	}
 
 	//자동으로 일정시간만?
-	// deleteUserFromMutelist(userid : number){
-	// 	this.mutelist.delete(userid);
-	// }
+	deleteUserFromMutelist(userid : number){
+		this.mutelist.delete(userid);
+	}
 	private clearSets(){
 		this.userlist.clear();
 		this.operators.clear();

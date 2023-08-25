@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ChatRoomStoreService, Room } from '../store/store.room.service';
 import { ChatUserStoreService, User } from '../store/store.user.service';
 import { ChatMessageStoreService, Message, DM } from '../store/store.message.service';
-import { Server, Namespace, Socket } from 'socket.io';
+import { Namespace } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import {
   currRoomInfo,
@@ -11,6 +11,7 @@ import {
   roomInfo,
   userInfo,
 } from './chat.types';
+import { ChatSocket } from './types';
 
 @Injectable()
 export class ChatService {
@@ -21,12 +22,7 @@ export class ChatService {
 		private jwtService : JwtService
 	){}
 
-	//이렇게 사용 가능? -> 불가
-	//????
-	// @WebSocketServer()
-	// server : Server;
-
-	async clientAuthentification(client : Socket) : Promise<number> {
+	async clientAuthentification(client : ChatSocket) : Promise<number> {
 		
 		try {
 			const cookies = client.handshake.headers.cookie.split(";");
@@ -64,7 +60,7 @@ export class ChatService {
 	//TODO : 처음 들어올 때는 nickname이 있긴 해야함ㅠㅠ
 	//TODO : 유저가 소켓 연결을 하기 전에 닉네임을 변경하는 경우가 있는지 확인할 것
 		//만약 그 경우에는 매 최초 접속마다 유저 닉네임 업데이트가 필요한지 확인을 거쳐야 한다 <- 아직 안 되어있음
-	async newUserConnected(io : Namespace, client : Socket, userId : number, nickname : string) : Promise<void> {
+	async newUserConnected(io : Namespace, client : ChatSocket, userId : number, nickname : string) : Promise<void> {
 		client.join(`$${userId}`);
 		let user : User = this.storeUser.findUserById(userId);
 		if (user === undefined)
@@ -182,7 +178,7 @@ export class ChatService {
 
 	//(CLOSE) 한 유저가 여러 소켓을 가진 경우에 대해 : 모든 창에 경고를 띄울 필요 있을까? -> 창하나만
 	//하지만 join은 전부 처리해줘야 (CLOSE)
-	JoinRoomBanCheck(io : Namespace, client:Socket, room : Room) : boolean {
+	JoinRoomBanCheck(io : Namespace, client:ChatSocket, room : Room) : boolean {
 		if (room.isBanned(client.data.id)){
 			client.emit("sendAlert", "Banned User", "You are not allowed to join this room");
 			return (false);
@@ -190,7 +186,7 @@ export class ChatService {
 		return (true);
 	}
 
-	async userJoinRoom(io : Namespace, client:Socket, roomname : string, password? : string) {
+	async userJoinRoom(io : Namespace, client:ChatSocket, roomname : string, password? : string) {
 		const userId = client.data.id;
 		let room = this.storeRoom.findRoom(roomname);
 		console.log(`client: ${client.data.id} join roomname : ${roomname}`);
@@ -213,7 +209,7 @@ export class ChatService {
 				client.emit("sendAlert", "Alert", "This room is Private");
 				return ;
 			}
-			const pwExist = password? true : false;
+			const pwExist = room.password? true : false ;
 			if (pwExist) {
 				if (password){
 					if (room.isPassword(password)){
@@ -233,18 +229,45 @@ export class ChatService {
 		}
 	}
 
-	setPassword(io: Namespace, client : Socket, roomname : string, password : string){
+	setPassword(io: Namespace, client : ChatSocket, roomname : string, password : string){
 		const room = this.storeRoom.findRoom(roomname);
-		if (room.isOwner(client.data.id))
+		console.log("set password attempt");
+		if (room.isOwner(client.data.id)){
 			room.updatePassword(password);
+			console.log("password updated");
+		}
 		else
 			client.emit("sendAlert", "Alert", "You have no authority");
+	}
+
+	setRoomStatus(io : Namespace, client : ChatSocket, roomname : string, toPrivate : boolean) {
+		const room = this.storeRoom.findRoom(roomname);
+		if (room.isOwner(client.data.id)){
+			if (toPrivate) {
+				if (room.isPrivate)
+					client.emit("sendAlert", "[ Alert ]", 'Room is already Private');
+				else {
+					room.isPrivate = true;
+					io.to(roomname).emit("sendCurrRoomInfo", this.makeCurrRoomInfo(roomname));
+				}
+			}
+			else {
+				if (room.isPrivate) {
+					room.isPrivate = false;
+					io.to(roomname).emit("sendCurrRoomInfo", this.makeCurrRoomInfo(roomname));
+				}
+				else
+					client.emit("sendAlert", "[ Alert ]", 'Room is already Public');
+			}
+		}
+		else
+			client.emit("sendAlert", "[ Alert ]", "Only owner can set room status");
 	}
 
 	//만약 없는 방일 때 -> throw Error
 	//만약 방에 속한 유저가 아닐 때 -> throw Error? or ignore?
 	//성공 시 message를 emit 하고 방의 message에 저장
-	sendChat(io : Namespace, client: Socket, to : string, body : string){
+	sendChat(io : Namespace, client: ChatSocket, to : string, body : string){
 		const room = this.storeRoom.findRoom(to);
 		if (room === undefined){
 			console.log("no such room");
@@ -257,7 +280,7 @@ export class ChatService {
 					from : client.data.nickname,
 					body : body,
 					at : message.at
-				});	//안 바꿔도 되
+				});
 				room.messages.push(message);
 			}
 			else
@@ -326,7 +349,7 @@ export class ChatService {
 			console.log("you are not joining in this room : try leave");
 	}
 	
-	async userLeaveRoomAct(io : Namespace, client : Socket, roomname : string){
+	async userLeaveRoomAct(io : Namespace, client : ChatSocket, roomname : string){
 		console.log(`client ${client.data.nickname} leave roomname : ${roomname} ACT`);
 		
 		const userid = client.data.id;
@@ -360,7 +383,11 @@ export class ChatService {
 		targetUser.currentRoom = "DEFAULT";
 		this.userJoinRoomAct(io, targetUser, "DEFAULT");
 		const body = `${targetUser.nickname} is Kicked Out`;
-		io.to(roomname).emit("sendMessage", "server", body);	//쫓겨나는 사람은 제하는게 좋을지도
+		io.to(roomname).emit("sendMessage", roomname, {
+			from : "server",
+			body : body,
+			at : Date.now()
+		});	//쫓겨나는 사람은 제하는게 좋을지도
 		io.to(roomname).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
 		room.storeMessage(-1, body);
 		const sockets = await io.in(`$${targetId}`).fetchSockets();
@@ -376,22 +403,49 @@ export class ChatService {
 	banUser(io : Namespace, roomname : string, targetId : number){
 		const room = this.storeRoom.findRoom(roomname);
 		if (room.isOperator(targetId)){
+			console.log("banUser: " + roomname + targetId);
 			room.deleteUserFromOperators(targetId);
 			room.deleteUserFromUserlist(targetId);
-			room.addUserToBanlist(targetId);
-			this.kickUser(io, roomname, targetId);
 			//여기서 특정 시간동안 banlist에 올리고
 			//kick하고
 			//message를 보낸다
 		}
+		room.addUserToBanlist(targetId);
+		this.kickUser(io, roomname, targetId);
 	}
 
-	muteUser(io : Namespace, roomname: string, targetId : number){
+	muteUser(io : Namespace, client : ChatSocket, roomname: string, targetId : number){
 		const room = this.storeRoom.findRoom(roomname);
-		room.addUserToMutelist(targetId);	
+		if (room.isMuted(targetId))
+			client.emit("sendMessage", roomname, {
+				from : "server",
+				body : `${this.storeUser.getNicknameById(targetId)} is already muted`,
+				at : Date.now()
+		})
+		else{
+			room.addUserToMutelist(targetId);
+			this.emitEventsToAllSockets(io, targetId, "sendMessage", roomname, {
+				from : "server",
+				body : `You are temporaily muted by ${client.data.nickname}`,
+				at : Date.now()
+			})
+			io.to(roomname).except(`$${targetId}`).emit("sendMessage", roomname, {
+				from : "server",
+				body :	`${this.storeUser.getNicknameById(targetId)} is temporaily muted`,
+				at : Date.now()
+			})
+			setTimeout(() => {
+				room.deleteUserFromMutelist(targetId);
+				this.emitEventsToAllSockets(io, targetId, "sendMessage", roomname, {
+					from : "server",
+					body : `You are now unmuted `,
+					at : Date.now()
+				})
+			}, 20000);
+		}
 	}
 
-	blockUser(io : Namespace, client : Socket, target : string) {
+	blockUser(io : Namespace, client : ChatSocket, target : string) {
 		const thisUser = this.storeUser.findUserById(client.data.id);
 		const targetId = this.storeUser.getIdByNickname(target);
 		if (thisUser.blocklist.has(targetId))
@@ -402,7 +456,7 @@ export class ChatService {
 		}
 	}
 
-	unblockUser(io : Namespace, client : Socket, target : string) {
+	unblockUser(io : Namespace, client : ChatSocket, target : string) {
 		const thisUser = this.storeUser.findUserById(client.data.id);
 		const targetId = this.storeUser.getIdByNickname(target);
 		if (thisUser.blocklist.has(targetId)){
@@ -416,7 +470,12 @@ export class ChatService {
 
 	//TODO : 이 모든 Getter들... 에러처리를 생각해야
 	getAllRoomList() : roomInfo[] {
-		const roomlist = Array.from(this.storeRoom.rooms.keys());
+		// const roomlist = Array.from(this.storeRoom.rooms.keys());
+		const roomlist = [];
+		this.storeRoom.rooms.forEach((value, key) => {
+			if (!value.isPrivate)
+				roomlist.push(key);
+		})
 		return (this.makeRoomInfo(roomlist));
 	}
 
@@ -452,9 +511,15 @@ export class ChatService {
 	}
 
 	fetchDM(io : Namespace, from : number, to : number, body : string){
-		this.storeMessage.saveMessage(new DM(from, to, body));
-		//여기는 사실 you have 1 new message 이런거 보내주면 되는데...!
-		io.to(`$${from}`).to(`$${to}`).emit("sendAlert", "New DM", "You got 1 new message");
+		const message = new DM(from, to, body);
+		const res = {
+			from : this.storeUser.getNicknameById(from),
+			body : body,
+			at : message.at
+		};
+		this.storeMessage.saveMessage(message);
+
+		io.to([`$${from}`, `$${to}`]).emit("sendDM", this.storeUser.getNicknameById(to), res);
 	}
 
 	makeDMRoomMessages(from : string, to : string) : formedMessage[] {
@@ -464,8 +529,8 @@ export class ChatService {
 		const msg = this.storeMessage
 					.findMessagesForUser(fromId, toId)
 					.map(message => ({
-						from : from,
-						to : to,
+						from : this.storeUser.getNicknameById(message.from),
+						to : this.storeUser.getNicknameById(message.to),
 						body : message.body,
 						at : message.at
 					}));
@@ -577,7 +642,11 @@ export class ChatService {
 		else if (operation === "mute")
 			notice = "Muted";
 		const body = `You are ${notice} from Room "${roomname}"`
-		await this.emitEventsToAllSockets(io, target, "sendMessage", "server", body);
+		await this.emitEventsToAllSockets(io, target, "sendMessage", roomname, {
+				from : "server",
+				body : body,
+				at : Date.now()
+		});
 		// const sockets = await io.in(`$${target}`).fetchSockets();
 		// sockets.forEach((socket) => {
 		// 	socket.emit("sendMessage", "server", body);
@@ -586,39 +655,47 @@ export class ChatService {
 
 	//TODO : sendAlert message 분리하려면 이 함수에서 Socket 받아야함!
 	//채팅방에서 어떤 행동을 할 때 가능한지 모두 체크 : 권한, 유효성, etc.
-	checkActValidity(roomname : string, actor : number, target : number) : boolean {
+	checkActValidity(client : ChatSocket, roomname : string, actor : number, target : number) : boolean {
 		if (actor === target) {
-			console.log("[ ACT ERROR ] you can't do sth to yourself")
+			// console.log("[ ACT ERROR ] you can't do sth to yourself")
+			client.emit("sendAlert", "[ ACT ERROR ]", "you can't do sth to yourself")
 			return (false);
 		}
 		const room = this.storeRoom.findRoom(roomname);
 		if (room === undefined){
-			console.log("[ ACT ERROR ] Room does not exist")
+			// console.log("[ ACT ERROR ] Room does not exist")
+			client.emit("sendAlert", "[ ACT ERROR ]", "Room does not exist")
 			return (false);
 		}
 		const user = this.storeUser.findUserById(actor);
 		if (user === undefined || !user.joinlist.has(roomname)){
-			console.log("[ ACT ERROR ] invalid Actor");
+			// console.log("[ ACT ERROR ] invalid Actor");
+			client.emit("sendAlert", "[ ACT ERROR ]", "invalid Actor")
 			return (false);
 		}
 		if (!room.isOwner(user.id) && !room.isOperator(user.id)){
-			console.log("[ ACT ERROR ] Actor is not authorized");
+			// console.log("[ ACT ERROR ] Actor is not authorized");
+			client.emit("sendAlert", "[ ACT ERROR ]", "Actor is not authorized")
 			return (false);
 		}
 		if (target === -1){
-			console.log("[ ACT ERROR ] Target does not exist")
+			// console.log("[ ACT ERROR ] Target does not exist")
+			client.emit("sendAlert", "[ ACT ERROR ]", "Target does not exist")
 			return (false);
 		}
 		else if (!room.isJoinning(target)){
-			console.log("[ ACT ERROR ] Target is not joining this room");
+			// console.log("[ ACT ERROR ] Target is not joining this room");
+			client.emit("sendAlert", "[ ACT ERROR ]", "Target is not joining this room")
 			return (false);
 		}
 		else if (room.isOwner(target)){	//가능하면 owner랑 operator를 enum으로 만들어서 값 비교로 권한 우위 확인하면 더 좋았을듯.... 지금은 귀찮아...
-			console.log("[ ACT ERROR ] Target is the Owner");
+			// console.log("[ ACT ERROR ] Target is the Owner");
+			client.emit("sendAlert", "[ ACT ERROR ]", "Target is the Owner")
 			return (false);
 		}
 		else if (room.isOperator(target) && !room.isOwner(actor)){
-			console.log("[ ACT ERROR ] Only owner can do sth to Operator");
+			// console.log("[ ACT ERROR ] Only owner can do sth to Operator");
+			client.emit("sendAlert", "[ ACT ERROR ]", "Only owner can do sth to Operator")
 			return (false);
 		}
 		return (true);

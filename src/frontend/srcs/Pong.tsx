@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useContext } from "react";
 import "../pages/index.css";
-import { AppContent, AppContext } from "@/pages/App";
+import { SocketContent, SocketContext } from "@/pages/App";
 // import {socket} from "../pages/Home";
 
 type StartGameData = {
@@ -35,7 +35,7 @@ type GameData = {
 
 export default function Pong() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const appContext = useContext<AppContent>(AppContext);
+  const appContext = useContext<SocketContent>(SocketContext);
   const socket: any = appContext.gameSocket;
   
 
@@ -271,7 +271,7 @@ export default function Pong() {
   }, [socket])
 
   return (
-    <div className="box box-center">
+    <div className="chat-main">
       <canvas
         className="pong"
         ref={canvasRef}
