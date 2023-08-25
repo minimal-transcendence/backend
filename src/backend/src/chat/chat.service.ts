@@ -40,8 +40,14 @@ export class ChatService {
 	//마지막 하나일 때만 모든 방의 접속을 삭제한다
 	//TODO & CHECK : if it works well...?
 	async disconnectUser(io: Namespace, userId : number) : Promise<void> {
-		const sockets = io.in(`$${userId}`).fetchSockets();
-		if (sockets.length === 1) {
+		const sockets = await io.in(`$${userId}`).fetchSockets()
+						.then((res : any) => {
+							return (res.size);	//가능?
+						})
+						.catch((error : any) => {
+							throw new error(error.message);	//대문자? 소문자?
+						});
+		if (sockets === 1) {
 			const user = this.storeUser.findUserById(userId);
 			user.connected = false;
 			this.userLeaveRooms(io, userId, user.joinlist);
@@ -51,7 +57,7 @@ export class ChatService {
 	async userJoinRoomAct(io: Namespace, user : User, roomname : string) {
 		//make all user's socket to join room
 		const sockets = await io.in(`$${user.id}`).fetchSockets();
-		sockets.forEach((socket : ChatSocket) => {
+		sockets.forEach((socket : any) => {
 			socket.join(roomname);
 		})
 		if (!user.joinlist.has(roomname))
@@ -73,7 +79,7 @@ export class ChatService {
 			//CHECK : if it is really necessary...
 			const joiners = await io.in(roomname).fetchSockets();
 			const roomMembers = this.makeRoomUserInfo(roomname);
-			joiners.forEach((socket : ChatSocket) => {
+			joiners.forEach((socket : any) => {
 				if (this.storeUser.findUserById(socket.data.id).currentRoom === roomname)
 					socket.emit("sendRoomMembers", roomMembers);
 			})
@@ -227,8 +233,7 @@ export class ChatService {
 	
 	}
 
-	userLeaveRoom(io : Namespace, client : ChatSocket, roomname : string){
-		const userId = client.data.id;
+	userLeaveRoom(io : Namespace, userId : number, roomname : string){
 		const room = this.storeRoom.findRoom(roomname);
 		const thisUser = this.storeUser.findUserById(userId);
 		if (room === undefined){
@@ -271,18 +276,17 @@ export class ChatService {
 			console.log("you are not joining in this room : try leave");
 	}
 	
-	async userLeaveRoomAct(io : Namespace, client : ChatSocket, roomname : string){
-		const userid = client.data.id;
+	async userLeaveRoomAct(io : Namespace, userid : number, roomname : string){
 		const sockets = await io.in(`$${userid}`).fetchSockets();
-		sockets.forEach((socket : ChatSocket) => {
+		sockets.forEach((socket : any) => {
 			socket.leave(roomname);
 		})
-		this.userJoinRoomAct(io, this.storeUser.findUserById(client.data.id), "DEFAULT");
+		this.userJoinRoomAct(io, this.storeUser.findUserById(userid), "DEFAULT");
 	}
 
-	userLeaveRooms(io : Namespace, userId : number, roomlist : Set<string>){
+	userLeaveRooms(io : Namespace, userid : number, roomlist : Set<string>){
 		roomlist.forEach((room) => {
-			this.userLeaveRoom(io, userId, room);
+			this.userLeaveRoom(io, userid, room);
 		})
 	}
 

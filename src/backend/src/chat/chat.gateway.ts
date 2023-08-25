@@ -76,8 +76,8 @@ export class ChatGateway
 
 		//TODO : 미완성
 		client.on("sendRoomLeave", (room) => {
-			this.chatService.userLeaveRoom(this.io, client, room);
-			this.chatService.userLeaveRoomAct(this.io, client, room);
+			this.chatService.userLeaveRoom(this.io, client.data.id, room);
+			this.chatService.userLeaveRoomAct(this.io, client.data.id, room);
 		});
 
     //TODO : check
