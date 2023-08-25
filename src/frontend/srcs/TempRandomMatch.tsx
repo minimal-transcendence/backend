@@ -1,15 +1,31 @@
 import { SocketContext } from '@/pages/App';
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
+import { AutoSave } from './Pong';
 // import { socket } from "@/pages/Home";
 
 export default function TempRandomMatch() {
-    let roomName: string;
+    const [roomName, setRoomName] = useState<string>('');
 
     const socket = useContext(SocketContext).gameSocket;
 
-    socket.on('matchStartCheck', (payload: any) => {
-        roomName = payload.roomName;
+    socket.on('matchStartCheck', (payload: AutoSave) => {
+        // localStorage.setItem("game_room", payload.roomName);
+        localStorage.setItem("gameRoomData", JSON.stringify({
+            roomName: payload.roomName,
+            inGame: false,
+            // inLobby: true,
+            gameOver: false,
+            player: [],
+            canvasWidth: 0,
+            canvasHeight: 0,
+            paddleWidth: 0,
+            paddleHeight: 0,
+            ballRadius: 0,
+            winner: '',
+            loser: '',
+          }))
         console.log(`${payload.roomName} is checking`);
+        setRoomName(payload.roomName);
     });
 
     socket.on('matchDecline', (payload: string) => {
@@ -26,6 +42,7 @@ export default function TempRandomMatch() {
 
     const handleAccept = () => {
         socket.emit('matchAccept', `${roomName}`);
+        console.log("In handleAccept:", roomName);
     }
 
     const handleDecline = () => {
