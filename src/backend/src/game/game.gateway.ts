@@ -56,8 +56,8 @@ export class GameGateway
 				if (room.gameStart) {
 					// Save Game Result in DB
 					this.matchService.createMatchHistory({
-						winnerId: parseInt(room.winner.userId),
-						loserId: parseInt(room.loser.userId)
+						winnerId: room.winner.userId,
+						loserId: room.loser.userId
 					})
 					this.io.to(e).emit('gameOver', {
 					roomName: e,
@@ -81,7 +81,7 @@ export class GameGateway
 		}, 1000)
 	}
 
-	handleConnection(@ConnectedSocket() client: GameSocket, userId : string, ) {
+	handleConnection(@ConnectedSocket() client: GameSocket) {
 
 		client.inGame = false;
 		client.invitationList = [];

@@ -65,39 +65,29 @@ export default function App() {
   const [blocklist, setBlocklist] = useState<any>([]);
 
   // seunchoi - for socket connection
-  const [jwt, setJwt] = useState<string>('');
-  const [nickname, setNickname] = useState<string>('');
   const [gameLoad, setGameLoad] = useState<boolean>(false);
-  const [socket, setSocket] = useState<Socket>(io.connect());
-  const [gameSocket, setGameSocket] = useState<Socket>(io.connect());
+  // Get Empty Socket Instance
+  const [socket, setSocket] = useState<Socket>(io.connect("", { query: { "nickname": "" }}));
+  const [gameSocket, setGameSocket] = useState<Socket>(io.connect("", { query: { "nickname": "" }}));
 
   useEffect(() => {
-    const jwtItem = localStorage.getItem("access_token");
-    if (jwtItem) {
-      setJwt(jwtItem);
-    }
-    const nicknameItem = localStorage.getItem("nickname");
-    if (nicknameItem) {
-      setNickname(nicknameItem);
-    }
-    console.log("Jwt and Nickname Set State");
-  }, []);
-
-  useEffect(() => {
-    const getSocket = (namespace: string) => {
+    const getSocket = (namespace: string, jwt: string, nickname: string) => {
       return io.connect(`http://localhost/${namespace}`, {
-        query: { "nickname": nickname },
+        query: { "nickname": nickname, },
         auth: { token: jwt },
       });
     }
+
+    const nicknameItem = localStorage.getItem("nickname");
+    const jwtItem = localStorage.getItem("access_token");
+
     // Run whenever jwt state updated
-    if (tmpIsLoggedIn) {
+    if (tmpIsLoggedIn && nicknameItem && jwtItem) {
       console.log("Try Web Socket Connection");
-      setSocket(getSocket("chat"));
-      setGameSocket(getSocket("game"));
+      setSocket(getSocket("chat", jwtItem, nicknameItem));
+      setGameSocket(getSocket("game", jwtItem, nicknameItem));
     }
-  }, [tmpIsLoggedIn, tmpLoginnickname, tmpLoginID, jwt])
- 
+  }, [tmpIsLoggedIn, tmpLoginnickname, tmpLoginID])
 
   useEffect(() => {
     function sendBlocklist(result: any) {

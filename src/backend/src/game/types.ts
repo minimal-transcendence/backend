@@ -13,7 +13,7 @@ type Player = {
 }
 
 type JwtPayload = {
-    userId: string;
+    userId: number;
     email: string;
 }
 
@@ -22,26 +22,10 @@ export type KeydownPayload = {
     key: string;
 }
 
-// export type OneOnOneInvite = {
-//     to: string;
-//     mode: string;
-// }
-
-// export type OneOnOneAccept = {
-//     from: string;
-//     mode: string;
-// }
-
 export type GameRoomParams = {
     name: string;
     player: GameSocket[];
     mode: string;
 }
-
-// export type MatchStartCheckPayload = {
-//     roomName: string;
-//     playerNickname: string[];
-//     mode: string;
-// }
 
 export type GameSocket = Socket & JwtPayload & Player;
