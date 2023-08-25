@@ -1,13 +1,17 @@
-import { useEffect, useRef, useState } from "react";
-import "./index.css";
+import { useEffect, useState } from "react";
+import "../../index.css";
 
 function TempLogin({
-  socket,
-  setTmpLoginID,
-  setTmpLoginnickname,
+  tmpIsLoggedIn,
   setTmpIsLoggedIn,
+  tmpLoginID,
+  setTmpLoginID,
+  tmpLoginnickname,
+  setTmpLoginnickname,
 }: {
-  socket: any;
+  tmpIsLoggedIn: boolean;
+  tmpLoginID: any;
+  tmpLoginnickname: string;
   setTmpLoginID: any;
   setTmpLoginnickname: any;
   setTmpIsLoggedIn: any;

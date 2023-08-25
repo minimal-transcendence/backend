@@ -1,11 +1,11 @@
-import { AppContext } from '@/pages/App';
+import { SocketContext } from '@/pages/App';
 import React, { useContext } from 'react';
 // import { socket } from "@/pages/Home";
 
 export default function TempRandomMatch() {
     let roomName: string;
 
-    const socket = useContext(AppContext).gameSocket;
+    const socket = useContext(SocketContext).gameSocket;
 
     socket.on('matchStartCheck', (payload: any) => {
         roomName = payload.roomName;

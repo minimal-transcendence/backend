@@ -46,10 +46,16 @@ export class ChatMessageStoreService implements DMStore {
 		this.messages.push(message);
 	}
 
-	//효율적일까...? 더 좋은 방법...?
-	findMessagesForUser(from : number, to : number): DM[] {
-		return this.messages.filter(
-			({ from, to }) => ((from === from && to === to) || (from === to && to === from))
+	//CHECK : erase log &
+	findMessagesForUser(fromId : number, toId : number): DM[] {
+		// return this.messages.filter(
+		// 	({ from, to }) => ((from === from && to === to) || (from === to && to === from))
+		// );
+		const res = this.messages.filter(
+				({ from, to }) => ((from ===  fromId && to === toId) || (from === toId && to === fromId))
 		);
-	}
+
+		console.log("res :" + JSON.stringify(res));
+		return (res);
+		}
 }

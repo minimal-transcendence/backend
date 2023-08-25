@@ -29,6 +29,7 @@ services:
     restart: always
     ports:
       - 3001:3001
+      - 3002:3002
       - 5555:5555
     env_file:
       - .env
@@ -63,13 +64,12 @@ networks:
 volumes:
   postgresql_volume:
     external: false
-# for dev
+  # for dev
   nestjs_volume:
     driver_opts:
       type: none
       device: /Users/${NEST_PATH}/src/backend
       o: bind
-
 #     name: postgresql_volume
 #     driver_opts:
 #       type: none

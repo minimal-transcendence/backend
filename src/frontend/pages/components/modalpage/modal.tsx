@@ -1,19 +1,18 @@
-import { useEffect, useRef, useState } from "react";
-import "./index.css";
+import { useEffect, useRef, useState, useContext } from "react";
+import { SocketContext } from "@/pages/App";
+import "../../index.css";
 
-function ModalBasic({
+export default function ModalBasic({
   setIsOpenModal,
-  socket,
   roomname,
   innerText,
 }: {
   setIsOpenModal: any;
-  socket: any;
   roomname: string;
   innerText: string;
 }) {
   // 모달 끄기
-
+  const socket = useContext(SocketContext).chatSocket;
   const [passWord, setPassWord] = useState("");
   const [disabled, setDisabled] = useState(false);
 
@@ -87,4 +86,3 @@ function ModalBasic({
     </div>
   );
 }
-export default ModalBasic;

@@ -8,7 +8,7 @@ const Home = () => {
 	useEffect(() => {
 		router.push('Log');
 		console.log("enter");
-	})
+	},[])
 
 	return(
 		<div>
