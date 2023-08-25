@@ -53,6 +53,8 @@ services:
     ports:
       - 80:80
     command: sh /app/dev.sh
+    volumes:
+      - nextjs_volume:/app
     # for dev
     # command: [nginx-debug, '-g', 'daemon off;']
 
@@ -67,7 +69,12 @@ volumes:
   nestjs_volume:
     driver_opts:
       type: none
-      device: /Users/${NEST_PATH}/src/backend
+      device: /Users/namkim/backend/src/backend
+      o: bind
+  nextjs_volume:
+    driver_opts:
+      type: none
+      device: /Users/namkim/backend/src/frontend
       o: bind
 #     name: postgresql_volume
 #     driver_opts:

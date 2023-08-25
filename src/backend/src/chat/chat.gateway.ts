@@ -40,29 +40,18 @@ export class ChatGateway
 
 	async handleConnection(@ConnectedSocket() client: ChatSocket) {
 		this.logger.log(`Client Connected : ${client.id}`);
-		console.log("query!!", JSON.stringify(client.handshake.query, null, 2));
-		/* Authentification */
-		// console.log(this.storeUser.findAllUser());
-		// const userId = await this.chatService.clientAuthentification(client);
+		//TODO : erase
 		client.data.id = parseInt(client.userId);
 		client.data.nickname = client.handshake.query.nickname;
 		const userId = client.data.id;
-		console.log("here");
-		console.log(userId, client.data.nickname);
-		
-		//TODO : 아니 생각해보니까 이때도 유 저가 이미 들어있던 방들에게 유저가 돌아왔다는 걸 통보해야 한다...!
-		// console.log("new connection");
-		// const thisUser = this.storeUser.findUserById(userId);
-		// console.log(`found user : ${JSON.stringify(thisUser)}`);
-		// console.log(client.id);
-		client.onAny((any) => {
-			console.log(any);
+
+		//log any events
+		client.onAny((any : any) => {
+			this.logger.log(`accept event : ${any}`);
 		})
 
 		/* Initialize */
-		//유저가 원래 DB에 있던 유저가 아니면 추가
-		//그 default room과 dm room에 각각 join후 필요한 정보 emit(각 소켓 별)
-		await this.chatService.newUserConnected(this.io, client, userId, client.data.nickname);
+		await this.chatService.newConnection(this.io, client, userId, client.data.nickname);
 		
 		client.on("sendChatMessage", (to, body) => {
 			console.log("i got it!")
@@ -87,7 +76,7 @@ export class ChatGateway
 
 		//TODO : 미완성
 		client.on("sendRoomLeave", (room) => {
-			this.chatService.userLeaveRoom(this.io, client.data.id, room);
+			this.chatService.userLeaveRoom(this.io, client, room);
 			this.chatService.userLeaveRoomAct(this.io, client, room);
 		});
 
@@ -160,7 +149,7 @@ export class ChatGateway
     });
 
     client.on('requestAllRoomList', () => {
-      const roomInfo = this.chatService.getAllRoomList();
+      const roomInfo = this.chatService.getAllRoomList(client.data.id);
       client.emit('sendRoomList', roomInfo);
     });
 
@@ -227,4 +216,17 @@ export class ChatGateway
     this.logger.log(client.data.nickname + '나감');
     await this.chatService.disconnectUser(this.io, client.data.id);
   }
+
+	userUpdateNick(userId : number, newNick : string) {
+		this.io.emit("updateUserNick", userId, newNick);
+	}
+
+	userUpdateAvatar(userId : number){
+		this.io.emit("updateUserAvatar", userId);
+	}
+
+	userUpdateStatus(userId : number, isConnected : boolean){
+		this.io.emit("updateUserStatus", userId, isConnected);
+	}
+
 }
