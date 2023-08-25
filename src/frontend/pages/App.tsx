@@ -25,6 +25,13 @@ export const SocketContext = createContext<SocketContent>({
   gameSocket: null,
 });
 
+export type AppContent = {
+  gameSocket: any;
+}
+export const AppContext = createContext<AppContent>({
+  gameSocket: null,
+});
+
 export type UserOnChat = {
   id: string;
   isCreator: boolean;
@@ -90,27 +97,7 @@ export default function App() {
       setGameSocket(getSocket("game"));
     }
   }, [tmpIsLoggedIn, tmpLoginnickname, tmpLoginID, jwt])
-
-  // useEffect(
-  //   function () {
-  //     function chkLogin() {
-  //       if (tmpIsLoggedIn) {
-  //         socket.io.opts.query = {
-  //           id: tmpLoginID,
-  //           nickname: tmpLoginnickname,
-  //         };
-  //         socket.connect();
-  //         console.log("in chkLogin ", socket);
-  //         socket.emit("sendnicknameID", {
-  //           id: tmpLoginID,
-  //           nickname: tmpLoginnickname,
-  //         });
-  //       }
-  //     }
-  //     chkLogin();
-  //   },
-  //   [tmpIsLoggedIn, tmpLoginnickname, tmpLoginID]
-  // );
+ 
 
   useEffect(() => {
     function sendBlocklist(result: any) {
@@ -238,6 +225,7 @@ export default function App() {
     }}>
       {!tmpIsLoggedIn ? (
         <TempLogin
+
           tmpLoginID={tmpLoginID}
           setTmpLoginID={setTmpLoginID}
           tmpLoginnickname={tmpLoginnickname}
@@ -266,6 +254,7 @@ export default function App() {
             setIsLoading={setIsLoading}
             setLeftHeader={setLeftHeader}
             setError={setError}
+
           />
           <Main>
             <Box>
