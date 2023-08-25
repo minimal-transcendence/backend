@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ChallengeInfo, Mode } from 'src/game/game.types';
 
 //Match랑 Challenge랑 머선 차이죠 -> match는 방에, challenge는 1:1 신청에? 하지만 정보가 같다...!
 export class Match {

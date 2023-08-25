@@ -56,8 +56,8 @@ export class GameGateway
 				if (room.gameStart) {
 					// Save Game Result in DB
 					this.matchService.createMatchHistory({
-						winnerId: parseInt(room.winner.userId),
-						loserId: parseInt(room.loser.userId)
+						winnerId: room.winner.userId,
+						loserId: room.loser.userId
 					})
 					this.io.to(e).emit('gameOver', {
 					roomName: e,
@@ -81,7 +81,7 @@ export class GameGateway
 		}, 1000)
 	}
 
-	handleConnection(@ConnectedSocket() client: GameSocket, userId : string, ) {
+	handleConnection(@ConnectedSocket() client: GameSocket) {
 
 		client.inGame = false;
 		client.invitationList = [];
@@ -226,6 +226,10 @@ export class GameGateway
 
     // check if user in the room
     this.gameService.validatePlayerInRoom(client, room);
+  // check if room is already in game
+    if (room.gameStart) {
+      return;
+    }
 
     if (client.id === room.player[0].id) {
       room.playerAccept[0] = true;
@@ -245,6 +249,10 @@ export class GameGateway
   handleDecline(client: GameSocket, roomName:string) {
     // check if user in the room
     this.gameService.validatePlayerInRoom(client, this.gameRooms[roomName]);
+    // check if room is already in game
+    if (this.gameRooms[roomName].gameStart) {
+      return;
+    }
 
     this.gameRooms[roomName].player[0].inGame = false;
     this.gameRooms[roomName].player[1].inGame = false;

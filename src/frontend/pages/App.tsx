@@ -25,6 +25,13 @@ export const SocketContext = createContext<SocketContent>({
   gameSocket: null,
 });
 
+export type AppContent = {
+  gameSocket: any;
+}
+export const AppContext = createContext<AppContent>({
+  gameSocket: null,
+});
+
 export type UserOnChat = {
   id: string;
   isCreator: boolean;
@@ -58,59 +65,29 @@ export default function App() {
   const [blocklist, setBlocklist] = useState<any>([]);
 
   // seunchoi - for socket connection
-  const [jwt, setJwt] = useState<string>('');
-  const [nickname, setNickname] = useState<string>('');
   const [gameLoad, setGameLoad] = useState<boolean>(false);
-  const [socket, setSocket] = useState<Socket>(io.connect());
-  const [gameSocket, setGameSocket] = useState<Socket>(io.connect());
+  // Get Empty Socket Instance
+  const [socket, setSocket] = useState<Socket>(io.connect("", { query: { "nickname": "" }}));
+  const [gameSocket, setGameSocket] = useState<Socket>(io.connect("", { query: { "nickname": "" }}));
 
   useEffect(() => {
-    const jwtItem = localStorage.getItem("access_token");
-    if (jwtItem) {
-      setJwt(jwtItem);
-    }
-    const nicknameItem = localStorage.getItem("nickname");
-    if (nicknameItem) {
-      setNickname(nicknameItem);
-    }
-    console.log("Jwt and Nickname Set State");
-  }, []);
-
-  useEffect(() => {
-    const getSocket = (namespace: string) => {
+    const getSocket = (namespace: string, jwt: string, nickname: string) => {
       return io.connect(`http://localhost/${namespace}`, {
-        query: { "nickname": nickname },
+        query: { "nickname": nickname, },
         auth: { token: jwt },
       });
     }
-    // Run whenever jwt state updated
-    if (tmpIsLoggedIn) {
-      console.log("Try Web Socket Connection");
-      setSocket(getSocket("chat"));
-      setGameSocket(getSocket("game"));
-    }
-  }, [tmpIsLoggedIn, tmpLoginnickname, tmpLoginID, jwt])
 
-  // useEffect(
-  //   function () {
-  //     function chkLogin() {
-  //       if (tmpIsLoggedIn) {
-  //         socket.io.opts.query = {
-  //           id: tmpLoginID,
-  //           nickname: tmpLoginnickname,
-  //         };
-  //         socket.connect();
-  //         console.log("in chkLogin ", socket);
-  //         socket.emit("sendnicknameID", {
-  //           id: tmpLoginID,
-  //           nickname: tmpLoginnickname,
-  //         });
-  //       }
-  //     }
-  //     chkLogin();
-  //   },
-  //   [tmpIsLoggedIn, tmpLoginnickname, tmpLoginID]
-  // );
+    const nicknameItem = localStorage.getItem("nickname");
+    const jwtItem = localStorage.getItem("access_token");
+
+    // Run whenever jwt state updated
+    if (tmpIsLoggedIn && nicknameItem && jwtItem) {
+      console.log("Try Web Socket Connection");
+      setSocket(getSocket("chat", jwtItem, nicknameItem));
+      setGameSocket(getSocket("game", jwtItem, nicknameItem));
+    }
+  }, [tmpIsLoggedIn, tmpLoginnickname, tmpLoginID])
 
   useEffect(() => {
     function sendBlocklist(result: any) {
@@ -238,6 +215,7 @@ export default function App() {
     }}>
       {!tmpIsLoggedIn ? (
         <TempLogin
+
           tmpLoginID={tmpLoginID}
           setTmpLoginID={setTmpLoginID}
           tmpLoginnickname={tmpLoginnickname}
@@ -259,13 +237,14 @@ export default function App() {
           </div>
           {/* seunchoi - TEST */}
           <button onClick={handleGameOnOff}>game on/off</button>
-          <TempRandomMatch/>
+          {gameLoad && <TempRandomMatch/>}
           <NavBar
             query={query}
             setQuery={setQuery}
             setIsLoading={setIsLoading}
             setLeftHeader={setLeftHeader}
             setError={setError}
+
           />
           <Main>
             <Box>

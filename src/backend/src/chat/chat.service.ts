@@ -22,11 +22,6 @@ export class ChatService {
 		private jwtService : JwtService
 	){}
 
-	//이렇게 사용 가능? -> 불가
-	//????
-	// @WebSocketServer()
-	// server : Server;
-
 	async clientAuthentification(client : ChatSocket) : Promise<number> {
 		
 		try {
