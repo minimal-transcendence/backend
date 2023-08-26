@@ -30,6 +30,7 @@ export type UserOnChat = {
 export type TempSearch = {
   roomname: string;
   lastMessage: string;
+  lastMessageFrom: string;
   messageNew: boolean;
   users: UserOnChat[];
 };
@@ -105,10 +106,12 @@ export default function App() {
           2
         )}> 내 방은 <${currentRoomName}>`
       );
+
       setTempSearchList((results) => {
         return results.map((result) => {
           if (result.roomname === roomname) {
             result.lastMessage = `${data.body}`;
+            result.lastMessageFrom = data.from;
             if (roomname === currentRoomName) {
               result.messageNew = false;
             } else {
@@ -183,7 +186,7 @@ export default function App() {
       socket.off("sendRoomMembers", sendRoomMembers);
       socket.off("sendDM", sendDM);
     };
-  }, [currentRoomName, results, messages, socket]);
+  }, [currentRoomName, results, messages, socket, blocklist]);
 
   return (
     <SocketContext.Provider value={socket}>
@@ -229,6 +232,7 @@ export default function App() {
                     leftHeader={leftHeader}
                     setLeftHeader={setLeftHeader}
                     setroomnameModal={setroomnameModal}
+                    blocklist={blocklist}
                   />
                   <DMlist />
                 </>

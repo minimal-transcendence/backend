@@ -14,6 +14,7 @@ export default function SearchList({
   isOpenModal,
   setIsOpenModal,
   setTempSearchList,
+  blocklist,
 }: {
   results: any;
   query: any;
@@ -23,6 +24,7 @@ export default function SearchList({
   isOpenModal: boolean;
   setIsOpenModal: any;
   setTempSearchList: any;
+  blocklist: any;
 }) {
   const socket = useContext(SocketContext);
   console.log("in searchList ", results);
@@ -68,6 +70,7 @@ export default function SearchList({
           <SearchListHeader
             results={results}
             query={query}
+            blocklist={blocklist}
             leftHeader={leftHeader}
             setLeftHeader={setLeftHeader}
             setroomnameModal={setroomnameModal}
@@ -83,6 +86,7 @@ export default function SearchList({
         <SearchListHeader
           results={results}
           query={query}
+          blocklist={blocklist}
           leftHeader={leftHeader}
           setLeftHeader={setLeftHeader}
           setroomnameModal={setroomnameModal}

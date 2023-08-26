@@ -12,12 +12,14 @@ export default function SearchListHeader({
   leftHeader,
   setLeftHeader,
   setroomnameModal,
+  blocklist,
 }: {
   results: any;
   query: any;
   leftHeader: any;
   setLeftHeader: any;
   setroomnameModal: any;
+  blocklist: any;
 }) {
   const socket = useContext(SocketContext);
 
@@ -118,6 +120,7 @@ export default function SearchListHeader({
           {tmpResults?.map((el: any) => (
             <SearchResult
               el={el}
+              blocklist={blocklist}
               key={el.roomname}
               onSelectRoom={handleSelectRoom}
             />
