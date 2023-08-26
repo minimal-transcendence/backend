@@ -13,16 +13,16 @@ export default function GameList({ myNickName }: { myNickName: string }) {
   const [rightArrow, setRightArrow] = useState<boolean>(false);
 
   useEffect(() => {
-    function updateGameList(data: any) {
-      console.log(`in UpdateGameList ${JSON.stringify(data, null, 2)}`);
+    function updateInvitationList(data: any) {
+      console.log(`in updateInvitationList ${JSON.stringify(data, null, 2)}`);
 
       setGameList(() => data);
     }
 
-    socket.on("updateGameList", updateGameList);
+    socket.on("updateInvitationList", updateInvitationList);
 
     return () => {
-      socket.off("updateGameList", updateGameList);
+      socket.off("updateInvitationList", updateInvitationList);
     };
   }, [socket]);
 
