@@ -14,7 +14,7 @@ model User {
   id           Int            @id
   nickname     String?        @unique @db.VarChar(12)
   email        String?        @unique
-  avatar       String         @default("app/photo/default.png")
+  avatar       String         @default("path")
   score        Int            @default(0)
   createdAt    DateTime       @default(now())
   lastLogin    DateTime       @updatedAt
@@ -22,7 +22,6 @@ model User {
   refreshToken String?
   tokenExp     Int?
   otpSecret    String?
-  isOtpVerified Boolean       @default(false)
   is2faEnabled Boolean        @default(false)
   asWinner     MatchHistory[] @relation("WinnerMatchHistory")
   asLoser      MatchHistory[] @relation("LoserMatchHistory")

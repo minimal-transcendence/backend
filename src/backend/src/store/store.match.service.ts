@@ -1,20 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { Mode } from 'src/game/game.types';
 
+//Match랑 Challenge랑 머선 차이죠 -> match는 방에, challenge는 1:1 신청에? 하지만 정보가 같다...!
 export class Match {
 	player1Id : number;
 	// player1SocketId : string;
 	player2Id : number;
 	// player2SocketId : string;
 	mode : number;	//or just number	//줄곧 저장할 필요가 있을까?
+	// constructor(player1Id : number, player2Id : number, paddlemode : number, speedmode : number){
 	constructor(player1Id : number, player2Id : number, mode : number){
 		this.player1Id = player1Id;
 		this.player2Id = player2Id;
 		this.mode = mode;
 	}
+	// convertMode(paddlemode : number, speedmode : number) : number {
+	// 	return (paddlemode + speedmode * 3);
+	// }
 }
 
-//id를 부여할지...?
+// //id를 부여할지...?
 export class Challenge {
 	// id : number;
 	from : number;

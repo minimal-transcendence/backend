@@ -43,7 +43,7 @@ export class UserService {
     }
 
 	/*
-		[ TODO ]
+		[ TODO ] 
 	1. id, nickname, score 등 화면에 뿌릴 column 목록 정하기
 	2. 최근 접속 순 (updatedAt) 정렬? or score순? or 복합
 	3. pagenation 필요? (유저 목록 표시 방법 : scroll, board-style, etc.)
@@ -88,8 +88,8 @@ export class UserService {
 	}
 	//현재 문법 가능한지 check
 	async updateUserById(
-		id: number,
-		data : Prisma.UserUpdateInput,
+		id: number, 
+		data : Prisma.UserUpdateInput, 
 		file? : Express.Multer.File)
 	{
 		return await this.prisma.user.update({
@@ -158,7 +158,7 @@ export class UserService {
 			where : { id },
 			select : { friends : true }
 		});
-
+	
 		if (data.isAdd == true) {
 			//friend validatity check
 			await this.prisma.user.findUniqueOrThrow({
@@ -204,7 +204,7 @@ export class UserService {
 			},
 			select : {
 				winner : {
-					select : {
+					select : { 
 						nickname : true,
 						avatar : true
 					}
@@ -233,3 +233,4 @@ export class UserService {
 		return new StreamableFile(file);
 	}
 }
+

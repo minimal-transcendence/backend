@@ -1,90 +1,487 @@
-import { ConnectedSocket, OnGatewayConnection, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Namespace, Server, Socket } from 'socket.io';
-import { ChatGateway } from 'src/chat/chat.gateway';
+import { Logger } from '@nestjs/common';
+import {
+	ConnectedSocket,
+	OnGatewayConnection,
+	OnGatewayDisconnect,
+	OnGatewayInit,
+	SubscribeMessage,
+	WebSocketGateway,
+	WebSocketServer,
+} from '@nestjs/websockets';
+import { Namespace } from 'socket.io';
+import { 
+	Invitation,
+  	GameSocket,
+  	KeydownPayload
+} from './types';
+import { GameRoom } from './GameRoom';
 import { GameService } from './game.service';
+import { MatchService } from 'src/match/match.service';
 
+// let readyPlayerCount: number = 0;
 
-//@UseGuards(JwtGuard)
-@WebSocketGateway(3002, {
-	cors : {
-		origin : 'http://localhost'
-	},
-	namespace : '/game',
-	pingInterval : 5000,
-	pingTimeout: 3000
+@WebSocketGateway({
+	namespace: 'game',
+	pingTimeout: 2000,
+	pingInterval: 5000,
 })
-export class GameGateway implements OnGatewayInit, OnGatewayConnection{
+export class GameGateway
+	implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
+{
+	private readonly logger = new Logger(GameGateway.name);
+	private randomMatchQueue = {
+		easy: [],
+		normal: [],
+		hard: []
+	}
+	private gameRooms = {};
 
-	@WebSocketServer() 
-	server : Namespace;
-		
-	// chatNamespace: Namespace;
-	constructor (
-		private gameService : GameService,
+	constructor(
+		private gameService: GameService,
+		private matchService: MatchService
 	){}
-	chatNamespace : Namespace;
-	
-	async afterInit(io : Server) {
-		this.chatNamespace = io.of("chat")
-		// this.chatNamespace = server.of('chat');
-		// console.log('io : ' + JSON.stringify(io));
+
+	@WebSocketServer()
+	io : Namespace;
+
+	afterInit(){
+		this.logger.log('GAME 웹소켓 서버 초기화 ✅');
+
+		// Monitoring finished Game - clear game room instance
+		setInterval(() => {
+			for (let e in this.gameRooms) {
+				console.log("GameRoom:", e);
+				if (this.gameRooms[e].gameOver) {
+				const room: GameRoom = this.gameRooms[e];
+				if (room.gameStart) {
+					// Save Game Result in DB
+					this.matchService.createMatchHistory({
+						winnerId: room.winner.userId,
+						loserId: room.loser.userId
+					})
+					this.io.to(e).emit('gameOver', {
+					roomName: e,
+					winner: room.winner.nickname,
+					loser: room.loser.nickname
+					});
+				}
+
+				// Set player status
+				if (room.player[0]) {
+					room.player[0].inGame = false;
+				}
+				if (room.player[1]) {
+					room.player[1].inGame = false;
+				}
+
+				// Delete GameRoom Instance
+				delete this.gameRooms[e];
+				}
+			}
+		}, 1000)
 	}
 
-	async handleConnection(io : Server, @ConnectedSocket() client: Socket) {
-		console.log("hello i'm game user!");
-		// this.chatGateway.server.emit("sendChatMessage", "game", "hihi");
-		this.chatNamespace.emit("sendMessage", "game", "hihi");
-		// this.gameService.sendMessage("sendChatMessage", "chat chat chat")
-		io.of("/chat").emit("sendChatMessage", "hihi gamer");
-		client.emit("gameHello", "hello gamer!");
-	}
-/*
-	일단 생각해보자.... game 은 어느시점에 들어오게 되지?
-	// Game소켓으로 접속 지점
-		1. 1:1 매치 신청
-		2. 랜덤 매치 신청
-	//신청
-	//이 시점에 상대방의 승낙을 기다리는 중입니다 <- 화면으로 넘어가는게 적절하지 않을까? 이 다음에 게임화면으로 넘어옴 (대기화면 1)
-		상대가 이미 게임 중 -> 게임 중인 상대에게는 매치를 신청할 수 없습니다 (알람)
-		상대방에게 신청이 온 것을 알림 : 수락하시겠습니까? -> 예 / 아니오
-			//상대방 수락 시 : Are you Ready? -> 카운트 다운
-			//상대방 거절 시 : 상대방이 신청을 거절하였습니다 -> (승낙대기 화면 해제)
-	
-	//랜덤매치의 경우도 마찬가지로 대기화면? or 화면 상단에 매칭 대기 중입니다 < 표시?
-	//랜덤 큐에 있다가 신청 된 경우 : OO님과의 게임이 곧 시작됩니다!
-		<- 수락 / 거절 기능을 줄 것인가?
-			//줄 경우 : 거절당한 사람은 다시 큐의 끝에? 아님 그래도 앞에 밀어넣어 줄 것인가? -> 귀찮으니까 관두자
-		// 포기하고 나가기 / 카운트 다운 후 게임 시작
-	//일단 카운트 다운에 들어간 팀은 큐에서 빠져나가야겠지?
-	
-	//게임 시작
-		//게임 중 "포기하고 나가기" or
-		//게임 끝 : 작용이 어떻게 되지? 클라이언트가 나에게 패한걸 알려주나?? --> DB에 기록
+	handleConnection(@ConnectedSocket() client: GameSocket) {
 
-		//paddle move
-		//ball move
-	//한 판 더 하시겠습니까? <- 네 / 아니오 : 거절해도 패하지 않게 처리 & 시간 지나면 자동으로 게임 수락 (랜덤매치 승낙/거절에도 쓸 수 있는 듯?)
-	//여기서 더 게임이 진행되지 않으면? 게임 소켓에서 접속 종료 -> 자동으로 채팅 화면으로 돌아가기
+		client.inGame = false;
+		client.invitationList = [];
 
-	//큐를 두 개 쓰는게 안전할지도
-	//유저 정보는 chat에 있는거 갖다쓸 수 있나...? namespace 분리하려면 안 하는게 좋을 것 같음
-	//여기서 유저한테 필요한 정보...? id ... ? 화면에 뿌려주려면 승률 랭킹 아래 정도로 표시하자 그럼 안 심심할듯!
-	//player 1
-	//YSUNGWON
-	//99.9%
-	//RANK 1
-*/
-
-
-  @SubscribeMessage('oneVsOneApply')
-  handleMessage(client: any, payload: any): string {
-    return 'Hello world!';
+		const sockets = this.io.sockets;
+		this.logger.log(`Game Client Connected : ${client.nickname}`);
+		this.logger.debug(`Number of connected Game sockets: ${sockets.size}`)
   }
-  
 
-//   @SubscribeMessage('test')
-//   sendMsgToChat(client: any): void {
+	handleDisconnect(@ConnectedSocket() client: GameSocket) {
+		// leave game
+		if (client.inGame) {
+			for (let e in this.gameRooms) {
+				const room: GameRoom = this.gameRooms[e];
+				// If client is in game
+				if (room.player[0] || room.player[1]) {
+					// Set Room Game Over - monitoring interval will emit/clean the room
+					room.gameOver = true;
+					// if started game
+					if (room.gameStart) {
+						// Stop Inteval
+						clearInterval(room.interval);
+						// Set winner
+						room.winner = client === room.player[0] ? room.player[1] : room.player[0];
+						room.loser = client;
+
+						console.log("-----Game Over-----");
+						console.log("Winner:", room.winner.nickname);
+						console.log("Loser:", room.loser.nickname);
+						console.log("-------Score-------");
+						console.log(`${room.playerScore[0]} - ${room.player[0].id}`);
+						console.log(`${room.playerScore[1]} - ${room.player[1].id}`);
+					} else {
+						this.io.to(room.name).emit('matchDecline', room.name);
+					}
+				}
+			}
+		}
+
+		const sockets = this.io.sockets;
+		this.logger.log(`Game Client Disconnected : ${client.nickname}`);
+		this.logger.debug(`Number of connected Game sockets: ${sockets.size}`)
+	}
+
+  /*-------------Random Match-----------------------*/
+
+  @SubscribeMessage('randomMatchApply')
+  handleRandomMatchApply(client: GameSocket, mode: string) {
+    // client is in game
+    console.log(mode);
+    if (client.inGame) {
+      return;
+    }
+
+	// if no matched mode, set default mode to normal
+	if (!mode || (mode !== "easy" && mode !== "normal" && mode !== "hard")) {
+		mode = "normal";
+		console.log(`mode set to default: ${mode}`);
+	}
+
+    // set random match queue
+	let matchQueue: GameSocket[] = this.randomMatchQueue[mode];
+
+    // remove duplication
+    if (matchQueue.includes(client)) {
+      return;
+    }
+
+	// delete client from other random match queue
+	for (let e in this.randomMatchQueue) {
+		if (e !== mode) {
+			this.randomMatchQueue[e] = this.randomMatchQueue[e].filter(item => item !== client);
+		}
+	}
+
+    // push client in queue
+    matchQueue.push(client);
+
+	console.log(this.randomMatchQueue["easy"].length);
+	console.log(this.randomMatchQueue["normal"].length);
+	console.log(this.randomMatchQueue["hard"].length);
+
+    // More than 2 players in queue
+    if (matchQueue.length >= 2) {
+      let playerOne = matchQueue[0];
+      let playerTwo = matchQueue[1];
+      // if player aleady is in game
+      // delete player from queue
+      if (playerOne.inGame) {
+        matchQueue =
+          matchQueue.filter(item => item !== playerOne);
+        return;
+      }
+      if (playerTwo.inGame) {
+        matchQueue =
+          matchQueue.filter(item => item !== playerTwo);
+        return;
+      }
+      // Create New Game Room
+      const roomName = `room_${playerOne.nickname}_${playerTwo.nickname}`;
+      this.gameRooms[roomName] = new GameRoom({
+        name: roomName,
+        player: [playerOne, playerTwo],
+        mode: mode
+      });
+
+      playerOne.inGame = true;
+      playerTwo.inGame = true;
+
+      console.log("create game room:", roomName);
+
+      // Add Players into Game Room
+      playerOne.join(roomName);
+      playerTwo.join(roomName);
+      // Delete Players from Random Match Queue
+      matchQueue.splice(0, 2);
+      // Ask Match Accept
+      this.io.to(roomName).emit('matchStartCheck', {
+        roomName: roomName,
+        player: [playerOne.nickname, playerTwo.nickname],
+        mode: mode
+      });
+    }
+  }
+
+  @SubscribeMessage('randomMatchCancel')
+  handleRandomMatchCancel(client: GameSocket) {
+	for (const e in this.randomMatchQueue) {
+		this.randomMatchQueue[e] = this.randomMatchQueue[e].filter(item => item !== client);
+	}
+
+	console.log(this.randomMatchQueue["easy"].length);
+	console.log(this.randomMatchQueue["normal"].length);
+	console.log(this.randomMatchQueue["hard"].length);
+  }
+
+  /*-------------Match Accept-----------------------*/
+
+  @SubscribeMessage('matchAccept')
+  handleAccept(client: GameSocket, roomName: string) {
+    let room: GameRoom = this.gameRooms[roomName];
+
+    // check if user in the room
+    this.gameService.validatePlayerInRoom(client, room);
+  // check if room is already in game
+    if (room.gameStart) {
+      return;
+    }
+
+    if (client.id === room.player[0].id) {
+      room.playerAccept[0] = true;
+    }
+    else if (client.id === room.player[1].id) {
+      room.playerAccept[1] = true;
+    }
+
+    // Start Game
+    if (room.playerAccept[0] && room.playerAccept[1]) {
+      this.gameService.startGame(this.io, room);
+    };
     
+  }
+
+  @SubscribeMessage('matchDecline')
+  handleDecline(client: GameSocket, roomName:string) {
+    // check if user in the room
+    this.gameService.validatePlayerInRoom(client, this.gameRooms[roomName]);
+    // check if room is already in game
+    if (this.gameRooms[roomName].gameStart) {
+      return;
+    }
+
+    this.gameRooms[roomName].player[0].inGame = false;
+    this.gameRooms[roomName].player[1].inGame = false;
+
+    this.io.to(roomName).emit('matchDecline', roomName);
+    // delete game room
+    delete this.gameRooms[roomName];
+  }
+
+  /*---------------------One on One-----------------------------------*/
+
+  @SubscribeMessage('oneOnOneApply')
+  handleOneOnOneApply(client: GameSocket, payload: Invitation) {
+	console.log(payload.to);
+    // Get By Nickname
+    const toClient: GameSocket = this.gameService.getSocketByNickname(this.io, payload.to);
+
+    if (!toClient) {
+      return `ERR no such user: ${payload.to}`;
+    }
+
+    // 중복확인
+    for (let e in client.invitationList) {
+      if (this.gameService.objectsAreSame(client.invitationList[e], payload)) {
+        return `ERR aleady invite ${payload.to}`;
+      }
+    }
+
+    // update list on each client
+    client.invitationList.push(payload);
+    toClient.invitationList.push(payload);
+
+    // send invitation list
+    client.emit('updateInvitationList', client.invitationList);
+    toClient.emit('updateInvitationList', toClient.invitationList);
+
+    console.log(`${client.nickname} - list size: ${client.invitationList.length}`);
+    console.log(`${toClient.nickname} - list size: ${toClient.invitationList.length}`);
+  }
+
+  @SubscribeMessage('oneOnOneAccept')
+  handleOneOnOneAccept(client: GameSocket, payload: Invitation) {
+    for (let e in client.invitationList) {
+      if (client.invitationList[e].from === payload.from) {
+		// delete invitation from client
+		client.invitationList = client.invitationList.filter((item: Invitation) => 
+		!this.gameService.objectsAreSame(item, payload));
+		// send invitation list to client
+		client.emit('updateInvitationList', client.invitationList);
+
+        // Get By Nickname
+        const fromClient: GameSocket = this.gameService.getSocketByNickname(this.io, payload.from);
+
+        if (!fromClient) {
+          return `ERR no such user: ${payload.from}`;
+        }
+
+        if (fromClient.inGame) {
+          return `ERR ${payload.from} is in game`;
+        }
+
+        // Create New Game Room
+        const roomName = `room_${fromClient.nickname}_${client.nickname}`;
+        this.gameRooms[roomName] = new GameRoom({
+          name: roomName,
+          player: [fromClient, client],
+          mode: payload.mode
+        });
+
+        fromClient.inGame = true;
+        client.inGame = true;
+
+        // Add Players into Game Room
+        fromClient.join(roomName);
+        client.join(roomName);
+
+        console.log("create game room:", roomName);
+
+        // Delete Invitations from fromClient
+        fromClient.invitationList = fromClient.invitationList.filter((item: Invitation) => 
+          !this.gameService.objectsAreSame(item, payload));
+		// send invitation list to fromClient
+		fromClient.emit('updateInvitationList', fromClient.invitationList);
+
+        // Ask Match Accept
+        this.io.to(roomName).emit('matchStartCheck', {
+          roomName: roomName,
+          player: [fromClient.nickname, client.nickname],
+          mode: payload.mode
+        });
+
+        console.log(`${fromClient.id} - list size: ${fromClient.invitationList.length}`);
+        console.log(`${client.id} - list size: ${client.invitationList.length}`);
+        
+        return;
+      }
+    }
+    return `ERR no invitation from ${payload.from}`;
+  }
+
+  @SubscribeMessage('oneOnOneDecline')
+  handleOneOnOneDecline(client: GameSocket, payload: Invitation) {
+	// delete invitation from client
+	client.invitationList = client.invitationList.filter((item: Invitation) => 
+		!this.gameService.objectsAreSame(item, payload));
+	// emit updated list
+	client.emit('updateInvitationList', client.invitationList);
+
+	// Get another player socket by nickname
+    const fromClient: GameSocket = this.gameService.getSocketByNickname(this.io, payload.to);
+	if (fromClient) {
+		// delete invitation from client
+		fromClient.invitationList = fromClient.invitationList.filter((item: Invitation) => 
+		!this.gameService.objectsAreSame(item, payload));
+		// emit updated list
+		fromClient.emit('updateInvitationList', fromClient.invitationList);
+	}
+  }
+
+  /*---------------------In Game--------------------------------------*/
+
+  // In Game
+  @SubscribeMessage('keydown')
+  handleKeydown(client: GameSocket, payload: KeydownPayload) {
+    // client is not in game
+    if (!client.inGame) {
+      return;
+    }
+
+    // check if user in the room
+    this.gameService.validatePlayerInRoom(client, this.gameRooms[payload.roomName]);
+
+    let room = this.gameRooms[payload.roomName];
+
+    switch (payload.key) {
+      case 'ArrowLeft':
+        if (client === room.player[0]) {
+          room.paddleX[0] -= 7;
+          if (room.paddleX[0] <= 0) {
+            room.paddleX[0] = 0;
+          }
+        }
+        else {
+          room.paddleX[1] -= 7;
+          if (room.paddleX[1] <= 0) {
+            room.paddleX[1] = 0;
+          }
+        }
+        break;
+      case 'ArrowRight':
+        if (client === room.player[0]) {
+          room.paddleX[0] += 7;
+          if (room.paddleX[0] >= room.canvasWidth - room.paddleWidth) {
+            room.paddleX[0] = room.canvasWidth - room.paddleWidth;
+          }
+        }
+        else {
+          room.paddleX[1] += 7;
+          if (room.paddleX[1] >= room.canvasWidth - room.paddleWidth) {
+            room.paddleX[1] = room.canvasWidth - room.paddleWidth;
+          }
+        }
+        break;
+    }
+  }
+  /*-----------------------Nickname Changed------------------------------*/
+  @SubscribeMessage('changeNick')
+  handleNicknameChanged(client: GameSocket, nickname: string) {
+	const sockets = this.io.sockets;
+	const oldNickname = client.nickname;
+
+	/*
+	얕은 복사가 이뤄졌기 때문에 Invitation 객체가 수정되면 이 객체를 가지고 있는 다른 invitationList도 값이 변경됨.
+	=> 주소값을 공유하고 있는 형태
+	*/
+	client.invitationList.forEach((invit: Invitation) => {
+		if (invit.from === oldNickname) {
+			invit.from = nickname;
+		} else if (invit.to === oldNickname) {
+			invit.to = nickname;
+		}
+	});
+
+	// emit
+	sockets.forEach((socket: GameSocket) => {
+		socket.invitationList.forEach((invit: Invitation) => {
+			if (invit.from === nickname || invit.to === nickname) {
+				socket.emit('updateInvitationList', socket.invitationList);
+				return false;
+			}
+		});
+	});
+
+	// Set client's new nickname
+	console.log(`${client.nickname} is now ${nickname}`);
+	client.nickname = nickname;
+  }
+
+//   @SubscribeMessage('nicknameChanged')
+//   handleNicknameChanged(client: GameSocket, nickname: string) {
+// 	const sockets = this.io.sockets;
+// 	const oldNickname = client.nickname;
+
+// 	sockets.forEach((socket: GameSocket) => {
+// 		console.log("In loop", socket.nickname);
+// 		console.log("Invt List", socket.invitationList);
+// 		let listChanged = false;
+
+// 		socket.invitationList.forEach((invit: Invitation) => {
+// 			if (invit.from === oldNickname) {
+// 				console.log("In from", socket.nickname);
+// 				invit.from = nickname;
+// 				listChanged = true;
+// 			}
+// 			if (invit.to === oldNickname) {
+// 				console.log("In to", socket.nickname);
+// 				invit.to = nickname;
+// 				listChanged = true;
+// 			}
+// 		});
+
+// 		if (listChanged) {
+// 			socket.emit('updateInvitationList', socket.invitationList);
+// 			console.log("In emit", socket.nickname);
+// 		};
+// 	});
+
+// 	// Set client's new nickname
+// 	console.log(`${client.nickname} is now ${nickname}`);
+// 	client.nickname = nickname;
 //   }
-  
 }

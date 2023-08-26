@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { SocketContext } from "../../../context/socket";
+import { SocketContext } from "@/pages/App";
 
 import SearchListCreateRoom from "./SearchListCreateRoom";
 import SearchSelect from "./SearchSelect";
@@ -21,7 +21,7 @@ export default function SearchListHeader({
   setroomnameModal: any;
   blocklist: any;
 }) {
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
 
   const [page, setPage] = useState<number>(1);
   const [leftArrow, setLeftArrow] = useState<boolean>(false);

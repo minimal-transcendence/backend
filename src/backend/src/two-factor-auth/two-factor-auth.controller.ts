@@ -34,8 +34,14 @@ export class TwoFactorAuthController {
             throw new UnauthorizedException('Invalid otp code');
         }
 
-        const access_token = await this.authService.generateAccessToken(user);
-        const refresh_token = await this.authService.generateRefreshToken(user);
+        const access_token = await this.authService.generateAccessToken({
+            id: user.id,
+            email: user.email
+        });
+        const refresh_token = await this.authService.generateRefreshToken({
+            id: user.id,
+            email: user.email
+        });
 
         // hashing refresh token
         const hashedRefreshToken = await this.authService.getHashedRefreshToken(refresh_token);
@@ -57,7 +63,6 @@ export class TwoFactorAuthController {
         return res.send({
             message: 'new jwt generated',
             access_token: access_token,
-            access_token_exp: process.env.JWT_ACCESS_EXPIRATION_TIME,
         });
     }
 
@@ -98,7 +103,6 @@ export class TwoFactorAuthController {
 
 		this.userService.updateUserById(user.id, {
 			is2faEnabled : true,
-            isOtpVerified : true,
 		})
         return { message: '2fa turn on' }
     }

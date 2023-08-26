@@ -25,7 +25,7 @@ function MyProfile() {
 		const apiUrl = 'http://localhost/api/user/' + userId;
 
 		if (newNickname !== '' && newNickname !== userNickname){
-			if(newNickname.length >= 13){
+			if(newNickname.length >= 20){
 				alert("닉네임의 길이는 최대 12자 입니다");
 				setNewNickname('');
 				return ;

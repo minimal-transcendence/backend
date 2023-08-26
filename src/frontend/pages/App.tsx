@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, createContext } from "react";
 
 import * as io from "socket.io-client";
+import { Socket } from "socket.io-client";
 import ModalBasic from "./components/modalpage/modal";
 import ModalOverlay from "./components/modalpage/ModalOverlay";
 import TempLogin from "./components/temploginpage/tempLogin";
@@ -9,17 +10,27 @@ import GameList from "./components/gamelistpage/GameList";
 import ChatMain from "./components/chatpage/ChatMain";
 import SearchList from "./components/searchlistpage/SearchList";
 import ChatRoomUser from "./components/chatroompage/ChatRoom";
-import { SocketContext, socket } from "../context/socket";
+import Pong from "@/srcs/Pong";
+// import { SocketContext, socket } from "../context/socket";
 // import searchIcon from "./assets/search.png";
 import Image from "next/image";
+import TempRandomMatch from "@/srcs/TempRandomMatch";
 
-// export const socket = io.connect("http://localhost:3002", {
-//   query: {
-//     id: 1234,
-//     nickname: "namkim",
-//   },
-//   autoConnect: false,
-// });
+export type SocketContent = {
+  chatSocket: any;
+  gameSocket: any;
+}
+export const SocketContext = createContext<SocketContent>({
+  chatSocket: null,
+  gameSocket: null,
+});
+
+export type AppContent = {
+  gameSocket: any;
+}
+export const AppContext = createContext<AppContent>({
+  gameSocket: null,
+});
 
 export type UserOnChat = {
   id: string;
@@ -54,26 +65,30 @@ export default function App() {
   const [roomInfo, setRoomInfo] = useState<any>(null);
   const [blocklist, setBlocklist] = useState<any>([]);
 
-  useEffect(
-    function () {
-      function chkLogin() {
-        if (tmpIsLoggedIn) {
-          socket.io.opts.query = {
-            id: tmpLoginID,
-            nickname: tmpLoginnickname,
-          };
-          socket.connect();
-          console.log("in chkLogin ", socket);
-          socket.emit("sendnicknameID", {
-            id: tmpLoginID,
-            nickname: tmpLoginnickname,
-          });
-        }
-      }
-      chkLogin();
-    },
-    [tmpIsLoggedIn, tmpLoginnickname, tmpLoginID]
-  );
+  // seunchoi - for socket connection
+  const [gameLoad, setGameLoad] = useState<boolean>(false);
+  // Get Empty Socket Instance
+  const [socket, setSocket] = useState<Socket>(io.connect("", { query: { "nickname": "" }}));
+  const [gameSocket, setGameSocket] = useState<Socket>(io.connect("", { query: { "nickname": "" }}));
+
+  useEffect(() => {
+    const getSocket = (namespace: string, jwt: string, nickname: string) => {
+      return io.connect(`http://localhost/${namespace}`, {
+        query: { "nickname": nickname, },
+        auth: { token: jwt },
+      });
+    }
+
+    const nicknameItem = localStorage.getItem("nickname");
+    const jwtItem = localStorage.getItem("access_token");
+
+    // Run whenever jwt state updated
+    if (tmpIsLoggedIn && nicknameItem && jwtItem) {
+      console.log("Try Web Socket Connection");
+      setSocket(getSocket("chat", jwtItem, nicknameItem));
+      setGameSocket(getSocket("game", jwtItem, nicknameItem));
+    }
+  }, [tmpIsLoggedIn, tmpLoginnickname, tmpLoginID])
 
   useEffect(() => {
     function sendBlocklist(result: any) {
@@ -165,33 +180,45 @@ export default function App() {
       );
     }
 
-    socket.on("sendBlocklist", sendBlocklist);
-    socket.on("updateBlocklist", updateBlocklist);
-    socket.on("youAreKickedOut", youAreKickedOut);
-    socket.on("youAreBanned", youAreBanned);
-    socket.on("wrongPassword", wrongPassword);
-    socket.on("sendAlert", sendAlert);
-    socket.on("sendDM", sendDM);
-    socket.on("sendMessage", sendMessage);
-    socket.on("sendRoomMembers", sendRoomMembers);
+    if (socket) {
+      socket.on("sendBlocklist", sendBlocklist);
+      socket.on("updateBlocklist", updateBlocklist);
+      socket.on("youAreKickedOut", youAreKickedOut);
+      socket.on("youAreBanned", youAreBanned);
+      socket.on("wrongPassword", wrongPassword);
+      socket.on("sendAlert", sendAlert);
+      socket.on("sendDM", sendDM);
+      socket.on("sendMessage", sendMessage);
+      socket.on("sendRoomMembers", sendRoomMembers);
+    }
 
     return () => {
-      socket.off("sendBlocklist", sendBlocklist);
-      socket.off("updateBlocklist", updateBlocklist);
-      socket.off("youAreKickedOut", youAreKickedOut);
-      socket.off("youAreBanned", youAreBanned);
-      socket.off("wrongPassword", wrongPassword);
-      socket.off("sendAlert", sendAlert);
-      socket.off("sendMessage", sendMessage);
-      socket.off("sendRoomMembers", sendRoomMembers);
-      socket.off("sendDM", sendDM);
+      if (socket) {
+        socket.off("sendBlocklist", sendBlocklist);
+        socket.off("updateBlocklist", updateBlocklist);
+        socket.off("youAreKickedOut", youAreKickedOut);
+        socket.off("youAreBanned", youAreBanned);
+        socket.off("wrongPassword", wrongPassword);
+        socket.off("sendAlert", sendAlert);
+        socket.off("sendMessage", sendMessage);
+        socket.off("sendRoomMembers", sendRoomMembers);
+        socket.off("sendDM", sendDM);
+      }
     };
   }, [currentRoomName, results, messages, socket, blocklist]);
 
+  const handleGameOnOff = () => {
+    setGameLoad(!gameLoad);
+  }
+
   return (
-    <SocketContext.Provider value={socket}>
+    <SocketContext.Provider value={{
+      chatSocket: socket,
+      gameSocket: gameSocket
+    }}>
       {!tmpIsLoggedIn ? (
         <TempLogin
+
           tmpLoginID={tmpLoginID}
           setTmpLoginID={setTmpLoginID}
           tmpLoginnickname={tmpLoginnickname}
@@ -211,13 +238,16 @@ export default function App() {
               />
             )}
           </div>
-
+          {/* seunchoi - TEST */}
+          <button onClick={handleGameOnOff}>game on/off</button>
+          {gameLoad && <TempRandomMatch/>}
           <NavBar
             query={query}
             setQuery={setQuery}
             setIsLoading={setIsLoading}
             setLeftHeader={setLeftHeader}
             setError={setError}
+
           />
           <Main>
             <Box>
@@ -238,7 +268,9 @@ export default function App() {
                 </>
               }
             </Box>
-            <ChatMain
+            {gameLoad ?
+            (<Pong/>) :
+            (<ChatMain
               roomInfo={roomInfo}
               setRoomInfo={setRoomInfo}
               messages={messages}
@@ -247,7 +279,7 @@ export default function App() {
               setcurrentRoomName={setcurrentRoomName}
               myNickName={tmpLoginnickname}
               blocklist={blocklist}
-            />
+            />)}
             <Box>
               <>
                 <ChatRoomUser

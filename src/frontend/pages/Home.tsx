@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import UserList from "../srcs/UserList";
 import MyProfile from "../srcs/MyProfile";
+import UserProfile from "../srcs/UserProfile";
 import App from "./App";
 
 function Home() {
@@ -54,7 +55,7 @@ function Home() {
             <>
               <button onClick={() => setUserListModal(false)}>닫기</button>
               <UserList />
-            </>
+            </> 
           )}
         </div>
         <div>
@@ -64,10 +65,11 @@ function Home() {
               <MyProfile />
             </>
           )}
-          <div>
-            <App />
-          </div>
         </div>
+            {/*<UserProfile id='1' /> 유저 프로필만 가져올때는 이렇게 사용 id는 보고싶은 유저의 id*/}
+        <div>
+            <App />
+         </div>
       </div>
     );
   }

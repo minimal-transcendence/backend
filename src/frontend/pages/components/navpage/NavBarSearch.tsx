@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { SocketContext } from "../../../context/socket";
+import { SocketContext } from "@/pages/App";
 
 export default function Search({
   query,
@@ -16,7 +16,7 @@ export default function Search({
   setLeftHeader: any;
   setError: any;
 }) {
-  const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext).chatSocket;
   useEffect(
     function () {
       function fetchResults() {

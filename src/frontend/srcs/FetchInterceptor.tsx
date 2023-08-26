@@ -32,7 +32,6 @@ export async function fetch_refresh(url : string, ...args : any) : Promise<any> 
 	}
 }
 
-
 async function refreshToken() : Promise<any> {
 	const res = await axios.get(
 		'http://localhost/api/auth/refresh',
