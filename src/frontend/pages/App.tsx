@@ -237,7 +237,7 @@ export default function App() {
           </div>
           {/* seunchoi - TEST */}
           <button onClick={handleGameOnOff}>game on/off</button>
-          <TempRandomMatch/>
+          {gameLoad && <TempRandomMatch/>}
           <NavBar
             query={query}
             setQuery={setQuery}
