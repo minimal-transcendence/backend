@@ -45,7 +45,7 @@ function Home() {
   } else {
     return (
       <div>
-        <div>
+        {/* <div>
           <button onClick={() => setMyProfileModal(true)}>내 프로필</button>
           <button onClick={() => setUserListModal(true)}>유저 목록</button>
           <button onClick={logout}>로그 아웃</button>
@@ -66,10 +66,10 @@ function Home() {
             </>
           )}
         </div>
-            {/*<UserProfile id='1' /> 유저 프로필만 가져올때는 이렇게 사용 id는 보고싶은 유저의 id*/}
+            <UserProfile id='1' />  */}
         <div>
-            <App />
-         </div>
+          <App />
+        </div>
       </div>
     );
   }
