@@ -9,7 +9,6 @@ import { UserServiceModule } from './user/user.module';
 import { MatchModule } from './match/match.module';
 import { ChatModule } from './chat/chat.module';
 import { GameModule } from './game/game.module';
-import { StoreModule } from './store/store.module';
 
 @Module({
   imports: [
@@ -19,7 +18,6 @@ import { StoreModule } from './store/store.module';
 		MatchModule,
 		ChatModule,
 		GameModule,
-		StoreModule
 	],
   // imports: [ConfigModule.forRoot(), AuthModule, UserAuthModule, TwoFactorAuthModule],
   controllers: [AppController],

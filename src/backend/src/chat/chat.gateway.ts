@@ -7,13 +7,8 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Socket, Namespace } from 'socket.io';
-import { ChatRoomStoreService, Room } from '../store/store.room.service';
-import { ChatUserStoreService, User } from '../store/store.user.service';
-import { DM, ChatMessageStoreService } from '../store/store.message.service';
+import { Namespace } from 'socket.io';
 import { ChatService } from './chat.service';
-import { JwtGuard } from 'src/auth/guards/jwt.guard';
-import { PrismaService } from 'src/prisma.service';
 import { ChatSocket } from './types';
 
 @WebSocketGateway({
@@ -29,7 +24,7 @@ export class ChatGateway
 	) {}
 
 	async afterInit(){
-		this.chatService.initChatServer();
+		await this.chatService.initChatServer();	//
 	}
 
 
@@ -41,7 +36,7 @@ export class ChatGateway
 			this.logger.log(`accept event : ${any}`);
 		})
 
-		await this.chatService.newConnection(this.io, client);
+		this.chatService.newConnection(this.io, client);
 		
 		client.on("sendChatMessage", (to, body) => {
 			this.chatService.sendChat(this.io, client, to, body);
@@ -61,8 +56,8 @@ export class ChatGateway
 
 		//TODO : 미완성
 		client.on("sendRoomLeave", (room) => {
-			this.chatService.userLeaveRoom(this.io, client.data.id, room);
-			this.chatService.userLeaveRoomAct(this.io, client.data.id, room);
+			this.chatService.userLeaveRoom(this.io, client.userId, room);
+			this.chatService.userLeaveRoomAct(this.io, client.userId, room);
 		});
 
     //TODO : check
@@ -95,13 +90,14 @@ export class ChatGateway
     });
 
     client.on('requestAllRoomList', () => {
-      const roomInfo = this.chatService.getAllRoomList(client.data.id);
+      const roomInfo = this.chatService.getAllRoomList(client.userId);
+	  console.log('request all room info roomInfo' + JSON.stringify(roomInfo));
       client.emit('sendRoomList', roomInfo);
     });
 
     client.on('requestMyRoomList', () => {
-      const roomInfo = this.chatService.getUserRoomList(client.data.id);
-      client.emit('sendRoomList', roomInfo);
+      const roomInfo = this.chatService.getUserRoomList(client.userId);
+	  client.emit('sendRoomList', roomInfo);
     });
 
     client.on('requestSearchResultRoomList', (query) => {
@@ -117,7 +113,7 @@ export class ChatGateway
     //여기 뭔가 event emit이 필요한지 의논할 것...
     //sendAlert 외에 말이다...
     // client.on('changeNick', (newNick) => {
-    //   const user = this.storeUser.findUserById(client.data.id);
+    //   const user = this.storeUser.findUserById(client.userId);
     //   user.nickname = newNick; //중복 확인은 여기서 하지 않는다... db에서 한다...
     //   client.emit(
     //     'sendAlert',
@@ -128,12 +124,12 @@ export class ChatGateway
 
     client.on('selectDMRoom', (username) => {
       const DMs = this.chatService.makeDMRoomMessages(
-        client.data.nickname,
+        client.nickname,
         username,
       );
       this.chatService.emitEventsToAllSockets(
         this.io,
-        client.data.id,
+        client.userId,
         'sendDMRoomInfo',
         username,
         DMs,
@@ -154,7 +150,7 @@ export class ChatGateway
   //disconnecting, disconnect 둘다 감지 가능?
   async handleDisconnect(@ConnectedSocket() client: ChatSocket) {
     this.logger.log(client.nickname + 'is leaving');
-    await this.chatService.disconnectUser(this.io, client.data.id);
+    await this.chatService.disconnectUser(this.io, client.userId);
   }
 
 	userUpdateNick(userId : number, newNick : string) {

@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ChatRoomStoreService, Room } from '../store/store.room.service';
-import { ChatUserStoreService, User } from '../store/store.user.service';
-import { ChatMessageStoreService, Message, DM } from '../store/store.message.service';
+import { ChatRoomStoreService, Room } from './store/store.room.service';
+import { ChatUserStoreService, User } from './store/store.user.service';
+import { ChatMessageStoreService, Message, DM } from './store/store.message.service';
 import { Namespace } from 'socket.io';
-import { JwtService } from '@nestjs/jwt';
 import {
   currRoomInfo,
   formedMessage,
@@ -19,25 +18,27 @@ export class ChatService {
 		private storeUser : ChatUserStoreService,
 		private storeRoom : ChatRoomStoreService,
 		private storeMessage : ChatMessageStoreService,
-		private jwtService : JwtService
 	){}
 
 	initChatServer() {
 		this.storeUser.saveUser(-1, new User(-1, 'Server_Admin'));
 		this.storeRoom.saveRoom('DEFAULT', new Room(-1)); //owner id = -1 as server
 	}
-	async newConnection(io : Namespace, client : ChatSocket) : Promise<void> {
+
+	newConnection(io : Namespace, client : ChatSocket) {
 		const userId = client.userId;
 		client.join(`$${userId}`);
 		let user : User = this.storeUser.findUserById(userId);
 		if (user === undefined)
 			user = this.storeUser.saveUser(userId, new User(userId, client.nickname));
 		user.connected = true;
-		await this.userJoinRoomAct(io, user, "DEFAULT")
+		client.data.currentRoom = "DEFAULT";
+		this.userJoinRoomAct(io, user, "DEFAULT")
 			.catch((error) => {
-				throw new error(error.message);	//CHECK : how it works
+				console.log(error.message);
+				throw new Error(error.message);	//CHECK : how it works
 			});	//이게 마지막에 실행된다... 안돼...<- ?
-		user.currentRoom = "DEFAULT";
+		// user.currentRoom = "DEFAULT";
 	}
 
 	//마지막 하나일 때만 모든 방의 접속을 삭제한다
@@ -48,7 +49,8 @@ export class ChatService {
 							return (res.size);	//가능?
 						})
 						.catch((error : any) => {
-							throw new error(error.message);	//대문자? 소문자?
+							console.log(error.message);
+							throw new Error(error.message);	//대문자? 소문자?
 						});
 		if (sockets === 1) {
 			const user = this.storeUser.findUserById(userId);
@@ -58,7 +60,7 @@ export class ChatService {
 	}
 
 	async userJoinRoomAct(io: Namespace, user : User, roomname : string) {
-		//make all user's socket to join room
+		//make all user's socket to join room <- TODO : include in the first bracket phase since you don't need to join in which you already do
 		const sockets = await io.in(`$${user.id}`).fetchSockets();
 		sockets.forEach((socket : any) => {
 			socket.join(roomname);
@@ -79,15 +81,15 @@ export class ChatService {
 			});
 			room.messages.push(message);
 			//notice new comer to those who currently in the room
-			//CHECK : if it is really necessary...
+			//CHECK : if it is really necessary...should i consider currentRoom...?
 			const joiners = await io.in(roomname).fetchSockets();
 			const roomMembers = this.makeRoomUserInfo(roomname);
 			joiners.forEach((socket : any) => {
-				if (this.storeUser.findUserById(socket.data.id).currentRoom === roomname)
+				if (socket.data.currentRoom === roomname)
 					socket.emit("sendRoomMembers", roomMembers);
 			})
 		}
-		user.currentRoom = roomname;
+		// user.currentRoom = roomname;	//socket 단위로 하려면 여기서 client받아야
 		const currRoomInfo = this.makeCurrRoomInfo(roomname);
 		const roomMembers = this.makeRoomUserInfo(roomname);
 		const roomInfo = this.makeRoomInfo(user.blocklist, user.joinlist);
@@ -100,7 +102,6 @@ export class ChatService {
 			socket.emit("sendRoomList", roomInfo);
 			socket.emit("sendRoomMembers", roomMembers);
 			socket.emit("sendCurrRoomInfo", currRoomInfo);
-			socket.emit('hi', 'hi1');
 		})
 	}
 
@@ -122,16 +123,16 @@ export class ChatService {
 	//(CLOSE) 한 유저가 여러 소켓을 가진 경우에 대해 : 모든 창에 경고를 띄울 필요 있을까? -> 창하나만
 	//하지만 join은 전부 처리해줘야 (CLOSE)
 	JoinRoomBanCheck(io : Namespace, client : ChatSocket, room : Room) : boolean {
-		if (room.isBanned(client.data.id)){
+		if (room.isBanned(client.userId)){
 			client.emit("sendAlert", "Banned User", "You are not allowed to join this room");
 			return (false);
 		}
 		return (true);
 	}
 
-	//TODO : client.data.id -> client.id
+	//TODO : client.userId -> client.id
 	async userJoinRoom(io : Namespace, client : ChatSocket, roomname : string, password? : string) {
-		const userId = client.data.id;
+		const userId = client.userId;
 		let room = this.storeRoom.findRoom(roomname);
 		if (room === undefined){
 			this.storeRoom.saveRoom(roomname, new Room(userId, password? password : null));
@@ -174,7 +175,7 @@ export class ChatService {
 	//TODO : Alert message 일관성 있게 정리하기
 	setPassword(io: Namespace, client : ChatSocket, roomname : string, password : string){
 		const room = this.storeRoom.findRoom(roomname);
-		if (room.isOwner(client.data.id)){
+		if (room.isOwner(client.userId)){
 			room.updatePassword(password);
 			console.log("password updated");
 		}
@@ -187,7 +188,7 @@ export class ChatService {
 		const room = this.storeRoom.findRoom(roomname);
 		if (!room)
 			throw new Error ("Error : Room does not exist");
-		if (room.isOwner(client.data.id)){
+		if (room.isOwner(client.userId)){
 			if (toPrivate) {
 				if (room.isPrivate)
 					client.emit("sendAlert", "[ Alert ]", 'Room is already Private');
@@ -216,11 +217,11 @@ export class ChatService {
 			throw new Error ("Error : Room does not exist");
 			// return ;
 		}
-		if (room.userlist.has(client.data.id)){
-			if (!room.isMuted(client.data.id)){
-				const message = new Message(client.data.id, body);
+		if (room.userlist.has(client.userId)){
+			if (!room.isMuted(client.userId)){
+				const message = new Message(client.userId, body);
 				io.in(to).emit("sendMessage", to, {
-					from : client.data.nickname,
+					from : client.nickname,
 					body : body,
 					at : message.at
 				});
@@ -307,7 +308,7 @@ export class ChatService {
 			targetUser.joinlist.delete(roomname);
 			// rearrange user to "DEFAULT" room
 			targetUser.currentRoom = "DEFAULT";
-			this.userJoinRoomAct(io, targetUser, "DEFAULT");
+			this.userJoinRoomAct(io, targetUser, "DEFAULT");	//
 			// send message <-- 이 부분 module 화 가능 --->
 			// 		in room <- method화 필요...
 			const body = `${targetUser.nickname} is Kicked Out`;
@@ -356,7 +357,7 @@ export class ChatService {
 			room.addUserToMutelist(targetId);
 			this.emitEventsToAllSockets(io, targetId, "sendMessage", roomname, {
 				from : "server",
-				body : `You are temporaily muted by ${client.data.nickname}`,
+				body : `You are temporaily muted by ${client.nickname}`,
 				at : Date.now()
 			})
 			io.to(roomname).except(`$${targetId}`).emit("sendMessage", roomname, {
@@ -378,8 +379,10 @@ export class ChatService {
 
 	//TODO : makeBlocklist method & makeUserRender method 필요해....
 	blockUser(io : Namespace, client : ChatSocket, target : string) {
-		const thisUser = this.storeUser.findUserById(client.data.id);
+		console.log("blockUser : actor : " + client.nickname + " target : " + target);
+		const thisUser = this.storeUser.findUserById(client.userId);
 		const targetId = this.storeUser.getIdByNickname(target);
+		console.log(thisUser);
 		if (thisUser.blocklist.has(targetId))
 			client.emit("sendAlert", "Notice", "You've already blocked this user");
 		else {
@@ -395,7 +398,7 @@ export class ChatService {
 	//TODO & CHECK unblockUser 할 때도 이렇게 하면 되나...?
 	//이 경우에는 currRoomInfo, members 모두 보내줘야 하는거 아닌지...?
 	unblockUser(io : Namespace, client : ChatSocket, target : string) {
-		const thisUser = this.storeUser.findUserById(client.data.id);
+		const thisUser = this.storeUser.findUserById(client.userId);
 		const targetId = this.storeUser.getIdByNickname(target);
 		if (thisUser.blocklist.has(targetId)){
 			(thisUser.deleteUserFromBlockList(targetId));
@@ -449,6 +452,7 @@ export class ChatService {
 		const roomlist = [];
 		const blocklist = this.storeUser.findUserById(userId).blocklist;
 		this.storeRoom.rooms.forEach((value, key) => {
+			console.log(key, value);
 			if (!value.isPrivate)
 				roomlist.push(key);
 		})
@@ -544,6 +548,7 @@ export class ChatService {
 				lastMessage : message.body	//body만 보내도록
 			})
 		})
+		console.log(res);
 		return res;
 	}
 
