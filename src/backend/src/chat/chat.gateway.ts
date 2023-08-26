@@ -1,15 +1,20 @@
-import { Logger } from '@nestjs/common';
+import { Body, Logger, Param, ParseIntPipe, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import {
   ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Namespace } from 'socket.io';
+import { Namespace, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { ChatSocket } from './types';
+// import { chatSocket } from './dto/validation-form';
+import { CustomWebSocketGuard, RoomName, VarId, VarId2 } from './chat.decorator';
+import { Room } from './store/store.room.service';
 
 @WebSocketGateway({
 	namespace: 'chat',
@@ -38,6 +43,11 @@ export class ChatGateway
 
 		this.chatService.newConnection(this.io, client);
 		
+		// client.on("check", (a : any, b : any, c: any) => {
+		// 	// console.log(a, " ", b, " hihi ", c);
+		// 	// console.log(a.toString, parseInt(b), parseInt(c));
+		// })
+
 		client.on("sendChatMessage", (to, body) => {
 			this.chatService.sendChat(this.io, client, to, body);
 		});
@@ -164,5 +174,25 @@ export class ChatGateway
 
 	userUpdateStatus(userId : number, isConnected : boolean){
 		this.io.emit("updateUserStatus", userId, isConnected);
+	}
+	// validation is not working
+	// validation limitation : can't catch redundant incomings
+	// handleCheck(client: ChatSocket, @Body(ParseIntPipe) data : number)
+	// @SubscribeMessage('check')
+	// handleCheck(client : ChatSocket, data1 : any, data2 : any){
+	// 	console.log(data1, data2);
+	// }
+	// @UseGuards(CustomWebSocketGuard) 
+	@SubscribeMessage('check')
+	handleCheck(
+		@RoomName() data1 : ChatSocket, 
+		@VarId() data2 : number,
+		){
+		console.log("inside");
+		// console.log(client);
+		console.log("first args");
+		console.log(data1.userId);
+		console.log("second args");
+		console.log(data2);
 	}
 }
