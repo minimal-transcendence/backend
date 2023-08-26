@@ -22,13 +22,16 @@ export class ChatService {
 		private jwtService : JwtService
 	){}
 
-	//TODO : 유저가 소켓 연결을 하기 전에 닉네임을 변경하는 경우가 있는지 확인할 것 : 없는 듯?
-	//TODO : 여기 socket만 받으면 됨!
-	async newConnection(io : Namespace, client : ChatSocket, userId : number, nickname : string) : Promise<void> {
+	initChatServer() {
+		this.storeUser.saveUser(-1, new User(-1, 'Server_Admin'));
+		this.storeRoom.saveRoom('DEFAULT', new Room(-1)); //owner id = -1 as server
+	}
+	async newConnection(io : Namespace, client : ChatSocket) : Promise<void> {
+		const userId = client.userId;
 		client.join(`$${userId}`);
 		let user : User = this.storeUser.findUserById(userId);
 		if (user === undefined)
-			user = this.storeUser.saveUser(userId, new User(userId, nickname));
+			user = this.storeUser.saveUser(userId, new User(userId, client.nickname));
 		user.connected = true;
 		await this.userJoinRoomAct(io, user, "DEFAULT")
 			.catch((error) => {
@@ -139,7 +142,6 @@ export class ChatService {
 			//TODO : banCheck//
 			//TODO : 이미 들어간 방이면 password를 묻지 않는다.... 그런데 이 때는 웰컴 메세지도 안 보내야하는거 아닌지?
 			if (room.isJoinning(userId)){
-				console.log("userJoinRoom : enter --------------------------------------------2")
 				this.userJoinRoomAct(io, this.storeUser.findUserById(userId), roomname);
 				return ;
 			}
@@ -292,51 +294,56 @@ export class ChatService {
 
 
 	//kickUser TODO & CHECK : 이 부분 logic 다시 봐야됨!
-	async kickUser(io : Namespace, roomname : string, targetId : number){
+	async kickUser(io : Namespace, client : ChatSocket, roomname : string, targetName : string){
+		const targetId = this.storeUser.getIdByNickname(targetName);
 		const room = this.storeRoom.findRoom(roomname);
-		//여기서 target한테 emit을 해야하는데... 어떻게...? 이게 문제네 흑흑 < DM방으로 실현하자... ! 와 DM만만세!
-		if (room.isOperator(targetId))
-			room.deleteUserFromOperators(targetId);
-		room.deleteUserFromUserlist(targetId);
-		//이하는 userLeave랑 작용이 같다
-		const targetUser = this.storeUser.findUserById(targetId);
-		targetUser.joinlist.delete(roomname);
-		targetUser.currentRoom = "DEFAULT";
-		this.userJoinRoomAct(io, targetUser, "DEFAULT");
-		const body = `${targetUser.nickname} is Kicked Out`;
-		io.to(roomname).emit("sendMessage", roomname, {
-			from : "server",
-			body : body,
-			at : Date.now()
-		});	//쫓겨나는 사람은 제하는게 좋을지도
-		io.to(roomname).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
-		room.storeMessage(-1, body);
-		const sockets = await io.in(`$${targetId}`).fetchSockets();
-		sockets.forEach((socket) => {
-			socket.leave(roomname);
-			socket.emit("sendAlert", "Attention", `You are kicked out from ${roomname}`);
-			socket.emit("sendRoomMembers", this.makeRoomUserInfo("DEFAULT"));
-		})
-		//TODO & DISCUSS : checkValidity실패했을때 어떻게 할지
+		if (this.checkActValidity(client, roomname, targetId)){
+			//TODO : chatService 영역에서 deleteUserFromOperators 필요함 -> 방 정보 업데이트 해야
+			if (room.isOperator(targetId))
+				room.deleteUserFromOperators(targetId);
+			// delete user from room & room from user
+			room.deleteUserFromUserlist(targetId);
+			const targetUser = this.storeUser.findUserById(targetId);
+			targetUser.joinlist.delete(roomname);
+			// rearrange user to "DEFAULT" room
+			targetUser.currentRoom = "DEFAULT";
+			this.userJoinRoomAct(io, targetUser, "DEFAULT");
+			// send message <-- 이 부분 module 화 가능 --->
+			// 		in room <- method화 필요...
+			const body = `${targetUser.nickname} is Kicked Out`;
+			io.to(roomname).except(`$${targetId}`).emit("sendMessage", roomname, {
+				from : "server",
+				body : body,
+				at : Date.now()
+			});
+			io.to(roomname).except(`$${targetId}`).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
+			//저장 할 것임?
+			room.storeMessage(-1, body);
+			//		to alert User
+			const sockets = await io.in(`$${targetId}`).fetchSockets();
+			sockets.forEach((socket) => {
+				socket.leave(roomname);
+				socket.emit("sendAlert", "Attention", `You are kicked out from ${roomname}`);
+				socket.emit("sendRoomMembers", this.makeRoomUserInfo("DEFAULT"));
+			})
+		}
 	}
 
 	//ban을 할 수 있는가?
-	banUser(io : Namespace, roomname : string, targetId : number){
+	banUser(io : Namespace, client : ChatSocket, roomname : string, targetName : string){
+		const targetId = this.storeUser.getIdByNickname(targetName);
 		const room = this.storeRoom.findRoom(roomname);
-		if (room.isOperator(targetId)){
-			console.log("banUser: " + roomname + targetId);
-			room.deleteUserFromOperators(targetId);
-			room.deleteUserFromUserlist(targetId);
-			//여기서 특정 시간동안 banlist에 올리고
-			//kick하고
-			//message를 보낸다
+		if (this.checkActValidity(client, roomname, targetId)){
+			room.addUserToBanlist(targetId);
+			this.kickUser(io, client, roomname, targetName);
 		}
-		room.addUserToBanlist(targetId);
-		this.kickUser(io, roomname, targetId);
 	}
 
-	muteUser(io : Namespace, client : ChatSocket, roomname: string, targetId : number){
+	muteUser(io : Namespace, client : ChatSocket, roomname: string, targetName : string){
+		const targetId = this.storeUser.getIdByNickname(targetName);
 		const room = this.storeRoom.findRoom(roomname);
+		if (!this.checkActValidity(client, roomname, targetId))
+			return ;
 		if (room.isMuted(targetId))
 			client.emit("sendMessage", roomname, {
 				from : "server",
@@ -344,6 +351,8 @@ export class ChatService {
 				at : Date.now()
 		})
 		else{
+			if (room.isOperator(targetId))
+				room.deleteUserFromOperators(targetId);	//TODO & CHECK	//혹은 여기서는 그냥 해제 안 하는건?
 			room.addUserToMutelist(targetId);
 			this.emitEventsToAllSockets(io, targetId, "sendMessage", roomname, {
 				from : "server",
@@ -357,6 +366,7 @@ export class ChatService {
 			})
 			setTimeout(() => {
 				room.deleteUserFromMutelist(targetId);
+				//emit만 할거면 그냥 io.in.(`$${id}`).emit 이랑 무슨 차이...? <- TODO : test & rewrite
 				this.emitEventsToAllSockets(io, targetId, "sendMessage", roomname, {
 					from : "server",
 					body : `You are now unmuted `,
@@ -400,6 +410,39 @@ export class ChatService {
 		}
 	}
 
+	addOperator(io : Namespace, client: ChatSocket, roomname : string, target : string){
+		const room = this.storeRoom.findRoom(roomname);
+		if (!room.isOwner(client.userId))
+			client.emit("sendAlert", "[ Act Error ]", "You have no authority to add operator");
+		else {
+			const targetId = this.storeUser.getIdByNickname(target);
+			if (room.isOperator(targetId))
+				client.emit("sendAlert", "[ Act Error ]", "Target is already an operator");
+			else {
+				room.addUserToOperators(targetId);
+				io.to(roomname).emit("sendCurrRoomInfo", this.makeCurrRoomInfo(roomname));
+			}
+		}
+
+	}
+
+	deleteOperator(io : Namespace, client: ChatSocket, roomname : string, target : string){
+		const room = this.storeRoom.findRoom(roomname);
+		if (!room.isOwner(client.userId))
+			client.emit("sendAlert", "[ Act Error ]", "You have no authority to delete operator");
+		else {
+			const targetId = this.storeUser.getIdByNickname(target);
+			if (room.isOperator(targetId)){
+				room.deleteUserFromOperators(targetId);
+				io.to(roomname).emit("sendCurrRoomInfo", this.makeCurrRoomInfo(roomname));
+			}
+			else {
+				client.emit("sendAlert", "[ Act Error ]", "target is not an operator");
+			}
+		}
+
+	}
+
 	//TODO : 이 모든 Getter들... 에러처리를 생각해야
 	//TODO : array.map을 좀 더 열심히 사용해보자 : 여기는 map이라 못 쓰겠지만...
 	getAllRoomList(userId : number) : roomInfo[] {
@@ -440,7 +483,9 @@ export class ChatService {
 	}
 
 	//TODO & CHECK : make DMform MessageFrom 함수 있으면 편하지 않을까
-	fetchDM(io : Namespace, from : number, to : number, body : string){
+	fetchDM(io : Namespace, client : ChatSocket, target : string, body : string){
+		const from = client.userId;
+		const to = this.storeUser.getIdByNickname(target);
 		const message = new DM(from, to, body);
 		const res = {
 			from : this.storeUser.getNicknameById(from),
@@ -582,46 +627,41 @@ export class ChatService {
 
 	//TODO : sendAlert message 분리하려면 이 함수에서 Socket 받아야함!
 	//채팅방에서 어떤 행동을 할 때 가능한지 모두 체크 : 권한, 유효성, etc.
-	checkActValidity(client : ChatSocket, roomname : string, actor : number, target : number) : boolean {
+	checkActValidity(client : ChatSocket, roomname : string, target : number) : boolean {
+		const actor = client.userId;
 		if (actor === target) {
-			// console.log("[ ACT ERROR ] you can't do sth to yourself")
 			client.emit("sendAlert", "[ ACT ERROR ]", "you can't do sth to yourself")
 			return (false);
 		}
 		const room = this.storeRoom.findRoom(roomname);
 		if (room === undefined){
-			// console.log("[ ACT ERROR ] Room does not exist")
 			client.emit("sendAlert", "[ ACT ERROR ]", "Room does not exist")
 			return (false);
 		}
 		const user = this.storeUser.findUserById(actor);
 		if (user === undefined || !user.joinlist.has(roomname)){
-			// console.log("[ ACT ERROR ] invalid Actor");
 			client.emit("sendAlert", "[ ACT ERROR ]", "invalid Actor")
 			return (false);
 		}
 		if (!room.isOwner(user.id) && !room.isOperator(user.id)){
-			// console.log("[ ACT ERROR ] Actor is not authorized");
 			client.emit("sendAlert", "[ ACT ERROR ]", "Actor is not authorized")
 			return (false);
 		}
+		//CHECK : should we have actor #-1?
 		if (target === -1){
-			// console.log("[ ACT ERROR ] Target does not exist")
 			client.emit("sendAlert", "[ ACT ERROR ]", "Target does not exist")
 			return (false);
 		}
 		else if (!room.isJoinning(target)){
-			// console.log("[ ACT ERROR ] Target is not joining this room");
 			client.emit("sendAlert", "[ ACT ERROR ]", "Target is not joining this room")
 			return (false);
 		}
-		else if (room.isOwner(target)){	//가능하면 owner랑 operator를 enum으로 만들어서 값 비교로 권한 우위 확인하면 더 좋았을듯.... 지금은 귀찮아...
-			// console.log("[ ACT ERROR ] Target is the Owner");
+		else if (room.isOwner(target)){
 			client.emit("sendAlert", "[ ACT ERROR ]", "Target is the Owner")
 			return (false);
 		}
 		else if (room.isOperator(target) && !room.isOwner(actor)){
-			// console.log("[ ACT ERROR ] Only owner can do sth to Operator");
+			//?의외로 잘 방어해놨잖아...?
 			client.emit("sendAlert", "[ ACT ERROR ]", "Only owner can do sth to Operator")
 			return (false);
 		}
@@ -649,5 +689,15 @@ export class ChatService {
 			})
 		});
 		client.emit("responseAllMembers", res);
+	}
+
+	//TODO & CHECK : gateway로 안 들어오고 userService에서 바로 socket emit할 수 있으면 제일 좋음
+	//currRoom은 socket단위에서 넣어줘야 하는 것 같은데...?
+	userChangeNick(io : Namespace, client : ChatSocket, newNick : string) {
+		const user = this.storeUser.findUserById(client.userId);
+		user.nickname = newNick;
+		//누구한테 emit?
+		//game에도 emit? <- front에서 나눠서 보낼 것. event 이름 같아야 할까?
+		//userupdatenick event
 	}
 }
