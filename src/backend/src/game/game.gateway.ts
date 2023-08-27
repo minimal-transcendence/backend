@@ -18,8 +18,6 @@ import { GameRoom } from './GameRoom';
 import { GameService } from './game.service';
 import { MatchService } from 'src/match/match.service';
 
-// let readyPlayerCount: number = 0;
-
 @WebSocketGateway({
 	namespace: 'game',
 	pingTimeout: 2000,
@@ -94,6 +92,8 @@ export class GameGateway
 	handleDisconnect(@ConnectedSocket() client: GameSocket) {
 		// leave game
 		if (client.inGame) {
+      // Notify every socket that client is not in game
+      this.io.server.emit("notInGame", client.nickname);
 			for (let e in this.gameRooms) {
 				const room: GameRoom = this.gameRooms[e];
 				// If client is in game
@@ -450,38 +450,4 @@ export class GameGateway
 	console.log(`${client.nickname} is now ${nickname}`);
 	client.nickname = nickname;
   }
-
-//   @SubscribeMessage('nicknameChanged')
-//   handleNicknameChanged(client: GameSocket, nickname: string) {
-// 	const sockets = this.io.sockets;
-// 	const oldNickname = client.nickname;
-
-// 	sockets.forEach((socket: GameSocket) => {
-// 		console.log("In loop", socket.nickname);
-// 		console.log("Invt List", socket.invitationList);
-// 		let listChanged = false;
-
-// 		socket.invitationList.forEach((invit: Invitation) => {
-// 			if (invit.from === oldNickname) {
-// 				console.log("In from", socket.nickname);
-// 				invit.from = nickname;
-// 				listChanged = true;
-// 			}
-// 			if (invit.to === oldNickname) {
-// 				console.log("In to", socket.nickname);
-// 				invit.to = nickname;
-// 				listChanged = true;
-// 			}
-// 		});
-
-// 		if (listChanged) {
-// 			socket.emit('updateInvitationList', socket.invitationList);
-// 			console.log("In emit", socket.nickname);
-// 		};
-// 	});
-
-// 	// Set client's new nickname
-// 	console.log(`${client.nickname} is now ${nickname}`);
-// 	client.nickname = nickname;
-//   }
 }

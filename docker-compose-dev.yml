@@ -33,8 +33,8 @@ services:
     env_file:
       - .env
     command: npm run start:migrate:dev
-    volumes:
-      - nestjs_volume:/app
+    # volumes:
+    #   - nestjs_volume:/app
   # for dev
   # volumes:
   #   - nestjs_volume:/app
@@ -48,8 +48,6 @@ services:
     depends_on:
       - backend
     restart: always
-    env_file:
-      - .env
     ports:
       - 80:80
     command: sh /app/dev.sh
@@ -64,11 +62,11 @@ volumes:
   postgresql_volume:
     external: false
   # for dev
-  nestjs_volume:
-    driver_opts:
-      type: none
-      device: /Users/${NEST_PATH}/src/backend
-      o: bind
+  # nestjs_volume:
+  #   driver_opts:
+  #     type: none
+  #     device: /Users/${NEST_PATH}/src/backend
+  #     o: bind
 #     name: postgresql_volume
 #     driver_opts:
 #       type: none

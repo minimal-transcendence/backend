@@ -95,7 +95,6 @@ export class AuthController {
 
     @UseGuards(JwtRefreshGuard)
     @Post('logout')
-    // @Get('logout')
     async logout(@Req() req: any, @Res() res: Response) {
 		await this.userService.updateUserById(req.user.id, {
 			refreshToken : null,
@@ -105,14 +104,5 @@ export class AuthController {
         return res.send({
             message: 'logout success'
         });
-    }
-
-    //todo - JwtGuard 실패 시 /auth/login 페이지로 리다이렉트 (UseFilter??)
-    // 위 처럼 처리하는 것이 바람직하지 않을 수 있음
-    @UseGuards(JwtGuard)
-    @Get('test')
-    getTest(@Req() req) {
-
-        return req.user; // req.user of JwtGuard
     }
 }
