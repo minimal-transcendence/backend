@@ -1,35 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { Message } from './store.message.service';
 
-console.log('tt');
-//방도 number 로 관리해야한다 -> message from / to format
 export class Room {
-	//readonly 랑 const 차이?
-	//room을 private이랑 분리하게 되면 roomId 필요없는 듯
-	// readonly roomId : number;
-	// readonly roomname : string;
 	password : string | null;
 	owner : number;
 	operators : Set<number>;
-	userlist : Set<number>;	//있긴 있어야할듯... socket은 모든 접속에 id를 부여하니까ㅠ
-	//kick, ban, mute	//kicklist banlist 분리?
+	userlist : Set<number>;
 	mutelist : Set<number>;
 	banlist : Set<number>;
 	messages : Message[];
 	isPrivate : boolean;
 
 	constructor(
-		// roomId: number,
 		owner : number,
 		password? : string,
 	){
-		// this.roomId = roomId;
-		// this.roomname = roomname;
 		this.password = password? password : null;
 		this.owner = owner;
 		this.operators = new Set();
 		this.userlist = new Set();
-		this.userlist.add(owner);
+		this.userlist.add(owner);	//CHECK : if default room needs owner
 		this.mutelist = new Set();
 		this.banlist = new Set();
 		this.messages = [];
@@ -68,7 +58,6 @@ export class Room {
 		this.owner = newOwner;
 	}
 
-	//후... 이거 묶을 걸 그랬나ㅠ
 	addUserToUserlist(userid : number){
 		this.userlist.add(userid);
 	}
@@ -76,8 +65,6 @@ export class Room {
 	addUserToBanlist(userid : number){
 		this.banlist.add(userid);
 		setTimeout(() => {
-			//
-			console.log(`${userid} is released!`);
 			this.banlist.delete(userid);
 		}, 20000);
 	}
@@ -96,12 +83,8 @@ export class Room {
 
 	addUserToMutelist(userid : number){
 		this.mutelist.add(userid);
-		// setTimeout(() => {
-		// 	this.mutelist.delete(userid);
-		// }, 20000);
 	}
 
-	//자동으로 일정시간만?
 	deleteUserFromMutelist(userid : number){
 		this.mutelist.delete(userid);
 	}
@@ -113,7 +96,7 @@ export class Room {
 	}
 
 	clearRoom(){
-		// this.clearSets();
+		// this.clearSets();	//CHECK : if necessary
 		this.operators = null;
 		this.mutelist = null;
 		this.banlist = null;
@@ -123,10 +106,20 @@ export class Room {
 	storeMessage(from : number, body : string){
 		this.messages.push(new Message(from, body));
 	}
+
+	getLastMessage(blocklist : Set<number>) : Message {
+		if (!blocklist || blocklist.size === 0)
+			return (this.messages[this.messages.length - 1]);
+		const length = this.messages.length;
+		for (let i = length - 1 ; i >= 0 ; i--) {
+			if (!blocklist.has(this.messages[i]?.from))
+				return (this.messages[i]);
+		}
+		return (null);	//might cause error
+	}
 }
 
 interface RoomStore {
-  //방을 DM이랑 분리하게 되면 아이디는 필요없다!
   rooms: Map<string, Room>;
 
   findRoom(roomName: string): Room;
@@ -142,7 +135,6 @@ export class ChatRoomStoreService implements RoomStore{
 		return this.rooms.get(roomName);
 	}
 
-	//여기는 password가 필요하다
 	saveRoom(roomname: string, room: Room): void {
 		this.rooms.set(roomname, room);
 	}
@@ -158,7 +150,6 @@ export class ChatRoomStoreService implements RoomStore{
 		this.rooms.delete(roomname);
 	}
 
-	//
 	findQueryMatchRoomNames(query : string | null) : string[] {
 		const res = [];
 		this.rooms.forEach((_, key) => {
