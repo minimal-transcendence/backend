@@ -3,14 +3,10 @@ import { PrismaService } from 'src/prisma.service';
 import { Prisma, User } from '@prisma/client';
 import { join } from 'path';
 import { createReadStream } from 'fs';
-import { ChatGateway } from 'src/chat/chat.gateway';
 
 @Injectable()
 export class UserService {
-	constructor(
-		private readonly prisma: PrismaService,
-		private readonly chatGateway : ChatGateway
-	){}
+	constructor(private prisma: PrismaService){}
 
 	//upsert
 	async createUser(data: Prisma.UserCreateInput): Promise<User> {
@@ -104,14 +100,6 @@ export class UserService {
 				friends : undefined,
 				avatar : file != null ? file.path.toString() : undefined,
 			}
-		}).then((res) => {
-			if (file) {
-				this.chatGateway.userUpdateAvatar(id);
-			}
-			if (data.nickname) {
-				this.chatGateway.userUpdateNick(id, data.nickname as string);
-			}
-			return (res);
 		}).catch((error) => {
 			if (error instanceof Prisma.PrismaClientValidationError){
 				return { error : "Validation Error" };
@@ -151,6 +139,10 @@ export class UserService {
 		  });
 	  }
 
+	// 이런 문법 괜찮은가...?
+	// 이이런 구조 괜찮은가....?
+	// 권한 체크! -> 완료
+	// HTTP EXCEPTION -> 완료
 	// validation 필요//
 	async updateFriendsById(id : number, data : {
 		friend: number ;
