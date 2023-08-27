@@ -18,7 +18,7 @@ export class AuthController {
             throw new UnauthorizedException('No code in query string');
         }
 
-        console.log("Nest code:", code);
+		console.log("Nest code:", code);
 
         // get user data from api
         const apiData = await this.authService.getUserFromApi(code);
@@ -75,7 +75,7 @@ export class AuthController {
     @UseGuards(JwtRefreshGuard)
     @Get('refresh')
     async refresh(@Req() req: any, @Res() res: Response) {
-        console.log(req);
+        // console.log(req);
         const user = await this.userService.findUserById(req.user.id);
 
         const access_token = await this.authService.generateAccessToken({
