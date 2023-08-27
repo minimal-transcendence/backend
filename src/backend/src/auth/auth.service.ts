@@ -10,36 +10,18 @@ import { JwtPayload } from './types';
 @Injectable()
 export class AuthService {
     constructor(
-        // private configService: ConfigService,
         private jwtService: JwtService,
 		private userService : UserService,
         private httpService: HttpService,
     ) {}
 
-    async getApiAccessToken(code: string): Promise<string> {
-        const req = this.httpService.post("https://api.intra.42.fr/oauth/token", {
-            grant_type: "authorization_code",
-            code: code,
-            client_id: "u-s4t2ud-7a4d91eaac011bcb231f6a2c475ff7b48445dde9311610e0db488b0f8add6fc3",
-            client_secret: "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",
-            redirect_uri: "http://localhost/callback",
-            scope: "public",
-        })
-
-        const { data } = await lastValueFrom(req);
-
-        const access_token = data.access_token;
-
-        return access_token;
-    }
-
     async getUserFromApi(code: string): Promise<any> {
         const tokenReq = this.httpService.post("https://api.intra.42.fr/oauth/token", {
-            grant_type: "authorization_code",
+            grant_type: process.env.FT_GRANT_TYPE,
             code: code,
-            client_id: "u-s4t2ud-7a4d91eaac011bcb231f6a2c475ff7b48445dde9311610e0db488b0f8add6fc3",
-            client_secret: "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",
-            redirect_uri: "http://localhost/callback",
+            client_id: process.env.FT_CLIENT_ID,
+            client_secret: process.env.FT_CLIENT_SECRET,
+            redirect_uri: process.env.FT_REDIRECT_URI,
             scope: "public",
         })
 
@@ -106,33 +88,4 @@ export class AuthService {
             return user;
         }
     }
-
-    // async refreshJwtToken(refreshTokenDto: any): Promise<{ accessToken: string }> {
-    //     const { refresh_token } = refreshTokenDto;
-    
-    //     // Verify refresh token
-    //     // JWT Refresh Token 검증 로직
-    //     const decodedRefreshToken = await this.jwtService.verifyAsync(
-    //         refresh_token,
-    //         {
-    //             secret: process.env.JWT_REFRESH_TOKEN_SECRET,
-    //         });
-    
-    //     // Check if user exists
-    //     const userId = decodedRefreshToken.id;
-        
-    //     // Get user information by refresh_token and userId
-    //     const user = await this.getUserIfRefreshTokenMatches(refresh_token, userId);
-    
-    //     // Generate new access token
-        
-    //     const accessToken = await this.generateAccessToken({
-    //         id: user.id,
-    //         email: user.email,
-    //     });
-    
-    //     return {accessToken};
-    // }
-
-    
 }
