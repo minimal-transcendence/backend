@@ -3,7 +3,7 @@ import { Message } from './store.message.service';
 
 export class Room {
 	password : string | null;
-	owner : number;
+	owner? : number;
 	operators : Set<number>;
 	userlist : Set<number>;
 	mutelist : Set<number>;
@@ -12,14 +12,15 @@ export class Room {
 	isPrivate : boolean;
 
 	constructor(
-		owner : number,
+		owner? : number,
 		password? : string,
 	){
 		this.password = password? password : null;
-		this.owner = owner;
+		this.owner = owner? owner : 0;
 		this.operators = new Set();
 		this.userlist = new Set();
-		this.userlist.add(owner);	//CHECK : if default room needs owner
+		if (this.owner !== 0)
+			this.userlist.add(owner);	//CHECK : if default room needs owner
 		this.mutelist = new Set();
 		this.banlist = new Set();
 		this.messages = [];

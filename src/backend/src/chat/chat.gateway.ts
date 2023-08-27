@@ -114,30 +114,20 @@ export class ChatGateway
       client.emit('sendRoomMembers', roomMembers);
     });
 
-    //여기 뭔가 event emit이 필요한지 의논할 것...
-    //sendAlert 외에 말이다...
-    // client.on('changeNick', (newNick) => {
-    //   const user = this.storeUser.findUserById(client.userId);
-    //   user.nickname = newNick; //중복 확인은 여기서 하지 않는다... db에서 한다...
-    //   client.emit(
-    //     'sendAlert',
-    //     'Nickname Changed',
-    //     'your nickname has successfully changed!',
-    //   );
-    // });
-
     client.on('selectDMRoom', (username) => {
       const DMs = this.chatService.makeDMRoomMessages(
-        client.nickname,
+        client,
         username,
       );
-      this.chatService.emitEventsToAllSockets(
-        this.io,
-        client.userId,
-        'sendDMRoomInfo',
-        username,
-        DMs,
-      );
+      if (DMs != null) {
+        this.chatService.emitEventsToAllSockets(
+          this.io,
+          client.userId,
+          'sendDMRoomInfo',
+          username,
+          DMs,
+        );
+      }
     });
 
     client.on('sendDirectMessage', (to, body) => {

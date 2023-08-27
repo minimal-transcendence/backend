@@ -92,6 +92,6 @@ export class ChatUserStoreService implements UserStore{
 	//TODO: 이건 안되면 through를 해야하나...? -> throw하는 방향으로
 	getIdByNickname(nickname : string) : number {
 		const res = this.findAllUser().find((user) => user.nickname === nickname);
-		return (res ? res.id : -1);	//Error_code?	//전역 상수 어떻게 정의?	//number를 undefined로 할 수 있냐구...?ㅠㅠ
+		return (res ? res.id : -1);	//id error code
 	}
 }

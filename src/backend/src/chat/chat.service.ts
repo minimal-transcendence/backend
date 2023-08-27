@@ -11,6 +11,7 @@ import {
   userInfo,
 } from './chat.types';
 import { ChatSocket } from './types';
+import { Client } from 'socket.io/dist/client';
 
 @Injectable()
 export class ChatService {
@@ -21,8 +22,8 @@ export class ChatService {
 	){}
 
 	initChatServer() {
-		this.storeUser.saveUser(-1, new User(-1, 'Server_Admin'));
-		this.storeRoom.saveRoom('DEFAULT', new Room(-1)); //owner id = -1 as server
+		this.storeUser.saveUser(0, new User(0, 'Server_Admin'));
+		this.storeRoom.saveRoom('DEFAULT', new Room()); //owner id 0 as server
 	}
 
 	newConnection(io : Namespace, client : ChatSocket) {
@@ -75,7 +76,7 @@ export class ChatService {
 			room.addUserToUserlist(user.id);
 			//save welcome message
 			const body = `Welcome ${user.nickname} !`;
-			const message = new Message(-1, body);
+			const message = new Message(0, body);
 			io.in(roomname).emit("sendMessage", roomname, {
 				from : "Server_Admin",
 				body : body,
@@ -271,7 +272,7 @@ export class ChatService {
 				//TODO : sendMessage Method화
 				const body = `Good bye ${thisUser.nickname}`
 				io.to(roomname).emit("sendMessage", body);
-				room.messages.push(new Message(-1, body));
+				room.messages.push(new Message(0, body));
 				//CHECK : currRoom을 확인하고 보내기 vs 클라이언트가 처리하기 <- next가 해주는 것 같은데? : latter case, 위에서도 currRoomStatus 체크하는거 뺄 것(ysungwon님이랑 상의)
 				//CHECK : except 잘 작동하는지 확인
 				io.to(roomname).except(`$${userId}`).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
@@ -321,7 +322,7 @@ export class ChatService {
 			});
 			io.to(roomname).except(`$${targetId}`).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
 			//저장 할 것임?
-			room.storeMessage(-1, body);
+			room.storeMessage(0, body);
 			//		to alert User
 			const sockets = await io.in(`$${targetId}`).fetchSockets();
 			sockets.forEach((socket) => {
@@ -487,6 +488,7 @@ export class ChatService {
 		return (res);
 	}
 
+	
 	//TODO & CHECK : make DMform MessageFrom 함수 있으면 편하지 않을까
 	fetchDM(io : Namespace, client : ChatSocket, target : string, body : string){
 		const from = client.userId;
@@ -501,18 +503,29 @@ export class ChatService {
 		io.to([`$${from}`, `$${to}`]).emit("sendDM", this.storeUser.getNicknameById(to), res);
 	}
 
-	makeDMRoomMessages(from : string, to : string) : formedMessage[] {
-		const fromId = this.storeUser.getIdByNickname(from);
+	makeDMRoomMessages(client : ChatSocket, to : string) : formedMessage[] | null {
 		const toId = this.storeUser.getIdByNickname(to);
-		const msg = this.storeMessage
-					.findMessagesForUser(fromId, toId)
-					.map(message => ({
-						from : this.storeUser.getNicknameById(message.from),
-						to : this.storeUser.getNicknameById(message.to),
-						body : message.body,
-						at : message.at
-					}));
-		return (msg);
+		const fromUser = this.storeUser.findUserById(client.userId);
+		const toUser = this.storeUser.findUserById(toId);
+		if (fromUser.blocklist.has(toId)) {
+			client.emit("sendAlert", "[ Act Error ]", `You already blocked ${to}`)
+			return null;
+		}
+		else if (toUser.blocklist.has(client.userId)) {
+			client.emit("sendAlert", "[ Act Error ]", `You are blocked by ${fromUser.nickname}`)
+			return null;
+		}
+		else {
+			const msg = this.storeMessage
+						.findMessagesForUser(client.userId, toId)
+						.map(message => ({
+							from : this.storeUser.getNicknameById(message.from),
+							to : this.storeUser.getNicknameById(message.to),
+							body : message.body,
+							at : message.at
+						}));
+			return (msg);
+		}
 	}
 
 	//이게 맞아...?
@@ -558,7 +571,10 @@ export class ChatService {
 		//만약 여기서 못 찾으면?
 		const room : Room = this.storeRoom.findRoom(roomname);
 		//or 만약 방에 아무 유저도 없으면? <- datarace일 때 가능성 있다.
+		console.log(room);
+		console.log(room.userlist);
 		room.userlist.forEach((user) => {
+			console.log(user);
 			const target : User = this.storeUser.findUserById(user);
 			// if (target.connected = true){	//체크할 필요 없는게 맞다.. disconnect할때 다 지워줌
 			userInfo.push({
@@ -587,7 +603,11 @@ export class ChatService {
 	//TODO: 여기 유저 본인이 operator인지 owner인지 체크 필요
 	makeCurrRoomInfo(roomname : string) : currRoomInfo {
 		const room = this.storeRoom.findRoom(roomname);
-		const owner = this.storeUser.getNicknameById(room.owner);	//왜 한번씩 여기서 오류가 나는지...?
+		let owner : string | null ;
+		if (room.owner === 0)
+			owner = null;
+		else
+			owner = this.storeUser.getNicknameById(room.owner);	//왜 한번씩 여기서 오류가 나는지...?
 		const operatorList = [];
 		const joineduserList = [];
 		room.userlist.forEach((user) => {
@@ -651,8 +671,8 @@ export class ChatService {
 			client.emit("sendAlert", "[ ACT ERROR ]", "Actor is not authorized")
 			return (false);
 		}
-		//CHECK : should we have actor #-1?
-		if (target === -1){
+		//CHECK : should we have actor #0?
+		if (target === 0){
 			client.emit("sendAlert", "[ ACT ERROR ]", "Target does not exist")
 			return (false);
 		}
