@@ -35,6 +35,7 @@ export default function ChatRoomUserInfo({
 
   console.log("in ChatRoomUserInfom user: ", JSON.stringify(user, null, 2));
   function handleMenu(event: any) {
+    console.log("in hnadleMenu");
     if (event.target.dataset.name) {
       console.log(
         `${myNickName}가 ${user?.nickname}를 ${roomname}에서 ${event.target.dataset.name}클릭!!!`
@@ -55,8 +56,11 @@ export default function ChatRoomUserInfo({
         console.log("in muteUser ", roomname, targetnickname);
         socket.emit("muteUser", roomname, targetnickname);
       } else if (event.target.dataset.name === "block") {
-        console.log("in blockUser ", targetnickname);
-        socket.emit("blockUser", targetnickname);
+        console.log("in blockUser111111111111111 ", targetnickname);
+        if (targetnickname !== myNickName) {
+          console.log("in blockUser222222222222222 ", targetnickname);
+          socket.emit("blockUser", targetnickname);
+        }
       } else if (event.target.dataset.name === "opAdd") {
         console.log("in addOperator ", roomname, targetnickname);
         socket.emit("addOperator", roomname, targetnickname);
