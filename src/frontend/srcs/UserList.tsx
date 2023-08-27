@@ -91,12 +91,13 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
 
     let conList:string[] = [];
 		socket.emit("requestAllMembers");
-		 socket.on("responseAllMembers", async (data:any) => {
+	  socket.on("responseAllMembers", async (data:any) => {
 			for(let i = 0; i < data.length ; i++){
 				if (data[i].isConnected === true)
 				conList.push((data[i].id).toString());
 			}
 			setConnectList(conList);
+      console.log(conList);
 		}) 
 
     let idList: string[] = [];
@@ -200,6 +201,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         } else {
           console.log("Follow 성공 데이터:", response.data);
           let copiedData = [...userData];
+          console.log(userData.length);
           copiedData[index].isFriend = 1;
           setData(copiedData);
         }
@@ -242,93 +244,115 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
 
   useEffect(() => {
     reloadData();
-    //로그인or로그아웃
-    socket.on("updateUserStatus", async (userid : number, isConnected : boolean) => {
-			if (isConnected === true){
-				let isChange = 0;
-				let copiedData = [...userData];
-				for(let i = 0; i <= copiedData.length ; i++)
-				{
-					if(copiedData[i].id == userid.toString()){
-						copiedData[i].isLogin = 1;
-						isChange = 1;
-						break;
-					}
-				}
-				if (isChange == 0){
-					const responseDetail = await axiosApi.get('http://localhost/api/user/' + userid, );
-					const detailResponse = responseDetail.data;
-					const responseMatch = await axiosApi.get('http://localhost/api/user/' + userid + '/matchhistory', );
-					const matchResponse = responseMatch.data;
-					const matchCount = matchResponse.length;
-					const newData: userDataInterface = {
-						id: detailResponse.id,
-						nickname: detailResponse.nickname,
-						userProfileURL: "/api/" + detailResponse.avatar,
-						win: detailResponse._count.asWinner,
-						lose: detailResponse._count.asLoser,
-						score: (parseInt(detailResponse._count.asWinner) * 10 - parseInt(detailResponse._count.asLoser) * 10),
-						lastLogin: detailResponse.lastLogin,
-						isFriend: checkIsInclude(friendList, detailResponse.id),
-						isLogin: 1,
-						matchhistory: [],
-					};
-					for(let j = 0 ; j < matchCount ; j++){
-						const newMatchData: userMatchHistory = {
-							winner: matchResponse[j].winner.nickname,
-							winnerAvatar: "/api/" + matchResponse[j].winner.avatar,
-							loser: matchResponse[j].loser.nickname,
-							loserAvatar: "/api/" + matchResponse[j].loser.avatar,
-							time: matchResponse[j].createdTime,
-						};
-						newMatchData.time = newMatchData.time.slice(0,19);
-						newMatchData.time = newMatchData.time.replace('T', ' ');
-						newData.matchhistory.push(newMatchData);
-					}
-					copiedData.push(newData);
-				}
-				setData(copiedData);
-			}
-			else{
-				let copiedData = [...userData];
-				for(let i = 0; i <= copiedData.length ; i++)
-				{
-					if(copiedData[i].id == userid.toString()){
-						copiedData[i].isLogin = 0;
-						break;
-					}
-				}
-				setData(copiedData);
-			}
-		})
-		socket.on("updateUserNick", async (userId : number, newNick : string) => {
-      console.log("Nickname Update! " + userId + newNick);
-			let copiedData = [...userData];
-      console.log(copiedData.length);
-			for(let i = 0; i <= copiedData.length ; i++)
-			{
-				if(copiedData[i].id == userId.toString()){
-					copiedData[i].nickname = newNick;
-					break;
-				}
-			}
-			setData(copiedData);
-		})
-		socket.on("updateUserAvatar", async (userId : number) => {
-      console.log("Avatar Update! " + userId);
-			let copiedData = [...userData];
-			for(let i = 0; i <= copiedData.length ; i++)
-			{
-				if(copiedData[i].id == userId.toString()){
-					const responseDetail = await axiosApi.get('http://localhost/api/user/' + userId, );
-					const detailResponse = responseDetail.data;
-					copiedData[i].userProfileURL = detailResponse.avatar;
-					break;
-				}
-			}
-			setData(copiedData);
-		})
   }, []);
+
+  useEffect(() => {
+    async function reloadStatus(userId : number, isConnected : boolean){
+      console.log("Status Update! " + userId + isConnected);
+      if (isConnected === true){
+        let isChange = 0;
+        let copiedData = [...userData];
+        for(let i = 0; i <= copiedData.length ; i++)
+        {
+          if(copiedData[i].id == userId.toString()){
+            copiedData[i].isLogin = 1;
+            isChange = 1;
+            break;
+          }
+        }
+        if (isChange == 0){
+          const responseDetail = await axiosApi.get('http://localhost/api/user/' + userId, );
+          const detailResponse = responseDetail.data;
+          const responseMatch = await axiosApi.get('http://localhost/api/user/' + userId + '/matchhistory', );
+          const matchResponse = responseMatch.data;
+          const matchCount = matchResponse.length;
+          const newData: userDataInterface = {
+            id: detailResponse.id,
+            nickname: detailResponse.nickname,
+            userProfileURL: "/api/" + detailResponse.avatar,
+            win: detailResponse._count.asWinner,
+            lose: detailResponse._count.asLoser,
+            score: (parseInt(detailResponse._count.asWinner) * 10 - parseInt(detailResponse._count.asLoser) * 10),
+            lastLogin: detailResponse.lastLogin,
+            isFriend: checkIsInclude(friendList, detailResponse.id),
+            isLogin: 1,
+            matchhistory: [],
+          };
+          for(let j = 0 ; j < matchCount ; j++){
+            const newMatchData: userMatchHistory = {
+              winner: matchResponse[j].winner.nickname,
+              winnerAvatar: "/api/" + matchResponse[j].winner.avatar,
+              loser: matchResponse[j].loser.nickname,
+              loserAvatar: "/api/" + matchResponse[j].loser.avatar,
+              time: matchResponse[j].createdTime,
+            };
+            newMatchData.time = newMatchData.time.slice(0,19);
+            newMatchData.time = newMatchData.time.replace('T', ' ');
+            newData.matchhistory.push(newMatchData);
+          }
+          copiedData.push(newData);
+        }
+        setData(copiedData);
+      }
+      else{
+        let copiedData = [...userData];
+        for(let i = 0; i <= copiedData.length ; i++)
+        {
+          if(copiedData[i].id == userId.toString()){
+            copiedData[i].isLogin = 0;
+            break;
+          }
+        }
+        setData(copiedData);
+      }
+    }
+
+    async function reloadNick(userId : number, newNick : string){
+      let copiedData = null;
+      console.log("Nickname Update! " + userId + newNick);
+      for(let i = 0; i <= userData.length ; i++)
+      {
+        if(userData[i].id == userId.toString()){
+          copiedData = [...userData];
+          copiedData[i].nickname = newNick;
+          break;
+        }
+      }
+      if (copiedData != null){
+        setData(copiedData);
+      }
+    }
+  
+    async function reloadAvatar(userId : number){
+      console.log("Avatar Update! " + userId);
+      let copiedData = [...userData];
+      for(let i = 0; i <= userData.length ; i++)
+      {
+        if(copiedData[i].id == userId.toString()){
+          const responseDetail = await axiosApi.get('http://localhost/api/user/' + userId, );
+          const detailResponse = responseDetail.data;
+          copiedData[i].userProfileURL = "/api/" + detailResponse.avatar;
+          break;
+        }
+      }
+      if (copiedData != null){
+        setData(copiedData);
+      }
+    }
+
+    if (socket){
+      socket.on("updateUserStatus", reloadStatus);
+      socket.on("updateUserNick", reloadNick);
+      socket.on("updateUserAvatar", reloadAvatar);
+    }
+    return () => {
+      if (socket) {
+        socket.off("updateUserStatus", reloadStatus);
+        socket.off("updateUserNick", reloadNick);
+        socket.off("updateUserAvatar", reloadAvatar);
+      }
+    };
+  }, [socket, userData]);
 
   function getDetailProfile(index: number) {
     return (
