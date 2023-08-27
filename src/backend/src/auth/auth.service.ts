@@ -16,29 +16,12 @@ export class AuthService {
         private httpService: HttpService,
     ) {}
 
-    async getApiAccessToken(code: string): Promise<string> {
-        const req = this.httpService.post("https://api.intra.42.fr/oauth/token", {
-            grant_type: "authorization_code",
-            code: code,
-            client_id: "u-s4t2ud-7a4d91eaac011bcb231f6a2c475ff7b48445dde9311610e0db488b0f8add6fc3",
-            client_secret: "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",
-            redirect_uri: "http://localhost/callback",
-            scope: "public",
-        })
-
-        const { data } = await lastValueFrom(req);
-
-        const access_token = data.access_token;
-
-        return access_token;
-    }
-
     async getUserFromApi(code: string): Promise<any> {
         const tokenReq = this.httpService.post("https://api.intra.42.fr/oauth/token", {
             grant_type: "authorization_code",
             code: code,
             client_id: "u-s4t2ud-7a4d91eaac011bcb231f6a2c475ff7b48445dde9311610e0db488b0f8add6fc3",
-            client_secret: "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",
+            client_secret: "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",
             redirect_uri: "http://localhost/callback",
             scope: "public",
         })

@@ -12,7 +12,6 @@ const Home = () => {
 
 	return(
 		<div>
-			<h2>시작페이지</h2>
 		</div>
 	)
 }
