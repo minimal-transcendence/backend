@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import logOutIcon from "../../../assets/logout.png";
 import userIcon from "../../../assets/user.png";
 import contestIcon from "../../../assets/contest.png";
@@ -11,6 +11,8 @@ import UserList from "../../../srcs/UserList";
 import MyProfile from "../../../srcs/MyProfile";
 import UserProfile from "../../../srcs/UserProfile";
 import ModalOverlay from "../../components/modalpage/ModalOverlay";
+
+import axiosApi, { fetch_refresh } from "../../../srcs/FetchInterceptor";
 
 export default function Menu({
   setTmpLoginnickname,
@@ -28,6 +30,18 @@ export default function Menu({
   const [hard, setHard] = useState<boolean>(false);
   const socket = useContext(SocketContext).chatSocket;
 
+  useEffect(() => {
+    // 예시로 localStorage에 isLoggedIn 상태를 저장한 것으로 가정
+    const storedIsLoggedIn = localStorage.getItem("isLoggedIn");
+    if (storedIsLoggedIn === "true") {
+      setIsLoggedIn(true);
+    }
+    else{
+      alert("로그인이 필요합니다");
+      router.push("/")
+    }
+  }, []);
+
   const logout = () => {
     localStorage.setItem("isLoggedIn", "false");
     localStorage.removeItem("id");
@@ -36,10 +50,11 @@ export default function Menu({
     localStorage.removeItem("access_token");
     localStorage.removeItem("avatar");
     const ApiUrl = "http://localhost/api/auth/logout";
-    fetch(ApiUrl, {
-      method: "POST",
+    axiosApi.post(ApiUrl, {
     });
     setIsLoggedIn(false);
+    alert("로그아웃 되었습니다.");
+    router.push("/")
   };
 
   function handleMenu(event: any) {
