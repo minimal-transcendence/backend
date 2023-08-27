@@ -35,10 +35,8 @@ export class ChatService {
 		client.data.currentRoom = "DEFAULT";
 		this.userJoinRoomAct(io, user, "DEFAULT")
 			.catch((error) => {
-				console.log(error.message);
 				throw new Error(error.message);	//CHECK : how it works
-			});	//이게 마지막에 실행된다... 안돼...<- ?
-		// user.currentRoom = "DEFAULT";
+			});
 	}
 
 	//마지막 하나일 때만 모든 방의 접속을 삭제한다

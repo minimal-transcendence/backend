@@ -1,7 +1,6 @@
-import { Body, Logger, Param, ParseIntPipe, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
-  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
@@ -9,12 +8,11 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Namespace, Socket } from 'socket.io';
+import { Namespace } from 'socket.io';
 import { ChatService } from './chat.service';
 import { ChatSocket } from './types';
 // import { chatSocket } from './dto/validation-form';
 import { CustomWebSocketGuard, RoomName, VarId, VarId2 } from './chat.decorator';
-import { Room } from './store/store.room.service';
 
 @WebSocketGateway({
 	namespace: 'chat',
@@ -101,7 +99,6 @@ export class ChatGateway
 
     client.on('requestAllRoomList', () => {
       const roomInfo = this.chatService.getAllRoomList(client.userId);
-	  console.log('request all room info roomInfo' + JSON.stringify(roomInfo));
       client.emit('sendRoomList', roomInfo);
     });
 
@@ -145,12 +142,15 @@ export class ChatGateway
         DMs,
       );
     });
+
     client.on('sendDirectMessage', (to, body) => {
       this.chatService.fetchDM(this.io, client, to, body);
     });
+
 	client.on('setRoomPrivate', (roomname) => {
 		this.chatService.setRoomStatus(this.io, client, roomname, true);
 	})
+
 	client.on('setRoomPublic', (roomname) => {
 		this.chatService.setRoomStatus(this.io, client, roomname, false);
 	})
@@ -164,7 +164,6 @@ export class ChatGateway
   }
 
 	userUpdateNick(userId : number, newNick : string) {
-		// this.chatService.userChangeNick()
 		this.io.emit("updateUserNick", userId, newNick);
 	}
 
@@ -188,11 +187,11 @@ export class ChatGateway
 		@RoomName() data1 : ChatSocket, 
 		@VarId() data2 : number,
 		){
-		console.log("inside");
-		// console.log(client);
-		console.log("first args");
-		console.log(data1.userId);
-		console.log("second args");
-		console.log(data2);
+		// console.log("inside");
+		// // console.log(client);
+		// console.log("first args");
+		// console.log(data1.userId);
+		// console.log("second args");
+		// console.log(data2);
 	}
 }

@@ -121,8 +121,17 @@ export default function App() {
         )}> 내 방은 <${currentRoomName}>`
       );
       setTempSearchList((results) => {
+		const theblocklist = blocklist;
+		console.log("theblocklist = " + JSON.stringify(theblocklist));
         return results.map((result) => {
-          if (result.roomname === roomname) {
+			console.log(result.users)
+			const isNotBanned = 
+				(blocklist.find(
+					(user : string) => { user === data.from })
+				) ? false : true;
+			console.log(isNotBanned);
+			console.log("inside temSearch" + JSON.stringify(blocklist));	
+          if (result.roomname === roomname && isNotBanned) {
             result.lastMessage = `${data.body}`;
             if (roomname === currentRoomName) {
               result.messageNew = false;

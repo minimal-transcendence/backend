@@ -9,8 +9,8 @@ export class CustomWebSocketGuard implements CanActivate {
     const client = context.switchToWs().getClient();
 	const data = context.switchToWs().getData();
     
-	console.log(client);
-	console.log(data);
+	// console.log(client);
+	// console.log(data);
     const isValid = true;
     
     if (!isValid) {
@@ -28,6 +28,8 @@ export const chatSocket = createParamDecorator(
 	},
 );
 
+
+//ws -> getData() vs getArgs()
 export const RoomName = createParamDecorator(
 	(data: string, context: ExecutionContext) => {
 	//   const socket = context.switchToWs().getClient();
@@ -35,7 +37,7 @@ export const RoomName = createParamDecorator(
 	//   console.log(socket.handshake.query.roomName);
 	  console.log("----roomName");	//첫번째는 Socket. data type지정 별 상관 없는듯
 	  const [roomName] = context.getArgs();
-	  console.log(roomName);
+	//   console.log(roomName);
 	  return roomName;
 	},
 );
@@ -47,7 +49,7 @@ export const VarId = createParamDecorator(
 	//   console.log(socket.handshake.query.roomName);
 	  console.log("----varId");
 	  const [, varId] = context.getArgs();	//여기서 이미 array로 받는다
-	  console.log(varId);
+	//   console.log(varId);
 	  return parseInt(varId);
 	},
   );
@@ -59,7 +61,7 @@ export const VarId2 = createParamDecorator(
 	//   console.log(socket.handshake.query.roomName);
 	  console.log("----varId2");
 	  const [, , varId2] = context.getArgs();
-	  console.log(varId2);
+	//   console.log(varId2);
 	  return parseInt(varId2);
 	},
   );
