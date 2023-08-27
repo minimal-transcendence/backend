@@ -48,8 +48,6 @@ services:
     depends_on:
       - backend
     restart: always
-    # env_file:
-    #   - ./src/frontend/.env
     ports:
       - 80:80
     command: sh /app/dev.sh

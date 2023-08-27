@@ -105,11 +105,12 @@ export class UserService {
 				avatar : file != null ? file.path.toString() : undefined,
 			}
 		}).then((res) => {
-			if (file){
-				this.chatGateway.userUpdateAvatar(id);	//test
+			if (file) {
+				this.chatGateway.userUpdateAvatar(id);
 			}
-			if (data.nickname)
+			if (data.nickname) {
 				this.chatGateway.userUpdateNick(id, data.nickname as string);
+			}
 			return (res);
 		}).catch((error) => {
 			if (error instanceof Prisma.PrismaClientValidationError){

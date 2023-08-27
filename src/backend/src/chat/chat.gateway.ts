@@ -174,24 +174,4 @@ export class ChatGateway
 	userUpdateStatus(userId : number, isConnected : boolean){
 		this.io.emit("updateUserStatus", userId, isConnected);
 	}
-	// validation is not working
-	// validation limitation : can't catch redundant incomings
-	// handleCheck(client: ChatSocket, @Body(ParseIntPipe) data : number)
-	// @SubscribeMessage('check')
-	// handleCheck(client : ChatSocket, data1 : any, data2 : any){
-	// 	console.log(data1, data2);
-	// }
-	// @UseGuards(CustomWebSocketGuard) 
-	@SubscribeMessage('check')
-	handleCheck(
-		@RoomName() data1 : ChatSocket, 
-		@VarId() data2 : number,
-		){
-		// console.log("inside");
-		// // console.log(client);
-		// console.log("first args");
-		// console.log(data1.userId);
-		// console.log("second args");
-		// console.log(data2);
-	}
 }

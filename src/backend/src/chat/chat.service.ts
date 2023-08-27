@@ -37,6 +37,10 @@ export class ChatService {
 			.catch((error) => {
 				throw new Error(error.message);	//CHECK : how it works
 			});
+		const roomInfo : roomInfo[] = this.makeRoomInfo(user.blocklist, user.joinlist);
+		const userInfo : userInfo[] = this.makeRoomUserInfo("DEFAULT");
+		const currRoomInfo : currRoomInfo = this.makeCurrRoomInfo("DEFAULT");
+		client.emit("init", userInfo, roomInfo, currRoomInfo);
 	}
 
 	//마지막 하나일 때만 모든 방의 접속을 삭제한다
@@ -585,7 +589,6 @@ export class ChatService {
 	//TODO: 여기 유저 본인이 operator인지 owner인지 체크 필요
 	makeCurrRoomInfo(roomname : string) : currRoomInfo {
 		const room = this.storeRoom.findRoom(roomname);
-		// console.log("make CurrRoomInfo : " + JSON.stringify(room));
 		const owner = this.storeUser.getNicknameById(room.owner);	//왜 한번씩 여기서 오류가 나는지...?
 		const operatorList = [];
 		const joineduserList = [];
