@@ -463,22 +463,20 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     if (showprofileOption || userData[index].isFriend) {
       return (
         <div className={styles.profileBox}>
-          <div>
             <img
               src={userData[index].userProfileURL}
               alt="profile image"
               className={styles.profileImage}
             />
-          </div>
           <div className={styles.profileInfo}>
             <div className={styles.nameBox}>
               <h2>{userData[index].nickname}</h2>
-              {userData[index].isLogin === 0 && (
-                <div className={styles.circleLogout}></div>
-              )}
-              {userData[index].isLogin === 1 && (
-                <div className={styles.circleLogin}></div>
-              )}
+                {userData[index].isLogin === 0 && (
+                  <div className={styles.circleLogout}></div>
+                )}
+                {userData[index].isLogin === 1 && (
+                  <div className={styles.circleLogin}></div>
+                )}
             </div>
             <h3>
               {userData[index].win} / {userData[index].lose} /{" "}
