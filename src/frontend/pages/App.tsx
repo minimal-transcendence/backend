@@ -10,6 +10,8 @@ import GameList from "./components/gamelistpage/GameList";
 import ChatMain from "./components/chatpage/ChatMain";
 import SearchList from "./components/searchlistpage/SearchList";
 import ChatRoomUser from "./components/chatroompage/ChatRoom";
+
+import ModalAlert from "./components/modalpage/ModalAlert";
 import Pong from "@/srcs/Pong";
 // import { SocketContext, socket } from "../context/socket";
 // import searchIcon from "./assets/search.png";
@@ -64,6 +66,10 @@ export default function App() {
   const [messages, setMessages] = useState<any>([]);
   const [roomInfo, setRoomInfo] = useState<any>(null);
   const [blocklist, setBlocklist] = useState<any>([]);
+
+  const [alertModal, setAlertModal] = useState<boolean>(false);
+  const [alertModalTitle, setAlertModalTitle] = useState<string>("");
+  const [alertModalBody, setAlertModalBody] = useState<string>("");
 
   // seunchoi - for socket connection
   const [gameLoad, setGameLoad] = useState<boolean>(false);
@@ -191,15 +197,17 @@ export default function App() {
         alertTitle,
         JSON.stringify(alertBody, null, 2)
       );
+      setAlertModalTitle(() => alertTitle);
+      setAlertModalBody(() => alertBody);
+      setAlertModal(() => true);
     }
-
     if (socket) {
+      socket.on("sendAlert", sendAlert);
       socket.on("sendBlocklist", sendBlocklist);
       socket.on("updateBlocklist", updateBlocklist);
       socket.on("youAreKickedOut", youAreKickedOut);
       socket.on("youAreBanned", youAreBanned);
       socket.on("wrongPassword", wrongPassword);
-      socket.on("sendAlert", sendAlert);
       socket.on("sendDM", sendDM);
       socket.on("sendMessage", sendMessage);
       socket.on("sendRoomMembers", sendRoomMembers);
@@ -207,12 +215,12 @@ export default function App() {
 
     return () => {
       if (socket) {
+        socket.off("sendAlert", sendAlert);
         socket.off("sendBlocklist", sendBlocklist);
         socket.off("updateBlocklist", updateBlocklist);
         socket.off("youAreKickedOut", youAreKickedOut);
         socket.off("youAreBanned", youAreBanned);
         socket.off("wrongPassword", wrongPassword);
-        socket.off("sendAlert", sendAlert);
         socket.off("sendMessage", sendMessage);
         socket.off("sendRoomMembers", sendRoomMembers);
         socket.off("sendDM", sendDM);
@@ -233,6 +241,16 @@ export default function App() {
     >
       {
         <>
+          <ModalOverlay isOpenModal={alertModal} />
+          <div>
+            {alertModal && (
+              <ModalAlert
+                alertTitle={alertModalTitle}
+                alertBody={alertModalBody}
+                setIsOpenModal={setAlertModal}
+              />
+            )}
+          </div>
           <ModalOverlay isOpenModal={isOpenModal} />
           <div>
             {isOpenModal && (

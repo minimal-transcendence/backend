@@ -912,12 +912,20 @@ body {
 
 .modal-userlist,
 .modal-myprofile,
-.modal-userprofile {
+.modal-alert {
   /* 모달창 크기 */
   width: 600px;
   height: 600px;
   top: 50%;
   left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.modal-userprofile {
+  width: 600px;
+  height: 600px;
+  top: 50%;
+  left: -50%;
   transform: translate(-50%, -50%);
 }
 /* 모달창 내부 X버튼 */
@@ -933,14 +941,14 @@ body {
   visibility: hidden;
 }
 .overlay {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background-color: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(3px);
-  z-index: 5;
+  z-index: 500;
 }
 /*
 SPACING SYSTEM (px)

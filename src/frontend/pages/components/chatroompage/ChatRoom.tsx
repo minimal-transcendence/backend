@@ -1,5 +1,6 @@
 import ChatRoomUserInfo from "./ChatRoomUserInfo";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import { SocketContext } from "@/pages/App";
 
 const pageHeight = 8;
 export default function ChatRoomUser({
@@ -10,7 +11,13 @@ export default function ChatRoomUser({
   setRoomInfo,
   roomname,
   myNickName,
-}: {
+}: // alertModal,
+// setAlertModal,
+// alertModalTitle,
+// setAlertModalTitle,
+// alertModalBody,
+// setAlertModalBody,
+{
   id: any;
   users: any;
   blocklist: any;
@@ -18,9 +25,16 @@ export default function ChatRoomUser({
   setRoomInfo: any;
   roomname: string;
   myNickName: string;
+  // alertModal: any;
+  // setAlertModal: any;
+  // alertModalTitle: string;
+  // setAlertModalTitle: any;
+  // alertModalBody: string;
+  // setAlertModalBody: any;
 }) {
   // console.log("in chatroomUser, users", users);
   // console.log("in chatroomUser, roomname", roomname);
+  const socket = useContext(SocketContext).chatSocket;
   const [page, setPage] = useState<number>(1);
   const [leftArrow, setLeftArrow] = useState<boolean>(false);
   const [rightArrow, setRightArrow] = useState<boolean>(false);

@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { SocketContext } from "@/pages/App";
 import menuIcon from "../../../assets/menu.png";
 import ysungwonIcon from "../../../assets/ysungwon.jpg";
+import ModalOverlay from "../../components/modalpage/ModalOverlay";
 
 import UserProfile from "../../../srcs/UserProfile";
 import Image from "next/image";
@@ -124,6 +125,7 @@ export default function ChatRoomUserInfo({
           })()}
         </p>
       </li>
+      <ModalOverlay isOpenModal={userProfileModal} />
       <div>
         {userProfileModal && (
           <>
