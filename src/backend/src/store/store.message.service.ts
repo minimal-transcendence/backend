@@ -46,12 +46,16 @@ export class ChatMessageStoreService implements DMStore {
 		this.messages.push(message);
 	}
 
+	//CHECK : erase log &
 	findMessagesForUser(fromId : number, toId : number): DM[] {
+		// return this.messages.filter(
+		// 	({ from, to }) => ((from === from && to === to) || (from === to && to === from))
+		// );
 		const res = this.messages.filter(
-				({ from, to }) => 
-				((from ===  fromId && to === toId) || 
-				(from === toId && to === fromId))
+				({ from, to }) => ((from ===  fromId && to === toId) || (from === toId && to === fromId))
 		);
+
+		console.log("res :" + JSON.stringify(res));
 		return (res);
-	}
+		}
 }

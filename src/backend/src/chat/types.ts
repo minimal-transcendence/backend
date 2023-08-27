@@ -1,7 +1,7 @@
 import { Socket } from "socket.io"
 
 type JwtPayload = {
-    userId: number;
+    userId: string;
     email: string;
 }
 
