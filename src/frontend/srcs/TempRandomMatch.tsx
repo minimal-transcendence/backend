@@ -37,11 +37,7 @@ export default function TempRandomMatch() {
 
         socket.on('matchDecline', (payload: string) => {
             console.log(`${payload} is declined`);
-        })
-
-        
-
-        
+        })        
     }, [roomName])
 
     const handleAccept = () => {

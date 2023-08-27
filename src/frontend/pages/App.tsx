@@ -19,7 +19,7 @@ import TempRandomMatch from "@/srcs/TempRandomMatch";
 export type SocketContent = {
   chatSocket: any;
   gameSocket: any;
-}
+};
 export const SocketContext = createContext<SocketContent>({
   chatSocket: null,
   gameSocket: null,
@@ -27,7 +27,7 @@ export const SocketContext = createContext<SocketContent>({
 
 export type AppContent = {
   gameSocket: any;
-}
+};
 export const AppContext = createContext<AppContent>({
   gameSocket: null,
 });
@@ -41,6 +41,7 @@ export type UserOnChat = {
 export type TempSearch = {
   roomname: string;
   lastMessage: string;
+  lastMessageFrom: string;
   messageNew: boolean;
   users: UserOnChat[];
 };
@@ -67,27 +68,40 @@ export default function App() {
   // seunchoi - for socket connection
   const [gameLoad, setGameLoad] = useState<boolean>(false);
   // Get Empty Socket Instance
-  const [socket, setSocket] = useState<Socket>(io.connect("", { query: { "nickname": "" }}));
-  const [gameSocket, setGameSocket] = useState<Socket>(io.connect("", { query: { "nickname": "" }}));
+  const [socket, setSocket] = useState<Socket>(
+    io.connect("", { query: { nickname: "" } })
+  );
+  const [gameSocket, setGameSocket] = useState<Socket>(
+    io.connect("", { query: { nickname: "" } })
+  );
 
   useEffect(() => {
     const getSocket = (namespace: string, jwt: string, nickname: string) => {
       return io.connect(`http://localhost/${namespace}`, {
-        query: { "nickname": nickname, },
+        query: { nickname: nickname },
         auth: { token: jwt },
       });
-    }
+    };
 
     const nicknameItem = localStorage.getItem("nickname");
+    const loginIdItem = localStorage.getItem("id");
+    if (nicknameItem && loginIdItem) {
+      setTmpLoginnickname(nicknameItem);
+      setTmpLoginID(loginIdItem);
+      setTmpIsLoggedIn(true);
+      console.log(
+        `in first useEffect nickname : ${nicknameItem} id: ${loginIdItem}`
+      );
+    }
     const jwtItem = localStorage.getItem("access_token");
 
     // Run whenever jwt state updated
-    if (tmpIsLoggedIn && nicknameItem && jwtItem) {
+    if (nicknameItem && jwtItem) {
       console.log("Try Web Socket Connection");
       setSocket(getSocket("chat", jwtItem, nicknameItem));
       setGameSocket(getSocket("game", jwtItem, nicknameItem));
     }
-  }, [tmpIsLoggedIn, tmpLoginnickname, tmpLoginID])
+  }, []);
 
   useEffect(() => {
     function sendBlocklist(result: any) {
@@ -120,10 +134,12 @@ export default function App() {
           2
         )}> 내 방은 <${currentRoomName}>`
       );
+
       setTempSearchList((results) => {
         return results.map((result) => {
           if (result.roomname === roomname) {
             result.lastMessage = `${data.body}`;
+            result.lastMessageFrom = data.from;
             if (roomname === currentRoomName) {
               result.messageNew = false;
             } else {
@@ -202,28 +218,20 @@ export default function App() {
         socket.off("sendDM", sendDM);
       }
     };
-  }, [currentRoomName, results, messages, socket]);
+  }, [currentRoomName, results, messages, socket, blocklist]);
 
   const handleGameOnOff = () => {
     setGameLoad(!gameLoad);
-  }
+  };
 
   return (
-    <SocketContext.Provider value={{
-      chatSocket: socket,
-      gameSocket: gameSocket
-    }}>
-      {!tmpIsLoggedIn ? (
-        <TempLogin
-
-          tmpLoginID={tmpLoginID}
-          setTmpLoginID={setTmpLoginID}
-          tmpLoginnickname={tmpLoginnickname}
-          tmpIsLoggedIn={tmpIsLoggedIn}
-          setTmpLoginnickname={setTmpLoginnickname}
-          setTmpIsLoggedIn={setTmpIsLoggedIn}
-        />
-      ) : (
+    <SocketContext.Provider
+      value={{
+        chatSocket: socket,
+        gameSocket: gameSocket,
+      }}
+    >
+      {
         <>
           <ModalOverlay isOpenModal={isOpenModal} />
           <div>
@@ -237,14 +245,14 @@ export default function App() {
           </div>
           {/* seunchoi - TEST */}
           <button onClick={handleGameOnOff}>game on/off</button>
-          {gameLoad && <TempRandomMatch/>}
+          {gameLoad && <TempRandomMatch />}
           <NavBar
             query={query}
             setQuery={setQuery}
             setIsLoading={setIsLoading}
+            setTmpLoginnickname={setTmpLoginnickname}
             setLeftHeader={setLeftHeader}
             setError={setError}
-
           />
           <Main>
             <Box>
@@ -259,23 +267,26 @@ export default function App() {
                     leftHeader={leftHeader}
                     setLeftHeader={setLeftHeader}
                     setroomnameModal={setroomnameModal}
+                    blocklist={blocklist}
                   />
                   <DMlist />
                 </>
               }
             </Box>
-            {gameLoad ?
-            (<Pong/>) :
-            (<ChatMain
-              roomInfo={roomInfo}
-              setRoomInfo={setRoomInfo}
-              messages={messages}
-              setMessages={setMessages}
-              currentRoomName={currentRoomName}
-              setcurrentRoomName={setcurrentRoomName}
-              myNickName={tmpLoginnickname}
-              blocklist={blocklist}
-            />)}
+            {gameLoad ? (
+              <Pong />
+            ) : (
+              <ChatMain
+                roomInfo={roomInfo}
+                setRoomInfo={setRoomInfo}
+                messages={messages}
+                setMessages={setMessages}
+                currentRoomName={currentRoomName}
+                setcurrentRoomName={setcurrentRoomName}
+                myNickName={tmpLoginnickname}
+                blocklist={blocklist}
+              />
+            )}
             <Box>
               <>
                 <ChatRoomUser
@@ -292,7 +303,7 @@ export default function App() {
             </Box>
           </Main>
         </>
-      )}
+      }
     </SocketContext.Provider>
   );
 }
