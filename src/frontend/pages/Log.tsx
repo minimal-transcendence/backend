@@ -30,7 +30,7 @@ function Log() {
     //window.location.href =
     //'https://api.intra.42.fr/oauth/authorize/?response_type=code&client_id=u-s4t2ud-7a4d91eaac011bcb231f6a2c475ff7b48445dde9311610e0db488b0f8add6fc3&redirect_uri=http://localhost/callback';
     router.replace(
-      "https://api.intra.42.fr/oauth/authorize/?response_type=code&client_id=u-s4t2ud-7a4d91eaac011bcb231f6a2c475ff7b48445dde9311610e0db488b0f8add6fc3&redirect_uri=http://localhost/callback"
+      `https://api.intra.42.fr/oauth/authorize/?response_type=code&client_id=${process.env.NEXT_PUBLIC_FT_CLIENT_ID}&redirect_uri=${process.env.NEXT_PUBLIC_FT_REDIRECT_URI}`
     );
   }
 
