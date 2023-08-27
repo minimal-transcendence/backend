@@ -5,8 +5,8 @@
 	padding: 20px;
 	border: 1px solid #ddd;
 	border-radius: 10px;
-	width: 520px;
-	height: 600px;
+	width: 800px;
+	height: 900px;
 	overflow: auto;
 	background: #F9F9F9;
 	align-items: middle;
@@ -20,8 +20,8 @@
 	margin: 10px;
 	border: 1px solid #ddd;
 	border-radius: 10px;
-	width: 476px;
-	height: 120px;
+	width: 750px;
+	height: 200px;
 	background: #F9F9F9;
 	box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
 }
@@ -32,8 +32,8 @@
 }
 
   .circleLogout {
-	width: 15px;
-	height: 15px;
+	width: 20px;
+	height: 20px;
 	border-radius: 50%;
 	margin: 20px;
 	border:1px solid white;
@@ -41,8 +41,8 @@
   }
 
   .circleLogin {
-	width: 15px;
-	height: 15px;
+	width: 20px;
+	height: 20px;
 	border-radius: 50%;
 	margin: 20px;
 	border:1px solid white;
@@ -51,8 +51,8 @@
 
   .profileImage{
 	flex:0.8;
-	width:100px;
-	height:100px;
+	width:125px;
+	height:125px;
 	border-radius:20px;
 	margin:10px;
 	overflow: hidden;
@@ -71,13 +71,13 @@
   .buttons {
 	display: flex;
 	flex-direction: row; /* 버튼들을 세로로 배치 */
-	gap: 10px; /* 버튼 간격 */
+	gap: 15px; /* 버튼 간격 */
   }
 
   .buttons button {
 	padding: 8px 8px;
-	width: 101px;
-	height: 31px;
+	width: 130px;
+	height: 45px;
 	border: none;
 	border-radius: 5px;
 	cursor: pointer;
