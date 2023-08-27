@@ -158,7 +158,4 @@ export class ChatGateway
 		this.io.emit("updateUserAvatar", userId);
 	}
 
-	userUpdateStatus(userId : number, isConnected : boolean){
-		this.io.emit("updateUserStatus", userId, isConnected);
-	}
 }

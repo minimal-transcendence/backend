@@ -26,13 +26,20 @@ export class ChatService {
 		this.storeRoom.saveRoom('DEFAULT', new Room()); //owner id 0 as server
 	}
 
+	userUpdateStatus(io : Namespace, userId : number, isConnected : boolean){
+		io.emit("updateUserStatus", userId, isConnected);
+	}
+
 	newConnection(io : Namespace, client : ChatSocket) {
 		const userId = client.userId;
 		client.join(`$${userId}`);
 		let user : User = this.storeUser.findUserById(userId);
 		if (user === undefined)
 			user = this.storeUser.saveUser(userId, new User(userId, client.nickname));
-		user.connected = true;
+		if (user.connected === false){
+			user.connected = true;
+			this.userUpdateStatus(io, userId, true);
+		}
 		client.data.currentRoom = "DEFAULT";
 		this.userJoinRoomAct(io, user, "DEFAULT")
 			.catch((error) => {
@@ -59,6 +66,8 @@ export class ChatService {
 			const user = this.storeUser.findUserById(userId);
 			user.connected = false;
 			this.userLeaveRooms(io, userId, user.joinlist);
+			// io.emit("updateUserStatus", userId, false);
+			this.userUpdateStatus(io, userId, false);
 		}
 	}
 
