@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import axiosApi, { fetch_refresh } from "./FetchInterceptor";
 import styles from "../styles/UserListStyle.module.css";
 import styles_profile from "../styles/UserProfileStyle.module.css";
 import { Socket } from "socket.io-client";
 import * as io from "socket.io-client";
 import "../pages/index.css";
+import { SocketContext, SocketContent } from "@/pages/App";
+
 function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   const [showModals, setShowModals] = useState<boolean[]>([]);
   const [showprofileOption, setShowprofileOption] = useState(true);
@@ -19,6 +21,8 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   const [userData, setData] = useState<userDataInterface[]>([]);
   const [connectList, setConnectList] = useState<string[]>([]);
   const [friendList, setFriendList] = useState<string[]>([]);
+
+  const socket = useContext<SocketContent>(SocketContext).chatSocket;
 
   interface userMatchHistory {
     winner: string;
@@ -77,15 +81,6 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     }
   }
 
-  /* const socket = io.connect("http://localhost:3002", { // 나중에 빼야함
-	query: {
-		id: userId,
-		nickname: userNickname,
-	},
-	}); */
-
-  //갱신용 reloadData 만들기
-
   const reloadData = async () => {
     setData([]);
     setShowModals([]);
@@ -94,15 +89,15 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     setConnectList([]);
     setFriendList([]);
 
-    /* let conList:string[] = [];
+    let conList:string[] = [];
 		socket.emit("requestAllMembers");
-		 socket.on("responseAllMembers", async (data) => {
+		 socket.on("responseAllMembers", async (data:any) => {
 			for(let i = 0; i < data.length ; i++){
 				if (data[i].isConnected === true)
 				conList.push((data[i].id).toString());
 			}
 			setConnectList(conList);
-		}) */
+		}) 
 
     let idList: string[] = [];
     //const responseFriend = await (await fetch_refresh ('http://localhost/api/user/' + userId + '/friend')).json();
@@ -142,8 +137,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
           parseInt(detailResponse._count.asLoser) * 10,
         lastLogin: detailResponse.lastLogin,
         isFriend: checkIsInclude(idList, detailResponse.id),
-        //isLogin: checkIsInclude(conList, detailResponse.id),
-        isLogin: 0,
+        isLogin: checkIsInclude(conList, detailResponse.id),
         matchhistory: [],
       };
       for (let j = 0; j < matchCount; j++) {
@@ -249,7 +243,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   useEffect(() => {
     reloadData();
     //로그인or로그아웃
-    /*socket.on("updateUserStatus", async (userid : number, isConnected : boolean) => {
+    socket.on("updateUserStatus", async (userid : number, isConnected : boolean) => {
 			if (isConnected === true){
 				let isChange = 0;
 				let copiedData = [...userData];
@@ -307,8 +301,10 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
 				setData(copiedData);
 			}
 		})
-		socket.on("updateUserNIck", async (userId : number, newNick : string) => {
+		socket.on("updateUserNick", async (userId : number, newNick : string) => {
+      console.log("Nickname Update! " + userId + newNick);
 			let copiedData = [...userData];
+      console.log(copiedData.length);
 			for(let i = 0; i <= copiedData.length ; i++)
 			{
 				if(copiedData[i].id == userId.toString()){
@@ -319,6 +315,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
 			setData(copiedData);
 		})
 		socket.on("updateUserAvatar", async (userId : number) => {
+      console.log("Avatar Update! " + userId);
 			let copiedData = [...userData];
 			for(let i = 0; i <= copiedData.length ; i++)
 			{
@@ -330,7 +327,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
 				}
 			}
 			setData(copiedData);
-		})*/
+		})
   }, []);
 
   function getDetailProfile(index: number) {
