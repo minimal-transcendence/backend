@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { SocketContext } from "@/pages/App";
 import menuIcon from "../../../assets/menu.png";
 import ysungwonIcon from "../../../assets/ysungwon.jpg";
+import ModalOverlay from "../../components/modalpage/ModalOverlay";
 
 import UserProfile from "../../../srcs/UserProfile";
 import Image from "next/image";
@@ -64,8 +65,16 @@ export default function ChatRoomUserInfo({
         socket.emit("deleteOperator", roomname, targetnickname);
       } else if (event.target.dataset.name === "dmApply")
         socket.emit("selectDMRoom", targetnickname);
-      else if (event.target.dataset.name === "oneVsOne")
+      else if (event.target.dataset.name === "oneVsOneEasy") {
+        console.log("easy");
+        socket.emit("oneVsOneApply", targetnickname, "oneVsOne", "easy");
+      } else if (event.target.dataset.name === "oneVsOneNormal") {
+        console.log("normal");
         socket.emit("oneVsOneApply", targetnickname, "oneVsOne", "normal");
+      } else if (event.target.dataset.name === "oneVsOneHard") {
+        console.log("hard");
+        socket.emit("oneVsOneApply", targetnickname, "oneVsOne", "hard");
+      }
     } else {
       console.log("you click other");
     }
@@ -101,15 +110,59 @@ export default function ChatRoomUserInfo({
               alt="menuicon"
             />
             <div onClick={() => handleMenu(event)} className="dropdown-content">
-              <div data-name="profile">Profile</div>
-              <div data-name="kick">Kick</div>
-              <div data-name="ban">Ban</div>
-              <div data-name="mute">Mute</div>
-              <div data-name="block">block</div>
-              <div data-name="opAdd">Add Oper</div>
-              <div data-name="opDelete">Delete Oper</div>
-              <div data-name="dmApply">1:1 Chat</div>
-              <div data-name="oneVsOne">1:1 Game</div>
+              <div className="dropdown-item" data-name="profile">
+                Profile
+              </div>
+              <div className="dropdown-item" data-name="kick">
+                Kick
+              </div>
+              <div className="dropdown-item" data-name="ban">
+                Ban
+              </div>
+              <div className="dropdown-item" data-name="mute">
+                Mute
+              </div>
+              <div className="dropdown-item" data-name="block">
+                block
+              </div>
+
+              <div className="dropdown-item dropdown-second">
+                Operator
+                <div className="dropdown-content-second">
+                  <div className="dropdown-item-second" data-name="opAdd">
+                    Add Operator
+                  </div>
+                  <div className="dropdown-item-second" data-name="opDelete">
+                    Delete Operator
+                  </div>
+                </div>
+              </div>
+              <div className="dropdown-item" data-name="dmApply">
+                1:1 Chat
+              </div>
+              <div className="dropdown-item dropdown-second">
+                1:1 Game
+                <div className="dropdown-content-second">
+                  <div
+                    className="dropdown-item-second"
+                    data-name="oneVsOneEasy"
+                  >
+                    Easy Mode
+                  </div>
+                  <div
+                    className="dropdown-item-second"
+                    data-name="oneVsOneNormal"
+                  >
+                    Normal Mode
+                  </div>
+                  <div
+                    className="dropdown-item-second"
+                    data-name="oneVsOneHard"
+                  >
+                    Hard Mode
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -124,6 +177,7 @@ export default function ChatRoomUserInfo({
           })()}
         </p>
       </li>
+      <ModalOverlay isOpenModal={userProfileModal} />
       <div>
         {userProfileModal && (
           <>
