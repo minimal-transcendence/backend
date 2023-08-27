@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { ChatRoomStoreService, Room } from '../store/store.room.service';
-import { ChatUserStoreService, User } from '../store/store.user.service';
-import { ChatMessageStoreService, Message, DM } from '../store/store.message.service';
+import { ChatRoomStoreService, Room } from './store/store.room.service';
+import { ChatUserStoreService, User } from './store/store.user.service';
+import { ChatMessageStoreService, Message, DM } from './store/store.message.service';
 import { Namespace } from 'socket.io';
 import {
   currRoomInfo,
@@ -454,7 +454,6 @@ export class ChatService {
 		const roomlist = [];
 		const blocklist = this.storeUser.findUserById(userId).blocklist;
 		this.storeRoom.rooms.forEach((value, key) => {
-			console.log(key, value);
 			if (!value.isPrivate)
 				roomlist.push(key);
 		})
@@ -550,7 +549,6 @@ export class ChatService {
 				lastMessage : message.body	//body만 보내도록
 			})
 		})
-		console.log(res);
 		return res;
 	}
 
@@ -589,7 +587,6 @@ export class ChatService {
 	//TODO: 여기 유저 본인이 operator인지 owner인지 체크 필요
 	makeCurrRoomInfo(roomname : string) : currRoomInfo {
 		const room = this.storeRoom.findRoom(roomname);
-		// console.log("make CurrRoomInfo : " + JSON.stringify(room));
 		const owner = this.storeUser.getNicknameById(room.owner);	//왜 한번씩 여기서 오류가 나는지...?
 		const operatorList = [];
 		const joineduserList = [];
