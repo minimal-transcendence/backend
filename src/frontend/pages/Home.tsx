@@ -11,20 +11,6 @@ function Home() {
   const [userListModal, setUserListModal] = useState<boolean>(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const logout = () => {
-    localStorage.setItem("isLoggedIn", "false");
-    localStorage.removeItem("id");
-    localStorage.removeItem("nickname");
-    localStorage.removeItem("is2fa");
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("avatar");
-    const ApiUrl = "http://localhost/api/auth/logout";
-    fetch(ApiUrl, {
-      method: "POST",
-    });
-    setIsLoggedIn(false);
-  };
-
   // 이미 로그인되었는지 확인
   useEffect(() => {
     // 예시로 localStorage에 isLoggedIn 상태를 저장한 것으로 가정
