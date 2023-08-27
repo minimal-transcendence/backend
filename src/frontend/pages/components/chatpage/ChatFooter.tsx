@@ -2,19 +2,15 @@ import { useState, useContext } from "react";
 import { SocketContext } from "@/pages/App";
 const ChatFooter = ({
   currentRoomName,
-  textareaValue,
-  setTextareaValue,
   isDM,
   DMtarget,
 }: {
   currentRoomName: any;
-  textareaValue: any;
-  setTextareaValue: any;
   isDM: boolean;
   DMtarget: string;
 }) => {
   const socket = useContext(SocketContext).chatSocket;
-
+  const [textareaValue, setTextareaValue] = useState("");
   function handleSubmit(e: any) {
     e.preventDefault();
     const form = e.target;

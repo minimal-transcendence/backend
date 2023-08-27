@@ -27,10 +27,7 @@ export default function SearchResult({
               <span>{el?.messageNew ? "🆕" : "☑️"}</span>
               <span>
                 {el?.lastMessage?.length >= 14
-                  ? el?.lastMessageFrom +
-                    " : " +
-                    el?.lastMessage.substr(0, 14) +
-                    "..."
+                  ? el?.lastMessage.substr(0, 14) + "..."
                   : el?.lastMessage}
               </span>
             </>

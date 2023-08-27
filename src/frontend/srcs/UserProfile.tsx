@@ -202,100 +202,95 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   function getDetailProfile() {
     return (
       <>
-        <div ref={modalRef} className="modal modal-userprofile">
-          <div className={styles_profile.mainBox}>
-            <div className={styles_profile.profileInner}>
-              <div className={styles_profile.imageBox}>
-                <img
-                  src={userData[0].userProfileURL}
-                  alt="profile img"
-                  className={styles_profile.profileImage}
-                />
-                {userData[0].isLogin === 0 && (
-                  <div className={styles_profile.circleLogout}></div>
-                )}
-                {userData[0].isLogin === 1 && (
-                  <div className={styles_profile.circleLogin}></div>
-                )}
-              </div>
-              <div>
-                <h2>{userData[0].nickname}의 프로필</h2>
-              </div>
-              <br />
-              <br />
-              <br />
-              <br />
-              <br />
-              <div className={styles_profile.wlsBanner}>
-                Win / Lose / Total Score
-              </div>
-              <div>
-                <h2>
-                  {userData[0].win} / {userData[0].lose} / {userData[0].score}
-                </h2>
-              </div>
-              <div className={styles_profile.buttons}>
-                {userData[0].nickname !== userNickname &&
-                  userData[0].isFriend === 0 && (
-                    <button
-                      className={styles_profile.followButton}
-                      onClick={() => {
-                        follow(0);
-                      }}
-                    >
-                      {" "}
-                      팔로우{" "}
-                    </button>
-                  )}
-                {userData[0].nickname !== userNickname &&
-                  userData[0].isFriend === 1 && (
-                    <button
-                      className={styles_profile.followingButton}
-                      onClick={() => {
-                        unFollow(0);
-                      }}
-                    >
-                      {" "}
-                      언팔로우{" "}
-                    </button>
-                  )}
-                <button className={styles_profile.gameButton}>
-                  {" "}
-                  게임 신청{" "}
-                </button>
-              </div>
+        <div className={styles_profile.mainBox}>
+          <div className={styles_profile.profileInner}>
+            <div className={styles_profile.imageBox}>
+              <img
+                src={userData[0].userProfileURL}
+                alt="profile img"
+                className={styles_profile.profileImage}
+              />
+              {userData[0].isLogin === 0 && (
+                <div className={styles_profile.circleLogout}></div>
+              )}
+              {userData[0].isLogin === 1 && (
+                <div className={styles_profile.circleLogin}></div>
+              )}
             </div>
-            <div className={styles_profile.logInner}>
-              <div className={styles_profile.logBanner}>
-                <h1>최근 전적</h1>
-                {userData[0].matchhistory.slice(0, 10).map((item, idx) => (
-                  <div key={idx} className={styles_profile.logBox}>
-                    <div className={styles_profile.logTime}>
-                      {userData[0].matchhistory[idx].time.slice(0, 10)}
-                      <br />
-                      {userData[0].matchhistory[idx].time.slice(11, 19)}
-                    </div>
-                    <div className={styles_profile.logName}>
-                      {userData[0].matchhistory[idx].winner}
-                    </div>
-                    <img
-                      src={userData[0].matchhistory[idx].winnerAvatar}
-                      alt="profile img"
-                      className={styles_profile.logProfileImage}
-                    />
-                    <div className={styles_profile.resultFont}>승</div>
-                    <div className={styles_profile.resultFont}>패</div>
-                    <img
-                      src={userData[0].matchhistory[idx].loserAvatar}
-                      alt="profile img"
-                      className={styles_profile.logProfileImage}
-                    />
-                    <div className={styles_profile.logName}>
-                      {userData[0].matchhistory[idx].loser}
-                    </div>
+            <div>
+              <h2>{userData[0].nickname}의 프로필</h2>
+            </div>
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <div className={styles_profile.wlsBanner}>
+              Win / Lose / Total Score
+            </div>
+            <div>
+              <h2>
+                {userData[0].win} / {userData[0].lose} / {userData[0].score}
+              </h2>
+            </div>
+            <div className={styles_profile.buttons}>
+              {userData[0].nickname !== userNickname &&
+                userData[0].isFriend === 0 && (
+                  <button
+                    className={styles_profile.followButton}
+                    onClick={() => {
+                      follow(0);
+                    }}
+                  >
+                    {" "}
+                    팔로우{" "}
+                  </button>
+                )}
+              {userData[0].nickname !== userNickname &&
+                userData[0].isFriend === 1 && (
+                  <button
+                    className={styles_profile.followingButton}
+                    onClick={() => {
+                      unFollow(0);
+                    }}
+                  >
+                    {" "}
+                    언팔로우{" "}
+                  </button>
+                )}
+              <button className={styles_profile.gameButton}> 게임 신청 </button>
+            </div>
+          </div>
+          <div className={styles_profile.logInner}>
+            <div className={styles_profile.logBanner}>
+              <h1>최근 전적</h1>
+              {userData[0].matchhistory.slice(0, 10).map((item, idx) => (
+                <div key={idx} className={styles_profile.logBox}>
+                  <div className={styles_profile.logTime}>
+                    {userData[0].matchhistory[idx].time.slice(0, 10)}
+                    <br />
+                    {userData[0].matchhistory[idx].time.slice(11, 19)}
                   </div>
-                ))}
-              </div>
+                  <div className={styles_profile.logName}>
+                    {userData[0].matchhistory[idx].winner}
+                  </div>
+                  <img
+                    src={userData[0].matchhistory[idx].winnerAvatar}
+                    alt="profile img"
+                    className={styles_profile.logProfileImage}
+                  />
+                  <div className={styles_profile.resultFont}>승</div>
+                  <div className={styles_profile.resultFont}>패</div>
+                  <img
+                    src={userData[0].matchhistory[idx].loserAvatar}
+                    alt="profile img"
+                    className={styles_profile.logProfileImage}
+                  />
+                  <div className={styles_profile.logName}>
+                    {userData[0].matchhistory[idx].loser}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -307,7 +302,11 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     return <div className={styles_profile.fontSet}>{getDetailProfile()}</div>;
   }
 
-  return <div>{showProfile && getDetailProfileBox()}</div>;
+  return (
+    <div ref={modalRef} className="modal modal-userprofile">
+      {showProfile && getDetailProfileBox()}
+    </div>
+  );
 }
 
 export default UserProfile;
