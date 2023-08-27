@@ -69,6 +69,7 @@ export default function App() {
   // Get Empty Socket Instance
   const [socket, setSocket] = useState<Socket>(io.connect("", { query: { "nickname": "" }}));
   const [gameSocket, setGameSocket] = useState<Socket>(io.connect("", { query: { "nickname": "" }}));
+  const [isGameConnected, setIsGameConnected] = useState<boolean>(false);
 
   useEffect(() => {
     const getSocket = (namespace: string, jwt: string, nickname: string) => {
@@ -88,6 +89,13 @@ export default function App() {
       setGameSocket(getSocket("game", jwtItem, nicknameItem));
     }
   }, [tmpIsLoggedIn, tmpLoginnickname, tmpLoginID])
+
+  useEffect(() => {
+    gameSocket.on('hello', () => {
+      // console.log("In Connection:", gameSocket.connected);
+      setIsGameConnected(true);
+    })
+  }, [gameSocket]);
 
   useEffect(() => {
     function sendBlocklist(result: any) {
@@ -187,6 +195,8 @@ export default function App() {
       socket.on("sendDM", sendDM);
       socket.on("sendMessage", sendMessage);
       socket.on("sendRoomMembers", sendRoomMembers);
+
+      socket.on
     }
 
     return () => {
@@ -213,86 +223,74 @@ export default function App() {
       chatSocket: socket,
       gameSocket: gameSocket
     }}>
-      {!tmpIsLoggedIn ? (
-        <TempLogin
+      <>
+        <ModalOverlay isOpenModal={isOpenModal} />
+        <div>
+          {isOpenModal && (
+            <ModalBasic
+              roomname={roomnameModal}
+              setIsOpenModal={setIsOpenModal}
+              innerText={"방클릭해서 드갈때 비번입력 ㄱ"}
+            />
+          )}
+        </div>
+        {/* seunchoi - TEST */}
+        <button disabled={!isGameConnected} onClick={handleGameOnOff}>game on/off</button>
+        {gameLoad && <TempRandomMatch/>}
+        <NavBar
+          query={query}
+          setQuery={setQuery}
+          setIsLoading={setIsLoading}
+          setLeftHeader={setLeftHeader}
+          setError={setError}
 
-          tmpLoginID={tmpLoginID}
-          setTmpLoginID={setTmpLoginID}
-          tmpLoginnickname={tmpLoginnickname}
-          tmpIsLoggedIn={tmpIsLoggedIn}
-          setTmpLoginnickname={setTmpLoginnickname}
-          setTmpIsLoggedIn={setTmpIsLoggedIn}
         />
-      ) : (
-        <>
-          <ModalOverlay isOpenModal={isOpenModal} />
-          <div>
-            {isOpenModal && (
-              <ModalBasic
-                roomname={roomnameModal}
-                setIsOpenModal={setIsOpenModal}
-                innerText={"방클릭해서 드갈때 비번입력 ㄱ"}
-              />
-            )}
-          </div>
-          {/* seunchoi - TEST */}
-          <button onClick={handleGameOnOff}>game on/off</button>
-          {gameLoad && <TempRandomMatch/>}
-          <NavBar
-            query={query}
-            setQuery={setQuery}
-            setIsLoading={setIsLoading}
-            setLeftHeader={setLeftHeader}
-            setError={setError}
-
-          />
-          <Main>
-            <Box>
-              {
-                <>
-                  <SearchList
-                    results={results}
-                    query={query}
-                    setTempSearchList={setTempSearchList}
-                    isOpenModal={isOpenModal}
-                    setIsOpenModal={setIsOpenModal}
-                    leftHeader={leftHeader}
-                    setLeftHeader={setLeftHeader}
-                    setroomnameModal={setroomnameModal}
-                  />
-                  <DMlist />
-                </>
-              }
-            </Box>
-            {gameLoad ?
-            (<Pong/>) :
-            (<ChatMain
-              roomInfo={roomInfo}
-              setRoomInfo={setRoomInfo}
-              messages={messages}
-              setMessages={setMessages}
-              currentRoomName={currentRoomName}
-              setcurrentRoomName={setcurrentRoomName}
-              myNickName={tmpLoginnickname}
-              blocklist={blocklist}
-            />)}
-            <Box>
+        <Main>
+          <Box>
+            {
               <>
-                <ChatRoomUser
-                  id={tmpLoginID}
-                  blocklist={blocklist}
-                  roomInfo={roomInfo}
-                  setRoomInfo={setRoomInfo}
-                  users={roomUserList}
-                  roomname={currentRoomName}
-                  myNickName={tmpLoginnickname}
+                <SearchList
+                  results={results}
+                  query={query}
+                  setTempSearchList={setTempSearchList}
+                  isOpenModal={isOpenModal}
+                  setIsOpenModal={setIsOpenModal}
+                  leftHeader={leftHeader}
+                  setLeftHeader={setLeftHeader}
+                  setroomnameModal={setroomnameModal}
                 />
-                <GameList myNickName={tmpLoginnickname} />
+                <DMlist />
               </>
-            </Box>
-          </Main>
-        </>
-      )}
+            }
+          </Box>
+          {gameLoad ?
+          (<Pong/>) :
+          (<ChatMain
+            roomInfo={roomInfo}
+            setRoomInfo={setRoomInfo}
+            messages={messages}
+            setMessages={setMessages}
+            currentRoomName={currentRoomName}
+            setcurrentRoomName={setcurrentRoomName}
+            myNickName={tmpLoginnickname}
+            blocklist={blocklist}
+          />)}
+          <Box>
+            <>
+              <ChatRoomUser
+                id={tmpLoginID}
+                blocklist={blocklist}
+                roomInfo={roomInfo}
+                setRoomInfo={setRoomInfo}
+                users={roomUserList}
+                roomname={currentRoomName}
+                myNickName={tmpLoginnickname}
+              />
+              <GameList myNickName={tmpLoginnickname} />
+            </>
+          </Box>
+        </Main>
+      </>
     </SocketContext.Provider>
   );
 }

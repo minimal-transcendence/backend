@@ -222,9 +222,7 @@ export default function Pong() {
     /*-----------------------------------------------------*/
 
     // Lobby
-    // if (!inGame) {
-      drawLobby();
-    // }
+    drawLobby();
 
     if (inGame) {
       interval = setInterval(() => {
