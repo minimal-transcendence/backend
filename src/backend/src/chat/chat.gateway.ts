@@ -24,7 +24,7 @@ export class ChatGateway
 	) {}
 
 	async afterInit(){
-		await this.chatService.initChatServer();	//
+	  await this.chatService.initChatServer();	//
 	}
 
 		//TODO : erase loggers?
@@ -37,7 +37,7 @@ export class ChatGateway
 			this.logger.log(`client ${client.nickname} send event : ${any}`);
 		})
 
-		this.chatService.newConnection(this.io, client);
+		this.chatService.handleNewConnection(this.io, client);
 		
 		client.on("sendChatMessage", (to, body) => {
 			this.chatService.sendChat(this.io, client, to, body);
@@ -143,14 +143,14 @@ export class ChatGateway
   //disconnecting, disconnect 둘다 감지 가능?
   async handleDisconnect(@ConnectedSocket() client: ChatSocket) {
     this.logger.log(client.nickname + 'is leaving');
-    await this.chatService.disconnectUser(this.io, client);
+    await this.chatService.handleDisconnection(this.io, client);
   }
 
-	userUpdateNick(userId : number, newNick : string) {
+	updateUserNick(userId : number, newNick : string) {
 		this.io.emit("updateUserNick", userId, newNick);
 	}
 
-	userUpdateAvatar(userId : number){
+	updateUserAvatar(userId : number){
 		this.io.emit("updateUserAvatar", userId);
 	}
 
