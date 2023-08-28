@@ -27,22 +27,18 @@ export class ChatGateway
 		await this.chatService.initChatServer();	//
 	}
 
-
+		//TODO : erase loggers?
 	async handleConnection(@ConnectedSocket() client: ChatSocket) {
-		this.logger.log(`Client Connected : ${client.id}, ${client.userId}`);
+		// const sockets = this.io.sockets;
+    // this.logger.debug(`Number of connection in Chat namespace : ${sockets.size}`);
+    this.logger.log(`Client Connected : ${client.id}, ${client.userId}`);
 	
-		//TODO : erase
 		client.onAny((any : any) => {
-			this.logger.log(`accept event : ${any}`);
+			this.logger.log(`client ${client.nickname} send event : ${any}`);
 		})
 
 		this.chatService.newConnection(this.io, client);
 		
-		// client.on("check", (a : any, b : any, c: any) => {
-		// 	// console.log(a, " ", b, " hihi ", c);
-		// 	// console.log(a.toString, parseInt(b), parseInt(c));
-		// })
-
 		client.on("sendChatMessage", (to, body) => {
 			this.chatService.sendChat(this.io, client, to, body);
 		});
@@ -61,8 +57,8 @@ export class ChatGateway
 
 		//TODO : 미완성
 		client.on("sendRoomLeave", (room) => {
-			this.chatService.userLeaveRoom(this.io, client.userId, room);
-			this.chatService.userLeaveRoomAct(this.io, client.userId, room);
+			this.chatService.userLeaveRoom(this.io, client, room);
+			this.chatService.userLeaveRoomAct(this.io, client, room);
 		});
 
     //TODO : check
@@ -147,7 +143,7 @@ export class ChatGateway
   //disconnecting, disconnect 둘다 감지 가능?
   async handleDisconnect(@ConnectedSocket() client: ChatSocket) {
     this.logger.log(client.nickname + 'is leaving');
-    await this.chatService.disconnectUser(this.io, client.userId);
+    await this.chatService.disconnectUser(this.io, client);
   }
 
 	userUpdateNick(userId : number, newNick : string) {

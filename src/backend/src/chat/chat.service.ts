@@ -11,7 +11,6 @@ import {
   userInfo,
 } from './chat.types';
 import { ChatSocket } from './types';
-import { Client } from 'socket.io/dist/client';
 
 @Injectable()
 export class ChatService {
@@ -41,38 +40,41 @@ export class ChatService {
 			this.userUpdateStatus(io, userId, true);
 		}
 		client.data.currentRoom = "DEFAULT";
-		this.userJoinRoomAct(io, user, "DEFAULT")
+		this.userJoinRoomAct(io, client, userId, "DEFAULT")
 			.catch((error) => {
 				throw new Error(error.message);	//CHECK : how it works
 			});
 		const roomInfo : roomInfo[] = this.makeRoomInfo(user.blocklist, user.joinlist);
-		const userInfo : userInfo[] = this.makeRoomUserInfo("DEFAULT");
+		const userInfo : userInfo[] = this.makeRoomUserInfo("DEFAULT");	//joinRoomAct가 위에 있는데 이게 먼저 실행된다...
 		const currRoomInfo : currRoomInfo = this.makeCurrRoomInfo("DEFAULT");
-		client.emit("init", userInfo, roomInfo, currRoomInfo);
+		// client.emit("init", undefined, roomInfo, currRoomInfo);
 	}
 
 	//마지막 하나일 때만 모든 방의 접속을 삭제한다
 	//TODO & CHECK : if it works well...?
-	async disconnectUser(io: Namespace, userId : number) : Promise<void> {
-		const sockets = await io.in(`$${userId}`).fetchSockets()
+	async disconnectUser(io: Namespace, client : ChatSocket) : Promise<void> {
+		const userId = client.userId;
+		const connections = await io.in(`$${userId}`).fetchSockets()
 						.then((res : any) => {
-							return (res.size);	//가능?
+							console.log("res : " + res.length);
+							return (res.length);	//가능?
 						})
 						.catch((error : any) => {
 							console.log(error.message);
 							throw new Error(error.message);	//대문자? 소문자?
 						});
-		if (sockets === 1) {
+		if (!connections) {
 			const user = this.storeUser.findUserById(userId);
 			user.connected = false;
-			this.userLeaveRooms(io, userId, user.joinlist);
-			// io.emit("updateUserStatus", userId, false);
+			this.userLeaveRooms(io, client, user.joinlist);
 			this.userUpdateStatus(io, userId, false);
 		}
 	}
 
-	async userJoinRoomAct(io: Namespace, user : User, roomname : string) {
+	//can client be "any" type?
+	async userJoinRoomAct(io : Namespace, client : any, clientId : number, roomname : string) {
 		//make all user's socket to join room <- TODO : include in the first bracket phase since you don't need to join in which you already do
+		const user = this.storeUser.findUserById(clientId);
 		const sockets = await io.in(`$${user.id}`).fetchSockets();
 		sockets.forEach((socket : any) => {
 			socket.join(roomname);
@@ -101,7 +103,7 @@ export class ChatService {
 					socket.emit("sendRoomMembers", roomMembers);
 			})
 		}
-		// user.currentRoom = roomname;	//socket 단위로 하려면 여기서 client받아야
+		client.data.currentRoom = roomname;	//socket 단위로 하려면 여기서 client받아야
 		const currRoomInfo = this.makeCurrRoomInfo(roomname);
 		const roomMembers = this.makeRoomUserInfo(roomname);
 		const roomInfo = this.makeRoomInfo(user.blocklist, user.joinlist);
@@ -110,7 +112,6 @@ export class ChatService {
 		// this.emitEventsToAllSockets(io, user.id, "sendRoomMembers", roomMembers);
 		// this.emitEventsToAllSockets(io, user.id, "sendCurrRoomInfo", currRoomInfo);
 		sockets.forEach((socket) => {
-			console.log("res", roomInfo, roomMembers, currRoomInfo);
 			socket.emit("sendRoomList", roomInfo);
 			socket.emit("sendRoomMembers", roomMembers);
 			socket.emit("sendCurrRoomInfo", currRoomInfo);
@@ -149,13 +150,13 @@ export class ChatService {
 		if (room === undefined){
 			this.storeRoom.saveRoom(roomname, new Room(userId, password? password : null));
 			room = this.storeRoom.findRoom(roomname);
-			this.userJoinRoomAct(io, this.storeUser.findUserById(userId), roomname);
+			this.userJoinRoomAct(io, client, userId, roomname);
 		}
 		else {
 			//TODO : banCheck//
 			//TODO : 이미 들어간 방이면 password를 묻지 않는다.... 그런데 이 때는 웰컴 메세지도 안 보내야하는거 아닌지?
 			if (room.isJoinning(userId)){
-				this.userJoinRoomAct(io, this.storeUser.findUserById(userId), roomname);
+				this.userJoinRoomAct(io, client, userId, roomname);
 				return ;
 			}
 			if (room.isPrivate){
@@ -169,7 +170,7 @@ export class ChatService {
 				if (password){
 					if (room.isPassword(password)){
 						if (this.JoinRoomBanCheck(io, client, room))
-							this.userJoinRoomAct(io, this.storeUser.findUserById(userId), roomname);
+							this.userJoinRoomAct(io, client, userId, roomname);
 					}
 					else
 						client.emit("wrongPassword", roomname);
@@ -179,7 +180,7 @@ export class ChatService {
 			}
 			else {
 				if (this.JoinRoomBanCheck(io, client, room))
-					this.userJoinRoomAct(io, this.storeUser.findUserById(userId), roomname);
+					this.userJoinRoomAct(io, client, userId, roomname);
 			}
 		}
 	}
@@ -248,7 +249,8 @@ export class ChatService {
 	
 	}
 
-	userLeaveRoom(io : Namespace, userId : number, roomname : string){
+	userLeaveRoom(io : Namespace, client : ChatSocket, roomname : string){
+		const userId = client.userId;
 		const room = this.storeRoom.findRoom(roomname);
 		const thisUser = this.storeUser.findUserById(userId);
 		if (room === undefined){
@@ -291,17 +293,18 @@ export class ChatService {
 			console.log("you are not joining in this room : try leave");
 	}
 	
-	async userLeaveRoomAct(io : Namespace, userid : number, roomname : string){
+	async userLeaveRoomAct(io : Namespace, client : ChatSocket, roomname : string){
+		const userid = client.userId;
 		const sockets = await io.in(`$${userid}`).fetchSockets();
 		sockets.forEach((socket : any) => {
 			socket.leave(roomname);
 		})
-		this.userJoinRoomAct(io, this.storeUser.findUserById(userid), "DEFAULT");
+		this.userJoinRoomAct(io, client, userid, "DEFAULT");
 	}
 
-	userLeaveRooms(io : Namespace, userid : number, roomlist : Set<string>){
+	userLeaveRooms(io : Namespace, client : ChatSocket, roomlist : Set<string>){
 		roomlist.forEach((room) => {
-			this.userLeaveRoom(io, userid, room);
+			this.userLeaveRoom(io, client, room);
 		})
 	}
 
@@ -319,8 +322,13 @@ export class ChatService {
 			const targetUser = this.storeUser.findUserById(targetId);
 			targetUser.joinlist.delete(roomname);
 			// rearrange user to "DEFAULT" room
-			targetUser.currentRoom = "DEFAULT";
-			this.userJoinRoomAct(io, targetUser, "DEFAULT");	//
+			const targetSockets = await io.in(`$${targetId}`).fetchSockets();
+			targetSockets.forEach((socket) => {
+				if (socket.data.currentRoom === roomname){
+					targetUser.currentRoom = "DEFAULT";
+					this.userJoinRoomAct(io, socket, targetId, "DEFAULT");	//
+				}
+			})
 			// send message <-- 이 부분 module 화 가능 --->
 			// 		in room <- method화 필요...
 			const body = `${targetUser.nickname} is Kicked Out`;
@@ -391,10 +399,8 @@ export class ChatService {
 
 	//TODO : makeBlocklist method & makeUserRender method 필요해....
 	blockUser(io : Namespace, client : ChatSocket, target : string) {
-		console.log("blockUser : actor : " + client.nickname + " target : " + target);
 		const thisUser = this.storeUser.findUserById(client.userId);
 		const targetId = this.storeUser.getIdByNickname(target);
-		console.log(thisUser);
 		if (thisUser.blocklist.has(targetId))
 			client.emit("sendAlert", "Notice", "You've already blocked this user");
 		else {
@@ -576,22 +582,17 @@ export class ChatService {
 
 	//TODO : CHECK
 	makeRoomUserInfo(roomname : string) : userInfo[] {
-		const userInfo = [];
-		//만약 여기서 못 찾으면?
 		const room : Room = this.storeRoom.findRoom(roomname);
-		//or 만약 방에 아무 유저도 없으면? <- datarace일 때 가능성 있다.
-		console.log(room);
-		console.log(room.userlist);
+		if (!room || room.userlist.size === 0)
+			return ([]);
+		const userInfo = [];
 		room.userlist.forEach((user) => {
-			console.log(user);
 			const target : User = this.storeUser.findUserById(user);
-			// if (target.connected = true){	//체크할 필요 없는게 맞다.. disconnect할때 다 지워줌
 			userInfo.push({
 				id : user,
 				nickname : target.nickname,
 				isGaming : target.isGaming
 			})
-			// }
 		})
 		return (userInfo);
 	}
