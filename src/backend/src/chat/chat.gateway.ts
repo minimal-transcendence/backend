@@ -154,4 +154,8 @@ export class ChatGateway
 		this.io.emit("updateUserAvatar", userId);
 	}
 
+  //check handleDisconnect
+  logout(clientId : number) {
+    this.io.in(`$${clientId}`).disconnectSockets(true); //false?
+  }
 }
