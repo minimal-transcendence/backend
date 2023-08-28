@@ -20,8 +20,6 @@ import { ChatService } from 'src/chat/chat.service';
 		UserService,
 		PrismaService,
 		JwtGuard,
-		ChatGateway,
-		ChatService
 	],
 	exports: [UserService]
 })
