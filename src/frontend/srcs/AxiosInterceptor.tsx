@@ -5,8 +5,6 @@ async function refreshToken() : Promise<any> {
 		'http://localhost/api/auth/refresh',
 		{ withCredentials: true }
 		).catch((error) => {
-			console.log(error);
-			console.log(error.response);
 			if (error.response.status === 401) {
 				getLogout();
 				window.location.href = '/';
@@ -32,20 +30,18 @@ const axiosApi = axios.create({
 	headers: { "Content-type": "application/json" }	//in case of img?
 });
   
-axiosApi.interceptors.response.use(
-	(response) => {
-		return response;
-	},
-	async (error) => {
-		if (error.response?.status === 401) {
-			console.log("axios intercept");
-			const res = await refreshToken();
-			// //갱신 후 재요청
-			const response = await axios.request(error.config);
-			return response;
+axiosApi.interceptors.request.use(
+	async (request) => {
+		const jwtExpItem = localStorage.getItem("access_token_exp");
+		if (jwtExpItem){
+			const jwtExpInt = parseInt(jwtExpItem);
+			if (jwtExpInt * 1000 - Date.now() < 2000)
+				await refreshToken();
 		}
-		return Promise.reject(error);
-	}
+		else
+			window.location.href = '/';
+		return request;
+	},
 );
   
 export default axiosApi;
