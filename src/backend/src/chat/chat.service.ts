@@ -44,9 +44,9 @@ export class ChatService {
 			.catch((error) => {
 				throw new Error(error.message);	//CHECK : how it works
 			});
-		const roomInfo : roomInfo[] = this.makeRoomInfo(user.blocklist, user.joinlist);
-		const userInfo : userInfo[] = this.makeRoomUserInfo("DEFAULT");	//joinRoomAct가 위에 있는데 이게 먼저 실행된다...
-		const currRoomInfo : currRoomInfo = this.makeCurrRoomInfo("DEFAULT");
+		// const roomInfo : roomInfo[] = this.makeRoomInfo(user.blocklist, user.joinlist);
+		// const userInfo : userInfo[] = this.makeRoomUserInfo("DEFAULT");	//joinRoomAct가 위에 있는데 이게 먼저 실행된다...
+		// const currRoomInfo : currRoomInfo = this.makeCurrRoomInfo("DEFAULT");
 		// client.emit("init", undefined, roomInfo, currRoomInfo);
 	}
 
@@ -75,10 +75,11 @@ export class ChatService {
 	async userJoinRoomAct(io : Namespace, client : any, clientId : number, roomname : string) {
 		//make all user's socket to join room <- TODO : include in the first bracket phase since you don't need to join in which you already do
 		const user = this.storeUser.findUserById(clientId);
-		const sockets = await io.in(`$${user.id}`).fetchSockets();
-		sockets.forEach((socket : any) => {
-			socket.join(roomname);
-		})
+		// const sockets = await io.in(`$${user.id}`).fetchSockets();
+		// sockets.forEach((socket : any) => {
+		// 	socket.join(roomname);
+		// })
+		client.join(roomname);
 		if (!user.joinlist.has(roomname))
 		{
 			//add user to room / room to user
@@ -103,7 +104,7 @@ export class ChatService {
 					socket.emit("sendRoomMembers", roomMembers);
 			})
 		}
-		client.data.currentRoom = roomname;	//socket 단위로 하려면 여기서 client받아야
+		client.data.currentRoom = roomname;	//socket 단위로 하려면 여기서 client받아야 //혹은 관리 안 해도 될지도...?
 		const currRoomInfo = this.makeCurrRoomInfo(roomname);
 		const roomMembers = this.makeRoomUserInfo(roomname);
 		const roomInfo = this.makeRoomInfo(user.blocklist, user.joinlist);
@@ -111,11 +112,14 @@ export class ChatService {
 		// this.emitEventsToAllSockets(io, user.id, "sendRoomList", this.makeRoomInfo(user.joinlist));
 		// this.emitEventsToAllSockets(io, user.id, "sendRoomMembers", roomMembers);
 		// this.emitEventsToAllSockets(io, user.id, "sendCurrRoomInfo", currRoomInfo);
-		sockets.forEach((socket) => {
-			socket.emit("sendRoomList", roomInfo);
-			socket.emit("sendRoomMembers", roomMembers);
-			socket.emit("sendCurrRoomInfo", currRoomInfo);
-		})
+		// sockets.forEach((socket) => {
+		// 	socket.emit("sendRoomList", roomInfo);
+		// 	socket.emit("sendRoomMembers", roomMembers);
+		// 	socket.emit("sendCurrRoomInfo", currRoomInfo);
+		// })
+		client.emit("sendRoomList", roomInfo);
+		client.emit("sendRoomMembers", roomMembers);
+		client.emit("sendCurrRoomInfo", currRoomInfo);
 	}
 
 	//userJoinRoom
@@ -282,11 +286,16 @@ export class ChatService {
 				room.deleteUserFromUserlist(userId);
 				//TODO : sendMessage Method화
 				const body = `Good bye ${thisUser.nickname}`
-				io.to(roomname).emit("sendMessage", body);
-				room.messages.push(new Message(0, body));
+				const msg = new Message(0, body);
+				io.to(roomname).emit("sendMessage", roomname, {
+					from : "server_admin",
+					body : body,
+					at: msg.at
+				});	//여기 다시 처리해야
+				room.messages.push(msg);
 				//CHECK : currRoom을 확인하고 보내기 vs 클라이언트가 처리하기 <- next가 해주는 것 같은데? : latter case, 위에서도 currRoomStatus 체크하는거 뺄 것(ysungwon님이랑 상의)
 				//CHECK : except 잘 작동하는지 확인
-				io.to(roomname).except(`$${userId}`).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
+				io.to(roomname).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
 			}
 		}
 		else
