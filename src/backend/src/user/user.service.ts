@@ -106,10 +106,10 @@ export class UserService {
 			}
 		}).then((res) => {
 			if (file) {
-				this.chatGateway.userUpdateAvatar(id);
+				this.chatGateway.updateUserAvatar(id);
 			}
 			if (data.nickname) {
-				this.chatGateway.userUpdateNick(id, data.nickname as string);
+				this.chatGateway.updateUserNick(id, data.nickname as string);
 			}
 			return (res);
 		}).catch((error) => {
