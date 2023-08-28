@@ -6,7 +6,6 @@ import { Namespace, Socket } from 'socket.io';
 import {
   currRoomInfo,
   formedMessage,
-  queryResponseRoomInfo,
   roomInfo,
   userInfo,
 } from './chat.types';
@@ -689,10 +688,10 @@ export class ChatService {
 	}
 
 	//CHECK : 좀 처리가 일관성이 없는게 joinlist도 persistent 하게 할지 말지 안 정해놓고 시작함ㅠ -> 주석 정리시 check
-	getAllUserInfo(client : ChatSocket) {
+	getAllUserInfo() : userInfo[] {
 		const users = this.storeUser.findAllUser();
 		const res = [];
-		users.forEach((user) => {
+		users?.forEach((user) => {
 			res.push({
 				id : user.id,
 				nickname : user.nickname,
@@ -700,7 +699,7 @@ export class ChatService {
 				isConnected : user.connected
 			})
 		});
-		client.emit("responseAllMembers", res);
+		return (res);
 	}
 
 	userChangeNick(io : Namespace, client : ChatSocket, newNick : string) {

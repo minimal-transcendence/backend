@@ -9,15 +9,13 @@ export class User {
 	isGaming : boolean;
 	joinlist : Set<string>;
 	currentRoom : string;
-	messages : Map<number, Message[]>;
 	constructor(id : number, nickname : string){
 		this.id = id;
 		this.nickname = nickname;
 		this.blocklist = new Set();
-		this.connected = true;
+		this.connected = false;	//
 		this.isGaming = false;
 		this.joinlist = new Set();
-		// this.messages = new Map();
 	}
 
 	addUserToBlocklist(userid : number){
@@ -47,7 +45,6 @@ export class User {
 		this.clearSets();
 		this.blocklist = null;
 		this.joinlist = null;
-		// this.messages = null;
 	}
 }
 

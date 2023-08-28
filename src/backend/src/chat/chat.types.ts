@@ -3,32 +3,25 @@ export type userInfo = {
 	id : number;
 	nickname : string;
 	isGaming : boolean;
-	isConnected? : boolean;	//
+	isConnected? : boolean;
 }
 
 export type roomInfo = {
 	roomname : string;
-	lastMessage : string;	//모든
+	lastMessage : string;
 }
 
 export type currRoomInfo = {
 	roomname : string;
 	owner : string;
-	operators : string[];	//or json형식?
+	operators : string[];
 	joinedUsers : string[];
-	messages : formedMessage[];	// TODO & CHECK : 그냥 이렇게만 적어도 되나...?
+	messages : formedMessage[];
 }
 
-//여기는 export 굳이 필요한지?
 export type formedMessage = {
 	from : string;
 	to?	: string;
 	body : string;
 	at? : number
-}
-
-export type queryResponseRoomInfo = {
-	roomname : string;
-	owner : string;
-	joinedUsers : string[];	//owner제외
 }

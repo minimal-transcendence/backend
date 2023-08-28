@@ -101,7 +101,7 @@ export class ChatGateway
     });
 
     client.on('requestSearchResultRoomList', (query) => {
-      const roomInfo = this.chatService.getQueryRoomList(query);
+      const roomInfo = this.chatService.getQueryRoomList(client.userId, query);
       client.emit('responseRoomQuery', roomInfo);
     });
 
@@ -109,6 +109,11 @@ export class ChatGateway
       const roomMembers = this.chatService.makeRoomUserInfo(roomname);
       client.emit('sendRoomMembers', roomMembers);
     });
+
+    client.on('requestAllMembers', () => {
+      const members = this.chatService.getAllUserInfo();
+      client.emit('responseAllMembers', members);
+    })
 
     client.on('selectDMRoom', (username) => {
       const DMs = this.chatService.makeDMRoomMessages(
