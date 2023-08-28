@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import axiosApi, { fetch_refresh } from "./FetchInterceptor";
 import styles from "../styles/UserListStyle.module.css";
 import styles_profile from "../styles/UserProfileStyle.module.css";
-import { Socket } from "socket.io-client";
-import * as io from "socket.io-client";
 import "../pages/index.css";
 import { SocketContext, SocketContent } from "@/pages/App";
 
@@ -90,15 +88,17 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     setFriendList([]);
 
     let conList:string[] = [];
-		socket.emit("requestAllMembers");
-	  socket.on("responseAllMembers", async (data:any) => {
-			for(let i = 0; i < data.length ; i++){
-				if (data[i].isConnected === true)
-				conList.push((data[i].id).toString());
-			}
-			setConnectList(conList);
-      console.log(conList);
-		}) 
+    socket.emit("requestAllMembers");
+    socket.on("responseAllMembers", async (data:any) => {
+      for(let i = 0; i < data.length ; i++){
+        console.log("data:", data[i]);
+        if (data[i].isConnected === true){
+          conList.push((data[i].id).toString());
+          }
+      }
+      setConnectList(conList);
+      console.log("socket response: ", conList);
+    }) 
 
     let idList: string[] = [];
     //const responseFriend = await (await fetch_refresh ('http://localhost/api/user/' + userId + '/friend')).json();
@@ -111,6 +111,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       idList.push(responseFriend.friendList[i].id.toString());
     }
     setFriendList(idList);
+    console.log("friend response: ", idList);
     const responseUserData = await axiosApi.get("http://localhost/api/user");
     const response = responseUserData.data;
     const useridx = response.length;
