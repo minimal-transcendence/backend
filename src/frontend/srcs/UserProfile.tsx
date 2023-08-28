@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import axiosApi, { fetch_refresh } from "./FetchInterceptor";
 import styles_profile from "../styles/UserProfileStyle.module.css";
+import { SocketContext, SocketContent } from "@/pages/App";
 import "../pages/index.css";
 
 function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
@@ -61,6 +62,8 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     isLogin: number;
     matchhistory: userMatchHistory[];
   }
+
+  const socket = useContext<SocketContent>(SocketContext).chatSocket;
 
   function checkIsInclude(id: string[], userid: string) {
     if (id.includes(userid.toString())) {
@@ -199,6 +202,80 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     reloadData();
   }, []);
 
+  useEffect(() => {
+    async function reloadStatus(userId : number, isConnected : boolean){
+      console.log("Status Update! " + userId + isConnected);
+      if (isConnected === true){
+        let copiedData = [...userData];
+        for(let i = 0; i <= copiedData.length ; i++)
+        {
+          if(copiedData[i].id == userId.toString()){
+            copiedData[i].isLogin = 1;
+            break;
+          }
+        }
+        setData(copiedData);
+      }
+      else{
+        let copiedData = [...userData];
+        for(let i = 0; i <= copiedData.length ; i++)
+        {
+          if(copiedData[i].id == userId.toString()){
+            copiedData[i].isLogin = 0;
+            break;
+          }
+        }
+        setData(copiedData);
+      }
+    }
+
+    async function reloadNick(userId : number, newNick : string){
+      let copiedData = null;
+      console.log("Nickname Update! " + userId + newNick);
+      for(let i = 0; i <= userData.length ; i++)
+      {
+        if(userData[i].id == userId.toString()){
+          copiedData = [...userData];
+          copiedData[i].nickname = newNick;
+          break;
+        }
+      }
+      if (copiedData != null){
+        setData(copiedData);
+      }
+    }
+  
+    async function reloadAvatar(userId : number){
+      console.log("Avatar Update! " + userId);
+      let copiedData = [...userData];
+      for(let i = 0; i <= userData.length ; i++)
+      {
+        if(copiedData[i].id == userId.toString()){
+          const responseDetail = await axiosApi.get('http://localhost/api/user/' + userId, );
+          const detailResponse = responseDetail.data;
+          copiedData[i].userProfileURL = "/api/" + detailResponse.avatar;
+          break;
+        }
+      }
+      if (copiedData != null){
+        setData(copiedData);
+      }
+    }
+
+    if (socket){
+      socket.on("updateUserStatus", reloadStatus);
+      socket.on("updateUserNick", reloadNick);
+      socket.on("updateUserAvatar", reloadAvatar);
+    }
+    return () => {
+      if (socket) {
+        socket.off("updateUserStatus", reloadStatus);
+        socket.off("updateUserNick", reloadNick);
+        socket.off("updateUserAvatar", reloadAvatar);
+      }
+    };
+  }, [socket, userData]);
+
   function getDetailProfile() {
     return (
       <>
@@ -258,7 +335,8 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
                     언팔로우{" "}
                   </button>
                 )}
-              <button className={styles_profile.gameButton}> 게임 신청 </button>
+                {userData[0].nickname !== userNickname && (
+              <button className={styles_profile.gameButton}> 게임 신청 </button>)}
             </div>
           </div>
           <div className={styles_profile.logInner}>

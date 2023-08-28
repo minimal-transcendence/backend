@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import axiosApi, { fetch_refresh } from "./FetchInterceptor";
 import "../pages/index.css";
+import styles from "../styles/MyProfileStyle.module.css";
+
 function MyProfile({
   setIsOpenModal,
   setTmpLoginnickname,
@@ -67,7 +69,7 @@ function MyProfile({
     const apiUrl = "http://localhost/api/user/" + userId;
 
     if (newNickname !== "" && newNickname !== userNickname) {
-      if (newNickname.length >= 20) {
+      if (newNickname.length >= 12) {
         alert("닉네임의 길이는 최대 12자 입니다");
         setNewNickname("");
         return;
@@ -194,78 +196,60 @@ function MyProfile({
         });
     }
   }
-
   return (
     <div ref={modalRef} className="modal modal-myprofile">
-      <div>
-        <h2>내 프로필</h2>
-        {avatarURL && <img src={avatarURL} width="100" height="100"></img>}
-      </div>
-      <div>
-        닉네임
-        <br />
-        {userNickname !== null ? (
-          <input
-            placeholder={userNickname}
-            type="text"
-            value={newNickname}
-            onChange={(e) => setNewNickname(e.target.value)}
-          />
-        ) : (
-          <input
-            type="text"
-            value={newNickname}
-            onChange={(e) => setNewNickname(e.target.value)}
-          />
-        )}
-      </div>
-      <div>
-        프로필 사진
-        <br />
-        <input type="file" accept="image/*" onChange={handleFileChange}></input>
-        <br />
-        {imageUrl && (
-          <img src={imageUrl} alt="profile image" width="100" height="100" />
-        )}
-      </div>
-      <div>
-        2차인증 여부
-        <br />
-        <input
-          type="checkbox"
-          checked={checkIs2Fa}
-          onChange={() => setCheckIs2Fa(!checkIs2Fa)}
-        />
-        <span className="slider"></span>
+      <div className={styles.profileMainBox}>
         <div>
-          <img
-            src="http://localhost/api/2fa/qrcode"
-            alt="qr image"
-            width="100"
-            height="100"
-            onError={(e: React.SyntheticEvent<HTMLImageElement>) =>
-              (e.currentTarget.style.display = "none")
-            }
-          />
-        </div>
-        <div>
-          {((is2Fa === "true" && checkIs2Fa === false) ||
-            (is2Fa === "false" && checkIs2Fa === true)) && (
-            <span>변경사항 적용을 위해 OTP코드를 입력하세요</span>
+          <h2>내 프로필</h2>
+          {avatarURL && (
+            <img src={avatarURL} className={styles.profileImage} ></img>
           )}
         </div>
         <div>
-          <input
-            placeholder="띄워쓰기 제외한 6자리"
-            type="text"
-            value={verCode}
-            onChange={(e) => setVerCode(e.target.value)}
-          />
+          닉네임
+          <br/>
+          {userNickname !== null ?
+          (<input className={styles.nicknameInput} placeholder={userNickname} type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)
+          :
+          (<input className={styles.nicknameInput} type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)}
         </div>
+        <div>
+          프로필 사진
+          <br/>
+        </div>
+        <div className={styles.profilePicSetBox}>
+          <input type="file" accept='image/*' onChange={handleFileChange}></input>
+          {imageUrl && (
+          <img src={imageUrl} alt="profile image" className={styles.selectProfileImage}/>)}
+        </div>
+        <div>
+          2차인증 여부
+          <br/>
+          <input type="checkbox" id="toggle" name="toggle" onChange={() => setCheckIs2Fa(!checkIs2Fa)} checked={checkIs2Fa} hidden />
+          <label htmlFor="toggle" className={styles.toggleSwitch}>
+              <span className={styles.toggleButton}></span>
+          </label>
+          <div>
+              <img
+              src='http://localhost/api/2fa/qrcode'
+              alt="qr image"
+              width="100"
+              height="100"
+              onError={(e: React.SyntheticEvent<HTMLImageElement>) => e.currentTarget.style.display = 'none'}
+              />
+          </div>
+          <div className={styles.OTPAlert}>
+              {(is2Fa === 'true' && checkIs2Fa === false || is2Fa === 'false' && checkIs2Fa === true) && (
+                  <span>변경사항 적용을 위해 OTP코드를 입력하세요</span>
+              )}
+          </div>
+          <div>
+              <input className={styles.nicknameInput} placeholder="띄워쓰기 제외한 6자리" type="text" value={verCode} onChange={(e) => setVerCode(e.target.value)} />
+          </div>
+        </div>
+        <button className={styles.Button} onClick={fixProfile}>저장</button>
       </div>
-      <button onClick={fixProfile}>저장</button>
     </div>
-  );
-}
+)}
 
 export default MyProfile;
