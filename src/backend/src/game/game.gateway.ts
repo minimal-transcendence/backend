@@ -80,6 +80,7 @@ export class GameGateway
 	}
 
 	handleConnection(@ConnectedSocket() client: GameSocket) {
+    client.emit("hello");
 
 		client.inGame = false;
 		client.invitationList = [];

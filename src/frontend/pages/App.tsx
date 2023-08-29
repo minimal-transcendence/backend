@@ -1,4 +1,4 @@
-import { useEffect, useState, createContext } from "react";
+import { useEffect, useState } from "react";
 
 import * as io from "socket.io-client";
 import { Socket } from "socket.io-client";
@@ -12,27 +12,14 @@ import SearchList from "./components/searchlistpage/SearchList";
 import ChatRoomUser from "./components/chatroompage/ChatRoom";
 
 import ModalAlert from "./components/modalpage/ModalAlert";
-import Pong from "@/srcs/Pong";
+// import Pong, { AutoSave, GameOverData, StartGameData } from "@/srcs/Pong";
+import Pong, { AutoSave, GameOverData, StartGameData } from "./components/pong/Pong";
 // import { SocketContext, socket } from "../context/socket";
 // import searchIcon from "./assets/search.png";
 import Image from "next/image";
-import TempRandomMatch from "@/srcs/TempRandomMatch";
-
-export type SocketContent = {
-  chatSocket: any;
-  gameSocket: any;
-};
-export const SocketContext = createContext<SocketContent>({
-  chatSocket: null,
-  gameSocket: null,
-});
-
-export type AppContent = {
-  gameSocket: any;
-};
-export const AppContext = createContext<AppContent>({
-  gameSocket: null,
-});
+import TempRandomMatch from "./components/pong/TempRandomMatch";
+import { SocketContext } from "@/context/socket";
+import { GameContext, GameData } from "@/context/game";
 
 export type UserOnChat = {
   id: string;
@@ -74,12 +61,27 @@ export default function App() {
   // seunchoi - for socket connection
   const [gameLoad, setGameLoad] = useState<boolean>(false);
   // Get Empty Socket Instance
+  const [isGameConnected, setIsGameConnected] = useState<boolean>(false);
   const [socket, setSocket] = useState<Socket>(
     io.connect("", { query: { nickname: "" } })
   );
   const [gameSocket, setGameSocket] = useState<Socket>(
     io.connect("", { query: { nickname: "" } })
   );
+
+  const [gameData, setGameData] = useState<GameData>({
+    // roomName: '',
+    inGame: false,
+    gameOver: false,
+    player: [],
+    canvasWidth: 900,
+    canvasHeight: 1600,
+    paddleWidth: 0,
+    paddleHeight: 0,
+    ballRadius: 0,
+    winner: '',
+    loser: '',
+  });
 
   useEffect(() => {
     const getSocket = (namespace: string, jwt: string, nickname: string) => {
@@ -108,6 +110,13 @@ export default function App() {
       setGameSocket(getSocket("game", jwtItem, nicknameItem));
     }
   }, []);
+
+  // useEffect(() => {
+  //   gameSocket.on('hello', () => {
+  //     // console.log("In Connection:", gameSocket.connected);
+  //     setIsGameConnected(true);
+  //   })
+  // }, [gameSocket]);
 
   useEffect(() => {
     function sendBlocklist(result: any) {
@@ -211,6 +220,8 @@ export default function App() {
       socket.on("sendDM", sendDM);
       socket.on("sendMessage", sendMessage);
       socket.on("sendRoomMembers", sendRoomMembers);
+
+      socket.on
     }
 
     return () => {
@@ -228,9 +239,75 @@ export default function App() {
     };
   }, [currentRoomName, results, messages, socket, blocklist]);
 
+  // seunchoi
+
   const handleGameOnOff = () => {
     setGameLoad(!gameLoad);
   };
+
+  const [roomName, setRoomName] = useState<string>('');
+  // let roomName: string = '';
+  const [matchStartCheck, setMatchStartCheck] = useState<boolean>(false);
+  // const [startGame, setStartGame] = useState<boolean>(false);
+
+  useEffect(() => {
+    gameSocket.on('hello', () => {
+      console.log("In hello");
+      setIsGameConnected(true);
+    })
+
+      gameSocket.on('matchStartCheck', (payload: AutoSave) => {
+          console.log(`${payload.roomName} is checking`);
+          setRoomName(payload.roomName);
+          // roomName = payload.roomName;
+          setMatchStartCheck(true);
+      });
+
+      gameSocket.on('matchDecline', (payload: string) => {
+          console.log(`${payload} is declined`);
+          // roomName = payload.roomName;
+          setRoomName('');
+          setMatchStartCheck(false);
+      })
+
+      gameSocket.on('startGame', (payload: StartGameData) => {
+        console.log("In startGame", payload.player);
+        setMatchStartCheck(false);
+        // setStartGame(true);
+        
+
+        setGameData({
+          // roomName: payload.roomName,
+          inGame: true,
+          gameOver: false,
+          player: payload.player,
+          canvasWidth: payload.canvasWidth,
+          canvasHeight: payload.canvasHeight,
+          paddleWidth: payload.paddleWidth,
+          paddleHeight: payload.paddleHeight,
+          ballRadius: payload.ballRadius,
+          winner: '',
+          loser: '',
+        })
+      })
+
+      gameSocket.on('gameOver', (payload: GameOverData) => {
+        setGameData({
+          // isGameConnected: isGameConnected,
+          // roomName: payload.roomName,
+          inGame: false,
+          gameOver: true,
+          player: [],
+          canvasWidth: 0,
+          canvasHeight: 0,
+          paddleWidth: 0,
+          paddleHeight: 0,
+          ballRadius: 0,
+          winner: payload.winner,
+          loser: payload.loser,
+        })
+      })
+  }, [gameSocket, isGameConnected, gameData]) // gameData?
 
   return (
     <SocketContext.Provider
@@ -262,8 +339,14 @@ export default function App() {
             )}
           </div>
           {/* seunchoi - TEST */}
-          <button onClick={handleGameOnOff}>game on/off</button>
-          {gameLoad && <TempRandomMatch />}
+          <button disabled={!isGameConnected} onClick={handleGameOnOff}>game on/off</button>
+          {/* {gameLoad && <TempRandomMatch />} */}
+          <GameContext.Provider value={{
+            isGameConnected: isGameConnected,
+            roomName: roomName,
+            gameData: gameData,
+          }}>
+            {matchStartCheck && <TempRandomMatch/>}
           <NavBar
             query={query}
             setQuery={setQuery}
@@ -272,6 +355,7 @@ export default function App() {
             setLeftHeader={setLeftHeader}
             setError={setError}
           />
+          </GameContext.Provider>
           <Main>
             <Box>
               {
@@ -292,7 +376,13 @@ export default function App() {
               }
             </Box>
             {gameLoad ? (
-              <Pong />
+              <GameContext.Provider value={{
+                isGameConnected: isGameConnected,
+                roomName: roomName,
+                gameData: gameData,
+              }}>
+                <Pong />
+              </GameContext.Provider>
             ) : (
               <ChatMain
                 roomInfo={roomInfo}
@@ -307,16 +397,18 @@ export default function App() {
             )}
             <Box>
               <>
-                <ChatRoomUser
-                  id={tmpLoginID}
+                <SearchList
+                  results={results}
+                  query={query}
+                  setTempSearchList={setTempSearchList}
+                  isOpenModal={isOpenModal}
+                  setIsOpenModal={setIsOpenModal}
+                  leftHeader={leftHeader}
+                  setLeftHeader={setLeftHeader}
+                  setroomnameModal={setroomnameModal}
                   blocklist={blocklist}
-                  roomInfo={roomInfo}
-                  setRoomInfo={setRoomInfo}
-                  users={roomUserList}
-                  roomname={currentRoomName}
-                  myNickName={tmpLoginnickname}
                 />
-                <GameList myNickName={tmpLoginnickname} />
+                <DMlist />
               </>
             </Box>
           </Main>

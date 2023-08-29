@@ -1,6 +1,6 @@
 import GameListItemInfo from "./GameListItemInfo";
 import { useContext } from "react";
-import { SocketContext } from "@/pages/App";
+import { SocketContext } from "@/context/socket";
 export default function GameListBody({
   myNickName,
   tmpList,
