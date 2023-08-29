@@ -4,7 +4,7 @@ import ChatBody from "./ChatBody";
 // import ChatBody from "./ChatBody";
 import ChatFooter from "./ChatFooter";
 
-import { SocketContext } from "@/pages/App";
+import { SocketContext } from "@/context/socket";
 const ChatMain = ({
   roomInfo,
   setRoomInfo,

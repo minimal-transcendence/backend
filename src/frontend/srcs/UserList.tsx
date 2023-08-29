@@ -5,7 +5,8 @@ import styles_profile from "../styles/UserProfileStyle.module.css";
 import { Socket } from "socket.io-client";
 import * as io from "socket.io-client";
 import "../pages/index.css";
-import { SocketContext, SocketContent } from "@/pages/App";
+import { SocketContent, SocketContext } from "@/context/socket";
+// import { SocketContext, SocketContent } from "@/pages/App";
 
 function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   const [showModals, setShowModals] = useState<boolean[]>([]);

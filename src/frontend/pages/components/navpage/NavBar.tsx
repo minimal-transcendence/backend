@@ -1,7 +1,7 @@
 import Logo from "./NavBarLogo";
 import Menu from "./NavBarMenu";
 import Search from "./NavBarSearch";
-import { SocketContext } from "@/pages/App";
+import { SocketContext } from "@/context/socket";
 import { useState, useContext } from "react";
 export default function NavBar({
   query,

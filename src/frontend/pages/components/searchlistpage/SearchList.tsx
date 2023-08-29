@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { SocketContext } from "@/pages/App";
+import { SocketContext } from "@/context/socket";
 
 import SearchListCreateRoom from "./SearchListCreateRoom";
 import ErrorMessage from "./ErrorMessage";

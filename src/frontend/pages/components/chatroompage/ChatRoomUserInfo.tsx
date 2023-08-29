@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { SocketContext } from "@/pages/App";
+import { SocketContext } from "@/context/socket";
 import menuIcon from "../../../assets/menu.png";
 import ysungwonIcon from "../../../assets/ysungwon.jpg";
 import ModalOverlay from "../../components/modalpage/ModalOverlay";
