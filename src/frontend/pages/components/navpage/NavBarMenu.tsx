@@ -125,22 +125,22 @@ export default function Menu({
               />
               {isGameConnected && (
                 <div
-                onClick={() => handleMenu(event)}
-                className="dropdown-content"
-              >
-                <div className="dropdown-item" data-name="easy">
-                  {"RandomMatch Easy " +
-                    `${randomMatch !== "easy" ? "off" : "on"}`}
+                  onClick={() => handleMenu(event)}
+                  className="dropdown-content"
+                >
+                  <div className="dropdown-item" data-name="easy">
+                    {"RandomMatch Easy " +
+                      `${randomMatch !== "easy" ? "off" : "on"}`}
+                  </div>
+                  <div className="dropdown-item" data-name="normal">
+                    {"RandomMatch Normal " +
+                      `${randomMatch !== "normal" ? "off" : "on"}`}
+                  </div>
+                  <div className="dropdown-item" data-name="hard">
+                    {"RandomMatch Hard " +
+                      `${randomMatch !== "hard" ? "off" : "on"}`}
+                  </div>
                 </div>
-                <div className="dropdown-item" data-name="normal">
-                  {"RandomMatch Normal " +
-                    `${randomMatch !== "normal" ? "off" : "on"}`}
-                </div>
-                <div className="dropdown-item" data-name="hard">
-                  {"RandomMatch Hard " +
-                    `${randomMatch !== "hard" ? "off" : "on"}`}
-                </div>
-              </div>
               )}
             </div>
           </div>

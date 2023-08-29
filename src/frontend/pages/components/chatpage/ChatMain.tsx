@@ -14,6 +14,7 @@ const ChatMain = ({
   messages,
   setMessages,
   blocklist,
+  gameLoad,
 }: {
   roomInfo: any;
   setRoomInfo: any;
@@ -23,6 +24,7 @@ const ChatMain = ({
   messages: any;
   setMessages: any;
   blocklist: string[];
+  gameLoad: boolean;
 }) => {
   // const [typingStatus, setTypingStatus] = useState("");
   const [isDM, setIsDM] = useState<boolean>(false);
@@ -88,7 +90,7 @@ const ChatMain = ({
   }, [messages]);
 
   return (
-    <div className="chat-main">
+    <div className={`chat-main ${gameLoad ? "hidden" : ""}`}>
       <ChatHeader
         roomInfo={roomInfo}
         roomState={roomState}

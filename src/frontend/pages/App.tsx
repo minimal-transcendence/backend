@@ -13,7 +13,11 @@ import ChatRoomUser from "./components/chatroompage/ChatRoom";
 
 import ModalAlert from "./components/modalpage/ModalAlert";
 // import Pong, { AutoSave, GameOverData, StartGameData } from "@/srcs/Pong";
-import Pong, { AutoSave, GameOverData, StartGameData } from "./components/pong/Pong";
+import Pong, {
+  AutoSave,
+  GameOverData,
+  StartGameData,
+} from "./components/pong/Pong";
 // import { SocketContext, socket } from "../context/socket";
 // import searchIcon from "./assets/search.png";
 import Image from "next/image";
@@ -79,8 +83,8 @@ export default function App() {
     paddleWidth: 0,
     paddleHeight: 0,
     ballRadius: 0,
-    winner: '',
-    loser: '',
+    winner: "",
+    loser: "",
   });
 
   useEffect(() => {
@@ -221,7 +225,7 @@ export default function App() {
       socket.on("sendMessage", sendMessage);
       socket.on("sendRoomMembers", sendRoomMembers);
 
-      socket.on
+      socket.on;
     }
 
     return () => {
@@ -245,69 +249,68 @@ export default function App() {
     setGameLoad(!gameLoad);
   };
 
-  const [roomName, setRoomName] = useState<string>('');
+  const [roomName, setRoomName] = useState<string>("");
   // let roomName: string = '';
   const [matchStartCheck, setMatchStartCheck] = useState<boolean>(false);
   // const [startGame, setStartGame] = useState<boolean>(false);
 
   useEffect(() => {
-    gameSocket.on('hello', () => {
+    gameSocket.on("hello", () => {
       console.log("In hello");
       setIsGameConnected(true);
-    })
+    });
 
-      gameSocket.on('matchStartCheck', (payload: AutoSave) => {
-          console.log(`${payload.roomName} is checking`);
-          setRoomName(payload.roomName);
-          // roomName = payload.roomName;
-          setMatchStartCheck(true);
+    gameSocket.on("matchStartCheck", (payload: AutoSave) => {
+      console.log(`${payload.roomName} is checking`);
+      setRoomName(payload.roomName);
+      // roomName = payload.roomName;
+      setMatchStartCheck(true);
+    });
+
+    gameSocket.on("matchDecline", (payload: string) => {
+      console.log(`${payload} is declined`);
+      // roomName = payload.roomName;
+      setRoomName("");
+      setMatchStartCheck(false);
+    });
+
+    gameSocket.on("startGame", (payload: StartGameData) => {
+      console.log("In startGame", payload.player);
+      setMatchStartCheck(false);
+      // setStartGame(true);
+
+      setGameData({
+        // roomName: payload.roomName,
+        inGame: true,
+        gameOver: false,
+        player: payload.player,
+        canvasWidth: payload.canvasWidth,
+        canvasHeight: payload.canvasHeight,
+        paddleWidth: payload.paddleWidth,
+        paddleHeight: payload.paddleHeight,
+        ballRadius: payload.ballRadius,
+        winner: "",
+        loser: "",
       });
+    });
 
-      gameSocket.on('matchDecline', (payload: string) => {
-          console.log(`${payload} is declined`);
-          // roomName = payload.roomName;
-          setRoomName('');
-          setMatchStartCheck(false);
-      })
-
-      gameSocket.on('startGame', (payload: StartGameData) => {
-        console.log("In startGame", payload.player);
-        setMatchStartCheck(false);
-        // setStartGame(true);
-        
-
-        setGameData({
-          // roomName: payload.roomName,
-          inGame: true,
-          gameOver: false,
-          player: payload.player,
-          canvasWidth: payload.canvasWidth,
-          canvasHeight: payload.canvasHeight,
-          paddleWidth: payload.paddleWidth,
-          paddleHeight: payload.paddleHeight,
-          ballRadius: payload.ballRadius,
-          winner: '',
-          loser: '',
-        })
-      })
-
-      gameSocket.on('gameOver', (payload: GameOverData) => {
-        setGameData({
-          // isGameConnected: isGameConnected,
-          // roomName: payload.roomName,
-          inGame: false,
-          gameOver: true,
-          player: [],
-          canvasWidth: 0,
-          canvasHeight: 0,
-          paddleWidth: 0,
-          paddleHeight: 0,
-          ballRadius: 0,
-          winner: payload.winner,
-          loser: payload.loser,
-        })
-      })
-  }, [gameSocket, isGameConnected, gameData]) // gameData?
+    gameSocket.on("gameOver", (payload: GameOverData) => {
+      setGameData({
+        // isGameConnected: isGameConnected,
+        // roomName: payload.roomName,
+        inGame: false,
+        gameOver: true,
+        player: [],
+        canvasWidth: 0,
+        canvasHeight: 0,
+        paddleWidth: 0,
+        paddleHeight: 0,
+        ballRadius: 0,
+        winner: payload.winner,
+        loser: payload.loser,
+      });
+    });
+  }, [gameSocket, isGameConnected, gameData]); // gameData?
 
   return (
     <SocketContext.Provider
@@ -339,22 +342,26 @@ export default function App() {
             )}
           </div>
           {/* seunchoi - TEST */}
-          <button disabled={!isGameConnected} onClick={handleGameOnOff}>game on/off</button>
+          <button disabled={!isGameConnected} onClick={handleGameOnOff}>
+            game on/off
+          </button>
           {/* {gameLoad && <TempRandomMatch />} */}
-          <GameContext.Provider value={{
-            isGameConnected: isGameConnected,
-            roomName: roomName,
-            gameData: gameData,
-          }}>
-            {matchStartCheck && <TempRandomMatch/>}
-          <NavBar
-            query={query}
-            setQuery={setQuery}
-            setIsLoading={setIsLoading}
-            setTmpLoginnickname={setTmpLoginnickname}
-            setLeftHeader={setLeftHeader}
-            setError={setError}
-          />
+          <GameContext.Provider
+            value={{
+              isGameConnected: isGameConnected,
+              roomName: roomName,
+              gameData: gameData,
+            }}
+          >
+            {matchStartCheck && <TempRandomMatch />}
+            <NavBar
+              query={query}
+              setQuery={setQuery}
+              setIsLoading={setIsLoading}
+              setTmpLoginnickname={setTmpLoginnickname}
+              setLeftHeader={setLeftHeader}
+              setError={setError}
+            />
           </GameContext.Provider>
           <Main>
             <Box>
@@ -375,40 +382,41 @@ export default function App() {
                 </>
               }
             </Box>
-            {gameLoad ? (
-              <GameContext.Provider value={{
+
+            <GameContext.Provider
+              value={{
                 isGameConnected: isGameConnected,
                 roomName: roomName,
                 gameData: gameData,
-              }}>
-                <Pong />
-              </GameContext.Provider>
-            ) : (
-              <ChatMain
-                roomInfo={roomInfo}
-                setRoomInfo={setRoomInfo}
-                messages={messages}
-                setMessages={setMessages}
-                currentRoomName={currentRoomName}
-                setcurrentRoomName={setcurrentRoomName}
-                myNickName={tmpLoginnickname}
-                blocklist={blocklist}
-              />
-            )}
+              }}
+            >
+              <Pong gameLoad={gameLoad} />
+            </GameContext.Provider>
+
+            <ChatMain
+              roomInfo={roomInfo}
+              setRoomInfo={setRoomInfo}
+              messages={messages}
+              setMessages={setMessages}
+              currentRoomName={currentRoomName}
+              setcurrentRoomName={setcurrentRoomName}
+              myNickName={tmpLoginnickname}
+              blocklist={blocklist}
+              gameLoad={gameLoad}
+            />
+
             <Box>
               <>
-                <SearchList
-                  results={results}
-                  query={query}
-                  setTempSearchList={setTempSearchList}
-                  isOpenModal={isOpenModal}
-                  setIsOpenModal={setIsOpenModal}
-                  leftHeader={leftHeader}
-                  setLeftHeader={setLeftHeader}
-                  setroomnameModal={setroomnameModal}
+                <ChatRoomUser
+                  id={tmpLoginID}
                   blocklist={blocklist}
+                  roomInfo={roomInfo}
+                  setRoomInfo={setRoomInfo}
+                  users={roomUserList}
+                  roomname={currentRoomName}
+                  myNickName={tmpLoginnickname}
                 />
-                <DMlist />
+                <GameList myNickName={tmpLoginnickname} />
               </>
             </Box>
           </Main>

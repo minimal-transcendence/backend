@@ -1096,7 +1096,7 @@ label:active:after {
 .dropdown-content-second {
   display: none;
   position: absolute;
-  left: -65px;
+  left: -95px;
   background-color: #fff;
   padding: 1rem;
   min-width: 160px;
