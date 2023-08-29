@@ -13,7 +13,8 @@ import MyProfile from "../../../srcs/MyProfile";
 import UserProfile from "../../../srcs/UserProfile";
 import ModalOverlay from "../../components/modalpage/ModalOverlay";
 
-import axiosApi, { fetch_refresh } from "../../../srcs/FetchInterceptor";
+import { fetch_refresh } from "../../../srcs/FetchInterceptor";
+import axiosApi from "@/srcs/AxiosInterceptor";
 
 export default function Menu({
   setTmpLoginnickname,
@@ -29,24 +30,17 @@ export default function Menu({
   const [easy, setEasy] = useState<boolean>(false);
   const [normal, setNormal] = useState<boolean>(false);
   const [hard, setHard] = useState<boolean>(false);
-  // const socket = useContext(SocketContext).gameSocket;
 
   //seunchoi
   const isGameConnected = useContext(GameContext).isGameConnected;
-  // const matchStartCheck = useContext(GameContext).matchStartCheck;
-  console.log("In NavMenu:", isGameConnected);
   const socketContext = useContext(SocketContext);
   const gameSocket = socketContext.gameSocket;
   const [block, setBlock] = useState<boolean>(true);
 
-  // useEffect(() => {
-  //   if (matchStartCheck) {
-  //     setRandomMatch("");
-  //   }
-  // }, [matchStartCheck])
-
   useEffect(() => {
-    setBlock(false);
+    if (isGameConnected) {
+      setBlock(false);
+    }
   }, [isGameConnected])
 
   useEffect(() => {
@@ -84,6 +78,8 @@ export default function Menu({
     localStorage.removeItem("avatar");
     const ApiUrl = "http://localhost/api/auth/logout";
     axiosApi.post(ApiUrl, {
+    }).catch((error) => {
+      console.log("here i am");
     });
     setIsLoggedIn(false);
     alert("로그아웃 되었습니다.");
