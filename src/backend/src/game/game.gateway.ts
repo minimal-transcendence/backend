@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe, UsePipes, UseFilters } from '@nestjs/common';
 import {
 	ConnectedSocket,
 	OnGatewayConnection,
@@ -12,12 +12,16 @@ import { Namespace } from 'socket.io';
 import { 
 	Invitation,
   	GameSocket,
-  	KeydownPayload
+  	KeydownPayload,
+    OneOnOnePayload
 } from './types';
 import { GameRoom } from './GameRoom';
 import { GameService } from './game.service';
 import { MatchService } from 'src/match/match.service';
+import {  WsExceptionFilter } from './ws-exception.filter';
 
+@UsePipes(new ValidationPipe())
+@UseFilters(WsExceptionFilter)
 @WebSocketGateway({
 	namespace: 'game',
 	pingTimeout: 2000,
@@ -266,7 +270,7 @@ export class GameGateway
   /*---------------------One on One-----------------------------------*/
 
   @SubscribeMessage('oneOnOneApply')
-  handleOneOnOneApply(client: GameSocket, payload: Invitation) {
+  handleOneOnOneApply(client: GameSocket, payload: OneOnOnePayload) {
 	console.log(payload.to);
     // Get By Nickname
     const toClient: GameSocket = this.gameService.getSocketByNickname(this.io, payload.to);
@@ -275,16 +279,25 @@ export class GameGateway
       return `ERR no such user: ${payload.to}`;
     }
 
+    // New Invitation
+    const invitation: Invitation = {
+      from: client.nickname,
+      fromId: client.userId,
+      to: payload.to,
+      toId: toClient.userId,
+      mode: payload.mode,
+    }
+
     // 중복확인
     for (let e in client.invitationList) {
-      if (this.gameService.objectsAreSame(client.invitationList[e], payload)) {
+      if (this.gameService.objectsAreSame(client.invitationList[e], invitation)) {
         return `ERR aleady invite ${payload.to}`;
       }
     }
 
     // update list on each client
-    client.invitationList.push(payload);
-    toClient.invitationList.push(payload);
+    client.invitationList.push(invitation);
+    toClient.invitationList.push(invitation);
 
     // send invitation list
     client.emit('updateInvitationList', client.invitationList);
@@ -298,11 +311,11 @@ export class GameGateway
   handleOneOnOneAccept(client: GameSocket, payload: Invitation) {
     for (let e in client.invitationList) {
       if (client.invitationList[e].from === payload.from) {
-		// delete invitation from client
-		client.invitationList = client.invitationList.filter((item: Invitation) => 
-		!this.gameService.objectsAreSame(item, payload));
-		// send invitation list to client
-		client.emit('updateInvitationList', client.invitationList);
+      // delete invitation from client
+      client.invitationList = client.invitationList.filter((item: Invitation) => 
+      !this.gameService.objectsAreSame(item, payload));
+      // send invitation list to client
+      client.emit('updateInvitationList', client.invitationList);
 
         // Get By Nickname
         const fromClient: GameSocket = this.gameService.getSocketByNickname(this.io, payload.from);
@@ -335,8 +348,8 @@ export class GameGateway
         // Delete Invitations from fromClient
         fromClient.invitationList = fromClient.invitationList.filter((item: Invitation) => 
           !this.gameService.objectsAreSame(item, payload));
-		// send invitation list to fromClient
-		fromClient.emit('updateInvitationList', fromClient.invitationList);
+		    // send invitation list to fromClient
+		    fromClient.emit('updateInvitationList', fromClient.invitationList);
 
         // Ask Match Accept
         this.io.to(roomName).emit('matchStartCheck', {
@@ -422,6 +435,9 @@ export class GameGateway
   /*-----------------------Nickname Changed------------------------------*/
   @SubscribeMessage('changeNick')
   handleNicknameChanged(client: GameSocket, nickname: string) {
+    if (nickname === client.nickname) {
+      return;
+    }
 	const sockets = this.io.sockets;
 	const oldNickname = client.nickname;
 
@@ -439,13 +455,22 @@ export class GameGateway
 
 	// emit
 	sockets.forEach((socket: GameSocket) => {
-		socket.invitationList.forEach((invit: Invitation) => {
+		socket.invitationList.every((invit: Invitation) => {
 			if (invit.from === nickname || invit.to === nickname) {
 				socket.emit('updateInvitationList', socket.invitationList);
 				return false;
 			}
+      return true;
 		});
 	});
+  // sockets.forEach((socket: GameSocket) => {
+	// 	socket.invitationList.forEach((invit: Invitation) => {
+	// 		if (invit.from === nickname || invit.to === nickname) {
+	// 			socket.emit('updateInvitationList', socket.invitationList);
+	// 			return false;
+	// 		}
+	// 	});
+	// });
 
 	// Set client's new nickname
 	console.log(`${client.nickname} is now ${nickname}`);
