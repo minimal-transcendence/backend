@@ -3,7 +3,8 @@ import logOutIcon from "../../../assets/logout.png";
 import userIcon from "../../../assets/user.png";
 import contestIcon from "../../../assets/contest.png";
 
-import { SocketContext } from "@/pages/App";
+import { SocketContext } from "@/context/socket";
+import { GameContext } from "@/context/game";
 import Image from "next/image";
 
 import { useRouter } from "next/router";
@@ -28,7 +29,14 @@ export default function Menu({
   const [easy, setEasy] = useState<boolean>(false);
   const [normal, setNormal] = useState<boolean>(false);
   const [hard, setHard] = useState<boolean>(false);
-  const socket = useContext(SocketContext).chatSocket;
+  // const socket = useContext(SocketContext).gameSocket;
+
+  //seunchoi
+  const isGameConnected = useContext(GameContext).isGameConnected;
+  console.log("In NavMenu:", isGameConnected);
+  const socketContext = useContext(SocketContext);
+  // const socket = socketContext.chatSocket;
+  const gameSocket = socketContext.gameSocket;
 
   useEffect(() => {
     // 예시로 localStorage에 isLoggedIn 상태를 저장한 것으로 가정
@@ -63,31 +71,31 @@ export default function Menu({
 
       if (event.target.dataset.name === "easy") {
         if (randomMatch !== "easy") {
-          socket.emit("randomMatchApply", "easy");
+          gameSocket.emit("randomMatchApply", "easy");
           console.log("random Easy apply");
           setRandomMatch(() => "easy");
         } else {
-          socket.emit("randomMatchCancel");
+          gameSocket.emit("randomMatchCancel");
           console.log("random Easy Cancel");
           setRandomMatch(() => "");
         }
       } else if (event.target.dataset.name === "normal") {
         if (randomMatch !== "normal") {
-          socket.emit("randomMatchApply", "normal");
+          gameSocket.emit("randomMatchApply", "normal");
           console.log("random Normal apply");
           setRandomMatch(() => "normal");
         } else {
-          socket.emit("randomMatchCancel");
+          gameSocket.emit("randomMatchCancel");
           console.log("random Normal Cancel");
           setRandomMatch(() => "");
         }
       } else if (event.target.dataset.name === "hard") {
         if (randomMatch !== "hard") {
-          socket.emit("randomMatchApply", "hard");
+          gameSocket.emit("randomMatchApply", "hard");
           console.log("random Hard apply");
           setRandomMatch(() => "hard");
         } else {
-          socket.emit("randomMatchCancel");
+          gameSocket.emit("randomMatchCancel");
           console.log("random Hard Cancel");
           setRandomMatch(() => "");
         }
@@ -117,7 +125,8 @@ export default function Menu({
                 height="35"
                 alt="contesticon"
               />
-              <div
+              {isGameConnected && (
+                <div
                 onClick={() => handleMenu(event)}
                 className="dropdown-content"
               >
@@ -134,6 +143,7 @@ export default function Menu({
                     `${randomMatch !== "hard" ? "off" : "on"}`}
                 </div>
               </div>
+              )}
             </div>
           </div>
           <p className="nav-userlist" onClick={() => setUserListModal(true)}>

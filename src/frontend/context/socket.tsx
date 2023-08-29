@@ -13,3 +13,15 @@
 //   },
 // });
 // export const SocketContext = React.createContext<Socket>(socket);
+
+import { createContext } from "react";
+
+export type SocketContent = {
+    chatSocket: any;
+    gameSocket: any;
+};
+
+export const SocketContext = createContext<SocketContent>({
+    chatSocket: null,
+    gameSocket: null,
+});
