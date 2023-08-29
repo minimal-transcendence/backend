@@ -7,7 +7,7 @@ export type Invitation = {
 }
 
 type Player = {
-    nickname: string;
+    nickname: string;ㅋ
     inGame: boolean;
     invitationList: Invitation[];
 }

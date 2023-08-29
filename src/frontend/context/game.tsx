@@ -17,12 +17,14 @@ export type GameData = {
 
 export type GameContent = {
     isGameConnected: boolean;
+    matchStartCheck: boolean;
     roomName: string;
     gameData: GameData;
 }
 
 export const GameContext = createContext<GameContent>({
     isGameConnected: false,
+    matchStartCheck: false,
     roomName: '',
     gameData: {
         // isGameConnected: false,

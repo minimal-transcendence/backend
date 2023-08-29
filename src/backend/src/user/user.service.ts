@@ -240,8 +240,8 @@ export class UserService {
 		}).then((res) => {return res.avatar});
 		if (!fileName)
 			return null;
-		console.log('app/photo/' + fileName);
-		const file = createReadStream(join('app/photo/' + fileName));
+		console.log('/photo/' + fileName);
+		const file = createReadStream(join('/photo/' + fileName));
 		return new StreamableFile(file);
 	}
 }

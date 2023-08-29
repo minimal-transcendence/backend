@@ -27,7 +27,7 @@ export class UserController {
 	@UseInterceptors(FileInterceptor(
 		'avatar',
 		{
-			dest: 'app/photo',	//없는 폴더면 자동 생성
+			dest: '/photo',	//없는 폴더면 자동 생성
 		})
 	)
 	@Post(':id')
@@ -87,13 +87,13 @@ export class UserController {
 }
 
 //TODO : discuss router & authorization
-@Controller('app/photo/:img')
+@Controller('photo/:img')
 export class avatarController {
 	constructor(private readonly userService: UserService) {}
 
 	@Get()
 	getAvatar(@Param('img') img : string) : StreamableFile {
-		const file = createReadStream(join('app/photo/' + img));
+		const file = createReadStream(join('/photo/' + img));
 		return new StreamableFile(file);
 	}
 }

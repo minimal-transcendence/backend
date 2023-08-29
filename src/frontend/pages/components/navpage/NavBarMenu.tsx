@@ -33,10 +33,35 @@ export default function Menu({
 
   //seunchoi
   const isGameConnected = useContext(GameContext).isGameConnected;
+  // const matchStartCheck = useContext(GameContext).matchStartCheck;
   console.log("In NavMenu:", isGameConnected);
   const socketContext = useContext(SocketContext);
-  // const socket = socketContext.chatSocket;
   const gameSocket = socketContext.gameSocket;
+  const [block, setBlock] = useState<boolean>(true);
+
+  // useEffect(() => {
+  //   if (matchStartCheck) {
+  //     setRandomMatch("");
+  //   }
+  // }, [matchStartCheck])
+
+  useEffect(() => {
+    setBlock(false);
+  }, [isGameConnected])
+
+  useEffect(() => {
+    gameSocket.on('startGame', () => {
+      setRandomMatch("");
+      setBlock(true);
+    });
+    gameSocket.on('gameOver', () => {
+      setBlock(false);
+    })
+    gameSocket.on('matchDecline', () => {
+      setRandomMatch("");
+      setBlock(false);
+    })
+  }, [gameSocket])
 
   useEffect(() => {
     // 예시로 localStorage에 isLoggedIn 상태를 저장한 것으로 가정
@@ -125,7 +150,7 @@ export default function Menu({
                 height="35"
                 alt="contesticon"
               />
-              {isGameConnected && (
+              {!block && (
                 <div
                 onClick={() => handleMenu(event)}
                 className="dropdown-content"
@@ -136,7 +161,7 @@ export default function Menu({
                 </div>
                 <div data-name="normal">
                   {"RandomMatch Normal " +
-                    `${randomMatch !== "normal" ? "off" : "on"}`}
+                  `${randomMatch !== "normal" ? "off" : "on"}`}
                 </div>
                 <div data-name="hard">
                   {"RandomMatch Hard " +
