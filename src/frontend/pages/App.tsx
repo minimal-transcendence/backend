@@ -12,11 +12,12 @@ import SearchList from "./components/searchlistpage/SearchList";
 import ChatRoomUser from "./components/chatroompage/ChatRoom";
 
 import ModalAlert from "./components/modalpage/ModalAlert";
-import Pong, { AutoSave, GameOverData, StartGameData } from "@/srcs/Pong";
+// import Pong, { AutoSave, GameOverData, StartGameData } from "@/srcs/Pong";
+import Pong, { AutoSave, GameOverData, StartGameData } from "./components/pong/Pong";
 // import { SocketContext, socket } from "../context/socket";
 // import searchIcon from "./assets/search.png";
 import Image from "next/image";
-import TempRandomMatch from "@/srcs/TempRandomMatch";
+import TempRandomMatch from "./components/pong/TempRandomMatch";
 import { SocketContext } from "@/context/socket";
 import { GameContext, GameData } from "@/context/game";
 
@@ -346,7 +347,6 @@ export default function App() {
             gameData: gameData,
           }}>
             {matchStartCheck && <TempRandomMatch/>}
-          </GameContext.Provider>
           <NavBar
             query={query}
             setQuery={setQuery}
@@ -355,6 +355,7 @@ export default function App() {
             setLeftHeader={setLeftHeader}
             setError={setError}
           />
+          </GameContext.Provider>
           <Main>
             <Box>
               {
