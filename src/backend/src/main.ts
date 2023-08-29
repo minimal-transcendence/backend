@@ -2,7 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
-import { SocketIOAdapter } from './chat/socket-io-adapter';
+import { SocketIOAdapter } from './socket.io/socket-io-adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

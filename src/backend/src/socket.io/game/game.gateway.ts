@@ -9,16 +9,14 @@ import {
 	WebSocketServer,
 } from '@nestjs/websockets';
 import { Namespace } from 'socket.io';
-import { 
-	Invitation,
-  	GameSocket,
-  	KeydownPayload,
-    OneOnOnePayload
-} from './types';
+import { GameSocket } from './types';
 import { GameRoom } from './GameRoom';
 import { GameService } from './game.service';
 import { MatchService } from 'src/match/match.service';
 import {  WsExceptionFilter } from './ws-exception.filter';
+import { Invitation } from './dto/invitation.dto';
+import { OneOnOnePayload } from './dto/one-on-on.dto';
+import { KeydownPayload } from './dto/keydown.dto';
 
 @UsePipes(new ValidationPipe())
 @UseFilters(WsExceptionFilter)
