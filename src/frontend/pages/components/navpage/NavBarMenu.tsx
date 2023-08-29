@@ -43,10 +43,9 @@ export default function Menu({
     const storedIsLoggedIn = localStorage.getItem("isLoggedIn");
     if (storedIsLoggedIn === "true") {
       setIsLoggedIn(true);
-    }
-    else{
+    } else {
       alert("로그인이 필요합니다");
-      router.push("/")
+      router.push("/");
     }
   }, []);
 
@@ -58,11 +57,10 @@ export default function Menu({
     localStorage.removeItem("access_token");
     localStorage.removeItem("avatar");
     const ApiUrl = "http://localhost/api/auth/logout";
-    axiosApi.post(ApiUrl, {
-    });
+    axiosApi.post(ApiUrl, {});
     setIsLoggedIn(false);
     alert("로그아웃 되었습니다.");
-    router.push("/")
+    router.push("/");
   };
 
   function handleMenu(event: any) {
@@ -130,15 +128,15 @@ export default function Menu({
                 onClick={() => handleMenu(event)}
                 className="dropdown-content"
               >
-                <div data-name="easy">
+                <div className="dropdown-item" data-name="easy">
                   {"RandomMatch Easy " +
                     `${randomMatch !== "easy" ? "off" : "on"}`}
                 </div>
-                <div data-name="normal">
+                <div className="dropdown-item" data-name="normal">
                   {"RandomMatch Normal " +
                     `${randomMatch !== "normal" ? "off" : "on"}`}
                 </div>
-                <div data-name="hard">
+                <div className="dropdown-item" data-name="hard">
                   {"RandomMatch Hard " +
                     `${randomMatch !== "hard" ? "off" : "on"}`}
                 </div>
