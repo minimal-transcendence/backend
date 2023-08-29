@@ -61,7 +61,7 @@ export default function ModalBasic({
   };
 
   return (
-    <div ref={modalRef} className="container">
+    <div ref={modalRef} className="modal modal-basic">
       <button className="close" onClick={closeModal}>
         X
       </button>

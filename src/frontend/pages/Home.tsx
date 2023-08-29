@@ -11,20 +11,6 @@ function Home() {
   const [userListModal, setUserListModal] = useState<boolean>(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const logout = () => {
-    localStorage.setItem("isLoggedIn", "false");
-    localStorage.removeItem("id");
-    localStorage.removeItem("nickname");
-    localStorage.removeItem("is2fa");
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("avatar");
-    const ApiUrl = "http://localhost/api/auth/logout";
-    fetch(ApiUrl, {
-      method: "POST",
-    });
-    setIsLoggedIn(false);
-  };
-
   // 이미 로그인되었는지 확인
   useEffect(() => {
     // 예시로 localStorage에 isLoggedIn 상태를 저장한 것으로 가정
@@ -45,7 +31,7 @@ function Home() {
   } else {
     return (
       <div>
-        <div>
+        {/* <div>
           <button onClick={() => setMyProfileModal(true)}>내 프로필</button>
           <button onClick={() => setUserListModal(true)}>유저 목록</button>
           <button onClick={logout}>로그 아웃</button>
@@ -66,10 +52,10 @@ function Home() {
             </>
           )}
         </div>
-            {/*<UserProfile id='1' /> 유저 프로필만 가져올때는 이렇게 사용 id는 보고싶은 유저의 id*/}
+            <UserProfile id='1' />  */}
         <div>
-            <App />
-         </div>
+          <App />
+        </div>
       </div>
     );
   }

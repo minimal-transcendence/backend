@@ -24,8 +24,7 @@ const ChatMain = ({
   setMessages: any;
   blocklist: string[];
 }) => {
-  const [textareaValue, setTextareaValue] = useState("");
-  const [typingStatus, setTypingStatus] = useState("");
+  // const [typingStatus, setTypingStatus] = useState("");
   const [isDM, setIsDM] = useState<boolean>(false);
   const [DMtarget, setDMtarget] = useState<string>("");
 
@@ -103,15 +102,13 @@ const ChatMain = ({
         <ChatBody
           blocklist={blocklist}
           messages={messages}
-          typingStatus={typingStatus}
+          // typingStatus={typingStatus}
           lastMessageRef={lastMessageRef}
           myNickName={myNickName}
         />
         <ChatFooter
           isDM={isDM}
           DMtarget={DMtarget}
-          textareaValue={textareaValue}
-          setTextareaValue={setTextareaValue}
           currentRoomName={currentRoomName}
         />
       </div>

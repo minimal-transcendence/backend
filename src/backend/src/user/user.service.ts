@@ -3,10 +3,14 @@ import { PrismaService } from 'src/prisma.service';
 import { Prisma, User } from '@prisma/client';
 import { join } from 'path';
 import { createReadStream } from 'fs';
+import { ChatGateway } from 'src/chat/chat.gateway';
 
 @Injectable()
 export class UserService {
-	constructor(private prisma: PrismaService){}
+	constructor(
+		private readonly prisma: PrismaService,
+		private readonly chatGateway : ChatGateway
+	){}
 
 	//upsert
 	async createUser(data: Prisma.UserCreateInput): Promise<User> {
@@ -100,6 +104,14 @@ export class UserService {
 				friends : undefined,
 				avatar : file != null ? file.path.toString() : undefined,
 			}
+		}).then((res) => {
+			if (file) {
+				this.chatGateway.userUpdateAvatar(id);
+			}
+			if (data.nickname) {
+				this.chatGateway.userUpdateNick(id, data.nickname as string);
+			}
+			return (res);
 		}).catch((error) => {
 			if (error instanceof Prisma.PrismaClientValidationError){
 				return { error : "Validation Error" };
@@ -228,9 +240,8 @@ export class UserService {
 		}).then((res) => {return res.avatar});
 		if (!fileName)
 			return null;
-		console.log('/app/photo/' + fileName);
-		const file = createReadStream(join('/app/photo/' + fileName));
+		console.log('app/photo/' + fileName);
+		const file = createReadStream(join('app/photo/' + fileName));
 		return new StreamableFile(file);
 	}
 }
-

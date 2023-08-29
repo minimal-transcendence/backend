@@ -886,11 +886,7 @@ body {
   background-color: var(--color-text-very-dark);
   color: #fff;
 }
-.container {
-  /* 모달창 크기 */
-  width: 300px;
-  height: 200px;
-
+.modal {
   /* 최상단 위치 */
   z-index: 999;
 
@@ -898,9 +894,6 @@ body {
   /* top, bottom, left, right 는 브라우저 기준으로 작동한다. */
   /* translate는 본인의 크기 기준으로 작동한다. */
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
 
   /* 모달창 디자인 */
   background-color: gray;
@@ -908,6 +901,33 @@ body {
   border-radius: 8px;
 }
 
+.modal-basic {
+  /* 모달창 크기 */
+  width: 300px;
+  height: 200px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.modal-userlist,
+.modal-myprofile,
+.modal-alert {
+  /* 모달창 크기 */
+  width: 850px;
+  height: 950px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.modal-userprofile {
+  width: 600px;
+  height: 600px;
+  top: 50%;
+  left: -50%;
+  transform: translate(-50%, -50%);
+}
 /* 모달창 내부 X버튼 */
 .close {
   position: absolute;
@@ -921,14 +941,14 @@ body {
   visibility: hidden;
 }
 .overlay {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background-color: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(3px);
-  z-index: 5;
+  z-index: 500;
 }
 /*
 SPACING SYSTEM (px)
@@ -1053,7 +1073,8 @@ label:active:after {
 }
 
 /* The container <div> - needed to position the dropdown content */
-.dropdown {
+.dropdown,
+.dropdown-second {
   position: relative;
   display: inline-block;
 }
@@ -1072,8 +1093,19 @@ label:active:after {
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
 }
+.dropdown-content-second {
+  display: none;
+  position: absolute;
+  left: -65px;
+  background-color: #fff;
+  padding: 1rem;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
 /* Links inside the dropdown */
-.dropdown-content div {
+.dropdown-content .dropdown-item,
+.dropdown-content-second .dropdown-item-second {
   color: rgb(176, 176, 176);
   background-color: #fff;
   padding: 12px 16px;
@@ -1105,7 +1137,11 @@ label:active:after {
 }
 
 /* Change color of dropdown links on hover */
-.dropdown-content div:hover {
+.dropdown-content .dropdown-item:hover {
+  background-color: #ddd;
+  color: #000;
+}
+.dropdown-content-second div:hover {
   background-color: #ddd;
   color: #000;
 }
@@ -1115,6 +1151,9 @@ label:active:after {
 }
 /* Show the dropdown menu on hover */
 .dropdown:hover .dropdown-content {
+  display: block;
+}
+.dropdown-second:hover .dropdown-content-second {
   display: block;
 }
 .dropdown-chat:hover .dropdown-content-chat {

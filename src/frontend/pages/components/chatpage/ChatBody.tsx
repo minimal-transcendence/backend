@@ -5,13 +5,13 @@ import { SocketContext } from "@/pages/App";
 const ChatBody = ({
   messages,
   blocklist,
-  typingStatus,
+  // typingStatus,
   lastMessageRef,
   myNickName,
 }: {
   messages: any;
   blocklist: any;
-  typingStatus: string;
+  // typingStatus: string;
   lastMessageRef: any;
   myNickName: string;
 }) => {

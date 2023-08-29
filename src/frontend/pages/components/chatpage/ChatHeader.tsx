@@ -33,11 +33,17 @@ const ChatHeader = ({
     if (chkAuth) {
       console.log("비번 바꾸기 가능");
       socket.emit("setRoomPass", currentRoomName, value);
-      socket.emit("setRoomPublic", currentRoomName);
-      setRoomState("Public");
+
+      if (roomState !== "Public") {
+        console.log("test!!!!!public!!!!!");
+        setRoomState("Public");
+        socket.emit("setRoomPublic", currentRoomName);
+      }
     }
     setPassword("");
   };
+
+  console.log("in ChatHeader");
   function handleMenu(event: any, currentRoomName: string) {
     if (event.target.dataset.name) {
       console.log("hi");
