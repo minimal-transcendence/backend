@@ -1168,3 +1168,15 @@ label:active:after {
   height: 100%;
   display: block;
 }
+
+.gameAccept {
+  cursor: pointer;
+}
+
+.gameDecline {
+  cursor: pointer;
+}
+
+.gameCancel {
+  cursor: pointer;
+}

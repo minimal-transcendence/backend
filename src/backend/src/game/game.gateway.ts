@@ -267,7 +267,7 @@ export class GameGateway
 
   @SubscribeMessage('oneOnOneApply')
   handleOneOnOneApply(client: GameSocket, payload: Invitation) {
-	console.log(payload.to);
+	console.log(payload);
     // Get By Nickname
     const toClient: GameSocket = this.gameService.getSocketByNickname(this.io, payload.to);
 

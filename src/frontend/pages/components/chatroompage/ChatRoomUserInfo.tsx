@@ -25,6 +25,7 @@ export default function ChatRoomUserInfo({
   id: any;
 }) {
   const socket = useContext(SocketContext).chatSocket;
+  const gameSocket = useContext(SocketContext).gameSocket;
   const [userProfileModal, setUserProfileModal] = useState<boolean>(false);
 
   // async function getImgURL(id: string) {
@@ -71,13 +72,25 @@ export default function ChatRoomUserInfo({
         socket.emit("selectDMRoom", targetnickname);
       else if (event.target.dataset.name === "oneVsOneEasy") {
         console.log("easy");
-        socket.emit("oneVsOneApply", targetnickname, "oneVsOne", "easy");
+        gameSocket.emit("oneOnOneApply", {
+          from: myNickName,
+          to: targetnickname,
+          mode: "easy",
+        });
       } else if (event.target.dataset.name === "oneVsOneNormal") {
         console.log("normal");
-        socket.emit("oneVsOneApply", targetnickname, "oneVsOne", "normal");
+        gameSocket.emit("oneOnOneApply", {
+          from: myNickName,
+          to: targetnickname,
+          mode: "normal",
+        });
       } else if (event.target.dataset.name === "oneVsOneHard") {
         console.log("hard");
-        socket.emit("oneVsOneApply", targetnickname, "oneVsOne", "hard");
+        gameSocket.emit("oneOnOneApply", {
+          from: myNickName,
+          to: targetnickname,
+          mode: "hard",
+        });
       }
     } else {
       console.log("you click other");

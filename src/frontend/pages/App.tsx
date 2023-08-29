@@ -224,8 +224,6 @@ export default function App() {
       socket.on("sendDM", sendDM);
       socket.on("sendMessage", sendMessage);
       socket.on("sendRoomMembers", sendRoomMembers);
-
-      socket.on;
     }
 
     return () => {
