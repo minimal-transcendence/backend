@@ -239,9 +239,8 @@ export class UserService {
 			select : { avatar : true },
 		}).then((res) => {return res.avatar});
 		if (!fileName)
-			return null;
-		console.log('app/photo/' + fileName);
-		const file = createReadStream(join('app/photo/' + fileName));
+			throw new Error("Not Found");
+		const file = createReadStream(fileName);
 		return new StreamableFile(file);
 	}
 }
