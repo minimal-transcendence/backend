@@ -20,8 +20,6 @@ import { ChatService } from 'src/socket.io/chat/chat.service';
 		UserService,
 		PrismaService,
 		JwtGuard,
-		ChatGateway,
-		ChatService
 	],
 	exports: [UserService]
 })

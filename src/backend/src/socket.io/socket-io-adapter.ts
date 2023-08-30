@@ -43,6 +43,7 @@ const createJwtMiddleware = (jwtService: JwtService, logger: Logger) =>
             secret: process.env.JWT_ACCESS_TOKEN_SECRET
         });
         socket.userId = payload.id;
+        socket.data.id = payload.id;
         socket.email = payload.email;
         socket.nickname = nickname;
         next();

@@ -80,9 +80,18 @@ export class UserController {
 
 
 	@Get(':id/matchhistory')
-		async getUserMatchHistory(@Param('id', ParseIntPipe) id : number)
+	async getUserMatchHistory(@Param('id', ParseIntPipe) id : number)
 		 : Promise<object[]> {
 			return this.userService.getUserMatchHistoryById(id);
+	}
+
+	//return await / just return?
+	@Get(':id/photo')
+	async streamUserImage(@Param('id') id : number) {
+		return await this.userService.getUserImageById(id)
+			.catch((error) => {
+				throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+			})
 	}
 }
 

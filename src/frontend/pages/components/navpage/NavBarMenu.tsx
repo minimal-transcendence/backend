@@ -13,8 +13,7 @@ import MyProfile from "../../../srcs/MyProfile";
 import UserProfile from "../../../srcs/UserProfile";
 import ModalOverlay from "../../components/modalpage/ModalOverlay";
 
-import { fetch_refresh } from "../../../srcs/FetchInterceptor";
-import axiosApi from "@/srcs/AxiosInterceptor";
+import axiosApi from "../../../srcs/AxiosInterceptor";
 
 export default function Menu({
   setTmpLoginnickname,
