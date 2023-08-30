@@ -237,12 +237,14 @@ export class UserService {
 		const fileName = await this.prisma.user.findUnique({
 			where : { id },
 			select : { avatar : true },
-		}).then((res) => {return res.avatar});
+		}).then((res) => {
+			console.log(typeof res);
+			return res.avatar
+		});
 		if (!fileName)
-			throw new Error("Not Found");
-		const file = createReadStream(fileName);
-		if (!file)
-			throw new Error("Not Found");
+			return null;
+		console.log('/photo/' + fileName);
+		const file = createReadStream(join('/photo/' + fileName));
 		return new StreamableFile(file);
 	}
 }

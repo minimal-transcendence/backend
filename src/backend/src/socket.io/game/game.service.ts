@@ -25,6 +25,7 @@ export class GameService {
       io.to(room.name).emit('startGame', {
       roomName: room.name,
       player: [room.player[0].nickname, room.player[1].nickname],
+      playerColor: [room.player[0].color, room.player[1].color],
       mode: room.mode,
       canvasWidth: room.canvasWidth,
       canvasHeight: room.canvasHeight,
@@ -48,6 +49,7 @@ export class GameService {
         ballX: room.ballX,
         ballY: room.ballY,
         paddleX: room.paddleX,
+        powerUp: room.powerUp,
         playerScore: room.playerScore,
       });
     }, 15);

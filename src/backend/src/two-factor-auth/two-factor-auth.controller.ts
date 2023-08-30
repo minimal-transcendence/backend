@@ -2,10 +2,10 @@ import { Body, Controller, Get, Post, Req, Res, UnauthorizedException, UseGuards
 import { Request, Response } from 'express';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
-import { TwoFactorAuthCodeDto } from './dto/2fa-code.dto';
 import { User } from '@prisma/client';
 import { TwoFactorAuthService } from './two-factor-auth.service';
 import { UserService } from 'src/user/user.service';
+import { TwoFactorAuthCodeDto } from './dto/2fa-code.dto';
 
 @Controller('2fa')
 export class TwoFactorAuthController {

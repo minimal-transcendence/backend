@@ -13,7 +13,8 @@ import MyProfile from "../../../srcs/MyProfile";
 import UserProfile from "../../../srcs/UserProfile";
 import ModalOverlay from "../../components/modalpage/ModalOverlay";
 
-import axiosApi, { fetch_refresh } from "../../../srcs/FetchInterceptor";
+import { fetch_refresh } from "../../../srcs/FetchInterceptor";
+import axiosApi from "@/srcs/AxiosInterceptor";
 
 export default function Menu({
   setTmpLoginnickname,
@@ -29,14 +30,32 @@ export default function Menu({
   const [easy, setEasy] = useState<boolean>(false);
   const [normal, setNormal] = useState<boolean>(false);
   const [hard, setHard] = useState<boolean>(false);
-  // const socket = useContext(SocketContext).gameSocket;
 
   //seunchoi
   const isGameConnected = useContext(GameContext).isGameConnected;
-  console.log("In NavMenu:", isGameConnected);
   const socketContext = useContext(SocketContext);
-  // const socket = socketContext.chatSocket;
   const gameSocket = socketContext.gameSocket;
+  const [block, setBlock] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (isGameConnected) {
+      setBlock(false);
+    }
+  }, [isGameConnected])
+
+  useEffect(() => {
+    gameSocket.on('startGame', () => {
+      setRandomMatch("");
+      setBlock(true);
+    });
+    gameSocket.on('gameOver', () => {
+      setBlock(false);
+    })
+    gameSocket.on('matchDecline', () => {
+      setRandomMatch("");
+      setBlock(false);
+    })
+  }, [gameSocket])
 
   useEffect(() => {
     // 예시로 localStorage에 isLoggedIn 상태를 저장한 것으로 가정
@@ -59,6 +78,8 @@ export default function Menu({
     localStorage.removeItem("avatar");
     const ApiUrl = "http://localhost/api/auth/logout";
     axiosApi.post(ApiUrl, {
+    }).catch((error) => {
+      console.log("here i am");
     });
     setIsLoggedIn(false);
     alert("로그아웃 되었습니다.");
@@ -125,7 +146,7 @@ export default function Menu({
                 height="35"
                 alt="contesticon"
               />
-              {isGameConnected && (
+              {!block && (
                 <div
                 onClick={() => handleMenu(event)}
                 className="dropdown-content"
@@ -136,7 +157,7 @@ export default function Menu({
                 </div>
                 <div data-name="normal">
                   {"RandomMatch Normal " +
-                    `${randomMatch !== "normal" ? "off" : "on"}`}
+                  `${randomMatch !== "normal" ? "off" : "on"}`}
                 </div>
                 <div data-name="hard">
                   {"RandomMatch Hard " +
