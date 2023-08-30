@@ -120,8 +120,12 @@ export class ChatGateway
         client,
         username,
       );
-      if (DMs != null)
-        client.emit("sendDMroomInfo", username, DMs);
+      if (DMs != null) {
+        client.emit("sendDMRoomInfo", username, DMs);
+        console.log("찍음");
+      }
+      else
+        console.log("안찍음!");
     });
 
     client.on('sendDirectMessage', (to, body) => {

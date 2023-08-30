@@ -72,7 +72,14 @@ const ChatMain = ({
       socket.off("sendCurrRoomInfo", sendCurrRoomInfo);
       socket.off("sendDMRoomInfo", sendDMRoomInfo);
     };
-  }, [currentRoomName, messages, setcurrentRoomName, socket]);
+  }, [
+    currentRoomName,
+    messages,
+    setMessages,
+    setcurrentRoomName,
+    setRoomInfo,
+    socket,
+  ]);
 
   // useEffect(() => {f
   //   socket.on("messageResponse", (data: any) =>

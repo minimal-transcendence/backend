@@ -33,23 +33,28 @@ const ChatFooter = ({
   function handleSubmit2(e: any) {
     // Prevent the browser from reloading the page
     e.preventDefault();
-    console.log("엔터칠때?in handl2 e", e.target.value);
+    console.log("엔터칠때?in handl2 e", textareaValue);
     if (!isDM) {
       console.log(
-        `in footer11, isDM:${isDM} target:${DMtarget} message:${e.target.value}`
+        `in footer11, isDM:${isDM} target:${DMtarget} message:${textareaValue}`
       );
-      socket.emit("sendChatMessage", currentRoomName, e.target.value);
+      socket.emit("sendChatMessage", currentRoomName, textareaValue);
     } else if (isDM) {
-      socket.emit("sendDirectMessage", DMtarget, e.target.value);
+      socket.emit("sendDirectMessage", DMtarget, textareaValue);
       console.log(
-        `in footer22 isDM:${isDM} target:${DMtarget} message:${e.target.value}`
+        `in footer22 isDM:${isDM} target:${DMtarget} message:${textareaValue}`
       );
     }
     setTextareaValue("");
   }
   const handleOnKeyPress = (e: any) => {
-    // e.preventDefault();
+    if (e.isComposing || e.keyCode === 229) {
+      console.log("twice eror!!!");
+      return;
+    }
+
     if (e.key === "Enter") {
+      e.preventDefault();
       handleSubmit2(e); // Enter 입력이 되면 클릭 이벤트 실행
     }
   };

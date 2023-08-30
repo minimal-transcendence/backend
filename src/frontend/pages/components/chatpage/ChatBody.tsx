@@ -68,7 +68,12 @@ const ChatBody = ({
           >
             <div className="message-recipient-avatar">
               {/* <img src={ysungwonIcon} width="35" height="35" alt="usericon" /> */}
-              <Image src={ysungwonIcon} width="35" height="35" alt="usericon" />
+              <Image
+                src={`http://localhost/api/user/${message?.id}/photo`}
+                width="35"
+                height="35"
+                alt="usericon"
+              />
             </div>
             <div>
               <p className="message-recipient">{message.body}</p>

@@ -3,9 +3,10 @@ import { SocketContext } from "@/context/socket";
 import menuIcon from "../../../assets/menu.png";
 import ysungwonIcon from "../../../assets/ysungwon.jpg";
 import ModalOverlay from "../../components/modalpage/ModalOverlay";
-
+import axios from "axios";
 import UserProfile from "../../../srcs/UserProfile";
 import Image from "next/image";
+import axiosApi from "@/srcs/AxiosInterceptor";
 
 export default function ChatRoomUserInfo({
   user,
@@ -28,15 +29,9 @@ export default function ChatRoomUserInfo({
   const gameSocket = useContext(SocketContext).gameSocket;
   const [userProfileModal, setUserProfileModal] = useState<boolean>(false);
 
-  // async function getImgURL(id: string) {
-  //   const thisUser = await fetch("http://localhost/api/user/" + id);
-  //   const data = await thisUser.json();
-  //   console.log("/api/" + data.avatar);
-  // }
-
   console.log("in ChatRoomUserInfom user: ", JSON.stringify(user, null, 2));
   function handleMenu(event: any) {
-    console.log("in hnadleMenu");
+    console.log("in handleMenu");
     if (event.target.dataset.name) {
       console.log(
         `${myNickName}가 ${user?.nickname}를 ${roomname}에서 ${event.target.dataset.name}클릭!!!`
@@ -96,19 +91,23 @@ export default function ChatRoomUserInfo({
       console.log("you click other");
     }
   }
-  // getImgURL(id);
   return (
     <>
       <li>
         <div className="userlist-avatar">
-          {/* <img src={ysungwonIcon} width="32" height="32" /> */}
-          <Image
-            className="avatar-img"
-            src={ysungwonIcon}
+          <img
+            src={`http://localhost/api/user/${user?.id}/photo`}
             width="32"
             height="32"
             alt="avataricon"
           />
+          {/* <Image
+            className="avatar-img"
+            src={imgSrc}
+            width="32"
+            height="32"
+            alt="avataricon"
+          /> */}
         </div>
         <p className="userlist-username">
           {roomInfo?.owner === user?.nickname ? "🔱" : ""}
