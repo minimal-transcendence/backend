@@ -7,15 +7,13 @@ import {
 	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer,
-  WsException,
-  WsResponse
 } from '@nestjs/websockets';
 import { Namespace } from 'socket.io';
 import { GameSocket } from './types';
 import { GameRoom } from './GameRoom';
 import { GameService } from './game.service';
 import { MatchService } from 'src/match/match.service';
-import {  WsExceptionFilter } from './ws-exception.filter';
+import { WsExceptionFilter } from '../ws-exception.filter';
 import { Invitation } from './dto/invitation.dto';
 import { OneOnOnePayload } from './dto/one-on-on.dto';
 import { KeydownPayload } from './dto/keydown.dto';
@@ -89,7 +87,14 @@ export class GameGateway
 		client.inGame = false;
 		client.invitationList = [];
     // client.color = "#" + Math.floor(Math.random()*16777215).toString(16);
-    client.color = "hsl(" + (Math.random() * 360) + ",100%, 50%)"
+    // client.color = "hsl(" + (Math.random() * 360) + ",100%, 50%)"
+    function getRandom(min: number, max: number)
+    {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+    const randomNumber = getRandom(0, 10);
+    console.log("Random Number:", randomNumber);
+    client.color = "hsl(" + (randomNumber * 36) + ",100%, 50%)"
     console.log("Color:", client.color);
 
 		const sockets = this.io.sockets;
