@@ -12,6 +12,7 @@ async function refreshToken() : Promise<any> {
 				window.location.href = '/';
 			}
 		})
+		console.log("didn't catched");
 	return (res);
 }
 
@@ -40,8 +41,10 @@ axiosApi.interceptors.request.use(
 			if (jwtExpInt * 1000 - Date.now() < 2000)
 				await refreshToken();
 		}
-		else
-			window.location.href = '/';
+		else {
+			// window.location.href = '/';
+			console.log("here");
+		}
 		return request;
 	},
 );

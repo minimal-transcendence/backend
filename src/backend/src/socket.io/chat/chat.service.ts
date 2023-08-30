@@ -8,7 +8,7 @@ import {
   formedMessage,
   roomInfo,
   userInfo,
-} from './chat.types';
+} from './types';
 import { ChatSocket } from './types';
 
 @Injectable()
@@ -79,11 +79,15 @@ export class ChatService {
 		return (format);
 	}
 
-	//bindUserRoom et unbindUserRoom
-	// bindUserRoom(user : User, roomname : string) {
+	// bindUserRoom et unbindUserRoom
+	// bindUserRoom(user : User, room : Room, roomname : string) {
 	// 	user.joinlist.add(roomname);
-	// 	const room = this.storeRoom.findRoom(roomname);
 	// 	room.addUserToUserlist(user.id);
+	// }
+
+	// unbindUserRoom(user : User, room : Room, roomname : string) {
+	// 	user.joinlist.delete(roomname);
+	// 	room.deleteUserFromUserlist(user.id);
 	// }
 
 	handleNewConnection(io : Namespace, client : ChatSocket) {
@@ -363,7 +367,7 @@ export class ChatService {
 		}
 	}
 
-	muteUser(io : Namespace, client : ChatSocket, roomname: string, targetName : string){
+	async muteUser(io : Namespace, client : ChatSocket, roomname: string, targetName : string){
 		const targetId = this.storeUser.getIdByNickname(targetName);
 		const room = this.storeRoom.findRoom(roomname);
 		if (!this.checkActValidity(client, roomname, targetId, "mute"))
@@ -378,37 +382,31 @@ export class ChatService {
 			if (room.isOperator(targetId))
 				room.deleteUserFromOperators(targetId);	//TODO & CHECK	//혹은 여기서는 그냥 해제 안 하는건?
 			room.addUserToMutelist(targetId);
-			// this.emitEventsToAllSockets(io, targetId, "sendMessage", roomname, {
-			// 	from : "server",
-			// 	body : `You are temporaily muted by ${client.nickname}`,
-			// 	at : Date.now()
-			// })
-			//TODO : 아래로 바꾸고 싶다...!
-			// await this.extractSocketsInRoomById(io, targetId, roomname)
-			// .then((res) => {
-			// 	res.forEach((socket) => {
-			// 		socket.leave(roomname);
-			// 		this.updateChatScreen(socket, targetId, "DEFAULT");
-			// 		if (alertMsg)
-			// 			socket.emit("sendAlert", "[ Alert ]", `${alertMsg}`)
-			// 	})
-			// })
+			//TODO : 아래로 바꾸고 싶다...! & CHECK!
+			const sockets = await this.extractSocketsInRoomById(io, targetId, roomname)
+			sockets.forEach((socket) => {
+					this.processMessage(io, 0, socket.id, `You are temporaily muted by ${client.nickname}`, false);
+				})
 			// .catch((error) => {
-			// 	//return 이냐 error냐...!
+			// 	//return 이냐 error냐...!	//filter 쓰면 다 막히지 않을까!
 			// 	throw new Error(error.message);
 			// });
-			io.to(roomname).except(`$${targetId}`).emit("sendMessage", roomname, {	//here you need except
-				from : "server",
-				body :	`${this.storeUser.getNicknameById(targetId)} is temporaily muted`,
-				at : Date.now()
-			})
+			// 체크하고 지울 것
+			// io.to(roomname).except(`$${targetId}`).emit("sendMessage", roomname, {	//here you need except
+			// 	from : "server",
+			// 	body :	`${this.storeUser.getNicknameById(targetId)} is temporaily muted`,
+			// 	at : Date.now()
 			setTimeout(() => {
 				room.deleteUserFromMutelist(targetId);
-				this.emitEventsToAllSockets(io, targetId, "sendMessage", roomname, {
-					from : "server",
-					body : `You are now unmuted `,
-					at : Date.now()
+				//TODO & CHECK
+				sockets.forEach((socket) => {
+					this.processMessage(io, 0, socket.id, `You are now unmuted `, false);
 				})
+				// this.emitEventsToAllSockets(io, targetId, "sendMessage", roomname, {
+				// 	from : "server",
+				// 	body : `You are now unmuted `,
+				// 	at : Date.now()
+				// })
 			}, 20000);
 		}
 	}
@@ -535,6 +533,7 @@ export class ChatService {
 			return null;
 		}
 		else if (toUser.blocklist.has(client.userId)) {
+			//TODO : discuss : 그래도 이건 기능적으로 볼 수 있어야하는거 아닌가...? 차라리 block된 유저라고 해주면 모를까...
 			client.emit("sendAlert", "[ Act Error ]", `You are blocked by ${fromUser.nickname}`)
 			return null;
 		}
@@ -612,19 +611,13 @@ export class ChatService {
 		else
 			owner = this.storeUser.getNicknameById(room.owner);
 		const operatorList = [];
-		const joinUserList = [];	//CHECK : 이거 쓰는 곳이 있나...?
-		room.userlist.forEach((user) => {
-			joinUserList.push(this.storeUser.getNicknameById(user));
-		})
 		room.operators.forEach((user) => {
 			operatorList.push(this.storeUser.getNicknameById(user));
 		})
-		//TODO : joinedUsers -> joinUsers
 		const res = {
 			roomname : roomname,
 			owner : owner,
 			operators : operatorList,
-			// joinedUsers : joinUserList,	//is it necessary?
 			messages : this.mappingMessagesUserIdToNickname(room.messages),
 			isPrivate : room.isPrivate,
 			isProtected : room.password ? true : false
@@ -674,7 +667,7 @@ export class ChatService {
 		return (true);
 	}
 
-	//TODO : 되는지 확인 // 이거 쓸건지...?
+	//TODO : 되는지 확인 // 이거 쓸건지...? -> 문제없으면 빼자
 	async emitEventsToAllSockets(io : Namespace, targetId : number, eventname : string, args1? : any, args2? : any) : Promise<void> {
 		const sockets = await io.in(`$${targetId}`).fetchSockets();
 		sockets.forEach((socket) => {

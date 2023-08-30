@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Message } from './store.message.service';
 
 export class User {
 	id : number;
