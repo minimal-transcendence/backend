@@ -7,8 +7,8 @@ import { TwoFactorAuthModule } from './two-factor-auth/two-factor-auth.module';
 import { PrismaService } from './prisma.service';
 import { UserModule } from './user/user.module';
 import { MatchModule } from './match/match.module';
-import { ChatModule } from './chat/chat.module';
-import { GameModule } from './game/game.module';
+import { ChatModule } from './socket.io/chat/chat.module';
+import { GameModule } from './socket.io/game/game.module';
 
 @Module({
   imports: [

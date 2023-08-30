@@ -4,6 +4,7 @@ import { useRef, useEffect, useContext, useState } from "react";
 // import "../pages/index.css";
 import { GameContent, GameContext } from "@/context/game";
 import { SocketContent, SocketContext } from "@/context/socket";
+import { isConstructorDeclaration } from "typescript";
 // import {socket} from "../pages/Home";
 
 export type AutoSave = {
@@ -24,6 +25,7 @@ export type AutoSave = {
 export type StartGameData = {
   roomName: string;
   player: string[];
+  playerColor: string[];
   mode: string;
   canvasWidth: number;
   canvasHeight: number;
@@ -46,6 +48,7 @@ type GameData = {
   ballX: number;
   ballY: number;
   paddleX: number[];
+  powerUp: boolean[];
   playerScore: number[];
 };
 
@@ -94,13 +97,17 @@ export default function Pong({ gameLoad }: { gameLoad: boolean }) {
     }
     /*-----------------------------------------------------*/
     // let inGame: boolean = false;
-    let interval: any;
+    let interval: ReturnType<typeof setInterval> | undefined;
 
     let roomName: string;
     let mode: string;
     let winner: string;
     let loser: string;
     let player: string[];
+    let playerColor: string[];
+
+    // Power-Up
+    let powerUp: boolean[];
 
     // Score
     let score: number[] = [0, 0];
@@ -153,6 +160,7 @@ export default function Pong({ gameLoad }: { gameLoad: boolean }) {
     setInGame(gameData.inGame);
     setGameOver(gameData.gameOver);
     player = gameData.player;
+    playerColor = gameData.playerColor;
     canvas.width = gameData.canvasWidth;
     canvas.height = gameData.canvasHeight;
     paddleWidth = gameData.paddleWidth;
@@ -196,18 +204,54 @@ export default function Pong({ gameLoad }: { gameLoad: boolean }) {
       // context.fill();
     };
 
+    let angleA = Math.random() * 360; // start angle (for HSL)
+    let angleB = Math.random() * 360;
+    let stepA = 3.0,
+      stepB = 1.5; // "speed" for change
+
+    function createGradient(x: number, y: number, w: number, h: number) {
+      if (!context) {
+        return;
+      }
+      let gr = context.createLinearGradient(0, 0, canvas.width, 0); // create gradient
+      gr.addColorStop(0, "hsl(" + (angleA % 360) + ",100%, 50%)"); // start color
+      gr.addColorStop(1, "hsl(" + (angleB % 360) + ",100%, 50%)"); // end color
+      context.fillStyle = gr; // set as fill style
+      context.fillRect(x, y, w, h); // fill area
+    }
+
     // Draw Paddle
     const drawPaddle = () => {
-      context.fillStyle = "white";
+      // context.fillStyle = "white";
+
       // Bottom Paddle
-      context.fillRect(
-        paddleX[0],
-        canvas.height - 20,
-        paddleWidth,
-        paddleHeight
-      );
+      if (powerUp[0]) {
+        createGradient(
+          paddleX[0],
+          canvas.height - 20,
+          paddleWidth,
+          paddleHeight
+        );
+      } else {
+        context.fillStyle = playerColor[0];
+        context.fillRect(
+          paddleX[0],
+          canvas.height - 20,
+          paddleWidth,
+          paddleHeight
+        );
+      }
+
       // Top Paddle
-      context.fillRect(paddleX[1], 10, paddleWidth, paddleHeight);
+      if (powerUp[1]) {
+        createGradient(paddleX[1], 10, paddleWidth, paddleHeight);
+      } else {
+        context.fillStyle = playerColor[1];
+        context.fillRect(paddleX[1], 10, paddleWidth, paddleHeight);
+      }
+
+      angleA += stepA; // increase angles
+      angleB += stepB;
     };
 
     // Draw Ball
@@ -340,6 +384,7 @@ export default function Pong({ gameLoad }: { gameLoad: boolean }) {
 
     // Listen Key Event - keydown
     const handleKeydown = (e: KeyboardEvent) => {
+      console.log(e);
       switch (e.key) {
         case "ArrowLeft":
           keys.left.pressed = true;
@@ -347,6 +392,13 @@ export default function Pong({ gameLoad }: { gameLoad: boolean }) {
 
         case "ArrowRight":
           keys.right.pressed = true;
+          break;
+        // powerup
+        case " ":
+          socket.emit("keydown", {
+            roomName: roomName,
+            key: " ",
+          });
           break;
       }
     };
@@ -409,7 +461,9 @@ export default function Pong({ gameLoad }: { gameLoad: boolean }) {
       ballX = payload.ballX;
       ballY = payload.ballY;
       paddleX = payload.paddleX;
+      powerUp = payload.powerUp;
       score = payload.playerScore;
+      // console.log(payload.powerUp);
       // console.log(paddleX);
     });
 

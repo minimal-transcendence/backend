@@ -3,7 +3,7 @@ import { PrismaService } from 'src/prisma.service';
 import { Prisma, User } from '@prisma/client';
 import { join } from 'path';
 import { createReadStream } from 'fs';
-import { ChatGateway } from 'src/chat/chat.gateway';
+import { ChatGateway } from 'src/socket.io/chat/chat.gateway';
 
 @Injectable()
 export class UserService {
@@ -240,8 +240,8 @@ export class UserService {
 		}).then((res) => {return res.avatar});
 		if (!fileName)
 			return null;
-		console.log('app/photo/' + fileName);
-		const file = createReadStream(join('app/photo/' + fileName));
+		console.log('/photo/' + fileName);
+		const file = createReadStream(join('/photo/' + fileName));
 		return new StreamableFile(file);
 	}
 }

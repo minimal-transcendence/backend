@@ -65,27 +65,12 @@ export default function App() {
   // seunchoi - for socket connection
   const [gameLoad, setGameLoad] = useState<boolean>(false);
   // Get Empty Socket Instance
-  const [isGameConnected, setIsGameConnected] = useState<boolean>(false);
   const [socket, setSocket] = useState<Socket>(
     io.connect("", { query: { nickname: "" } })
   );
   const [gameSocket, setGameSocket] = useState<Socket>(
     io.connect("", { query: { nickname: "" } })
   );
-
-  const [gameData, setGameData] = useState<GameData>({
-    // roomName: '',
-    inGame: false,
-    gameOver: false,
-    player: [],
-    canvasWidth: 900,
-    canvasHeight: 1600,
-    paddleWidth: 0,
-    paddleHeight: 0,
-    ballRadius: 0,
-    winner: "",
-    loser: "",
-  });
 
   useEffect(() => {
     const getSocket = (namespace: string, jwt: string, nickname: string) => {
@@ -114,13 +99,6 @@ export default function App() {
       setGameSocket(getSocket("game", jwtItem, nicknameItem));
     }
   }, []);
-
-  // useEffect(() => {
-  //   gameSocket.on('hello', () => {
-  //     // console.log("In Connection:", gameSocket.connected);
-  //     setIsGameConnected(true);
-  //   })
-  // }, [gameSocket]);
 
   useEffect(() => {
     function sendBlocklist(result: any) {
@@ -242,15 +220,26 @@ export default function App() {
   }, [currentRoomName, results, messages, socket, blocklist]);
 
   // seunchoi
-
   const handleGameOnOff = () => {
     setGameLoad(!gameLoad);
   };
 
+  const [isGameConnected, setIsGameConnected] = useState<boolean>(false);
   const [roomName, setRoomName] = useState<string>("");
-  // let roomName: string = '';
   const [matchStartCheck, setMatchStartCheck] = useState<boolean>(false);
-  // const [startGame, setStartGame] = useState<boolean>(false);
+  const [gameData, setGameData] = useState<GameData>({
+    inGame: false,
+    gameOver: false,
+    player: [],
+    playerColor: [],
+    canvasWidth: 900,
+    canvasHeight: 1600,
+    paddleWidth: 0,
+    paddleHeight: 0,
+    ballRadius: 0,
+    winner: "",
+    loser: "",
+  });
 
   useEffect(() => {
     gameSocket.on("hello", () => {
@@ -261,13 +250,12 @@ export default function App() {
     gameSocket.on("matchStartCheck", (payload: AutoSave) => {
       console.log(`${payload.roomName} is checking`);
       setRoomName(payload.roomName);
-      // roomName = payload.roomName;
       setMatchStartCheck(true);
+      // setGameLoad(true);
     });
 
     gameSocket.on("matchDecline", (payload: string) => {
       console.log(`${payload} is declined`);
-      // roomName = payload.roomName;
       setRoomName("");
       setMatchStartCheck(false);
     });
@@ -275,13 +263,13 @@ export default function App() {
     gameSocket.on("startGame", (payload: StartGameData) => {
       console.log("In startGame", payload.player);
       setMatchStartCheck(false);
-      // setStartGame(true);
+      setGameLoad(true);
 
       setGameData({
-        // roomName: payload.roomName,
         inGame: true,
         gameOver: false,
         player: payload.player,
+        playerColor: payload.playerColor,
         canvasWidth: payload.canvasWidth,
         canvasHeight: payload.canvasHeight,
         paddleWidth: payload.paddleWidth,
@@ -294,11 +282,10 @@ export default function App() {
 
     gameSocket.on("gameOver", (payload: GameOverData) => {
       setGameData({
-        // isGameConnected: isGameConnected,
-        // roomName: payload.roomName,
         inGame: false,
         gameOver: true,
         player: [],
+        playerColor: [],
         canvasWidth: 0,
         canvasHeight: 0,
         paddleWidth: 0,
@@ -308,7 +295,8 @@ export default function App() {
         loser: payload.loser,
       });
     });
-  }, [gameSocket, isGameConnected, gameData]); // gameData?
+  }, [gameSocket]); // gameData?
+  // }, [gameSocket, isGameConnected, gameData]) // gameData?
 
   return (
     <SocketContext.Provider
@@ -343,15 +331,19 @@ export default function App() {
           <button disabled={!isGameConnected} onClick={handleGameOnOff}>
             game on/off
           </button>
-          {/* {gameLoad && <TempRandomMatch />} */}
           <GameContext.Provider
             value={{
               isGameConnected: isGameConnected,
+              matchStartCheck: matchStartCheck,
               roomName: roomName,
               gameData: gameData,
             }}
           >
-            {matchStartCheck && <TempRandomMatch />}
+            {
+              matchStartCheck && (
+                <TempRandomMatch />
+              ) /*todo - match accept modal*/
+            }
             <NavBar
               query={query}
               setQuery={setQuery}
@@ -381,9 +373,10 @@ export default function App() {
               }
             </Box>
 
-            <GameContext.Provider
+            <GameContext.Provider //merge check
               value={{
                 isGameConnected: isGameConnected,
+                matchStartCheck: matchStartCheck,
                 roomName: roomName,
                 gameData: gameData,
               }}
