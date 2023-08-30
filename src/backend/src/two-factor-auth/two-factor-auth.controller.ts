@@ -91,7 +91,7 @@ export class TwoFactorAuthController {
         @Req() req: any,
         @Body() twoFactorAuthCode: TwoFactorAuthCodeDto
     ) {
-        const user: User = req.user;
+        const user: User = await this.userService.findUserById(req.user.id);
 
         const isCodeValidated = await this.twoFactorAuthService.isTwoFactorAuthCodeValid(
             twoFactorAuthCode.twoFactorAuthCode, user
@@ -113,7 +113,7 @@ export class TwoFactorAuthController {
         @Req() req: any,
         @Body() twoFactorAuthCode: TwoFactorAuthCodeDto
     ) {
-        const user: User = req.user;
+        const user: User = await this.userService.findUserById(req.user.id);
 
         const isCodeValidated = await this.twoFactorAuthService.isTwoFactorAuthCodeValid(
             twoFactorAuthCode.twoFactorAuthCode, user
