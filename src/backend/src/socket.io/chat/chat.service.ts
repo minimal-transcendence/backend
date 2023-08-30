@@ -135,8 +135,9 @@ export class ChatService {
 			const roomMembers = this.makeRoomUserInfo(roomname);
 			io.in(roomname).emit("sendRoomMembers", roomMembers);
 		}
+		client.leave(client.currRoom)
 		client.join(roomname);
-		client.data.currRoom = roomname;
+		client.currRoom = roomname;
 		console.log(`update Room  + `, roomname);
 		this.updateChatScreen(client, clientId, roomname);
 	}
@@ -497,7 +498,7 @@ export class ChatService {
 			at : message.at
 		};
 		this.storeMessage.saveMessage(message);
-		io.to([`$${from}`, `$${to}`]).emit("sendDM", this.storeUser.getNicknameById(to), res);	//if you touch ${} here is going to change the most
+		io.to([`$${from}$`, `$${to}$`]).emit("sendDM", this.storeUser.getNicknameById(to), res);	//if you touch ${} here is going to change the most
 	}
 
 	makeDMRoomMessages(client : ChatSocket, to : string) : formedMessage[] | null {
@@ -525,6 +526,16 @@ export class ChatService {
 							at : message.at
 						}));
 			return (msg);
+		}
+	}
+
+	fetchUserTODMRoom(client : ChatSocket, username : string) {
+		const DMs = this.makeDMRoomMessages(client, username);
+		if (DMs != null){
+			client.leave(client.currRoom);
+			client.join(`$${client.userId}$`);
+			client.currRoom = `$${client.userId}$`;
+			client.emit("sendDMRoomInfo", username, DMs);
 		}
 	}
 
@@ -669,14 +680,9 @@ export class ChatService {
 		return (res);
 	}
 
-	userChangeNick(io : Namespace, client : ChatSocket, newNick : string) {
-		const user = this.storeUser.findUserById(client.userId);
+	userChangeNick(io : Namespace, clientId : number, newNick : string) {
+		const user = this.storeUser.findUserById(clientId);
 		user.nickname = newNick;
-		//중앙과 우측을 update 해야
-		//해당 아이디가 있는 방에 모두 보내면 어떰? -> 그럼 안 들어가 있는 애들은 default로 가버림... 흑흑
-		//현재 각 소켓이 그 방에 있을때! emit하게.... 어떻게 함...? 흑흑 결국 currRoom 관리해야함?ㅠㅠ
-	
-		//해당 유저가 있는 방의 인원 중에 현재 그  방에 있는 사람...!
 		console.log("changeNickEvent");
 		user.joinlist.forEach((room) => {
 			const currRoomInfo = this.makeCurrRoomInfo(room);

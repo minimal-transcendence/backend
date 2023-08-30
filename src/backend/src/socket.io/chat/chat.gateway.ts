@@ -116,16 +116,7 @@ export class ChatGateway
     })
 
     client.on('selectDMRoom', (username) => {
-      const DMs = this.chatService.makeDMRoomMessages(
-        client,
-        username,
-      );
-      if (DMs != null) {
-        client.emit("sendDMRoomInfo", username, DMs);
-        console.log("찍음");
-      }
-      else
-        console.log("안찍음!");
+      this.chatService.fetchUserTODMRoom(client, username);
     });
 
     client.on('sendDirectMessage', (to, body) => {
