@@ -116,7 +116,7 @@ export class ChatGateway
     })
 
     client.on('selectDMRoom', (username) => {
-      
+      this.chatService.fetchUserTODMRoom(client, username);
     });
 
     client.on('sendDirectMessage', (to, body) => {
