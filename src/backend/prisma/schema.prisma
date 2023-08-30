@@ -14,7 +14,7 @@ model User {
   id           Int            @id
   nickname     String?        @unique @db.VarChar(12)
   email        String?        @unique
-  avatar       String         @default("/photo/default.png")
+  avatar       String         @default("default.png")
   score        Int            @default(0)
   createdAt    DateTime       @default(now())
   lastLogin    DateTime       @updatedAt

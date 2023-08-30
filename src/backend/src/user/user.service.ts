@@ -102,7 +102,7 @@ export class UserService {
 				...data,
 				id : undefined,
 				friends : undefined,
-				avatar : file != null ? file.path.toString() : undefined,
+				avatar : file != null ? file.filename.toString() : undefined,
 			}
 		}).then((res) => {
 			if (file) {
@@ -238,12 +238,10 @@ export class UserService {
 			where : { id },
 			select : { avatar : true },
 		}).then((res) => {
-			console.log(typeof res);
 			return res.avatar
 		});
 		if (!fileName)
 			return null;
-		console.log('/photo/' + fileName);
 		const file = createReadStream(join('/photo/' + fileName));
 		return new StreamableFile(file);
 	}

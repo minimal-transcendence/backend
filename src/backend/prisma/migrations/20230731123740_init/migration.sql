@@ -3,7 +3,7 @@ CREATE TABLE "User" (
     "id" INTEGER NOT NULL,
     "nickname" TEXT,
     "email" TEXT,
-    "avatar" TEXT NOT NULL DEFAULT '/photo/default.png',
+    "avatar" TEXT NOT NULL DEFAULT 'default.png',
     "score" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "lastLogin" TIMESTAMP(3) NOT NULL,
