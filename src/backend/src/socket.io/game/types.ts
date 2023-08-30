@@ -2,6 +2,7 @@ import { Socket } from "socket.io"
 import { Invitation } from "./dto/invitation.dto";
 
 type Player = {
+    color: string;
     nickname: string;
     inGame: boolean;
     invitationList: Invitation[];

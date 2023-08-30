@@ -6,6 +6,7 @@ export type GameData = {
     inGame: boolean;
     gameOver: boolean;
     player: string[];
+    playerColor: string[];
     canvasWidth: number;
     canvasHeight: number;
     paddleWidth: number;
@@ -32,6 +33,7 @@ export const GameContext = createContext<GameContent>({
         inGame: false,
         gameOver: false,
         player: [],
+        playerColor: [],
         canvasWidth: 900,
         canvasHeight: 1600,
         paddleWidth: 0,

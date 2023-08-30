@@ -7,6 +7,8 @@ import {
 	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer,
+  WsException,
+  WsResponse
 } from '@nestjs/websockets';
 import { Namespace } from 'socket.io';
 import { GameSocket } from './types';
@@ -86,6 +88,9 @@ export class GameGateway
 
 		client.inGame = false;
 		client.invitationList = [];
+    // client.color = "#" + Math.floor(Math.random()*16777215).toString(16);
+    client.color = "hsl(" + (Math.random() * 360) + ",100%, 50%)"
+    console.log("Color:", client.color);
 
 		const sockets = this.io.sockets;
 		this.logger.log(`Game Client Connected : ${client.nickname}`);
@@ -428,6 +433,21 @@ export class GameGateway
           }
         }
         break;
+      case ' ':
+        if (client === room.player[0] && room.powerPoint[0] > 0) {
+          room.powerUp[0] = true;
+          --room.powerPoint[0];
+          setTimeout(() => {
+            room.powerUp[0] = false;
+          }, 5000);
+        } else if (room.powerPoint[1] > 0) {
+          room.powerUp[1] = true;
+          --room.powerPoint[1];
+          setTimeout(() => {
+            room.powerUp[1] = false;
+          }, 5000);
+        }
+
     }
   }
   /*-----------------------Nickname Changed------------------------------*/
