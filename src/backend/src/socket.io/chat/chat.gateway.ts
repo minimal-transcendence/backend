@@ -58,7 +58,7 @@ export class ChatGateway
 		//TODO : 미완성
 		client.on("sendRoomLeave", (room) => {
 			this.chatService.userLeaveRoom(this.io, client, room);
-			this.chatService.userLeaveRoomAct(this.io, client, room);
+			this.chatService.userLeaveRoomAct(this.io, client.userId, room);
 		});
 
     //TODO : check
@@ -120,15 +120,8 @@ export class ChatGateway
         client,
         username,
       );
-      if (DMs != null) {
-        this.chatService.emitEventsToAllSockets(
-          this.io,
-          client.userId,
-          'sendDMRoomInfo',
-          username,
-          DMs,
-        );
-      }
+      if (DMs != null)
+        client.emit("sendDMroomInfo", username, DMs);
     });
 
     client.on('sendDirectMessage', (to, body) => {

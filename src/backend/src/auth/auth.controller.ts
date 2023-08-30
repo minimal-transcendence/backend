@@ -4,7 +4,7 @@ import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { UserService } from 'src/user/user.service';
-import { ChatGateway } from 'src/chat/chat.gateway';
+import { ChatGateway } from 'src/socket.io/chat/chat.gateway';
 
 @Controller('auth')
 export class AuthController {

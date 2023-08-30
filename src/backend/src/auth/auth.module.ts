@@ -9,7 +9,7 @@ import { TwoFactorAuthService } from 'src/two-factor-auth/two-factor-auth.servic
 import { TwoFactorAuthModule } from 'src/two-factor-auth/two-factor-auth.module';
 import { PrismaService } from 'src/prisma.service';
 import { UserModule } from 'src/user/user.module';
-import { ChatModule } from 'src/chat/chat.module';
+import { ChatModule } from 'src/socket.io/chat/chat.module';
 
 @Module({
   imports: [

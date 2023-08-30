@@ -45,7 +45,6 @@ export class ChatService {
 						.catch((error) => {
 							return (error.message);
 						});
-		//가능?
 		sockets.forEach((socket : ChatSocket) => {
 			if (socket.userId === targetId)
 				res.push(socket);
@@ -55,12 +54,13 @@ export class ChatService {
 
 	//sendMessage
 	processMessage(
-		io : Namespace,
-		fromId : number,
-		to : string,
-		body : string,
-		save : boolean,
-		except? : string ) : formedMessage {
+			io : Namespace,
+			fromId : number,
+			to : string,
+			body : string,
+			save : boolean,
+			except? : string	//빼려는 중!
+		) : formedMessage {
 		let msg = null;
 		if (save){
 			msg = new Message(fromId, body);
@@ -103,7 +103,7 @@ export class ChatService {
 	//TODO & CHECK : if it works well...?
 	async handleDisconnection(io: Namespace, client : ChatSocket) : Promise<void> {
 		const userId = client.userId;
-		const connections = await io.in(`$${userId}`).fetchSockets()
+		const connections = await io.in(`$${userId}`).fetchSockets()	//connection check
 						.then((res : any) => {
 							console.log("res : " + res.length);
 							return (res.length);
@@ -124,11 +124,11 @@ export class ChatService {
 		const user = this.storeUser.findUserById(clientId);
 		if (!user.joinlist.has(roomname))
 		{
-			//add user to room / room to user
 			const room = this.storeRoom.findRoom(roomname);
 			if (!room)
-			throw new Error(`[userJoinRoomAct] ${roomname} room is not exist`);
+				throw new Error(`[userJoinRoomAct] ${roomname} room is not exist`);
 			
+			//bind room & user
 			user.joinlist.add(roomname);
 			room.addUserToUserlist(user.id);
 			
@@ -141,6 +141,8 @@ export class ChatService {
 			io.in(roomname).emit("sendRoomMembers", roomMembers);
 		}
 		client.join(roomname);
+		client.data.currRoom = roomname;
+		console.log(`update Room  + `, roomname);
 		this.updateChatScreen(client, clientId, roomname);
 	}
 
@@ -229,7 +231,6 @@ export class ChatService {
 			client.emit("sendAlert", "[ Act Error ]", "Only owner can set room status");
 	}
 
-	//TODO : sendMessage -> make method
 	sendChat(io : Namespace, client: ChatSocket, to : string, body : string){
 		const room = this.storeRoom.findRoom(to);
 		if (room === undefined){
@@ -289,12 +290,14 @@ export class ChatService {
 			console.log("you are not joining in this room : try leave");
 	}
 	
-	async userLeaveRoomAct(io : Namespace, client : ChatSocket, roomname : string){
-		await this.extractSocketsInRoomById(io, client.userId, roomname)
+	async userLeaveRoomAct(io : Namespace, targetId : number, roomname : string, alertMsg? : string){
+		await this.extractSocketsInRoomById(io, targetId, roomname)
 			.then((res) => {
 				res.forEach((socket) => {
 					socket.leave(roomname);
-					this.updateChatScreen(socket, client.userId, "DEFAULT");
+					this.updateChatScreen(socket, targetId, "DEFAULT");
+					if (alertMsg)
+						socket.emit("sendAlert", "[ Alert ]", `${alertMsg}`)
 				})
 			})
 			.catch((error) => {
@@ -310,54 +313,53 @@ export class ChatService {
 	}
 
 
+
 	//kickUser TODO & CHECK : 이 부분 logic 다시 봐야됨!
+	//banUser 랑 하부 로직이 완전히 같다...!
 	async kickUser(io : Namespace, client : ChatSocket, roomname : string, targetName : string){
 		const targetId = this.storeUser.getIdByNickname(targetName);
 		const room = this.storeRoom.findRoom(roomname);
 		if (this.checkActValidity(client, roomname, targetId, "kick")){
-			//TODO : chatService 영역에서 deleteUserFromOperators 필요함 -> 방 정보 업데이트 해야
-			if (room.isOperator(targetId))
-				room.deleteUserFromOperators(targetId);
 			// delete user from room & room from user
-			room.deleteUserFromUserlist(targetId);
 			const targetUser = this.storeUser.findUserById(targetId);
+			room.deleteUserFromUserlist(targetId);
 			targetUser.joinlist.delete(roomname);
-			//io.in("room1").socketsLeave(["room2", "room3"]);
-			// rearrange user to "DEFAULT" room
-			const targetSockets = await io.in(`$${targetId}`).fetchSockets();
-			targetSockets.forEach((socket) => {
-				if (socket.data.currentRoom === roomname){
-					targetUser.currentRoom = "DEFAULT";
-					this.userJoinRoomAct(io, socket, targetId, "DEFAULT");	//
-				}
-			})
-			// send message <-- 이 부분 module 화 가능 --->
-			// 		in room <- method화 필요...
+			
+			await this.userLeaveRoomAct(io, targetId, roomname, `You are kicked out from ${roomname}`);
+			
+			if (room.isOperator(targetId)){
+				room.deleteUserFromOperators(targetId);
+				io.to(roomname).emit("sendCurrRoomInfo", this.makeCurrRoomInfo(roomname));
+			}
+			//저장할건가...? (현재 false)
 			const body = `${targetUser.nickname} is Kicked Out`;
-			io.to(roomname).except(`$${targetId}`).emit("sendMessage", roomname, {
-				from : "server",
-				body : body,
-				at : Date.now()
-			});
-			io.to(roomname).except(`$${targetId}`).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
-			//저장 할 것임?
-			room.storeMessage(0, body);
-			//		to alert User
-			const sockets = await io.in(`$${targetId}`).fetchSockets();	//ㅇㅣ 방에 있는 소켓 중에 userId가 targetId인 경우를 찾아야
-			sockets.forEach((socket) => {
-				socket.leave(roomname);
-				socket.emit("sendAlert", "Attention", `You are kicked out from ${roomname}`);
-			})
+			this.processMessage(io, 0, roomname, body, false);
+			io.to(roomname).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
 		}
 	}
 
 	//ban을 할 수 있는가?
-	banUser(io : Namespace, client : ChatSocket, roomname : string, targetName : string){
+	async banUser(io : Namespace, client : ChatSocket, roomname : string, targetName : string){
 		const targetId = this.storeUser.getIdByNickname(targetName);
 		const room = this.storeRoom.findRoom(roomname);
 		if (this.checkActValidity(client, roomname, targetId, "ban")){
 			room.addUserToBanlist(targetId);
-			this.kickUser(io, client, roomname, targetName);
+			
+			// delete user from room & room from user
+			const targetUser = this.storeUser.findUserById(targetId);
+			room.deleteUserFromUserlist(targetId);
+			targetUser.joinlist.delete(roomname);
+
+			await this.userLeaveRoomAct(io, targetId, roomname, `You are temporaily banned from ${roomname}`);
+
+			if (room.isOperator(targetId)){
+				room.deleteUserFromOperators(targetId);
+				io.to(roomname).emit("sendCurrRoomInfo", this.makeCurrRoomInfo(roomname));
+			}
+			//저장할건가...? (현재 false)
+			const body = `${targetUser.nickname} is banned`;
+			this.processMessage(io, 0, roomname, body, false);
+			io.to(roomname).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
 		}
 	}
 
@@ -376,12 +378,26 @@ export class ChatService {
 			if (room.isOperator(targetId))
 				room.deleteUserFromOperators(targetId);	//TODO & CHECK	//혹은 여기서는 그냥 해제 안 하는건?
 			room.addUserToMutelist(targetId);
-			this.emitEventsToAllSockets(io, targetId, "sendMessage", roomname, {
-				from : "server",
-				body : `You are temporaily muted by ${client.nickname}`,
-				at : Date.now()
-			})
-			io.to(roomname).except(`$${targetId}`).emit("sendMessage", roomname, {
+			// this.emitEventsToAllSockets(io, targetId, "sendMessage", roomname, {
+			// 	from : "server",
+			// 	body : `You are temporaily muted by ${client.nickname}`,
+			// 	at : Date.now()
+			// })
+			//TODO : 아래로 바꾸고 싶다...!
+			// await this.extractSocketsInRoomById(io, targetId, roomname)
+			// .then((res) => {
+			// 	res.forEach((socket) => {
+			// 		socket.leave(roomname);
+			// 		this.updateChatScreen(socket, targetId, "DEFAULT");
+			// 		if (alertMsg)
+			// 			socket.emit("sendAlert", "[ Alert ]", `${alertMsg}`)
+			// 	})
+			// })
+			// .catch((error) => {
+			// 	//return 이냐 error냐...!
+			// 	throw new Error(error.message);
+			// });
+			io.to(roomname).except(`$${targetId}`).emit("sendMessage", roomname, {	//here you need except
 				from : "server",
 				body :	`${this.storeUser.getNicknameById(targetId)} is temporaily muted`,
 				at : Date.now()
@@ -424,7 +440,7 @@ export class ChatService {
 			const blocklist = [];
 			thisUser.blocklist.forEach((user) => 
 					blocklist.push(this.storeUser.getNicknameById(user)));
-			client.emit("sendBlocklist", blocklist);
+			// client.emit("sendBlocklist", blocklist); -> 여기서는 userlist 보내야 할 듯 CHECK
 		}
 		else {
 			client.emit("sendAlert", "[ Notice ]", `${target} is not blocked yet`);
@@ -507,7 +523,7 @@ export class ChatService {
 			at : message.at
 		};
 		this.storeMessage.saveMessage(message);
-		io.to([`$${from}`, `$${to}`]).emit("sendDM", this.storeUser.getNicknameById(to), res);
+		io.to([`$${from}`, `$${to}`]).emit("sendDM", this.storeUser.getNicknameById(to), res);	//if you touch ${} here is going to change the most
 	}
 
 	makeDMRoomMessages(client : ChatSocket, to : string) : formedMessage[] | null {
@@ -535,16 +551,16 @@ export class ChatService {
 		}
 	}
 
-	//CHECK 1. 어디서 쓰는지 2. getAllUserInfo랑 다소 겹침
-	makeUserStatus(userId : number, connection: boolean) : userInfo {
-		const user = this.storeUser.findUserById(userId);
-		return ({
-			id : userId,
-			nickname : user.nickname,
-			isGaming : user.isGaming,
-			isConnected : user.connected
-		});
-	}
+	//CHECK 1. 어디서 쓰는지 2. getAllUserInfo랑 다소 겹침 & second variable is removable -> 현재 안 씀
+	// makeUserStatus(userId : number, connection: boolean) : userInfo {
+	// 	const user = this.storeUser.findUserById(userId);
+	// 	return ({
+	// 		id : userId,
+	// 		nickname : user.nickname,
+	// 		isGaming : user.isGaming,
+	// 		isConnected : user.connected
+	// 	});
+	// }
 	
 	makeRoomInfo(blocklist : Set<number>, roomlist : string[] | Set<string>) : roomInfo[] {
 		const res = [];
@@ -608,33 +624,12 @@ export class ChatService {
 			roomname : roomname,
 			owner : owner,
 			operators : operatorList,
-			joinedUsers : joinUserList,
+			// joinedUsers : joinUserList,	//is it necessary?
 			messages : this.mappingMessagesUserIdToNickname(room.messages),
 			isPrivate : room.isPrivate,
 			isProtected : room.password ? true : false
 		}
 		return (res)
-	}
-
-	//TODO & CHECK : 이거 쓸지 check
-	async sendActResultToTarget(io : Namespace, roomname : string, target : number, operation: string){
-		let notice : string;
-		if (operation === "kick")
-			notice = "Kicked out";
-		else if (operation === "ban")
-			notice = "Banned";
-		else if (operation === "mute")
-			notice = "Muted";
-		const body = `You are ${notice} from Room "${roomname}"`
-		await this.emitEventsToAllSockets(io, target, "sendMessage", roomname, {
-				from : "server",
-				body : body,
-				at : Date.now()
-		});
-		// const sockets = await io.in(`$${target}`).fetchSockets();
-		// sockets.forEach((socket) => {
-		// 	socket.emit("sendMessage", "server", body);
-		// })
 	}
 
 	//TODO : sendAlert message 분리하려면 이 함수에서 Socket 받아야함!
@@ -706,7 +701,8 @@ export class ChatService {
 		const user = this.storeUser.findUserById(client.userId);
 		user.nickname = newNick;
 		//중앙과 우측을 update 해야
-		//해당 아이디가 있는 방에 모두 보내면 어떰?
+		//해당 아이디가 있는 방에 모두 보내면 어떰? -> 그럼 안 들어가 있는 애들은 default로 가버림... 흑흑
+		//현재 각 소켓이 그 방에 있을때! emit하게.... 어떻게 함...? 흑흑 결국 currRoom 관리해야함?ㅠㅠ
 		user.joinlist.forEach((room) => {
 			const currRoomInfo = this.makeCurrRoomInfo(room);
 			const roomMembers = this.makeRoomUserInfo(room);

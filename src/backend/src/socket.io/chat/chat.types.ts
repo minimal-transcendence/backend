@@ -15,7 +15,7 @@ export type currRoomInfo = {
 	roomname : string;
 	owner : string;
 	operators : string[];
-	joinedUsers : string[];
+	// joinedUsers : string[];
 	messages : formedMessage[];
 }
 

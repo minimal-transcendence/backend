@@ -2,8 +2,8 @@ import { INestApplicationContext, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { Namespace, Server, ServerOptions } from 'socket.io';
-import { ChatSocket } from './types';
-import { GameSocket } from 'src/game/types';
+import { ChatSocket } from './chat/types';
+import { GameSocket } from 'src/socket.io/game/types';
 
 export class SocketIOAdapter extends IoAdapter {
     private readonly logger = new Logger(SocketIOAdapter.name);
