@@ -6,7 +6,7 @@
 	border: 1px solid #ddd;
 	border-radius: 10px;
 	width: 550px;
-	height: 780px;
+	height: 800px;
 	overflow: auto;
 	font-size: 20px;
 	background: #F9F9F9;
@@ -71,17 +71,6 @@
 	cursor: pointer;
 	margin-bottom: 20px;
 	margin-top: 10px;
-}
-
-.toggleSwitch .toggleButton {
-	width: 18px;
-	height: 18px;
-	position: absolute;
-	top: 50%;
-	left: 4px;
-	transform: translateY(-50%);
-	border-radius: 50%;
-	background: gray;
 }
 
 #toggle:checked ~ .toggleSwitch {

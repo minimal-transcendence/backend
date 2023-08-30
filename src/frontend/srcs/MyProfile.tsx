@@ -65,7 +65,6 @@ function MyProfile({
   };
 
   async function fixProfile() {
-    //여기서 refresh 하면될듯
     const apiUrl = "http://localhost/api/user/" + userId;
 
     if (newNickname !== "" && newNickname !== userNickname) {
@@ -135,7 +134,7 @@ function MyProfile({
     }
 
     if (is2Fa === "false" && checkIs2Fa === true) {
-      if (verCode == "" || verCode.length !== 6) {
+      /*if (verCode == "" || verCode.length !== 6) {
         throw "인증코드를 확인해주세요";
       }
       const faChangeApiUrl = "http://localhost/api/2fa/turn-on";
@@ -143,6 +142,7 @@ function MyProfile({
         id: userId,
         twoFactorAuthCode: verCode,
       };
+      console.log("send: ", JSON.stringify(dataToUpdate));
       await axiosApi
         .post(faChangeApiUrl, JSON.stringify(dataToUpdate), {
           headers: {
@@ -163,7 +163,42 @@ function MyProfile({
         .catch((error) => {
           alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
           console.error("에러 발생:", error);
-        });
+        });*/
+        try{
+          if (verCode == '' || verCode.length !== 6){
+            throw("인증코드를 확인해주세요");
+          }
+          const faChangeApiUrl = 'http://localhost/api/2fa/turn-on';
+          const dataToUpdate = {
+            id: userId,
+            twoFactorAuthCode: verCode
+          };
+          console.log("2fa send data: ", JSON.stringify(dataToUpdate));
+          const response = await fetch(faChangeApiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dataToUpdate),
+          });
+
+          if (!response.ok) {
+            throw new Error('API 요청이 실패하였습니다.(change 2faData');
+          }
+
+          const responseData = await response.json();
+          if (responseData.error){
+            throw new Error(responseData.error);
+          }
+          localStorage.setItem("is2fa", 'true');
+          setIs2Fa('true');
+          alert("2차인증이 설정되었습니다");
+          console.log('is2fa 변경 응답 데이터:', responseData);
+        }
+        catch(error){
+          alert("qr인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
+          console.error('에러 발생:', error);
+        }
     } else if (is2Fa === "true" && checkIs2Fa === false) {
       if (verCode == "" || verCode.length !== 6) {
         throw "인증코드를 확인해주세요";
@@ -173,6 +208,7 @@ function MyProfile({
         id: userId,
         twoFactorAuthCode: verCode,
       };
+      console.log("send: ", JSON.stringify(dataToUpdate));
       await axiosApi
         .post(faChangeApiUrl, JSON.stringify(dataToUpdate), {
           headers: {
@@ -233,14 +269,17 @@ function MyProfile({
               <img
               src='http://localhost/api/2fa/qrcode'
               alt="qr image"
-              width="100"
-              height="100"
+              width="150"
+              height="150"
               onError={(e: React.SyntheticEvent<HTMLImageElement>) => e.currentTarget.style.display = 'none'}
               />
           </div>
           <div className={styles.OTPAlert}>
               {(is2Fa === 'true' && checkIs2Fa === false || is2Fa === 'false' && checkIs2Fa === true) && (
                   <span>변경사항 적용을 위해 OTP코드를 입력하세요</span>
+              )}
+              {(is2Fa === 'true' && checkIs2Fa === true || is2Fa === 'false' && checkIs2Fa === false) && (
+                  <br/>
               )}
           </div>
           <div>
