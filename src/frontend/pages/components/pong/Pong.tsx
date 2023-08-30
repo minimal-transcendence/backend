@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useRef, useEffect, useContext, useState } from "react";
 // import "../pages/index.css";
@@ -20,7 +20,7 @@ export type AutoSave = {
   ballRadius: number;
   winner: string;
   loser: string;
-}
+};
 
 export type StartGameData = {
   roomName: string;
@@ -35,13 +35,13 @@ export type StartGameData = {
   ballX: number;
   ballY: number;
   ballRadius: number;
-}
+};
 
 export type GameOverData = {
   roomName: string;
   winner: string;
   loser: string;
-}
+};
 
 type GameData = {
   roomName: string;
@@ -50,9 +50,9 @@ type GameData = {
   paddleX: number[];
   powerUp: boolean[];
   playerScore: number[];
-}
+};
 
-export default function Pong() {
+export default function Pong({ gameLoad }: { gameLoad: boolean }) {
   const [inGame, setInGame] = useState<boolean>(false);
   const [gameOver, setGameOver] = useState<boolean>(false);
 
@@ -65,14 +65,13 @@ export default function Pong() {
   // const [gameOver, setGameOver] = useState<boolean>(gameContext.startGame);
   // console.log("In Pong", gameContext.startGame);
 
-  
   useEffect(() => {
     //Socket
     console.log("In Pong", socket);
     // console.log("In Pong", gameData);
 
     // setInGame(gameContext.startGame);
-    
+
     // console.log(socket);
     // Initialize Canvas
     if (!canvasRef.current) {
@@ -115,7 +114,7 @@ export default function Pong() {
 
     // Paddle
     let paddleHeight: number;
-    let paddleWidth:number;
+    let paddleWidth: number;
     let paddleX: number[];
 
     // Ball
@@ -126,12 +125,12 @@ export default function Pong() {
     // Key Event
     const keys = {
       left: {
-        pressed: false
+        pressed: false,
       },
       right: {
-        pressed: false
+        pressed: false,
       },
-    }
+    };
 
     /*-------------------Set Data from localStorage----------------------------*/
 
@@ -180,7 +179,7 @@ export default function Pong() {
       // if (width) {
       //   context.strokeRect(canvas.width / 2 - width / 2, 0, width, height)
       // }
-    }
+    };
 
     // Draw Lobby
     const drawLobby = () => {
@@ -190,8 +189,8 @@ export default function Pong() {
       drawBackground();
       context.fillStyle = "white";
       context.font = "70px serif";
-      context.fillText("This is Lobby", 10, (canvas.height / 2) - 290);
-    }
+      context.fillText("This is Lobby", 10, canvas.height / 2 - 290);
+    };
 
     // Draw Game Over
     const drawGameOver = () => {
@@ -199,39 +198,49 @@ export default function Pong() {
       drawBackground();
       context.fillStyle = "white";
       context.font = "70px serif";
-      context.fillText("Game Over", 10, (canvas.height / 2) - 290);
-      context.fillText(`Winner: ${winner}`, 10, (canvas.height / 2) - 200);
-      context.fillText(`Loser: ${loser}`, 10, (canvas.height / 2) - 110);
+      context.fillText("Game Over", 10, canvas.height / 2 - 290);
+      context.fillText(`Winner: ${winner}`, 10, canvas.height / 2 - 200);
+      context.fillText(`Loser: ${loser}`, 10, canvas.height / 2 - 110);
       // context.fill();
-    }
+    };
 
-    let angleA = Math.random() * 360;                                // start angle (for HSL)
+    let angleA = Math.random() * 360; // start angle (for HSL)
     let angleB = Math.random() * 360;
-    let stepA = 3.0, stepB = 1.5;                                    // "speed" for change
+    let stepA = 3.0,
+      stepB = 1.5; // "speed" for change
 
     function createGradient(x: number, y: number, w: number, h: number) {
       if (!context) {
         return;
       }
-      let gr = context.createLinearGradient(0, 0, canvas.width, 0);               // create gradient
-      gr.addColorStop(0, "hsl(" + (angleA % 360) + ",100%, 50%)");   // start color
-      gr.addColorStop(1, "hsl(" + (angleB % 360) + ",100%, 50%)");   // end color
-      context.fillStyle = gr;                                            // set as fill style
-      context.fillRect(x, y, w, h);                                  // fill area
+      let gr = context.createLinearGradient(0, 0, canvas.width, 0); // create gradient
+      gr.addColorStop(0, "hsl(" + (angleA % 360) + ",100%, 50%)"); // start color
+      gr.addColorStop(1, "hsl(" + (angleB % 360) + ",100%, 50%)"); // end color
+      context.fillStyle = gr; // set as fill style
+      context.fillRect(x, y, w, h); // fill area
     }
 
     // Draw Paddle
     const drawPaddle = () => {
       // context.fillStyle = "white";
-      
+
       // Bottom Paddle
       if (powerUp[0]) {
-        createGradient(paddleX[0], canvas.height - 20, paddleWidth, paddleHeight);
+        createGradient(
+          paddleX[0],
+          canvas.height - 20,
+          paddleWidth,
+          paddleHeight
+        );
       } else {
         context.fillStyle = playerColor[0];
-        context.fillRect(paddleX[0], canvas.height - 20, paddleWidth, paddleHeight);
+        context.fillRect(
+          paddleX[0],
+          canvas.height - 20,
+          paddleWidth,
+          paddleHeight
+        );
       }
-      
 
       // Top Paddle
       if (powerUp[1]) {
@@ -241,9 +250,9 @@ export default function Pong() {
         context.fillRect(paddleX[1], 10, paddleWidth, paddleHeight);
       }
 
-      angleA += stepA;                                               // increase angles
+      angleA += stepA; // increase angles
       angleB += stepB;
-    }
+    };
 
     // Draw Ball
     const drawBall = () => {
@@ -251,7 +260,7 @@ export default function Pong() {
       context.arc(ballX, ballY, ballRadius, 0, 2 * Math.PI);
       context.fillStyle = "white";
       context.fill();
-    }
+    };
 
     // Dashed Center Line
     const drawCenterLine = () => {
@@ -261,15 +270,23 @@ export default function Pong() {
       context.lineTo(canvas.width, canvas.height / 2);
       context.strokeStyle = "grey";
       context.stroke();
-    }
+    };
 
     // Draw Score
     const drawScore = () => {
       context.font = "70px serif";
       context.fillStyle = "grey";
-      context.fillText(`${player[1]}: ${score[1].toString()}`, 10, (canvas.height / 2) - 20);
-      context.fillText(`${player[0]}: ${score[0].toString()}`, 10, (canvas.height / 2) + 70);
-    }
+      context.fillText(
+        `${player[1]}: ${score[1].toString()}`,
+        10,
+        canvas.height / 2 - 20
+      );
+      context.fillText(
+        `${player[0]}: ${score[0].toString()}`,
+        10,
+        canvas.height / 2 + 70
+      );
+    };
 
     // Draw All Context
     const draw = () => {
@@ -279,7 +296,7 @@ export default function Pong() {
       drawScore();
       drawPaddle();
       drawBall();
-    }
+    };
 
     /*-----------------------------------------------------*/
 
@@ -292,16 +309,16 @@ export default function Pong() {
         draw();
         // Emit Key Event
         if (keys.left.pressed) {
-          socket.emit('keydown', {
+          socket.emit("keydown", {
             roomName: roomName,
-            key: 'ArrowLeft'
+            key: "ArrowLeft",
           });
         }
-  
+
         if (keys.right.pressed) {
-          socket.emit('keydown', {
+          socket.emit("keydown", {
             roomName: roomName,
-            key: 'ArrowRight'
+            key: "ArrowRight",
           });
         }
       }, 15);
@@ -355,7 +372,7 @@ export default function Pong() {
     //   //       key: 'ArrowLeft'
     //   //     });
     //   //   }
-  
+
     //   //   if (keys.right.pressed) {
     //   //     socket.emit('keydown', {
     //   //       roomName: roomName,
@@ -369,34 +386,34 @@ export default function Pong() {
     const handleKeydown = (e: KeyboardEvent) => {
       console.log(e);
       switch (e.key) {
-        case 'ArrowLeft':
+        case "ArrowLeft":
           keys.left.pressed = true;
-          break
+          break;
 
-        case 'ArrowRight':
+        case "ArrowRight":
           keys.right.pressed = true;
-          break
+          break;
         // powerup
-        case ' ':
-          socket.emit('keydown', {
+        case " ":
+          socket.emit("keydown", {
             roomName: roomName,
-            key: ' '
+            key: " ",
           });
-          break;        
+          break;
       }
-    }
+    };
 
     const handleKeyup = (e: KeyboardEvent) => {
       switch (e.key) {
-        case 'ArrowLeft':
+        case "ArrowLeft":
           keys.left.pressed = false;
-          break
+          break;
 
-        case 'ArrowRight':
+        case "ArrowRight":
           keys.right.pressed = false;
-          break
+          break;
       }
-    }
+    };
 
     canvas.addEventListener("keydown", handleKeydown);
     canvas.addEventListener("keyup", handleKeyup);
@@ -440,7 +457,7 @@ export default function Pong() {
     // });
 
     // Get Game Data from Server
-    socket.on('gameData', (payload: GameData) => {
+    socket.on("gameData", (payload: GameData) => {
       ballX = payload.ballX;
       ballY = payload.ballY;
       paddleX = payload.paddleX;
@@ -448,7 +465,7 @@ export default function Pong() {
       score = payload.playerScore;
       // console.log(payload.powerUp);
       // console.log(paddleX);
-    })
+    });
 
     // Game Over
     // socket.on('gameOver', (payload: GameOverData) => {
@@ -478,22 +495,17 @@ export default function Pong() {
     console.log("EVERYTING RE RENDER");
 
     // clean up
-    return (() => {
+    return () => {
       console.log("clearInterval");
       clearInterval(interval);
       canvas.removeEventListener("keydown", handleKeydown);
       canvas.removeEventListener("keyup", handleKeyup);
-    })
-  }, [socket, inGame, gameOver, gameData])
+    };
+  }, [socket, inGame, gameOver, gameData]);
 
   return (
-    <div className="chat-main">
-      <canvas
-        className="pong"
-        ref={canvasRef}
-        tabIndex={0}
-      />
+    <div className={`chat-main ${gameLoad ? "" : "hidden"}`}>
+      <canvas className="pong" ref={canvasRef} tabIndex={0} />
     </div>
-  )
+  );
 }
-
