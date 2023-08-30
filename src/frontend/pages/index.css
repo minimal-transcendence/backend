@@ -152,12 +152,6 @@ body {
   position: relative;
 }
 
-/* .chat-message-header.option {
-  position: absolute;
-  bottom: 0;
-  text-align: left;
-} */
-
 .chat-message-header.exit {
   cursor: pointer;
   margin-bottom: 0;
@@ -728,15 +722,6 @@ body {
 }
 
 .pageBar {
-  /* padding: 1.2rem 5.2rem 2.8rem 5.2rem; */
-  /* border-radius: 0.9rem; */
-  /* margin-top: auto; */
-  /* padding: 3rem; */
-  /* margin: auto 0rem 0rem auto; */
-  /* border: 1px solid var(--color-border); */
-  /* background-color: var(--color-background-100); */
-  /* box-shadow: 0 1.2rem 2.4rem rgba(0, 0, 0, 0.2); */
-
   display: grid;
   grid-template-columns: 2rem 2rem;
 }
@@ -903,50 +888,16 @@ body {
   /* border: ; */
   margin: 0.5rem;
 }
-.btn-join-div {
-  padding-top: 1rem;
-  text-align: center;
-  border-color: var(--color-background-900);
-}
-.btn-join {
-  background-color: var(--color-primary-purple);
-  color: var(--color-primary);
-  border: none;
-  border-radius: 1rem;
-  width: 8rem;
-  height: 4rem;
-  font-size: 1rem;
-  padding: 0.5rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s;
-}
 
-.btn-join:hover {
-  background-color: var(--color-primary-purple-light);
-}
-
-.btn-join:disabled {
-  background-color: var(--color-text-very-dark);
-  color: #fff;
-}
 .modal {
-  /* 최상단 위치 */
   z-index: 999;
-
-  /* 중앙 배치 */
-  /* top, bottom, left, right 는 브라우저 기준으로 작동한다. */
-  /* translate는 본인의 크기 기준으로 작동한다. */
   position: absolute;
-
-  /* 모달창 디자인 */
   background-color: gray;
   border: 1px solid black;
   border-radius: 8px;
 }
 
 .modal-basic {
-  /* 모달창 크기 */
   width: 300px;
   height: 200px;
   top: 50%;
@@ -954,12 +905,24 @@ body {
   transform: translate(-50%, -50%);
 }
 
-.modal-userlist,
-.modal-myprofile,
+.modal-userlist {
+  width: 60rem;
+  height: 60rem;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.modal-myprofile {
+  width: 15rem;
+  height: 40rem;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 .modal-alert {
-  /* 모달창 크기 */
-  width: 850px;
-  height: 950px;
+  width: 20rem;
+  height: 10rem;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -969,7 +932,7 @@ body {
   width: 600px;
   height: 600px;
   top: 50%;
-  left: -50%;
+  left: -150%;
   transform: translate(-50%, -50%);
 }
 /* 모달창 내부 X버튼 */
