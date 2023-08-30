@@ -7,7 +7,7 @@ import { PrismaService } from 'src/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { JwtModule } from '@nestjs/jwt';
 import { HttpModule } from '@nestjs/axios';
-import { ChatModule } from 'src/chat/chat.module';
+import { ChatModule } from 'src/socket.io/chat/chat.module';
 
 @Module({
   imports: [

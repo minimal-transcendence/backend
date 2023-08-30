@@ -1,12 +1,8 @@
 import { Socket } from "socket.io"
-
-export type Invitation = {
-    from: string;
-    to: string;
-    mode: string;
-}
+import { Invitation } from "./dto/invitation.dto";
 
 type Player = {
+    color: string;
     nickname: string;
     inGame: boolean;
     invitationList: Invitation[];
@@ -15,11 +11,6 @@ type Player = {
 type JwtPayload = {
     userId: number;
     email: string;
-}
-
-export type KeydownPayload = {
-    roomName: string;
-    key: string;
 }
 
 export type GameRoomParams = {

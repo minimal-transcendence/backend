@@ -6,6 +6,7 @@ export type GameData = {
     inGame: boolean;
     gameOver: boolean;
     player: string[];
+    playerColor: string[];
     canvasWidth: number;
     canvasHeight: number;
     paddleWidth: number;
@@ -17,12 +18,14 @@ export type GameData = {
 
 export type GameContent = {
     isGameConnected: boolean;
+    matchStartCheck: boolean;
     roomName: string;
     gameData: GameData;
 }
 
 export const GameContext = createContext<GameContent>({
     isGameConnected: false,
+    matchStartCheck: false,
     roomName: '',
     gameData: {
         // isGameConnected: false,
@@ -30,6 +33,7 @@ export const GameContext = createContext<GameContent>({
         inGame: false,
         gameOver: false,
         player: [],
+        playerColor: [],
         canvasWidth: 900,
         canvasHeight: 1600,
         paddleWidth: 0,
