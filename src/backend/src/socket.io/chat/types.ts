@@ -21,7 +21,9 @@ export type currRoomInfo = {
 
 export type formedMessage = {
 	from : string;
+	fromId? : number;
 	to?	: string;
+	toId? : number;
 	body : string;
 	at? : number
 }
@@ -33,6 +35,7 @@ type JwtPayload = {
 
 type AuthSocket = {
     nickname: string;
+	currRoom: string;
 }
 
 export type ChatSocket = Socket & JwtPayload & AuthSocket;

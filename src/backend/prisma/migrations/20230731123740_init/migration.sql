@@ -1,7 +1,7 @@
 -- CreateTable
 CREATE TABLE "User" (
     "id" INTEGER NOT NULL,
-    "nickname" TEXT,
+    "nickname" VARCHAR(12),
     "email" TEXT,
     "avatar" TEXT NOT NULL DEFAULT 'default.png',
     "score" INTEGER NOT NULL DEFAULT 0,
@@ -37,3 +37,6 @@ ALTER TABLE "MatchHistory" ADD CONSTRAINT "MatchHistory_winnerId_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "MatchHistory" ADD CONSTRAINT "MatchHistory_loserId_fkey" FOREIGN KEY ("loserId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- Add SuperUser
+INSERT INTO "User" ("id", "nickname", "avatar", "lastLogin") VALUES (0, 'server', 'server.png', Now());

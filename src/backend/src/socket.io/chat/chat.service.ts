@@ -52,14 +52,12 @@ export class ChatService {
 		return (res);
 	}
 
-	//sendMessage
 	processMessage(
 			io : Namespace,
 			fromId : number,
 			to : string,
 			body : string,
 			save : boolean,
-			except? : string	//빼려는 중!
 		) : formedMessage {
 		let msg = null;
 		if (save){
@@ -68,14 +66,12 @@ export class ChatService {
 			room.messages.push(msg);
 		}
 		const format = {
+			fromId : fromId,
 			from : this.storeUser.getNicknameById(fromId),
 			body : body,
 			at : msg? msg.at : Date.now()
 		}
-		if (except)
-			io.in(to).except(except).emit("sendMessage", to, format);
-		else
-			io.in(to).emit("sendMessage", to, format);
+		io.in(to).emit("sendMessage", to, format);
 		return (format);
 	}
 
@@ -107,21 +103,16 @@ export class ChatService {
 	//TODO & CHECK : if it works well...?
 	async handleDisconnection(io: Namespace, client : ChatSocket) : Promise<void> {
 		const userId = client.userId;
-		const connections = await io.in(`$${userId}`).fetchSockets()	//connection check
-						.then((res : any) => {
-							console.log("res : " + res.length);
-							return (res.length);
-						})
-						.catch((error : any) => {
-							console.log(error.message);
-							throw new Error(error.message);
-						});
-		if (!connections) {
+		const isLastConn = (await io.in(`$${userId}`).fetchSockets()).length === 0;
+		if (isLastConn) {
+			console.log("is Last disconnction");
 			const user = this.storeUser.findUserById(userId);
 			user.connected = false;
 			this.userLeaveRooms(io, client, user.joinlist);
 			this.updateUserStatus(io, userId, false);
 		}
+		else
+			console.log("is not Last disconnction");
 	}
 
 	async userJoinRoomAct(io : Namespace, client : any, clientId : number, roomname : string) {
@@ -144,8 +135,9 @@ export class ChatService {
 			const roomMembers = this.makeRoomUserInfo(roomname);
 			io.in(roomname).emit("sendRoomMembers", roomMembers);
 		}
+		client.leave(client.currRoom)
 		client.join(roomname);
-		client.data.currRoom = roomname;
+		client.currRoom = roomname;
 		console.log(`update Room  + `, roomname);
 		this.updateChatScreen(client, clientId, roomname);
 	}
@@ -373,11 +365,8 @@ export class ChatService {
 		if (!this.checkActValidity(client, roomname, targetId, "mute"))
 			return ;
 		if (room.isMuted(targetId))
-			client.emit("sendMessage", roomname, {
-				from : "server",
-				body : `${this.storeUser.getNicknameById(targetId)} is already muted`,
-				at : Date.now()
-			});
+			this.processMessage(io, 0, client.id, `${this.storeUser.getNicknameById(targetId)} is already muted`, false);
+
 		else{
 			if (room.isOperator(targetId))
 				room.deleteUserFromOperators(targetId);	//TODO & CHECK	//혹은 여기서는 그냥 해제 안 하는건?
@@ -387,26 +376,12 @@ export class ChatService {
 			sockets.forEach((socket) => {
 					this.processMessage(io, 0, socket.id, `You are temporaily muted by ${client.nickname}`, false);
 				})
-			// .catch((error) => {
-			// 	//return 이냐 error냐...!	//filter 쓰면 다 막히지 않을까!
-			// 	throw new Error(error.message);
-			// });
-			// 체크하고 지울 것
-			// io.to(roomname).except(`$${targetId}`).emit("sendMessage", roomname, {	//here you need except
-			// 	from : "server",
-			// 	body :	`${this.storeUser.getNicknameById(targetId)} is temporaily muted`,
-			// 	at : Date.now()
 			setTimeout(() => {
 				room.deleteUserFromMutelist(targetId);
 				//TODO & CHECK
 				sockets.forEach((socket) => {
 					this.processMessage(io, 0, socket.id, `You are now unmuted `, false);
 				})
-				// this.emitEventsToAllSockets(io, targetId, "sendMessage", roomname, {
-				// 	from : "server",
-				// 	body : `You are now unmuted `,
-				// 	at : Date.now()
-				// })
 			}, 20000);
 		}
 	}
@@ -516,12 +491,14 @@ export class ChatService {
 		const to = this.storeUser.getIdByNickname(target);
 		const message = new DM(from, to, body);
 		const res = {
+			fromId : from,
 			from : this.storeUser.getNicknameById(from),
+			toId : to,
 			body : body,
 			at : message.at
 		};
 		this.storeMessage.saveMessage(message);
-		io.to([`$${from}`, `$${to}`]).emit("sendDM", this.storeUser.getNicknameById(to), res);	//if you touch ${} here is going to change the most
+		io.to([`$${from}$`, `$${to}$`]).emit("sendDM", this.storeUser.getNicknameById(to), res);	//if you touch ${} here is going to change the most
 	}
 
 	makeDMRoomMessages(client : ChatSocket, to : string) : formedMessage[] | null {
@@ -542,11 +519,23 @@ export class ChatService {
 						.findMessagesForUser(client.userId, toId)
 						.map(message => ({
 							from : this.storeUser.getNicknameById(message.from),
+							fromId : message.from,
 							to : this.storeUser.getNicknameById(message.to),
+							toId : message.to,
 							body : message.body,
 							at : message.at
 						}));
 			return (msg);
+		}
+	}
+
+	fetchUserTODMRoom(client : ChatSocket, username : string) {
+		const DMs = this.makeDMRoomMessages(client, username);
+		if (DMs != null){
+			client.leave(client.currRoom);
+			client.join(`$${client.userId}$`);
+			client.currRoom = `$${client.userId}$`;
+			client.emit("sendDMRoomInfo", username, DMs);
 		}
 	}
 
@@ -593,6 +582,7 @@ export class ChatService {
 		const res = [];
 		messages.forEach((msg) => {
 			res.push({
+				fromId : msg.from,
 				from : `${this.storeUser.getNicknameById(msg.from)}`,
 				body : msg.body,
 				at : msg.at
@@ -690,12 +680,10 @@ export class ChatService {
 		return (res);
 	}
 
-	userChangeNick(io : Namespace, client : ChatSocket, newNick : string) {
-		const user = this.storeUser.findUserById(client.userId);
+	userChangeNick(io : Namespace, clientId : number, newNick : string) {
+		const user = this.storeUser.findUserById(clientId);
 		user.nickname = newNick;
-		//중앙과 우측을 update 해야
-		//해당 아이디가 있는 방에 모두 보내면 어떰? -> 그럼 안 들어가 있는 애들은 default로 가버림... 흑흑
-		//현재 각 소켓이 그 방에 있을때! emit하게.... 어떻게 함...? 흑흑 결국 currRoom 관리해야함?ㅠㅠ
+		console.log("changeNickEvent");
 		user.joinlist.forEach((room) => {
 			const currRoomInfo = this.makeCurrRoomInfo(room);
 			const roomMembers = this.makeRoomUserInfo(room);

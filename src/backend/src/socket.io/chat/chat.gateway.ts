@@ -116,12 +116,7 @@ export class ChatGateway
     })
 
     client.on('selectDMRoom', (username) => {
-      const DMs = this.chatService.makeDMRoomMessages(
-        client,
-        username,
-      );
-      if (DMs != null)
-        client.emit("sendDMroomInfo", username, DMs);
+      this.chatService.fetchUserTODMRoom(client, username);
     });
 
     client.on('sendDirectMessage', (to, body) => {
@@ -146,6 +141,7 @@ export class ChatGateway
 
 	updateUserNick(userId : number, newNick : string) {
 		this.io.emit("updateUserNick", userId, newNick);
+    this.chatService.userChangeNick(this.io, userId, newNick);
 	}
 
 	updateUserAvatar(userId : number){
