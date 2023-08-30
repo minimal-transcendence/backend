@@ -95,7 +95,7 @@ export default function Pong() {
     }
     /*-----------------------------------------------------*/
     // let inGame: boolean = false;
-    let interval: any;
+    let interval: ReturnType<typeof setInterval> | undefined;
 
     let roomName: string;
     let mode: string;

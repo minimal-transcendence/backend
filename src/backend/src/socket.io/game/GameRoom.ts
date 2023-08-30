@@ -2,7 +2,7 @@ import { GameRoomParams, GameSocket } from "./types";
 
 export class GameRoom {
     // Interval
-    interval: any;
+    interval: ReturnType<typeof setInterval> | undefined;
     // Status
     gameStart: boolean;
     gameOver: boolean;
