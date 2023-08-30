@@ -13,8 +13,7 @@ import MyProfile from "../../../srcs/MyProfile";
 import UserProfile from "../../../srcs/UserProfile";
 import ModalOverlay from "../../components/modalpage/ModalOverlay";
 
-import { fetch_refresh } from "../../../srcs/FetchInterceptor";
-import axiosApi from "@/srcs/AxiosInterceptor";
+import axiosApi from "../../../srcs/AxiosInterceptor";
 
 export default function Menu({
   setTmpLoginnickname,
@@ -41,31 +40,30 @@ export default function Menu({
     if (isGameConnected) {
       setBlock(false);
     }
-  }, [isGameConnected])
+  }, [isGameConnected]);
 
   useEffect(() => {
-    gameSocket.on('startGame', () => {
+    gameSocket.on("startGame", () => {
       setRandomMatch("");
       setBlock(true);
     });
-    gameSocket.on('gameOver', () => {
+    gameSocket.on("gameOver", () => {
       setBlock(false);
-    })
-    gameSocket.on('matchDecline', () => {
+    });
+    gameSocket.on("matchDecline", () => {
       setRandomMatch("");
       setBlock(false);
-    })
-  }, [gameSocket])
+    });
+  }, [gameSocket]);
 
   useEffect(() => {
     // 예시로 localStorage에 isLoggedIn 상태를 저장한 것으로 가정
     const storedIsLoggedIn = localStorage.getItem("isLoggedIn");
     if (storedIsLoggedIn === "true") {
       setIsLoggedIn(true);
-    }
-    else{
+    } else {
       alert("로그인이 필요합니다");
-      router.push("/")
+      router.push("/");
     }
   }, []);
 
@@ -77,13 +75,12 @@ export default function Menu({
     localStorage.removeItem("access_token");
     localStorage.removeItem("avatar");
     const ApiUrl = "http://localhost/api/auth/logout";
-    axiosApi.post(ApiUrl, {
-    }).catch((error) => {
-      console.log("here i am");
+    axiosApi.post(ApiUrl, {}).catch((error) => {
+      console.log("here i am"); //TODO: error handling check
     });
     setIsLoggedIn(false);
     alert("로그아웃 되었습니다.");
-    router.push("/")
+    router.push("/");
   };
 
   function handleMenu(event: any) {
@@ -148,22 +145,22 @@ export default function Menu({
               />
               {!block && (
                 <div
-                onClick={() => handleMenu(event)}
-                className="dropdown-content"
-              >
-                <div data-name="easy">
-                  {"RandomMatch Easy " +
-                    `${randomMatch !== "easy" ? "off" : "on"}`}
+                  onClick={() => handleMenu(event)}
+                  className="dropdown-content"
+                >
+                  <div className="dropdown-item" data-name="easy">
+                    {"RandomMatch Easy " +
+                      `${randomMatch !== "easy" ? "off" : "on"}`}
+                  </div>
+                  <div className="dropdown-item" data-name="normal">
+                    {"RandomMatch Normal " +
+                      `${randomMatch !== "normal" ? "off" : "on"}`}
+                  </div>
+                  <div className="dropdown-item" data-name="hard">
+                    {"RandomMatch Hard " +
+                      `${randomMatch !== "hard" ? "off" : "on"}`}
+                  </div>
                 </div>
-                <div data-name="normal">
-                  {"RandomMatch Normal " +
-                  `${randomMatch !== "normal" ? "off" : "on"}`}
-                </div>
-                <div data-name="hard">
-                  {"RandomMatch Hard " +
-                    `${randomMatch !== "hard" ? "off" : "on"}`}
-                </div>
-              </div>
               )}
             </div>
           </div>

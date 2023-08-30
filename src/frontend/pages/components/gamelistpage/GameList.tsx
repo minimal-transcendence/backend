@@ -6,6 +6,7 @@ import { SocketContext } from "@/context/socket";
 const pageHeight = 8;
 export default function GameList({ myNickName }: { myNickName: string }) {
   const socket = useContext(SocketContext).chatSocket;
+  const gameSocket = useContext(SocketContext).gameSocket;
   const [gameList, setGameList] = useState<any>([]);
 
   const [page, setPage] = useState<number>(1);
@@ -13,25 +14,28 @@ export default function GameList({ myNickName }: { myNickName: string }) {
   const [rightArrow, setRightArrow] = useState<boolean>(false);
 
   useEffect(() => {
-    function updateInvitationList(data: any) {
-      console.log(`in updateInvitationList ${JSON.stringify(data, null, 2)}`);
-
-      setGameList(() => data);
-    }
-
-    socket.on("updateInvitationList", updateInvitationList);
-
-    return () => {
-      socket.off("updateInvitationList", updateInvitationList);
-    };
-  }, [socket]);
-
-  useEffect(() => {
     if (gameList?.length > page * pageHeight) setRightArrow(() => true);
     if (page > 1) setLeftArrow(() => true);
     if (gameList?.length <= page * pageHeight) setRightArrow(() => false);
     if (page === 1) setLeftArrow(() => false);
   }, [gameList, page]);
+
+  useEffect(() => {
+    function updateInvitationList(result: any) {
+      console.log(
+        "in useEffect updateInvitationList ",
+        JSON.stringify(result, null, 2)
+      );
+      setGameList(() => result);
+    }
+
+    if (gameSocket) gameSocket.on("updateInvitationList", updateInvitationList);
+    return () => {
+      if (gameSocket) {
+        gameSocket.off("updateInvitationList", updateInvitationList);
+      }
+    };
+  }, [gameSocket]); // gameData?
 
   if (!gameList) return;
   else {

@@ -4,12 +4,14 @@ import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { UserService } from 'src/user/user.service';
+import { ChatGateway } from 'src/socket.io/chat/chat.gateway';
 
 @Controller('auth')
 export class AuthController {
     constructor(
         private authService: AuthService,
-		private userService: UserService
+		private userService: UserService,
+        private chatGateway: ChatGateway
     ) {}
 
     @Get('login')
@@ -101,6 +103,7 @@ export class AuthController {
 		})
         res.clearCookie('access_token');
         res.clearCookie('refresh_token');
+        this.chatGateway.logout(req.user.id);
         return res.send({
             message: 'logout success'
         });

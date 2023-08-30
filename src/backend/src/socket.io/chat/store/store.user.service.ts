@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Message } from './store.message.service';
 
 export class User {
 	id : number;
@@ -9,15 +8,13 @@ export class User {
 	isGaming : boolean;
 	joinlist : Set<string>;
 	currentRoom : string;
-	messages : Map<number, Message[]>;
 	constructor(id : number, nickname : string){
 		this.id = id;
 		this.nickname = nickname;
 		this.blocklist = new Set();
-		this.connected = true;
+		this.connected = false;	//
 		this.isGaming = false;
 		this.joinlist = new Set();
-		// this.messages = new Map();
 	}
 
 	addUserToBlocklist(userid : number){
@@ -47,7 +44,6 @@ export class User {
 		this.clearSets();
 		this.blocklist = null;
 		this.joinlist = null;
-		// this.messages = null;
 	}
 }
 
@@ -92,6 +88,6 @@ export class ChatUserStoreService implements UserStore{
 	//TODO: 이건 안되면 through를 해야하나...? -> throw하는 방향으로
 	getIdByNickname(nickname : string) : number {
 		const res = this.findAllUser().find((user) => user.nickname === nickname);
-		return (res ? res.id : -1);	//Error_code?	//전역 상수 어떻게 정의?	//number를 undefined로 할 수 있냐구...?ㅠㅠ
+		return (res ? res.id : -1);	//id error code
 	}
 }

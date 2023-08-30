@@ -1,22 +1,19 @@
 import axios, { AxiosError } from "axios";
 
 async function refreshToken() : Promise<any> {
-    const res = await axios.get(
-        'http://localhost/api/auth/refresh',
-        { withCredentials: true }
-        )
-        .catch((error) => {
-            console.log("here?");
-            console.log(error.response.status);
-            if (error.response.status === 401) async () =>{
-                console.log("401");
-                await getLogout();
-                // window.location.href = '/';
-                throw new Error("Axios Error!!!!");
-            }
-        })
-        console.log("didn't catched");
-    return (res);
+	const res = await axios.get(
+		'http://localhost/api/auth/refresh',
+		{ withCredentials: true }
+		).catch((error) => {
+            console.log("Axios Error type : ");
+            console.log(typeof error);
+			if (error.response.status === 401) {
+				getLogout();
+				window.location.href = '/';
+			}
+		})
+		console.log("didn't catched");
+	return (res);
 }
 
 export async function getLogout() : Promise<any>{
@@ -35,19 +32,21 @@ const axiosApi = axios.create({
 });
   
 axiosApi.interceptors.request.use(
-    async (request) => {
-        const jwtExpItem = localStorage.getItem("access_token_exp");
-        if (jwtExpItem){
-            const jwtExpInt = parseInt(jwtExpItem);
-            if (jwtExpInt * 1000 - Date.now() < 2000)
-                await refreshToken();
-        }
-        else {
-            // window.location.href = '/';
-            console.log("here");
-        }
-        return request;
-    },
+	async (request) => {
+        console.log("axios request typeof :");
+        console.log(typeof request);
+		const jwtExpItem = localStorage.getItem("access_token_exp");
+		if (jwtExpItem){
+			const jwtExpInt = parseInt(jwtExpItem);
+			if (jwtExpInt * 1000 - Date.now() < 2000)
+				await refreshToken();
+		}
+		else {
+			// window.location.href = '/';
+			console.log("here");
+		}
+		return request;
+	},
 );
   
 export default axiosApi;
