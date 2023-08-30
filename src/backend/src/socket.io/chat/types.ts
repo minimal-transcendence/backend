@@ -35,6 +35,7 @@ type JwtPayload = {
 
 type AuthSocket = {
     nickname: string;
+	currRoom: string;
 }
 
 export type ChatSocket = Socket & JwtPayload & AuthSocket;
