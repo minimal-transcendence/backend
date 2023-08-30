@@ -21,7 +21,9 @@ export type currRoomInfo = {
 
 export type formedMessage = {
 	from : string;
+	fromId? : number;
 	to?	: string;
+	toId? : number;
 	body : string;
 	at? : number
 }
