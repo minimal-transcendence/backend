@@ -174,33 +174,33 @@ function MyProfile({
             twoFactorAuthCode: verCode
           };
           console.log("2fa send data: ", JSON.stringify(dataToUpdate));
-          const response = await fetch(faChangeApiUrl, {
+          await fetch(faChangeApiUrl, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(dataToUpdate),
-          });
-
-          if (!response.ok) {
-            throw new Error('API 요청이 실패하였습니다.(change 2faData');
-          }
-
-          const responseData = await response.json();
-          if (responseData.error){
-            throw new Error(responseData.error);
-          }
-          localStorage.setItem("is2fa", 'true');
-          setIs2Fa('true');
-          alert("2차인증이 설정되었습니다");
-          console.log('is2fa 변경 응답 데이터:', responseData);
+          })
+          .then(async(response)=>{
+            const responseData = await response.json();
+            if (responseData.error){
+              throw new Error(responseData.error);
+            }
+            localStorage.setItem("is2fa", 'true');
+            setIs2Fa('true');
+            alert("2차인증이 설정되었습니다");
+            console.log('is2fa 변경 응답 데이터:', responseData);
+          })
+          .catch((error) => {
+            throw(error);
+          })
         }
         catch(error){
           alert("qr인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
           console.error('에러 발생:', error);
         }
     } else if (is2Fa === "true" && checkIs2Fa === false) {
-      if (verCode == "" || verCode.length !== 6) {
+      /*if (verCode == "" || verCode.length !== 6) {
         throw "인증코드를 확인해주세요";
       }
       const faChangeApiUrl = "http://localhost/api/2fa/turn-off";
@@ -229,9 +229,45 @@ function MyProfile({
         .catch((error) => {
           alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
           console.error("에러 발생:", error);
-        });
+        });*/
+    try{
+        if (verCode == '' || verCode.length !== 6){
+          throw("인증코드를 확인해주세요");
+        }
+        const faChangeApiUrl = 'http://localhost/api/2fa/turn-off';
+        const dataToUpdate = {
+          id: userId,
+          twoFactorAuthCode: verCode
+        };
+        console.log("2fa send data: ", JSON.stringify(dataToUpdate));
+        await fetch(faChangeApiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(dataToUpdate),
+        })
+        .then(async(response)=>{
+          const responseData = await response.json();
+          if (responseData.error){
+            throw new Error(responseData.error);
+          }
+          localStorage.setItem("is2fa", 'false');
+          setIs2Fa('false');
+          alert("2차인증이 해제되었습니다");
+          console.log('is2fa 변경 응답 데이터:', responseData);
+        })
+        .catch((error) => {
+          throw(error);
+        })
+      }
+      catch(error){
+        alert("qr인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
+        console.error('에러 발생:', error);
+      }
     }
   }
+
   return (
     <div ref={modalRef} className="modal modal-myprofile">
       <div className={styles.profileMainBox}>
