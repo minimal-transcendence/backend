@@ -86,6 +86,7 @@ export class GameGateway
 
 		client.inGame = false;
 		client.invitationList = [];
+
     // client.color = "#" + Math.floor(Math.random()*16777215).toString(16);
     // client.color = "hsl(" + (Math.random() * 360) + ",100%, 50%)"
     function getRandom(min: number, max: number)
@@ -377,21 +378,27 @@ export class GameGateway
 
   @SubscribeMessage('oneOnOneDecline')
   handleOneOnOneDecline(client: GameSocket, payload: Invitation) {
-	// delete invitation from client
-	client.invitationList = client.invitationList.filter((item: Invitation) => 
-		!this.gameService.objectsAreSame(item, payload));
-	// emit updated list
-	client.emit('updateInvitationList', client.invitationList);
+    // delete invitation from client
+    client.invitationList = client.invitationList.filter((item: Invitation) => 
+      !this.gameService.objectsAreSame(item, payload));
+    // emit updated list
+    client.emit('updateInvitationList', client.invitationList);
 
-	// Get another player socket by nickname
-    const fromClient: GameSocket = this.gameService.getSocketByNickname(this.io, payload.to);
-	if (fromClient) {
-		// delete invitation from client
-		fromClient.invitationList = fromClient.invitationList.filter((item: Invitation) => 
-		!this.gameService.objectsAreSame(item, payload));
-		// emit updated list
-		fromClient.emit('updateInvitationList', fromClient.invitationList);
-	}
+	  // Get another player socket by nickname
+    let anotherClient: GameSocket;
+
+    if(client.nickname === payload.from) {
+      anotherClient = this.gameService.getSocketByNickname(this.io, payload.to);
+    } else {
+      anotherClient = this.gameService.getSocketByNickname(this.io, payload.from);
+    }
+    if (anotherClient) {
+      // delete invitation from client
+      anotherClient.invitationList = anotherClient.invitationList.filter((item: Invitation) => 
+      !this.gameService.objectsAreSame(item, payload));
+      // emit updated list
+      anotherClient.emit('updateInvitationList', anotherClient.invitationList);
+    }
   }
 
   /*---------------------In Game--------------------------------------*/
