@@ -498,7 +498,7 @@ export class ChatService {
 			at : message.at
 		};
 		this.storeMessage.saveMessage(message);
-		io.to([`$${from}$`, `$${to}$`]).emit("sendDM", this.storeUser.getNicknameById(to), res);	//if you touch ${} here is going to change the most
+		io.to([`$${from}$`, `$${to}$, $${to}`]).emit("sendDM", this.storeUser.getNicknameById(to), res);	//if you touch ${} here is going to change the most
 	}
 
 	makeDMRoomMessages(client : ChatSocket, to : string) : formedMessage[] | null {
@@ -689,6 +689,7 @@ export class ChatService {
 			const roomMembers = this.makeRoomUserInfo(room);
 			io.in(room).emit("sendRoomMembers", roomMembers);
 			io.in(room).emit("sendCurrRoomInfo", currRoomInfo);
+			console.log(`send change nick event ${newNick} in room ${room}`);0
 		})
 	}
 }

@@ -141,6 +141,7 @@ export class ChatGateway
 
 	updateUserNick(userId : number, newNick : string) {
 		this.io.emit("updateUserNick", userId, newNick);
+    this.chatService.userChangeNick(this.io, userId, newNick);
 	}
 
 	updateUserAvatar(userId : number){

@@ -552,6 +552,50 @@ body {
 .gamelist-header button {
   padding-top: 0.5rem;
 }
+
+.gamelist-lists {
+  list-style: none;
+  padding: 0.2rem 0;
+  /* overflow: scroll; */
+
+  overflow: none;
+  padding-left: 0.5rem;
+}
+
+.gamelist-lists li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3rem 4fr 3rem;
+  grid-template-rows: 1fr 1fr;
+  column-gap: 0.4rem;
+  font-size: 0.6rem;
+  align-items: center;
+  margin-left: 0;
+  padding: 0.1rem 0rem 0.6rem 0.1rem;
+  border-bottom: 0px solid var(--color-background-100);
+}
+.gamelist-avatar {
+  font-size: 24px;
+  font-weight: 500;
+  color: #ced4da;
+  text-align: center;
+  position: relative;
+}
+
+.gamelist-avatar.left {
+  grid-column: 1/2;
+  grid-row: 1/3;
+}
+.gamelist-avatar.right {
+  grid-column: 3/4;
+  grid-row: 1/3;
+}
+.gamelist-avatar img {
+  border-radius: 50%;
+}
+.gamelist-confirm {
+  text-align: center;
+}
 .userlist-lists {
   list-style: none;
   padding: 0.2rem 0;

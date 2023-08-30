@@ -4,7 +4,13 @@ import { useState, useEffect, useContext } from "react";
 import { SocketContext } from "@/context/socket";
 
 const pageHeight = 8;
-export default function GameList({ myNickName }: { myNickName: string }) {
+export default function GameList({
+  myNickName,
+  setMatchStartCheck,
+}: {
+  myNickName: string;
+  setMatchStartCheck: any;
+}) {
   const socket = useContext(SocketContext).chatSocket;
   const gameSocket = useContext(SocketContext).gameSocket;
   const [gameList, setGameList] = useState<any>([]);
@@ -29,10 +35,20 @@ export default function GameList({ myNickName }: { myNickName: string }) {
       setGameList(() => result);
     }
 
-    if (gameSocket) gameSocket.on("updateInvitationList", updateInvitationList);
+    function matchStartCheck(result: any) {
+      console.log(
+        "in useEffect matchStartCheck ",
+        JSON.stringify(result, null, 2)
+      );
+    }
+    if (gameSocket) {
+      gameSocket.on("updateInvitationList", updateInvitationList);
+      gameSocket.on("matchStartCheck", matchStartCheck);
+    }
     return () => {
       if (gameSocket) {
         gameSocket.off("updateInvitationList", updateInvitationList);
+        gameSocket.off("matchStartCheck", matchStartCheck);
       }
     };
   }, [gameSocket]); // gameData?
@@ -61,7 +77,11 @@ export default function GameList({ myNickName }: { myNickName: string }) {
             rightArrow={rightArrow}
             myNickName={myNickName}
           />
-          <GameListBody tmpList={tmpList} myNickName={myNickName} />
+          <GameListBody
+            tmpList={tmpList}
+            myNickName={myNickName}
+            setMatchStartCheck={setMatchStartCheck}
+          />
         </div>
       </>
     );

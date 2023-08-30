@@ -407,7 +407,10 @@ export default function App() {
                   roomname={currentRoomName}
                   myNickName={tmpLoginnickname}
                 />
-                <GameList myNickName={tmpLoginnickname} />
+                <GameList
+                  myNickName={tmpLoginnickname}
+                  setMatchStartCheck={setMatchStartCheck}
+                />
               </>
             </Box>
           </Main>
