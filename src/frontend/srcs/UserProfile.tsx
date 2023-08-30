@@ -199,6 +199,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   }
 
   useEffect(() => {
+    setUserID(localStorage.getItem("id"));
     reloadData();
   }, []);
 
@@ -244,7 +245,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
         setData(copiedData);
       }
     }
-  
+
     async function reloadAvatar(userId : number){
       console.log("Avatar Update! " + userId);
       let copiedData = [...userData];
@@ -287,10 +288,13 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
                 alt="profile img"
                 className={styles_profile.profileImage}
               />
-              {userData[0].isLogin === 0 && (
+              {userData[0].id == userId && (
+                <div className={styles_profile.circleMine}></div>
+              )}
+              {userData[0].id != userId && userData[0].isLogin === 0 && (
                 <div className={styles_profile.circleLogout}></div>
               )}
-              {userData[0].isLogin === 1 && (
+              {userData[0].id != userId && userData[0].isLogin === 1 && (
                 <div className={styles_profile.circleLogin}></div>
               )}
             </div>
@@ -311,7 +315,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
               </h2>
             </div>
             <div className={styles_profile.buttons}>
-              {userData[0].nickname !== userNickname &&
+              {userData[0].id != userId &&
                 userData[0].isFriend === 0 && (
                   <button
                     className={styles_profile.followButton}
@@ -323,7 +327,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
                     팔로우{" "}
                   </button>
                 )}
-              {userData[0].nickname !== userNickname &&
+              {userData[0].id != userId &&
                 userData[0].isFriend === 1 && (
                   <button
                     className={styles_profile.followingButton}
@@ -335,7 +339,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
                     언팔로우{" "}
                   </button>
                 )}
-                {userData[0].nickname !== userNickname && (
+                {userData[0].id != userId && (
               <button className={styles_profile.gameButton}> 게임 신청 </button>)}
             </div>
           </div>

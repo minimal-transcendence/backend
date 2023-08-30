@@ -98,7 +98,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       }
       setConnectList(conList);
       console.log("socket response: ", conList);
-    }) 
+    })
 
     let idList: string[] = [];
     //const responseFriend = await (await fetch_refresh ('http://localhost/api/user/' + userId + '/friend')).json();
@@ -244,6 +244,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   }
 
   useEffect(() => {
+	setUserID(localStorage.getItem("id"));
     reloadData();
   }, []);
 
@@ -323,7 +324,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         setData(copiedData);
       }
     }
-  
+
     async function reloadAvatar(userId : number){
       console.log("Avatar Update! " + userId);
       let copiedData = [...userData];
@@ -367,10 +368,13 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
                   alt="profile img"
                   className={styles_profile.profileImage}
                 />
-                {userData[index].isLogin === 0 && (
+				{userData[index].id == userId && (
+                  <div className={styles_profile.circleMine}></div>
+                )}
+                {userData[index].id != userId && userData[index].isLogin === 0 && (
                   <div className={styles_profile.circleLogout}></div>
                 )}
-                {userData[index].isLogin === 1 && (
+                {userData[index].id != userId && userData[index].isLogin === 1 && (
                   <div className={styles_profile.circleLogin}></div>
                 )}
               </div>
@@ -392,34 +396,37 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
                 </h2>
               </div>
               <div className={styles_profile.buttons}>
-                {userData[index].nickname !== userNickname &&
-                  userData[index].isFriend === 0 && (
-                    <button
-                      className={styles_profile.followButton}
-                      onClick={() => {
-                        follow(index);
-                      }}
-                    >
-                      {" "}
-                      팔로우{" "}
-                    </button>
-                  )}
-                {userData[index].nickname !== userNickname &&
-                  userData[index].isFriend === 1 && (
-                    <button
-                      className={styles_profile.followingButton}
-                      onClick={() => {
-                        unFollow(index);
-                      }}
-                    >
-                      {" "}
-                      언팔로우{" "}
-                    </button>
-                  )}
-                <button className={styles_profile.gameButton}>
-                  {" "}
-                  게임 신청{" "}
-                </button>
+              {userData[index].id != userId &&
+                userData[index].isFriend === 0 && (
+                  <button
+                    className={styles_profile.followButton}
+                    onClick={() => {
+                      follow(index);
+                    }}
+                  >
+                    {" "}
+                    팔로우{" "}
+                  </button>
+                )}
+				{userData[index].id != userId &&
+				userData[index].isFriend === 1 && (
+					<button
+					className={styles_profile.followingButton}
+					onClick={() => {
+						unFollow(index);
+					}}
+					>
+					{" "}
+					언팔로우{" "}
+					</button>
+				)}
+				{userData[index].id != userId && (
+				<button className={styles_profile.gameButton}
+				onClick={() => {
+				sendGameMatch(index);
+				}}>
+						게임 신청
+			</button>)}
               </div>
             </div>
             <div className={styles_profile.logInner}>
@@ -460,60 +467,79 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     );
   }
 
-  function getProfile(index: number) {
-    if (showprofileOption || userData[index].isFriend) {
-      return (
-        <div className={styles.profileBox}>
-          <div className={styles.profileImageBox}>
-              <img
-                src={userData[index].userProfileURL}
-                alt="profile image"
-                className={styles.profileImage}
-              />
-            </div>
-          <div className={styles.profileInfo}>
-            <div className={styles.nameBox}>
-              <h2>{userData[index].nickname}</h2>
-                {userData[index].isLogin === 0 && (
-                  <div className={styles.circleLogout}></div>
-                )}
-                {userData[index].isLogin === 1 && (
-                  <div className={styles.circleLogin}></div>
-                )}
-            </div>
-            <h3>
-              {userData[index].win} / {userData[index].lose} /{" "}
-              {userData[index].score}
-            </h3>
-            <div className={styles.buttons}>
-              {userData[index].isFriend === 1 && (
-                <button
-                  className={styles.unfollowIn}
-                  onClick={() => {
-                    unFollow(index);
-                  }}
-                >
-                  언팔로우
-                </button>
-              )}
-              {userData[index].isFriend === 0 && (
-                <button
-                  className={styles.followIn}
-                  onClick={() => {
-                    follow(index);
-                  }}
-                >
-                  팔로우
-                </button>
-              )}
-              <button
-                className={styles.normalIn}
-                onClick={() => {
-                  sendGameMatch(index);
-                }}
-              >
-                게임 신청
-              </button>
+	function getProfile(index: number) {
+	if (showprofileOption || userData[index].isFriend) {
+		return (
+		<div className={styles.profileBox}>
+			<div className={styles.profileImageBox}>
+				<img
+				src={userData[index].userProfileURL}
+				alt="profile image"
+				className={styles.profileImage}
+				/>
+			</div>
+			<div className={styles.profileInfo}>
+			<div className={styles.nameBox}>
+				<h2>{userData[index].nickname}</h2>
+				{userData[index].id == userId && (
+					<div className={styles.circleMine}></div>
+				)}
+				{userData[index].id != userId && userData[index].isLogin === 0 && (
+					<div className={styles.circleLogout}></div>
+				)}
+				{userData[index].id != userId && userData[index].isLogin === 1 && (
+					<div className={styles.circleLogin}></div>
+				)}
+			</div>
+			<h3>
+				{userData[index].win} / {userData[index].lose} /{" "}
+				{userData[index].score}
+			</h3>
+			<div className={styles.buttons}>
+				{userData[index].id == userId && (
+					<button
+						className={styles.disabled}
+					>
+						팔로우
+					</button>
+				)}
+				{userData[index].id != userId && userData[index].isFriend === 1 && (
+				<button
+					className={styles.unfollowIn}
+					onClick={() => {
+					unFollow(index);
+					}}
+				>
+					언팔로우
+				</button>
+				)}
+				{userData[index].id != userId && userData[index].isFriend === 0 && (
+				<button
+					className={styles.followIn}
+					onClick={() => {
+					follow(index);
+					}}
+				>
+					팔로우
+				</button>
+				)}
+				{userData[index].id == userId && (
+				<button
+					className={styles.disabled}
+				>
+					게임 신청
+				</button>
+				)}
+				{userData[index].id != userId && (
+				<button
+					className={styles.normalIn}
+					onClick={() => {
+					sendGameMatch(index);
+					}}
+				>
+					게임 신청
+				</button>
+			  )}
               <button
                 className={styles.normalIn}
                 onClick={() => {
@@ -550,7 +576,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             <div className={styles.profileMainBox}>
               {userData.map((item, index) => (
                 <div key={index} className={styles_profile.fontSet}>
-                  {userId && userData[index].id != userId && getProfile(index)}
+                  {userId && getProfile(index)}
                 </div>
               ))}
             </div>
@@ -568,7 +594,6 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             {userData.map((item, index) => (
               <div key={index} className={styles_profile.fontSet}>
                 {userId &&
-                  userData[index].id != userId &&
                   getDetailProfile(index)}
               </div>
             ))}

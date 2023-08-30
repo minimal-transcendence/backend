@@ -64,6 +64,18 @@
 		background-color: green;
 	  }
 
+	  .circleMine {
+		position: absolute;
+		top: 115px;
+		left: 115px;
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		z-index: 2;
+		border:1px solid white;
+		background-color: skyblue;
+	  }
+
 	.wlsBanner{
 		color: #808080;
 	}
@@ -98,6 +110,11 @@
 	.gameButton{
 		background: #58BF91;
 	}
+	.disabled{
+		background: #525252;
+		color: lightgray;
+	}
+
 	.fontSet{
 		font-weight: bold;
 		font-family: Pretendard, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
@@ -127,6 +144,7 @@
 		width: 200px;
 		height: 50px;
 		font-size: 15px;
+		margin-top: 7px;
 		text-align: center;
 		justify-content: center;
 	}
@@ -134,6 +152,7 @@
 	.logName{
 		width: 150px;
 		height: 50px;
+		margin-top: 15px;
 		font-size: 15px;
 		text-align: center;
 		justify-content: center;
@@ -147,6 +166,7 @@
 		width: 50px;
 		height: 50px;
 		font-size: 30px;
+		margin-top: 7px;
 		text-align: center;
 		justify-content: center;
 	}

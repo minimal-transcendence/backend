@@ -32,13 +32,13 @@ export class ChatGateway
 		// const sockets = this.io.sockets;
     // this.logger.debug(`Number of connection in Chat namespace : ${sockets.size}`);
     this.logger.log(`Client Connected : ${client.id}, ${client.userId}`);
-	
+
 		client.onAny((any : any) => {
 			this.logger.log(`client ${client.nickname} send event : ${any}`);
 		})
 
 		this.chatService.handleNewConnection(this.io, client);
-		
+
 		client.on("sendChatMessage", (to, body) => {
 			this.chatService.sendChat(this.io, client, to, body);
 		});
@@ -101,7 +101,7 @@ export class ChatGateway
     });
 
     client.on('requestSearchResultRoomList', (query) => {
-      const roomInfo = this.chatService.getQueryRoomList(query);
+      const roomInfo = this.chatService.getQueryRoomList(client.userId, query);
       client.emit('responseRoomQuery', roomInfo);
     });
 
