@@ -6,11 +6,11 @@ import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { ChatModule } from 'src/socket.io/chat/chat.module';
 import { StoreModule } from 'src/socket.io/chat/store/store.module';
 import { JwtModule } from '@nestjs/jwt';
-import { ChatGateway } from 'src/socket.io/chat/chat.gateway';
-import { ChatService } from 'src/socket.io/chat/chat.service';
+import { GameModule } from 'src/socket.io/game/game.module';
 
 @Module({
 	imports: [
+		GameModule,
 		ChatModule,
 		StoreModule,
 		JwtModule
