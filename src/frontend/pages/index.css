@@ -428,7 +428,6 @@ body {
   margin-right: 2rem;
 }
 .list-rooms-search {
-  /* padding: 3rem; */
   margin: 1rem 0 1rem 1rem;
   padding: 0;
   height: 3rem;
@@ -437,7 +436,6 @@ body {
 .list-users {
   list-style: none;
   padding: 0.8rem 0;
-  /* overflow: scroll; */
   overflow: none;
 }
 .list-users li {
@@ -475,8 +473,6 @@ body {
 .gamelist-lists {
   list-style: none;
   padding: 0.2rem 0;
-  /* overflow: scroll; */
-
   overflow: none;
   padding-left: 0.5rem;
 }
@@ -518,8 +514,6 @@ body {
 .userlist-lists {
   list-style: none;
   padding: 0.2rem 0;
-  /* overflow: scroll; */
-
   overflow: none;
   padding-left: 0.5rem;
 }
@@ -584,11 +578,7 @@ body {
 }
 
 .list div {
-  /* display: flex; */
   align-items: center;
-  /* grid-row: 2/ 3; */
-  /* grid-column: 2 / 3; */
-
   gap: 0.4rem;
   font-size: 0.8rem;
 }
@@ -737,7 +727,6 @@ body {
   background-color: var(--color-text);
   background-color: var(--color-primary-light);
   color: var(--color-text-very-light);
-  /* box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); */
   font-family: sans-serif;
   font-size: 0.5rem;
   font-weight: bold;
@@ -882,65 +871,6 @@ body {
   backdrop-filter: blur(3px);
   z-index: 500;
 }
-/*
-SPACING SYSTEM (px)
-2 / 4 / 8 / 12 / 16 / 24 / 32 / 40 / 48 / 64 / 80 / 96 / 128
-
-FONT SIZE SYSTEM (px)
-10 / 12 / 14 / 16 / 18 / 20 / 24 / 30 / 36 / 44 /52 / 62 / 74 / 86 / 98
-*/
-
-/* button toggle */
-
-input[type="checkbox"] {
-  height: 0;
-  width: 0;
-  visibility: hidden;
-}
-
-label {
-  cursor: pointer;
-  text-indent: -9999px;
-  width: 60px;
-  height: 25px;
-  background: #dee2e6;
-  display: block;
-  border-radius: 25px;
-  position: relative;
-}
-
-label:after {
-  content: "";
-  position: absolute;
-  top: 3px;
-  left: 5px;
-  width: 20px;
-  height: 20px;
-  background: #fff;
-  border-radius: 20px;
-  transition: 0.3s;
-}
-
-input:checked + label {
-  background: #04f30c;
-}
-
-input:checked + label:after {
-  left: calc(100% - 5px);
-  transform: translateX(-100%);
-}
-
-label:active:after {
-  width: 25px;
-}
-
-.accordion {
-  /* width: 700px; */
-  /* margin: 100px auto; */
-  /* display: flex; */
-  /* flex-direction: column; */
-  gap: 24px;
-}
 
 .item {
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
@@ -949,10 +879,8 @@ label:active:after {
   cursor: pointer;
   border-top: 4px solid #fff;
   border-bottom: 4px solid #fff;
-
   display: grid;
   grid-template-columns: auto 1fr auto;
-  /* grid-template-rows: 1fr 1fr 1fr; */
   column-gap: 24px;
   row-gap: 12px;
   align-items: center;
@@ -981,27 +909,6 @@ label:active:after {
   display: grid;
   grid-template-rows: 1fr 1fr;
   gap: 12px;
-}
-
-/* OPEN STATE */
-.open {
-  border-top: 4px solid #087f5b;
-}
-
-.open .number,
-.open .text {
-  color: #087f5b;
-}
-
-/* drondown right menu*/
-
-/* Dropdown Button */
-.dropbtn {
-  /* background-color: #04aa6d; */
-  /* color: white; */
-  /* padding: 16px;
-  font-size: 16px;
-  border: none; */
 }
 
 /* The container <div> - needed to position the dropdown content */

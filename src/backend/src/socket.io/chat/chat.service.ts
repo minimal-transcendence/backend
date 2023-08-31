@@ -498,7 +498,7 @@ export class ChatService {
 			at : message.at
 		};
 		this.storeMessage.saveMessage(message);
-		io.to([`$${from}$`, `$${to}$, $${to}`]).emit("sendDM", this.storeUser.getNicknameById(to), res);	//if you touch ${} here is going to change the most
+		io.to([`$${from}$`, `$${to}$`, `$${to}`]).emit("sendDM", this.storeUser.getNicknameById(to), res);	//if you touch ${} here is going to change the most
 	}
 
 	makeDMRoomMessages(client : ChatSocket, to : string) : formedMessage[] | null {
