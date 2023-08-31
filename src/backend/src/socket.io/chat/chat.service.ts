@@ -121,7 +121,8 @@ export class ChatService {
 		{
 			const room = this.storeRoom.findRoom(roomname);
 			if (!room)
-				throw new Error(`[userJoinRoomAct] ${roomname} room is not exist`);
+				// throw new Error(`[userJoinRoomAct] ${roomname} room is not exist`);
+				console.log(`[userJoinRoomAct] ${roomname} room is not exist`);
 			
 			//bind room & user
 			user.joinlist.add(roomname);

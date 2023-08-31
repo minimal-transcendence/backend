@@ -1,16 +1,22 @@
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe, UsePipes, UseFilters } from '@nestjs/common';
 import {
   ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Namespace } from 'socket.io';
 import { ChatService } from './chat.service';
 import { ChatSocket } from './types';
+import { MessageDto, RoomDto, RoomEventDto, TargetDto } from './dto/chat-events.dto';
+import { WsExceptionFilter } from '../ws-exception.filter';
 
+
+@UsePipes(new ValidationPipe())
+@UseFilters(WsExceptionFilter)
 @WebSocketGateway({
 	namespace: 'chat',
 })
@@ -19,125 +25,169 @@ export class ChatGateway
 {
 	@WebSocketServer() io : Namespace;
 	private readonly logger = new Logger(ChatGateway.name);
-	constructor(
-		private chatService: ChatService,
-	) {}
+	constructor(private chatService: ChatService) {}
 
-	async afterInit(){
-	  await this.chatService.initChatServer();	//
+	afterInit(){
+		this.chatService.initChatServer();
 	}
 
-		//TODO : erase loggers?
-	async handleConnection(@ConnectedSocket() client: ChatSocket) {
-		// const sockets = this.io.sockets;
-    // this.logger.debug(`Number of connection in Chat namespace : ${sockets.size}`);
-    this.logger.log(`Client Connected : ${client.id}, ${client.userId}`);
+	handleConnection(@ConnectedSocket() client: ChatSocket) {
+		//db 랑 연동할 것인지...?
+	    this.logger.log(`Client Connected : ${client.nickname}, ${client.id}`);
 	
 		client.onAny((any : any) => {
-			this.logger.log(`client ${client.nickname} send event : ${any}`);
+			this.logger.log(`From Client ${client.nickname}, ${client.id}, event : ${any}`);
 		})
-
 		this.chatService.handleNewConnection(this.io, client);
-		
-		client.on("sendChatMessage", (to, body) => {
-			this.chatService.sendChat(this.io, client, to, body);
-		});
+	}
 
-		client.on("selectRoom", (room) => {
-			this.chatService.userJoinRoom(this.io, client, room);
-		});
+	async handleDisconnect(@ConnectedSocket() client: ChatSocket) {
+		this.logger.log(client.nickname + ", " + client.id + ' is leaving');
+		await this.chatService.handleDisconnection(this.io, client);
+	}
 
-		client.on("sendRoomPass", (room, password) => {
-			this.chatService.userJoinRoom(this.io, client, room, password);
-		});
 
-		client.on("setRoomPass", (room, password) => {
-			this.chatService.setPassword(this.io, client, room, password);
-		})
+	@SubscribeMessage('sendChatMessage')
+	handleSendChat(client: ChatSocket, payload : MessageDto){
+		this.chatService.sendChat(
+			this.io, client, payload.to, payload.body
+		);
+	}
 
-		//TODO : 미완성
-		client.on("sendRoomLeave", (room) => {
-			this.chatService.userLeaveRoom(this.io, client, room);
-			this.chatService.userLeaveRoomAct(this.io, client.userId, room);
-		});
+	@SubscribeMessage('sendDirectMessage')
+	handleSendDM(client: ChatSocket, payload : MessageDto){
+		this.chatService.fetchDM(
+			this.io, client, payload.to, payload.body
+		);
+	}
 
-    //TODO : check
-    client.on('blockUser', (user) => {
-      this.chatService.blockUser(this.io, client, user);
-    });
+	@SubscribeMessage('selectRoom')
+	handleEnterRoom(client: ChatSocket, payload : RoomDto){
+		this.chatService.userJoinRoom(
+			this.io, client, payload.roomname
+		);
+	}
 
-    client.on('unblockUser', (user) => {
-      this.chatService.unblockUser(this.io, client, user);
-    });
+	@SubscribeMessage('selectDMRoom')
+	handleEnterDMRoom(client: ChatSocket, payload : RoomDto){
+		this.chatService.fetchUserTODMRoom(
+			client, payload.roomname
+		);
+	}
 
-    client.on('kickUser', (roomname, user) => {
-        this.chatService.kickUser(this.io, client, roomname, user);
-    });
+	@SubscribeMessage('sendRoomLeave')
+	handleLeaveRoom(client: ChatSocket, payload : RoomDto){
+		this.chatService.userLeaveRoom(this.io, client, payload.roomname);
+    	this.chatService.userLeaveRoomAct(this.io, client.userId, payload.roomname);
+	}
 
-    client.on('banUser', (roomname, user) => {
-		this.chatService.banUser(this.io, client, roomname, user);
-    });
+	@SubscribeMessage('sendRoomPass')
+	handleEnterRoomWithPassword(client: ChatSocket, payload : RoomDto){
+		this.chatService.userJoinRoom(
+			this.io, client, payload.roomname, payload.password
+		);
+	}
 
-    client.on('muteUser', (roomname, user) => {
-        this.chatService.muteUser(this.io, client, roomname, user);
-    });
+	@SubscribeMessage('setRoomPass')
+	handleSetRoomPass(client: ChatSocket, payload : RoomDto){
+		this.chatService.setPassword(
+			this.io, client, payload.roomname, payload.password
+		);
+	}
 
-    client.on('addOperator', (roomname, user) => {
-		this.chatService.addOperator(this.io, client, roomname, user);
-	});
+	@SubscribeMessage('setRoomPrivate')
+	handleSetRoomPrivate(client: ChatSocket, payload : RoomDto){
+		this.chatService.setRoomStatus(
+			this.io, client, payload.roomname, true
+		);
+	}
+	@SubscribeMessage('setRoomPublic')
+	handleSetRoomPulbic(client: ChatSocket, payload : RoomDto){
+		this.chatService.setRoomStatus(
+			this.io, client, payload.roomname, false
+		);
+	}
 
-    client.on('deleteOperator', (roomname, user) => {
-		this.chatService.deleteOperator(this.io, client, roomname, user);
-    });
+	@SubscribeMessage('blockUser')
+	handleBlockUser(client: ChatSocket, payload : TargetDto){
+		this.chatService.blockUser(
+			this.io, client, payload.target
+		);
+	}
 
-    client.on('requestAllRoomList', () => {
-      const roomInfo = this.chatService.getAllRoomList(client.userId);
-      client.emit('sendRoomList', roomInfo);
-    });
+	@SubscribeMessage('unblockUser')
+	handleUnblockUser(client: ChatSocket, payload : TargetDto){
+		this.chatService.unblockUser(
+			this.io, client, payload.target
+		);
+	}
+	
+	//과연...?
+	@SubscribeMessage('kickUser')
+	handleKickUser(client: ChatSocket, payload : RoomEventDto){
+		this.chatService.kickUser(
+			this.io, client, payload.roomname, payload.target
+		);
+	}
+	
+	@SubscribeMessage('banUser')
+	handleBanUser(client: ChatSocket, payload : RoomEventDto){
+		this.chatService.banUser(
+			this.io, client, payload.roomname, payload.target
+		);
+	}
+	
+	@SubscribeMessage('muteUser')
+	handleMuteUser(client: ChatSocket, payload : RoomEventDto){
+		this.chatService.muteUser(
+			this.io, client, payload.roomname, payload.target
+		);
+	}
+	
+	@SubscribeMessage('addOperator')
+	handleAddOper(client: ChatSocket, payload : RoomEventDto){
+		this.chatService.addOperator(
+			this.io, client, payload.roomname, payload.target
+		);
+	}
+	
+	@SubscribeMessage('deleteOperator')
+	handleDelOper(client: ChatSocket, payload : RoomEventDto){
+		this.chatService.deleteOperator(
+			this.io, client, payload.roomname, payload.target
+		);
+	}
 
-    client.on('requestMyRoomList', () => {
-      const roomInfo = this.chatService.getUserRoomList(client.userId);
-	  client.emit('sendRoomList', roomInfo);
-    });
+	@SubscribeMessage('requestAllRoomList')
+	handleReqAllRoomList(client: ChatSocket){
+		const roomInfo = this.chatService.getAllRoomList(client.userId);
+		client.emit('sendRoomList', roomInfo);
+	}
+	
+	@SubscribeMessage('requestMyRoomList')
+	handleReqUserRoomList(client: ChatSocket){
+    	const roomInfo = this.chatService.getUserRoomList(client.userId);
+		client.emit('sendRoomList', roomInfo);
 
-    client.on('requestSearchResultRoomList', (query) => {
-      const roomInfo = this.chatService.getQueryRoomList(client.userId, query);
+	}
+	
+	@SubscribeMessage('requestAllMembers')
+	handleReqAllMembers(client: ChatSocket){
+		const members = this.chatService.getAllUserInfo();
+    	client.emit('responseAllMembers', members);
+	}
+	
+	@SubscribeMessage('requestRoomMembers')
+	handleReqRoomMembers(client: ChatSocket, payload : RoomDto){
+		const roomMembers = this.chatService.makeRoomUserInfo(payload.roomname);
+		client.emit('sendRoomMembers', roomMembers);
+	}
+	
+	@SubscribeMessage('requestSearchResultRoomList')
+	handleReqQueryRes(client: ChatSocket, payload : TargetDto){
+		const roomInfo = this.chatService.getQueryRoomList(client.userId, payload.target);
       client.emit('responseRoomQuery', roomInfo);
-    });
-
-    client.on('requestRoomMembers', (roomname) => {
-      const roomMembers = this.chatService.makeRoomUserInfo(roomname);
-      client.emit('sendRoomMembers', roomMembers);
-    });
-
-    client.on('requestAllMembers', () => {
-      const members = this.chatService.getAllUserInfo();
-      client.emit('responseAllMembers', members);
-    })
-
-    client.on('selectDMRoom', (username) => {
-      this.chatService.fetchUserTODMRoom(client, username);
-    });
-
-    client.on('sendDirectMessage', (to, body) => {
-      this.chatService.fetchDM(this.io, client, to, body);
-    });
-
-	client.on('setRoomPrivate', (roomname) => {
-		this.chatService.setRoomStatus(this.io, client, roomname, true);
-	})
-
-	client.on('setRoomPublic', (roomname) => {
-		this.chatService.setRoomStatus(this.io, client, roomname, false);
-	})
-  }
-
-
-  //disconnecting, disconnect 둘다 감지 가능?
-  async handleDisconnect(@ConnectedSocket() client: ChatSocket) {
-    this.logger.log(client.nickname + 'is leaving');
-    await this.chatService.handleDisconnection(this.io, client);
-  }
+	}
 
 	updateUserNick(userId : number, newNick : string) {
 		this.io.emit("updateUserNick", userId, newNick);
@@ -148,8 +198,8 @@ export class ChatGateway
 		this.io.emit("updateUserAvatar", userId);
 	}
 
-  //check handleDisconnect
-  logout(clientId : number) {
-    this.io.in(`$${clientId}`).disconnectSockets(true); //false?
-  }
+	//check handleDisconnect
+	logout(clientId : number) {
+		this.io.in(`$${clientId}`).disconnectSockets(true); //false?
+	}
 }
