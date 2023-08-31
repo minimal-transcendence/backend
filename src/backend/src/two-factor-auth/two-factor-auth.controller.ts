@@ -74,18 +74,6 @@ export class TwoFactorAuthController {
     }
 
     @UseGuards(JwtGuard)
-    @Get('test-turn-on')
-    async testOn(
-        @Req() req: any
-    ) {
-        const user = req.user;
-		this.userService.updateUserById(user.id, {
-			is2faEnabled : true,
-		})
-        return { message: '2fa turn on' }
-    }
-
-    @UseGuards(JwtGuard)
     @Post('turn-on')
     async twoFactorAuthOn(
         @Req() req: any,
@@ -103,6 +91,7 @@ export class TwoFactorAuthController {
 
 		this.userService.updateUserById(user.id, {
 			is2faEnabled : true,
+            isOtpVerified : true,
 		})
         return { message: '2fa turn on' }
     }
