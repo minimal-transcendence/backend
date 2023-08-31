@@ -212,6 +212,17 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     alert(userData[index].nickname + "님에게 게임 신청이 전송되었습니다");
   }
 
+  function blockUser(index:number){
+    let copiedData = [...userData];
+    if (userData[index].isBlocked == 0){
+      copiedData[index].isBlocked = 1;
+    }
+    else{
+      copiedData[index].isBlocked = 0;
+    }
+    setData(copiedData);
+  }
+
   async function follow(index: number) {
     const apiUrl = "http://localhost/api/user/" + userId + "/friend";
     const dataToUpdate = {
@@ -475,11 +486,17 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
                 </div>
                 <div className={styles_profile.buttons}>
                   {userData[index].id != userId && userData[index].isBlocked == 0 && (
-                  <button className={styles_profile.blockButton}>
+                  <button className={styles_profile.blockButton}
+                  onClick={() => {
+                    blockUser(index,);
+                    }}>
                     차단 
                   </button>)}
                   {userData[index].id != userId && userData[index].isBlocked == 1 && (
-                  <button className={styles_profile.blockButton}>
+                  <button className={styles_profile.blockButton}
+                  onClick={() => {
+                    blockUser(index,);
+                    }}>
                     차단 해제
                   </button>)}
                   {showMatchList[index] && (
