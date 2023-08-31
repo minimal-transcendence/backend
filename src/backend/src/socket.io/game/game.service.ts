@@ -161,6 +161,18 @@ export class GameService {
     return found;
   }
 
+  getSocketById(io: Namespace, id: number): GameSocket {
+    let found: GameSocket;
+
+    io.sockets.forEach((socket: GameSocket) => {
+      if (socket.userId === id) {
+        found = socket;
+      }
+    });
+
+    return found;
+  }
+
   objectsAreSame(x: Object, y: Object): boolean {
     var objectsAreSame: boolean = true;
     for(var propertyName in x) {

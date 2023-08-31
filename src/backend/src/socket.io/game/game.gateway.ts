@@ -523,4 +523,37 @@ export class GameGateway
 	console.log(`${client.nickname} is now ${nickname}`);
 	client.nickname = nickname;
   }
+
+  updateUserNick(id : number, newNick : string) {
+    const client = this.gameService.getSocketById(this.io, id);
+    // const client = this.gameService.getSocketByNickname(this.io, nickname);
+
+    if (newNick === client.nickname) {
+      return;
+    }
+    const sockets = this.io.sockets;
+    const oldNickname = client.nickname;
+
+    client.invitationList.forEach((invit: Invitation) => {
+      if (invit.from === oldNickname) {
+        invit.from = newNick;
+      } else if (invit.to === oldNickname) {
+        invit.to = newNick;
+      }
+    });
+
+    // emit
+    sockets.forEach((socket: GameSocket) => {
+      socket.invitationList.every((invit: Invitation) => {
+        if (invit.from === newNick || invit.to === newNick) {
+          socket.emit('updateInvitationList', socket.invitationList);
+          return false;
+        }
+        return true;
+      });
+    });
+
+    console.log(`${client.nickname} is now ${newNick}`);
+    client.nickname = newNick;
+	}
 }
