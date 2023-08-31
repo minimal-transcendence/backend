@@ -39,6 +39,13 @@ export class ChatService {
 		client.emit("sendCurrRoomInfo", currRoomInfo);
 	}
 
+	updateRoom(io : Namespace, roomname : string){
+		const currRoomInfo = this.makeCurrRoomInfo(roomname);
+		const roomMembers = this.makeRoomUserInfo(roomname);
+		io.in(roomname).emit("sendRoomMembers", roomMembers);
+		io.in(roomname).emit("sendCurrRoomInfo", currRoomInfo);
+	}
+
 	async extractSocketsInRoomById(io: Namespace, targetId : number, roomname : string) : Promise<ChatSocket[]> {
 		const res = [];
 		const sockets = await io.in(roomname).fetchSockets()
@@ -375,7 +382,7 @@ export class ChatService {
 		if (!this.checkActValidity(client, roomname, targetId, "mute"))
 			return ;
 		if (room.isMuted(targetId))
-			this.processMessage(io, 0, client.id, `${this.storeUser.getNicknameById(targetId)} is already muted`, false);
+			this.processMessage(io, 0, client.id, `${targetName} is already muted`, false);
 
 		else{
 			if (room.isOperator(targetId))
@@ -384,13 +391,13 @@ export class ChatService {
 			//TODO : 아래로 바꾸고 싶다...! & CHECK!
 			const sockets = await this.extractSocketsInRoomById(io, targetId, roomname)
 			sockets.forEach((socket) => {
-					this.processMessage(io, 0, socket.id, `You are temporaily muted by ${client.nickname}`, false);
+					this.processMessage(io, 0, targetName, `You are temporaily muted by ${this.storeUser.getNicknameById(client.userId)}`, false);
 				})
 			setTimeout(() => {
 				room.deleteUserFromMutelist(targetId);
 				//TODO & CHECK
 				sockets.forEach((socket) => {
-					this.processMessage(io, 0, socket.id, `You are now unmuted `, false);
+					this.processMessage(io, 0, targetName, `You are now unmuted `, false);
 				})
 			}, 20000);
 		}
@@ -693,6 +700,7 @@ export class ChatService {
 		});
 	}
 
+	//currRoomInfo, currRoomMembers가 game쪽에서도 필요하다 이럴수가...
 	async userChangeNick(io : Namespace, clientId : number, newNick : string) {
 		const user = this.storeUser.findUserById(clientId);
 		user.nickname = newNick;
@@ -713,4 +721,6 @@ export class ChatService {
 			socket.emit("sendDMRoomInfo", newNick, DMs);
 		})
 	}
+
+
 }
