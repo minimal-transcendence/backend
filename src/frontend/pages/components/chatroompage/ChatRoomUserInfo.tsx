@@ -29,7 +29,12 @@ export default function ChatRoomUserInfo({
   const gameSocket = useContext(SocketContext).gameSocket;
   const [userProfileModal, setUserProfileModal] = useState<boolean>(false);
 
-  console.log("in ChatRoomUserInfom user: ", JSON.stringify(user, null, 2));
+  console.log("in ChatRoomUserInfo user: ", JSON.stringify(user, null, 2));
+  console.log(
+    "in ChatRoomUserInfo ",
+    JSON.stringify(user?.nickname),
+    JSON.stringify(myNickName)
+  );
   function handleMenu(event: any) {
     console.log("in handleMenu");
     if (event.target.dataset.name) {
