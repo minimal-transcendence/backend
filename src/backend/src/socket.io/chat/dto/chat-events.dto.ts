@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { IntersectionType } from '@nestjs/mapped-types';
 
 //why not type then class?
@@ -25,6 +25,15 @@ export class TargetDto {
 	@IsNotEmpty()
 	@IsString()
 	target : string;
+}
+
+export class UserInfoDto {
+	@IsNotEmpty()
+	@IsNumber()	//or IsNumberString?
+	userId : number;
+
+	@IsNumber()
+	targetId : number;
 }
 
 // export type RoomEventDto = RoomDto & TargetDto;

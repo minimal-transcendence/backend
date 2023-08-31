@@ -240,7 +240,8 @@ export class ChatService {
 				const users = this.storeUser.findAllUser().filter((user) => user.joinlist.has(to));
 				if (users){
 					users.forEach((user) => {
-						io.in(`$${user.id}`).except(to).emit("sendMessage", to, msg);
+						const roomInfo = this.makeRoomInfo(user.blocklist, user.joinlist);
+						io.in(`$${user.id}`).except(to).emit("sendRoomList", roomInfo);
 					})
 				}
 			}
@@ -547,16 +548,7 @@ export class ChatService {
 		}
 	}
 
-	//CHECK 1. 어디서 쓰는지 2. getAllUserInfo랑 다소 겹침 & second variable is removable -> 현재 안 씀
-	// makeUserStatus(userId : number, connection: boolean) : userInfo {
-	// 	const user = this.storeUser.findUserById(userId);
-	// 	return ({
-	// 		id : userId,
-	// 		nickname : user.nickname,
-	// 		isGaming : user.isGaming,
-	// 		isConnected : user.connected
-	// 	});
-	// }
+
 	
 	makeRoomInfo(blocklist : Set<number>, roomlist : string[] | Set<string>) : roomInfo[] {
 		const res = [];
@@ -674,7 +666,8 @@ export class ChatService {
 	}
 
 	//CHECK : 좀 처리가 일관성이 없는게 joinlist도 persistent 하게 할지 말지 안 정해놓고 시작함ㅠ -> 주석 정리시 check
-	getAllUserInfo() : userInfo[] {
+	getAllUserInfo(userId : number) : userInfo[] {
+		const blocklist = this.storeUser.findUserById(userId).blocklist;
 		const users = this.storeUser.findAllUser();
 		const res = [];
 		users?.forEach((user) => {
@@ -682,10 +675,22 @@ export class ChatService {
 				id : user.id,
 				nickname : user.nickname,
 				isGaming : user.isGaming,
-				isConnected : user.connected
+				isConnected : user.connected,
+				isBlocked : blocklist.has(user.id)? true : false
 			})
 		});
 		return (res);
+	}
+
+	getUserInfoById(userId : number, targetId: number) : userInfo {
+		const target = this.storeUser.findUserById(targetId);
+		return ({
+			id : targetId,
+			nickname : target.nickname,
+			isGaming : target.isGaming,
+			isConnected : target.connected,
+			isBlocked : this.storeUser.findUserById(userId).blocklist.has(targetId)? true : false
+		});
 	}
 
 	userChangeNick(io : Namespace, clientId : number, newNick : string) {

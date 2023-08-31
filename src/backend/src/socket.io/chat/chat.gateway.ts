@@ -11,7 +11,7 @@ import {
 import { Namespace } from 'socket.io';
 import { ChatService } from './chat.service';
 import { ChatSocket } from './types';
-import { MessageDto, RoomDto, RoomEventDto, TargetDto } from './dto/chat-events.dto';
+import { MessageDto, RoomDto, RoomEventDto, TargetDto, UserInfoDto } from './dto/chat-events.dto';
 import { WsExceptionFilter } from '../ws-exception.filter';
 
 
@@ -172,8 +172,8 @@ export class ChatGateway
 	}
 	
 	@SubscribeMessage('requestAllMembers')
-	handleReqAllMembers(client: ChatSocket){
-		const members = this.chatService.getAllUserInfo();
+	handleReqAllMembers(client: ChatSocket, payload : UserInfoDto){
+		const members = this.chatService.getAllUserInfo(payload.userId);
     	client.emit('responseAllMembers', members);
 	}
 	
@@ -181,6 +181,12 @@ export class ChatGateway
 	handleReqRoomMembers(client: ChatSocket, payload : RoomDto){
 		const roomMembers = this.chatService.makeRoomUserInfo(payload.roomname);
 		client.emit('sendRoomMembers', roomMembers);
+	}
+
+	@SubscribeMessage('requestTargetMember')
+	handleReqTargetMember(client: ChatSocket, payload : UserInfoDto){
+		const member = this.chatService.getUserInfoById(payload.userId, payload.targetId);
+		client.emit('responseTargetMember', member);
 	}
 	
 	@SubscribeMessage('requestSearchResultRoomList')

@@ -5,6 +5,7 @@ export type userInfo = {
 	nickname : string;
 	isGaming : boolean;
 	isConnected? : boolean;
+	isBlocked? : boolean;
 }
 
 export type roomInfo = {
