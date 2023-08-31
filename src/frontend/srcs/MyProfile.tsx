@@ -273,11 +273,10 @@ function MyProfile({
       <div className={styles.profileMainBox}>
         <div>
           <h2>내 프로필</h2>
-          {avatarURL && (
-            <img src={avatarURL} className={styles.profileImage} ></img>
-          )}
         </div>
         <div>
+          <br/>
+          <br/>
           닉네임
           <br/>
           {userNickname !== null ?
@@ -293,6 +292,9 @@ function MyProfile({
           <input type="file" accept='image/*' onChange={handleFileChange}></input>
           {imageUrl && (
           <img src={imageUrl} alt="profile image" className={styles.selectProfileImage}/>)}
+          {!imageUrl && avatarURL && (
+          <img src={avatarURL} className={styles.selectProfileImage} ></img>
+          )}
         </div>
         <div>
           2차인증 여부

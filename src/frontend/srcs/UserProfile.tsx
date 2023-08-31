@@ -14,6 +14,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   const [userData, setData] = useState<userDataInterface[]>([]);
   const [friendList, setFriendList] = useState<string[]>([]);
   const [showProfile, setShowProfile] = useState<Boolean>(false);
+  const [showMatchList, setShowMatchList] = useState(false);
 
   const closeModal = () => {
     setIsOpenModal(false);
@@ -60,6 +61,8 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     lastLogin: string;
     isFriend: number;
     isLogin: number;
+    isGaming: number;
+    isBlocked: number;
     matchhistory: userMatchHistory[];
   }
 
@@ -73,10 +76,29 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     }
   }
 
+  let conList:string[] = [];
+  let gameList:string[] = [];
+  let blockList:string[] = [];
+  socket.emit("requestTargetMembers", { userId : userId, tergetId : id });
+  socket.on("responseTargetMembers", async (data:any) => {
+      console.log("data:", data);
+      if (data.isConnected === true){
+        conList.push((id).toString());
+      }
+      if (data.isGaming === true){
+        gameList.push((id).toString());
+      }
+      if (data.isBlocked === true){
+        blockList.push((id).toString());
+      }
+    console.log("socket response connection: ", conList);
+    console.log("socket response gaming: ", gameList);
+  })
+
   const reloadData = async () => {
     setData([]);
     setFriendList([]);
-    console.log(id);
+    setShowMatchList(false);
 
     let idList: string[] = [];
     //const responseFriend = await (await fetch_refresh ('http://localhost/api/user/' + userId + '/friend')).json();
@@ -113,6 +135,8 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       isFriend: checkIsInclude(idList, detailResponse.id),
       //isLogin: checkIsInclude(conList, detailResponse.id),
       isLogin: 1,
+      isGaming: checkIsInclude(gameList, detailResponse.id),
+      isBlocked: checkIsInclude(blockList, detailResponse.id),
       matchhistory: [],
     };
     for (let j = 0; j < matchCount; j++) {
@@ -129,12 +153,26 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     }
     newDataList.push(newData);
     setData(newDataList);
-    console.log(userData);
     setShowProfile(true);
   };
 
-  function sendGameMatch(index: number) {
-    //매치신청 보내기
+  function openMatchList() {
+    setShowMatchList(!(showMatchList));
+  }
+
+  function sendBlock(index:number) {
+
+  }
+
+  function sendMatch(level: string){
+    setUserNickname(localStorage.getItem("nickname"));
+    console.log("sendMatch: "+ userNickname + " " + userData[0].nickname + " " + level);
+    socket.emit("oneOnOneApply", {
+      from: userNickname,
+      to: userData[0].nickname,
+      mode: level,
+    });
+    alert(userData[0].nickname + "님에게 게임 신청이 전송되었습니다");
   }
 
   async function follow(index: number) {
@@ -340,7 +378,37 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
                   </button>
                 )}
                 {userData[0].id != userId && (
-              <button className={styles_profile.gameButton}> 게임 신청 </button>)}
+              <button 
+                className={styles_profile.gameButton}
+                onClick={() => {
+                  openMatchList();
+                }}
+              >
+                 게임 신청 
+                 </button>)}
+            </div>
+            <div className={styles_profile.buttons}>
+              {userData[0].id != userId && userData[0].isBlocked == 0 &&(
+                <button className={styles_profile.blockButton}>
+                  차단 
+                </button>)}
+              {userData[0].id != userId && userData[0].isBlocked == 1 && (
+                <button className={styles_profile.blockButton}>
+                  차단 해제
+                </button>)}
+              {showMatchList && (
+              <div className={styles_profile.gameButtons}>
+                <button onClick={() => {
+                sendMatch("easy");
+                }}> EASY </button>
+                <button onClick={() => {
+                sendMatch("normal");
+                }}> NORMAL </button>
+                <button onClick={() => {
+                sendMatch("hard");
+                }}> HARD </button>
+              </div>
+              )}
             </div>
           </div>
           <div className={styles_profile.logInner}>

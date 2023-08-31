@@ -101,22 +101,44 @@
 	font-size: 20px;
 	border-radius: 5px;
 	cursor: pointer;
-	color:white;
   }
 
   .followIn{
 	background: #4193EF;
+	color:white;
   }
 
   .normalIn{
 	background: #58BF91;
+	color:white;
   }
 
   .unfollowIn{
 	background: #454545;
+	color:white;
   }
 
   .disabled{
 	background: #525252;
-	color: lightgray;
+	color: rgb(121, 121, 121);
+  }
+
+  .gameButtons {
+	display: flex;
+	flex-direction: row; /* 버튼들을 세로로 배치 */
+	gap: 8px; /* 버튼 간격 */
+	align-items: middle;
+	text-align: center;
+  }
+
+  .gameButtons button {
+	padding: 8px 8px;
+	width: 120px;
+	height: 35px;
+	border: none;
+	font-size: 20px;
+	border-radius: 5px;
+	cursor: pointer;
+	background: #4b8dc3;
+	color:white;
   }

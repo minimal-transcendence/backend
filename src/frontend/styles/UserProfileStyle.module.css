@@ -78,6 +78,7 @@
 
 	.wlsBanner{
 		color: #808080;
+		margin-bottom: 20px;
 	}
 
 	.buttons {
@@ -94,7 +95,6 @@
 		border: none;
 		border-radius: 5px;
 		cursor: pointer;
-		color:white;
 		font-size: 18px;
 		font-weight: bold;
 		font-family: Pretendard, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
@@ -103,18 +103,24 @@
 
 	.followButton{
 		background: #4193EF;
+		color:white;
 	}
 	.followingButton{
 		background: #454545;
+		color:white;
 	}
 	.gameButton{
 		background: #58BF91;
+		color:white;
 	}
 	.disabled{
 		background: #525252;
-		color: lightgray;
+		color: rgb(121, 121, 121);
 	}
-
+	.blockButton{
+		background: #d0e565;
+		color:white;
+	}
 	.fontSet{
 		font-weight: bold;
 		font-family: Pretendard, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
@@ -170,3 +176,24 @@
 		text-align: center;
 		justify-content: center;
 	}
+
+	.gameButtons {
+		display: flex;
+		flex-direction: column; /* 버튼들을 세로로 배치 */
+		gap: 10px; /* 버튼 간격 */
+		padding:10px;
+		align-items: middle;
+		text-align: center;
+	  }
+	
+	  .gameButtons button {
+		padding: 8px 8px;
+		width: 120px;
+		height: 35px;
+		border: none;
+		font-size: 20px;
+		border-radius: 5px;
+		cursor: pointer;
+		background: #4b8dc3;
+		color:white;
+	  }
