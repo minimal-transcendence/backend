@@ -49,6 +49,7 @@ type GameData = {
   ballY: number;
   paddleX: number[];
   powerUp: boolean[];
+  powerBall: boolean;
   playerScore: number[];
 };
 
@@ -108,6 +109,7 @@ export default function Pong({ gameLoad }: { gameLoad: boolean }) {
 
     // Power-Up
     let powerUp: boolean[];
+    let powerBall: boolean;
 
     // Score
     let score: number[] = [0, 0];
@@ -187,20 +189,26 @@ export default function Pong({ gameLoad }: { gameLoad: boolean }) {
       canvas.height = 1600;
       context.clearRect(0, 0, canvas.width, canvas.height);
       drawBackground();
+      context.textAlign = "center";
       context.fillStyle = "white";
-      context.font = "70px serif";
-      context.fillText("This is Lobby", 10, canvas.height / 2 - 290);
+      context.font = "140px fantasy";
+      context.fillText("PONG", canvas.width / 2, canvas.height * 0.4);
+      context.font = "40px monospace";
+      context.fillText("← → : MOVE", canvas.width / 2, canvas.height * 0.5);
+      context.fillText("SPACE[] : POWER-UP", canvas.width / 2, canvas.height * 0.5 + 50);
     };
 
     // Draw Game Over
     const drawGameOver = () => {
       context.clearRect(0, 0, canvas.width, canvas.height);
       drawBackground();
+      context.textAlign = "center";
       context.fillStyle = "white";
-      context.font = "70px serif";
-      context.fillText("Game Over", 10, canvas.height / 2 - 290);
-      context.fillText(`Winner: ${winner}`, 10, canvas.height / 2 - 200);
-      context.fillText(`Loser: ${loser}`, 10, canvas.height / 2 - 110);
+      context.font = "140px fantasy";
+      context.fillText("Game Over", canvas.width / 2, canvas.height * 0.4);
+      context.font = "40px monospace";
+      context.fillText(`Winner: ${winner}`, canvas.width / 2, canvas.height * 0.5);
+      context.fillText(`Loser: ${loser}`, canvas.width / 2, canvas.height * 0.5 + 50);
       // context.fill();
     };
 
@@ -258,7 +266,11 @@ export default function Pong({ gameLoad }: { gameLoad: boolean }) {
     const drawBall = () => {
       context.beginPath();
       context.arc(ballX, ballY, ballRadius, 0, 2 * Math.PI);
-      context.fillStyle = "white";
+      if (powerBall) {
+        context.fillStyle = "yellow";  
+      } else {
+        context.fillStyle = "white";
+      }
       context.fill();
     };
 
@@ -274,17 +286,18 @@ export default function Pong({ gameLoad }: { gameLoad: boolean }) {
 
     // Draw Score
     const drawScore = () => {
-      context.font = "70px serif";
+      context.textAlign = "left";
+      context.font = "120px monospace";
       context.fillStyle = "grey";
       context.fillText(
-        `${player[1]}: ${score[1].toString()}`,
+        score[1].toString(),
         10,
-        canvas.height / 2 - 20
+        canvas.height / 2 - 30
       );
       context.fillText(
-        `${player[0]}: ${score[0].toString()}`,
+        score[0].toString(),
         10,
-        canvas.height / 2 + 70
+        canvas.height / 2 + 110
       );
     };
 
@@ -462,6 +475,7 @@ export default function Pong({ gameLoad }: { gameLoad: boolean }) {
       ballY = payload.ballY;
       paddleX = payload.paddleX;
       powerUp = payload.powerUp;
+      powerBall = payload.powerBall;
       score = payload.playerScore;
       // console.log(payload.powerUp);
       // console.log(paddleX);
