@@ -93,7 +93,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     let conList:string[] = [];
     let gameList:string[] = [];
     let blockList:string[] = []; // requestTargetMembers (userId, targetId)
-    socket.emit("requestAllMembers", { userId : userId });
+    socket.emit("requestAllMembers", { userId : Number(userId) });
     socket.on("responseAllMembers", async (data:any) => {
       for(let i = 0; i < data.length ; i++){
         console.log("data:", data[i]);
@@ -460,12 +460,17 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
                   언팔로우{" "}
                   </button>
                 )}
-                {userData[index].id != userId && (
+                {userData[index].id != userId && userData[index].isGaming == 0 && (
                 <button className={styles_profile.gameButton}
                 onClick={() => {
                 openMatchList(index);
                 }}>
                     게임 신청
+                </button>)}
+                {userData[index].id != userId && userData[index].isGaming == 1 && (
+                <button className={styles_profile.disabled}
+                >
+                    게임 중
                 </button>)}
                 </div>
                 <div className={styles_profile.buttons}>
@@ -593,8 +598,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             게임 신청
           </button>
           )}
-          {userData[index].id != userId && (
-          <div className={styles.dropdown}>
+          {userData[index].id != userId && userData[index].isGaming == 0 &&(
             <button
               className={styles.normalIn}
               onClick={() => {
@@ -603,7 +607,15 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             >
               게임 신청
             </button>
-          </div>
+          )}
+          {userData[index].id != userId && userData[index].isGaming == 1 &&(
+            <button
+              className={styles.disabled}
+              onClick={() => {
+              openMatchList(index);
+              }}>
+              게임 중
+            </button>
           )}
           <button
             className={styles.normalIn}

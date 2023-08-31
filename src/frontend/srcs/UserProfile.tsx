@@ -76,29 +76,29 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     }
   }
 
-  let conList:string[] = [];
-  let gameList:string[] = [];
-  let blockList:string[] = [];
-  socket.emit("requestTargetMembers", { userId : userId, tergetId : id });
-  socket.on("responseTargetMembers", async (data:any) => {
-      console.log("data:", data);
-      if (data.isConnected === true){
-        conList.push((id).toString());
-      }
-      if (data.isGaming === true){
-        gameList.push((id).toString());
-      }
-      if (data.isBlocked === true){
-        blockList.push((id).toString());
-      }
-    console.log("socket response connection: ", conList);
-    console.log("socket response gaming: ", gameList);
-  })
-
   const reloadData = async () => {
     setData([]);
     setFriendList([]);
     setShowMatchList(false);
+
+    let conList:string[] = [];
+    let gameList:string[] = [];
+    let blockList:string[] = [];
+    socket.emit("requestTargetMembers", { userId : Number(userId), tergetId : Number(id) });
+    socket.on("responseTargetMembers", async (data:any) => {
+        console.log("data:", data);
+        if (data.isConnected === true){
+          conList.push((id).toString());
+        }
+        if (data.isGaming === true){
+          gameList.push((id).toString());
+        }
+        if (data.isBlocked === true){
+          blockList.push((id).toString());
+        }
+      console.log("socket response connection: ", conList);
+      console.log("socket response gaming: ", gameList);
+    })
 
     let idList: string[] = [];
     //const responseFriend = await (await fetch_refresh ('http://localhost/api/user/' + userId + '/friend')).json();
@@ -136,6 +136,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       //isLogin: checkIsInclude(conList, detailResponse.id),
       isLogin: 1,
       isGaming: checkIsInclude(gameList, detailResponse.id),
+      //isGaming: 1,
       isBlocked: checkIsInclude(blockList, detailResponse.id),
       matchhistory: [],
     };
@@ -377,14 +378,20 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
                     언팔로우{" "}
                   </button>
                 )}
-                {userData[0].id != userId && (
-              <button 
-                className={styles_profile.gameButton}
-                onClick={() => {
-                  openMatchList();
-                }}
-              >
-                 게임 신청 
+                {userData[0].id != userId && userData[0].isGaming == 0 &&(
+                  <button 
+                    className={styles_profile.gameButton}
+                    onClick={() => {
+                      openMatchList();
+                    }}
+                  >
+                    게임 신청 
+                 </button>)}
+                 {userData[0].id != userId && userData[0].isGaming == 1 &&(
+                  <button 
+                    className={styles_profile.disabled}
+                  >
+                    게임 중 
                  </button>)}
             </div>
             <div className={styles_profile.buttons}>
