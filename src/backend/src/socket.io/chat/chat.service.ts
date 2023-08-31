@@ -254,7 +254,7 @@ export class ChatService {
 			throw new Error("Error : Room does not exist");
 		}
 		if (room.userlist.has(userId) && thisUser.joinlist.has(roomname)){
-			if (room.userlist.size == 1)
+			if (room.userlist.size == 1 && roomname != "DEFAULT")
 			{
 				room.clearRoom();
 				this.storeRoom.deleteRoom(roomname);

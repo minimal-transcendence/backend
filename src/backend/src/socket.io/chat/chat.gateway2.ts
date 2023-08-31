@@ -177,4 +177,18 @@ export class ChatGateway
 		const roomInfo = this.chatService.getQueryRoomList(client.userId, payload.target);
       client.emit('responseRoomQuery', roomInfo);
 	}
+
+	updateUserNick(userId : number, newNick : string) {
+		this.io.emit("updateUserNick", userId, newNick);
+    this.chatService.userChangeNick(this.io, userId, newNick);
+	}
+
+	updateUserAvatar(userId : number){
+		this.io.emit("updateUserAvatar", userId);
+	}
+
+  //check handleDisconnect
+  logout(clientId : number) {
+    this.io.in(`$${clientId}`).disconnectSockets(true); //false?
+  }
 }

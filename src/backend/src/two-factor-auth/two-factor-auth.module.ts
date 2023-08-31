@@ -8,6 +8,7 @@ import { UserService } from 'src/user/user.service';
 import { JwtModule } from '@nestjs/jwt';
 import { HttpModule } from '@nestjs/axios';
 import { ChatModule } from 'src/socket.io/chat/chat.module';
+import { GameModule } from 'src/socket.io/game/game.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { ChatModule } from 'src/socket.io/chat/chat.module';
           expiresIn: process.env.JWT_ACCESS_EXPIRATION_TIME,
       },
     }),
-    ChatModule
+    ChatModule,
+    GameModule
   ],
   providers: [
     TwoFactorAuthService,
