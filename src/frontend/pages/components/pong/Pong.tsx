@@ -4,7 +4,6 @@ import { useRef, useEffect, useContext, useState } from "react";
 // import "../pages/index.css";
 import { GameContent, GameContext } from "@/context/game";
 import { SocketContent, SocketContext } from "@/context/socket";
-import { isConstructorDeclaration } from "typescript";
 // import {socket} from "../pages/Home";
 
 export type AutoSave = {
@@ -53,7 +52,7 @@ type GameData = {
   playerScore: number[];
 };
 
-export default function Pong({ gameLoad }: { gameLoad: boolean }) {
+export default function Pong() {
   const [inGame, setInGame] = useState<boolean>(false);
   const [gameOver, setGameOver] = useState<boolean>(false);
 
@@ -133,30 +132,6 @@ export default function Pong({ gameLoad }: { gameLoad: boolean }) {
         pressed: false,
       },
     };
-
-    /*-------------------Set Data from localStorage----------------------------*/
-
-    // localStorage Data
-    // const item = localStorage.getItem("gameRoomData");
-    // if (item) {
-    //   const saved = JSON.parse(item);
-    //   roomName = saved.roomName,
-    //   setInGame(saved.inGame);
-    //   // inLobby: boolean;
-    //   setGameOver(saved.gameOver);
-    //   player = saved.player;
-    //   canvas.width = saved.canvasWidth;
-    //   canvas.height = saved.canvasHeight;
-    //   paddleWidth = saved.paddleWidth;
-    //   paddleHeight = saved.paddleHeight;
-    //   ballRadius = saved.ballRadius;
-    //   winner = saved.winner;
-    //   loser = saved.loser;
-    // }
-
-    /*-----------------------------------------------------*/
-
-    // roomName = gameData.roomName,
 
     roomName = gameContext.roomName;
     setInGame(gameData.inGame);
@@ -342,59 +317,6 @@ export default function Pong({ gameLoad }: { gameLoad: boolean }) {
       drawGameOver();
     }
 
-    // Start Game
-    // socket.on("startGame", (payload: StartGameData) => {
-    //   // inGame = true;
-
-    //   roomName = payload.roomName;
-    //   player = payload.player;
-    //   mode = payload.mode,
-    //   canvas.width = payload.canvasWidth;
-    //   canvas.height = payload.canvasHeight;
-    //   paddleWidth = payload.paddleWidth;
-    //   paddleHeight = payload.paddleHeight;
-    //   paddleX = payload.paddleX;
-    //   ballX = payload.ballX;
-    //   ballY = payload.ballY;
-    //   ballRadius = payload.ballRadius;
-
-    //   localStorage.setItem("gameRoomData", JSON.stringify({
-    //     roomName: payload.roomName,
-    //     inGame: true,
-    //     gameOver: false,
-    //     player: payload.player,
-    //     canvasWidth: payload.canvasWidth,
-    //     canvasHeight: payload.canvasHeight,
-    //     paddleWidth: payload.paddleWidth,
-    //     paddleHeight: payload.paddleHeight,
-    //     ballRadius: payload.ballRadius,
-    //     winner: '',
-    //     loser: '',
-    //   }))
-
-    //   setInGame(true);
-    //   setGameOver(false);
-
-    //   // interval = setInterval(() => {
-    //   //   // Draw Canvas
-    //   //   draw();
-    //   //   // Emit Key Event
-    //   //   if (keys.left.pressed) {
-    //   //     socket.emit('keydown', {
-    //   //       roomName: roomName,
-    //   //       key: 'ArrowLeft'
-    //   //     });
-    //   //   }
-
-    //   //   if (keys.right.pressed) {
-    //   //     socket.emit('keydown', {
-    //   //       roomName: roomName,
-    //   //       key: 'ArrowRight'
-    //   //     });
-    //   //   }
-    //   // }, 15);
-    // })
-
     // Listen Key Event - keydown
     const handleKeydown = (e: KeyboardEvent) => {
       console.log(e);
@@ -431,44 +353,6 @@ export default function Pong({ gameLoad }: { gameLoad: boolean }) {
     canvas.addEventListener("keydown", handleKeydown);
     canvas.addEventListener("keyup", handleKeyup);
 
-    // canvas.addEventListener("keydown", (e: KeyboardEvent) => {
-    //   // if (!inGame) {
-    //   //   console.log("Keydown ignored");
-    //   //   return;
-    //   // } else {
-    //   //   console.log("Keydown!!!!!!!!");
-    //   // }
-    //   // if (gameOver) {
-    //   //   console.log("this game is over");
-    //   //   return;
-    //   // }
-    //   console.log("Keydown:", e.key);
-    //   switch (e.key) {
-    //     case 'ArrowLeft':
-    //       keys.left.pressed = true;
-    //       break
-
-    //     case 'ArrowRight':
-    //       keys.right.pressed = true;
-    //       break
-    //   }
-    // });
-    // Listen Key Event - keyup
-    // canvas.addEventListener("keyup", (e: KeyboardEvent) => {
-    //   if (gameOver) {
-    //     return;
-    //   }
-    //   switch (e.key) {
-    //     case 'ArrowLeft':
-    //       keys.left.pressed = false;
-    //       break
-
-    //     case 'ArrowRight':
-    //       keys.right.pressed = false;
-    //       break
-    //   }
-    // });
-
     // Get Game Data from Server
     socket.on("gameData", (payload: GameData) => {
       ballX = payload.ballX;
@@ -477,34 +361,7 @@ export default function Pong({ gameLoad }: { gameLoad: boolean }) {
       powerUp = payload.powerUp;
       powerBall = payload.powerBall;
       score = payload.playerScore;
-      // console.log(payload.powerUp);
-      // console.log(paddleX);
     });
-
-    // Game Over
-    // socket.on('gameOver', (payload: GameOverData) => {
-    //   clearInterval(interval);
-    //   winner = payload.winner;
-    //   loser = payload.loser;
-    //   // drawGameOver();
-    //   // inGame = false;
-    //   localStorage.setItem("gameRoomData", JSON.stringify({
-    //     roomName: payload.roomName,
-    //     inGame: false,
-    //     // inLobby: true,
-    //     gameOver: true,
-    //     player: [],
-    //     canvasWidth: 0,
-    //     canvasHeight: 0,
-    //     paddleWidth: 0,
-    //     paddleHeight: 0,
-    //     ballRadius: 0,
-    //     winner: payload.winner,
-    //     loser: payload.loser,
-    //   }))
-    //   setInGame(false);
-    //   setGameOver(true);
-    // })
 
     console.log("EVERYTING RE RENDER");
 
@@ -518,7 +375,7 @@ export default function Pong({ gameLoad }: { gameLoad: boolean }) {
   }, [socket, inGame, gameOver, gameData]);
 
   return (
-    <div className={`chat-main ${gameLoad ? "" : "hidden"}`}>
+    <div className={"chat-main"}>
       <canvas className="pong" ref={canvasRef} tabIndex={0} />
     </div>
   );
