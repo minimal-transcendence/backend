@@ -687,6 +687,8 @@ export class ChatService {
 		user.joinlist.forEach((room) => {
 			const currRoomInfo = this.makeCurrRoomInfo(room);
 			const roomMembers = this.makeRoomUserInfo(room);
+			console.log(JSON.stringify(currRoomInfo));
+			console.log(JSON.stringify(roomMembers));
 			io.in(room).emit("sendRoomMembers", roomMembers);
 			io.in(room).emit("sendCurrRoomInfo", currRoomInfo);
 			console.log(`send change nick event ${newNick} in room ${room}`);0

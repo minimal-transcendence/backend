@@ -114,21 +114,21 @@ export class ChatGateway
 	//과연...?
 	@SubscribeMessage('kickUser')
 	handleKickUser(client: ChatSocket, payload : RoomEventDto){
-		this.chatService.unblockUser(
+		this.chatService.kickUser(
 			this.io, client, payload.roomname, payload.target
 		);
 	}
 	
 	@SubscribeMessage('banUser')
 	handleBanUser(client: ChatSocket, payload : RoomEventDto){
-		this.chatService.unblockUser(
+		this.chatService.banUser(
 			this.io, client, payload.roomname, payload.target
 		);
 	}
 	
 	@SubscribeMessage('muteUser')
 	handleMuteUser(client: ChatSocket, payload : RoomEventDto){
-		this.chatService.unblockUser(
+		this.chatService.muteUser(
 			this.io, client, payload.roomname, payload.target
 		);
 	}

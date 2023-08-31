@@ -21,9 +21,15 @@ const ChatFooter = ({
       console.log(
         `in footer1, isDM:${isDM} target:${DMtarget} message:${formJson.textareaContent}`
       );
-      socket.emit("sendChatMessage", currentRoomName, formJson.textareaContent);
+      socket.emit("sendChatMessage", {
+        to: currentRoomName,
+        body: formJson.textareaContent,
+      });
     } else if (isDM) {
-      socket.emit("sendDirectMessage", DMtarget, formJson.textareaContent);
+      socket.emit("sendDirectMessage", {
+        to: DMtarget,
+        body: formJson.textareaContent,
+      });
       console.log(
         `in footer2 isDM:${isDM} target:${DMtarget} message:${formJson.textareaContent}`
       );
@@ -38,9 +44,15 @@ const ChatFooter = ({
       console.log(
         `in footer11, isDM:${isDM} target:${DMtarget} message:${textareaValue}`
       );
-      socket.emit("sendChatMessage", currentRoomName, textareaValue);
+      socket.emit("sendChatMessage", {
+        to: currentRoomName,
+        body: textareaValue,
+      });
     } else if (isDM) {
-      socket.emit("sendDirectMessage", DMtarget, textareaValue);
+      socket.emit("sendDirectMessage", {
+        to: DMtarget,
+        body: textareaValue,
+      });
       console.log(
         `in footer22 isDM:${isDM} target:${DMtarget} message:${textareaValue}`
       );

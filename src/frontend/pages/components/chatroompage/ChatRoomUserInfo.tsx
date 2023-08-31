@@ -44,7 +44,10 @@ export default function ChatRoomUserInfo({
       const targetnickname = user?.nickname;
       if (event.target.dataset.name === "kick") {
         console.log("target nickname : " + targetnickname);
-        socket.emit("kickUser", roomname, targetnickname);
+        socket.emit("kickUser", {
+          roomname: roomname,
+          target: targetnickname,
+        });
       } else if (event.target.dataset.name === "profile") {
         console.log("in profileUser ", targetnickname, user?.id, id);
         // socket.emit("profileUser", roomname, targetnickname);
@@ -52,22 +55,37 @@ export default function ChatRoomUserInfo({
         // setUserProfileID(()=> user?.id)
       } else if (event.target.dataset.name === "ban") {
         console.log("in banUser ", roomname, targetnickname);
-        socket.emit("banUser", roomname, targetnickname);
+        socket.emit("banUser", {
+          roomname: roomname,
+          target: targetnickname,
+        });
       } else if (event.target.dataset.name === "mute") {
-        console.log("in muteUser ", roomname, targetnickname);
-        socket.emit("muteUser", roomname, targetnickname);
+        console.log("in muteUser ", {
+          roomname: roomname,
+          target: targetnickname,
+        });
+        socket.emit("muteUser", {
+          roomname: roomname,
+          target: targetnickname,
+        });
       } else if (event.target.dataset.name === "block") {
         console.log("in blockUser111111111111111 ", targetnickname);
         if (targetnickname !== myNickName) {
           console.log("in blockUser222222222222222 ", targetnickname);
-          socket.emit("blockUser", targetnickname);
+          socket.emit("blockUser", { target: targetnickname });
         }
       } else if (event.target.dataset.name === "opAdd") {
         console.log("in addOperator ", roomname, targetnickname);
-        socket.emit("addOperator", roomname, targetnickname);
+        socket.emit("addOperator", {
+          roomname: roomname,
+          target: targetnickname,
+        });
       } else if (event.target.dataset.name === "opDelete") {
         console.log("in deleteOperator ", roomname, targetnickname);
-        socket.emit("deleteOperator", roomname, targetnickname);
+        socket.emit("deleteOperator", {
+          roomname: roomname,
+          target: targetnickname,
+        });
       } else if (event.target.dataset.name === "dmApply")
         socket.emit("selectDMRoom", targetnickname);
       else if (event.target.dataset.name === "oneVsOneEasy") {
