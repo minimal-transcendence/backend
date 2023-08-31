@@ -69,9 +69,9 @@ export class ChatGateway
 	}
 
 	@SubscribeMessage('selectDMRoom')
-	handleEnterDMRoom(client: ChatSocket, payload : RoomDto){
-		this.chatService.fetchUserTODMRoom(
-			client, payload.roomname
+	handleEnterDMRoom(client: ChatSocket, payload : TargetDto){
+		this.chatService.fetchUserToDMRoom(
+			client, payload.target
 		);
 	}
 

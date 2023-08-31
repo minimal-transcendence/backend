@@ -120,9 +120,10 @@ export class ChatService {
 		if (!user.joinlist.has(roomname))
 		{
 			const room = this.storeRoom.findRoom(roomname);
-			if (!room)
-				// throw new Error(`[userJoinRoomAct] ${roomname} room is not exist`);
-				console.log(`[userJoinRoomAct] ${roomname} room is not exist`);
+			if (!room){
+				client.emit("sendAlert", "[ Act Error ]", `${roomname} room is not exist`);
+				return ;
+			}
 			
 			//bind room & user
 			user.joinlist.add(roomname);
@@ -538,18 +539,17 @@ export class ChatService {
 		}
 	}
 
-	fetchUserTODMRoom(client : ChatSocket, username : string) {
+	fetchUserToDMRoom(client : ChatSocket, username : string) {
 		const DMs = this.makeDMRoomMessages(client, username);
+		const targetId = this.storeUser.getIdByNickname(username);
 		if (DMs != null){
 			client.leave(client.currRoom);
-			client.join(`$${client.userId}$`);
-			client.currRoom = `$${client.userId}$`;
+			client.join(`$${targetId}$`);	//...?
+			client.currRoom = `$${targetId}$`;
 			client.emit("sendDMRoomInfo", username, DMs);
 		}
 	}
 
-
-	
 	makeRoomInfo(blocklist : Set<number>, roomlist : string[] | Set<string>) : roomInfo[] {
 		const res = [];
 		roomlist.forEach((room : string) => {
@@ -693,7 +693,7 @@ export class ChatService {
 		});
 	}
 
-	userChangeNick(io : Namespace, clientId : number, newNick : string) {
+	async userChangeNick(io : Namespace, clientId : number, newNick : string) {
 		const user = this.storeUser.findUserById(clientId);
 		user.nickname = newNick;
 		console.log("changeNickEvent");
@@ -702,6 +702,15 @@ export class ChatService {
 			const roomMembers = this.makeRoomUserInfo(room);
 			io.in(room).emit("sendRoomMembers", roomMembers);
 			io.in(room).emit("sendCurrRoomInfo", currRoomInfo);
+		})
+		//dm방 update 필요...
+		const sockets = await io.in(`$${clientId}$`).fetchSockets()
+						.catch((error) => {
+							return (error.message);
+						});
+		sockets.forEach((socket : ChatSocket) => {
+			const DMs = this.makeDMRoomMessages(socket, newNick);
+			socket.emit("sendDMRoomInfo", newNick, DMs);
 		})
 	}
 }
