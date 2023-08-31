@@ -414,7 +414,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
                   차단 
                 </button>)}
               {userData[0].id != userId && userData[0].isBlocked == 1 && (
-                <button className={styles_profile.blockButton}
+                <button className={styles_profile.unblockButton}
                 onClick={() => {
                   blockUser();
                 }}>

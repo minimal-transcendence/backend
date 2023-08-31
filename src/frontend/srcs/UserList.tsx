@@ -493,7 +493,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
                     차단 
                   </button>)}
                   {userData[index].id != userId && userData[index].isBlocked == 1 && (
-                  <button className={styles_profile.blockButton}
+                  <button className={styles_profile.unblockButton}
                   onClick={() => {
                     blockUser(index,);
                     }}>

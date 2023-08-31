@@ -118,7 +118,11 @@
 		color: rgb(121, 121, 121);
 	}
 	.blockButton{
-		background: #d0e565;
+		background: #ea4d58;
+		color:white;
+	}
+	.unblockButton{
+		background: #8961ef;
 		color:white;
 	}
 	.fontSet{
