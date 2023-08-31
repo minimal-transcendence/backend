@@ -87,7 +87,7 @@ export default function ChatRoomUserInfo({
           target: targetnickname,
         });
       } else if (event.target.dataset.name === "dmApply")
-        socket.emit("selectDMRoom", targetnickname);
+        socket.emit("selectDMRoom", { target: targetnickname });
       else if (event.target.dataset.name === "oneVsOneEasy") {
         console.log("easy");
         gameSocket.emit("oneOnOneApply", {

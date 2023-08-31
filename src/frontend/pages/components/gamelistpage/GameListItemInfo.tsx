@@ -24,7 +24,7 @@ export default function GameListItemInfo({
   function handleAccept(event: any) {
     console.log("in handleAccept");
     gameSocket.emit("oneOnOneAccept", game);
-    setMatchStartCheck(() => true);
+    // setMatchStartCheck(() => true);
   }
   function handleDecline(event: any) {
     console.log("in handleDecline");
