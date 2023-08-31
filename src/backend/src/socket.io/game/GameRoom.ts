@@ -2,7 +2,7 @@ import { GameRoomParams, GameSocket } from "./types";
 
 export class GameRoom {
     // Interval
-    interval: any;
+    interval: ReturnType<typeof setInterval> | undefined;
     // Status
     gameStart: boolean;
     gameOver: boolean;
@@ -12,6 +12,9 @@ export class GameRoom {
     mode: string;
     // Players
     player: GameSocket[];
+    // Power Up
+    powerUp: boolean[];
+    powerPoint: number[];
     // Check Every Player Accept this Match
     playerAccept: boolean[];
     // Canvas
@@ -58,6 +61,9 @@ export class GameRoom {
         this.mode = mode;
         //
         this.playerAccept = [false, false];
+        // Power Up
+        this.powerUp = [false, false];
+        this.powerPoint = [1, 1];
         // Score
         this.playerScore = [0, 0];
         //Canvas

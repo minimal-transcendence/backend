@@ -5,21 +5,32 @@ export default function GameListItemInfo({
   game: any;
   myNickName: string;
 }) {
-  console.log(JSON.stringify(game, null, 2), myNickName);
-  if (!game?.to || !game?.from || !game?.level) return;
-  return (
-    <>
-      {!game.to ? (
-        <div>{`${game.from}님이 랜덤매칭 신청함`}</div>
-      ) : game.from === myNickName ? (
-        <div>{`${game.from} 님이 ${game.to} 님에게 ${
-          game.level === 1 ? "Easy" : game.level === 2 ? "Default" : "Hard"
-        }모드 게임을 신청했습니다.  취소할거야?`}</div>
-      ) : (
-        <div>{`${game.from} 님이 ${game.to} 님에게 ${
-          game.level === 1 ? "Easy" : game.level === 2 ? "Default" : "Hard"
-        }모드 게임을 신청했습니다. 수락or거절?`}</div>
-      )}
-    </>
+  console.log(
+    "in GameListItemInfo ",
+    JSON.stringify(game, null, 2),
+    myNickName
   );
+  if (!game?.to || !game?.from || !game?.mode) {
+    console.log("ㅏ무것도 ㄷ없나보다");
+    return;
+  } else {
+    console.log("return ㅏㄴ오는데???");
+
+    return (
+      <>
+        {game?.to === myNickName ? (
+          <div>
+            {`${game?.from}님이 ${game?.mode}게임을 신청하셨습니다`}
+            <span className="gameAccept">수락</span>/
+            <span className="gameDecline">거절</span>
+          </div>
+        ) : (
+          <div>
+            {`${game?.to}님에게 ${game?.mode}게임을 신청하셨습니다`}
+            <span className="gameCancel">취소</span>
+          </div>
+        )}
+      </>
+    );
+  }
 }

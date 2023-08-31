@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useContext } from "react";
-import { SocketContext } from "@/pages/App";
+import { SocketContext } from "@/context/socket";
 import "../../index.css";
 
 export default function ModalBasic({

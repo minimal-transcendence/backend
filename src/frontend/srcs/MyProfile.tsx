@@ -122,8 +122,8 @@ function MyProfile({
           throw new Error(responseData.error);
         }
         console.log("profile 변경 응답 데이터:", responseData);
-        localStorage.setItem("avatar", "/api/" + responseData.avatar);
-        setAvatarURL("/api/" + responseData.avatar);
+        localStorage.setItem("avatar", "/api/user/" + userId + "/photo",);
+        setAvatarURL("/api/user/" + userId + "/photo");
         setImageUrl(null);
         setSelectedFile(null);
         alert("프로필 사진이 변경되었습니다");

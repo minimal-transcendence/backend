@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import axiosApi, { fetch_refresh } from "./FetchInterceptor";
 import styles_profile from "../styles/UserProfileStyle.module.css";
-import { SocketContext, SocketContent } from "@/pages/App";
+import { SocketContext, SocketContent } from "@/context/socket";;
 import "../pages/index.css";
 
 function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
@@ -24,7 +24,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   useEffect(() => {
     // 이벤트 핸들러 함수
     const handler = () => {
-      console.log("in myprofile handler");
+      console.log("in Userprofile handler");
       if (!event) return;
       // mousedown 이벤트가 발생한 영역이 모달창이 아닐 때, 모달창 제거 처리
       const target = event.target as HTMLInputElement;
@@ -84,8 +84,8 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     let conList:string[] = [];
     let gameList:string[] = [];
     let blockList:string[] = [];
-    socket.emit("requestTargetMembers", { userId : Number(userId), tergetId : Number(id) });
-    socket.on("responseTargetMembers", async (data:any) => {
+    socket.emit("requestTargetMember", { userId : userId, tergetId : id });
+    socket.on("responseTargetMember", async (data:any) => {
         console.log("data:", data);
         if (data.isConnected === true){
           conList.push((id).toString());
@@ -125,7 +125,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     const newData: userDataInterface = {
       id: detailResponse.id,
       nickname: detailResponse.nickname,
-      userProfileURL: "/api/" + detailResponse.avatar,
+      userProfileURL: "/api/user/" + id + "/photo",
       win: detailResponse._count.asWinner,
       lose: detailResponse._count.asLoser,
       score:
@@ -143,9 +143,9 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     for (let j = 0; j < matchCount; j++) {
       const newMatchData: userMatchHistory = {
         winner: matchResponse[j].winner.nickname,
-        winnerAvatar: "/api/" + matchResponse[j].winner.avatar,
+        winnerAvatar: "/api/user/" + matchResponse[j].winner.id + "/photo",
         loser: matchResponse[j].loser.nickname,
-        loserAvatar: "/api/" + matchResponse[j].loser.avatar,
+        loserAvatar: "/api/user/" + matchResponse[j].loser.id + "/photo",
         time: matchResponse[j].createdTime,
       };
       newMatchData.time = newMatchData.time.slice(0, 19);
@@ -302,9 +302,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       for(let i = 0; i <= userData.length ; i++)
       {
         if(copiedData[i].id == userId.toString()){
-          const responseDetail = await axiosApi.get('http://localhost/api/user/' + userId, );
-          const detailResponse = responseDetail.data;
-          copiedData[i].userProfileURL = "/api/" + detailResponse.avatar;
+          copiedData[i].userProfileURL = "/api/user/" + userId + "/photo";
           break;
         }
       }

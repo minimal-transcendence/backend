@@ -1114,7 +1114,7 @@ label:active:after {
 .dropdown-content-second {
   display: none;
   position: absolute;
-  left: -65px;
+  left: -95px;
   background-color: #fff;
   padding: 1rem;
   min-width: 160px;
@@ -1185,4 +1185,16 @@ label:active:after {
   width: 100%;
   height: 100%;
   display: block;
+}
+
+.gameAccept {
+  cursor: pointer;
+}
+
+.gameDecline {
+  cursor: pointer;
+}
+
+.gameCancel {
+  cursor: pointer;
 }

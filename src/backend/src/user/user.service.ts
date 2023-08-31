@@ -3,7 +3,7 @@ import { PrismaService } from 'src/prisma.service';
 import { Prisma, User } from '@prisma/client';
 import { join } from 'path';
 import { createReadStream } from 'fs';
-import { ChatGateway } from 'src/chat/chat.gateway';
+import { ChatGateway } from 'src/socket.io/chat/chat.gateway';
 
 @Injectable()
 export class UserService {
@@ -102,7 +102,7 @@ export class UserService {
 				...data,
 				id : undefined,
 				friends : undefined,
-				avatar : file != null ? file.path.toString() : undefined,
+				avatar : file != null ? file.filename.toString() : undefined,
 			}
 		}).then((res) => {
 			if (file) {
@@ -210,7 +210,7 @@ export class UserService {
 	//CreatedTime 출력법 어떻게?
 	//TODO : 여기 useful information 필요하다고 되어있음... score 필요할까?
 	async getUserMatchHistoryById(id : number) : Promise<object[]>{
-		return this.prisma.matchHistory.findMany({
+		return await this.prisma.matchHistory.findMany({
 			where : {
 				OR: [ {winnerId: id}, {loserId: id}]
 			},
@@ -237,11 +237,12 @@ export class UserService {
 		const fileName = await this.prisma.user.findUnique({
 			where : { id },
 			select : { avatar : true },
-		}).then((res) => {return res.avatar});
+		}).then((res) => {
+			return res.avatar
+		});
 		if (!fileName)
 			return null;
-		console.log('app/photo/' + fileName);
-		const file = createReadStream(join('app/photo/' + fileName));
+		const file = createReadStream(join('/photo/' + fileName));
 		return new StreamableFile(file);
 	}
 }

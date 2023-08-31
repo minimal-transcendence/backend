@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { SocketContext } from "@/pages/App";
+import { SocketContext } from "@/context/socket";
 import menuIcon from "../../../assets/menu.png";
 import ysungwonIcon from "../../../assets/ysungwon.jpg";
 import ModalOverlay from "../../components/modalpage/ModalOverlay";
@@ -25,6 +25,7 @@ export default function ChatRoomUserInfo({
   id: any;
 }) {
   const socket = useContext(SocketContext).chatSocket;
+  const gameSocket = useContext(SocketContext).gameSocket;
   const [userProfileModal, setUserProfileModal] = useState<boolean>(false);
 
   // async function getImgURL(id: string) {
@@ -35,6 +36,7 @@ export default function ChatRoomUserInfo({
 
   console.log("in ChatRoomUserInfom user: ", JSON.stringify(user, null, 2));
   function handleMenu(event: any) {
+    console.log("in hnadleMenu");
     if (event.target.dataset.name) {
       console.log(
         `${myNickName}가 ${user?.nickname}를 ${roomname}에서 ${event.target.dataset.name}클릭!!!`
@@ -55,8 +57,11 @@ export default function ChatRoomUserInfo({
         console.log("in muteUser ", roomname, targetnickname);
         socket.emit("muteUser", roomname, targetnickname);
       } else if (event.target.dataset.name === "block") {
-        console.log("in blockUser ", targetnickname);
-        socket.emit("blockUser", targetnickname);
+        console.log("in blockUser111111111111111 ", targetnickname);
+        if (targetnickname !== myNickName) {
+          console.log("in blockUser222222222222222 ", targetnickname);
+          socket.emit("blockUser", targetnickname);
+        }
       } else if (event.target.dataset.name === "opAdd") {
         console.log("in addOperator ", roomname, targetnickname);
         socket.emit("addOperator", roomname, targetnickname);
@@ -67,13 +72,25 @@ export default function ChatRoomUserInfo({
         socket.emit("selectDMRoom", targetnickname);
       else if (event.target.dataset.name === "oneVsOneEasy") {
         console.log("easy");
-        socket.emit("oneVsOneApply", targetnickname, "oneVsOne", "easy");
+        gameSocket.emit("oneOnOneApply", {
+          from: myNickName,
+          to: targetnickname,
+          mode: "easy",
+        });
       } else if (event.target.dataset.name === "oneVsOneNormal") {
         console.log("normal");
-        socket.emit("oneVsOneApply", targetnickname, "oneVsOne", "normal");
+        gameSocket.emit("oneOnOneApply", {
+          from: myNickName,
+          to: targetnickname,
+          mode: "normal",
+        });
       } else if (event.target.dataset.name === "oneVsOneHard") {
         console.log("hard");
-        socket.emit("oneVsOneApply", targetnickname, "oneVsOne", "hard");
+        gameSocket.emit("oneOnOneApply", {
+          from: myNickName,
+          to: targetnickname,
+          mode: "hard",
+        });
       }
     } else {
       console.log("you click other");

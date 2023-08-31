@@ -20,7 +20,7 @@ export class Room {
 		this.operators = new Set();
 		this.userlist = new Set();
 		if (this.owner !== 0)
-			this.userlist.add(owner);	//CHECK : if default room needs owner
+			this.userlist.add(owner);
 		this.mutelist = new Set();
 		this.banlist = new Set();
 		this.messages = [];
@@ -89,6 +89,7 @@ export class Room {
 	deleteUserFromMutelist(userid : number){
 		this.mutelist.delete(userid);
 	}
+	
 	private clearSets(){
 		this.userlist.clear();
 		this.operators.clear();

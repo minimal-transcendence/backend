@@ -5,7 +5,7 @@ import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { User } from '@prisma/client';
 import { TwoFactorAuthService } from './two-factor-auth.service';
 import { UserService } from 'src/user/user.service';
-import { TwoFactorAuthCodeDto } from '../dto/2fa-code.dto';
+import { TwoFactorAuthCodeDto } from './dto/2fa-code.dto';
 
 @Controller('2fa')
 export class TwoFactorAuthController {

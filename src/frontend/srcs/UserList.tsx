@@ -3,7 +3,8 @@ import axiosApi, { fetch_refresh } from "./FetchInterceptor";
 import styles from "../styles/UserListStyle.module.css";
 import styles_profile from "../styles/UserProfileStyle.module.css";
 import "../pages/index.css";
-import { SocketContext, SocketContent } from "@/pages/App";
+import { SocketContent, SocketContext } from "@/context/socket";
+// import { SocketContext, SocketContent } from "@/pages/App";
 
 function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   const [showModals, setShowModals] = useState<boolean[]>([]);
@@ -93,7 +94,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     let conList:string[] = [];
     let gameList:string[] = [];
     let blockList:string[] = []; // requestTargetMembers (userId, targetId)
-    socket.emit("requestAllMembers", { userId : Number(userId) });
+    socket.emit("requestAllMembers");
     socket.on("responseAllMembers", async (data:any) => {
       for(let i = 0; i < data.length ; i++){
         console.log("data:", data[i]);
@@ -144,7 +145,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       const newData: userDataInterface = {
         id: detailResponse.id,
         nickname: detailResponse.nickname,
-        userProfileURL: "/api/" + detailResponse.avatar,
+        userProfileURL: "/api/user/" + response[i].id + "/photo",
         win: detailResponse._count.asWinner,
         lose: detailResponse._count.asLoser,
         score:
@@ -160,9 +161,9 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       for (let j = 0; j < matchCount; j++) {
         const newMatchData: userMatchHistory = {
           winner: matchResponse[j].winner.nickname,
-          winnerAvatar: "/api/" + matchResponse[j].winner.avatar,
+          winnerAvatar: "/api/user/" + matchResponse[j].winner.id + "/photo",
           loser: matchResponse[j].loser.nickname,
-          loserAvatar: "/api/" + matchResponse[j].loser.avatar,
+          loserAvatar: "/api/user/" + matchResponse[j].loser.id + "/photo",
           time: matchResponse[j].createdTime,
         };
         newMatchData.time = newMatchData.time.slice(0, 19);
@@ -315,7 +316,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
           const newData: userDataInterface = {
             id: detailResponse.id,
             nickname: detailResponse.nickname,
-            userProfileURL: "/api/" + detailResponse.avatar,
+            userProfileURL: "/api/user" + detailResponse.id + "/photo",
             win: detailResponse._count.asWinner,
             lose: detailResponse._count.asLoser,
             score: (parseInt(detailResponse._count.asWinner) * 10 - parseInt(detailResponse._count.asLoser) * 10),
@@ -329,9 +330,9 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
           for(let j = 0 ; j < matchCount ; j++){
             const newMatchData: userMatchHistory = {
               winner: matchResponse[j].winner.nickname,
-              winnerAvatar: "/api/" + matchResponse[j].winner.avatar,
+              winnerAvatar: "/api/user/" + matchResponse[j].winner.id + "/photo",
               loser: matchResponse[j].loser.nickname,
-              loserAvatar: "/api/" + matchResponse[j].loser.avatar,
+              loserAvatar: "/api/user/" + matchResponse[j].loser.id + "/photo",
               time: matchResponse[j].createdTime,
             };
             newMatchData.time = newMatchData.time.slice(0,19);
@@ -382,9 +383,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       for(let i = 0; i <= userData.length ; i++)
       {
         if(copiedData[i].id == userId.toString()){
-          const responseDetail = await axiosApi.get('http://localhost/api/user/' + userId, );
-          const detailResponse = responseDetail.data;
-          copiedData[i].userProfileURL = "/api/" + detailResponse.avatar;
+          copiedData[i].userProfileURL = "/api/user/" + userId + "/photo";
           break;
         }
       }
