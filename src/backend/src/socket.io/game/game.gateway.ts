@@ -332,6 +332,9 @@ export class GameGateway
 
   @SubscribeMessage('oneOnOneAccept')
   handleOneOnOneAccept(client: GameSocket, payload: Invitation) {
+    if (client.inGame) {
+      return `ERR ${client.nickname} is in game`;
+    }
     // Get By Nickname
     const fromClient: GameSocket = this.gameService.getSocketByNickname(this.io, payload.from);
 
