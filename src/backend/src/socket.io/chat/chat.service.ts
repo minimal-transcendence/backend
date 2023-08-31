@@ -235,7 +235,14 @@ export class ChatService {
 		}
 		if (room.userlist.has(client.userId)){
 			if (!room.isMuted(client.userId)){
-				this.processMessage(io, client.userId, to, body, true);
+				const msg = this.processMessage(io, client.userId, to, body, true);
+				//현재 이 방에는 없지만 joinlist에 이 방을 가지고 있는 모든 socket... 쉽지않구만
+				const users = this.storeUser.findAllUser().filter((user) => user.joinlist.has(to));
+				if (users){
+					users.forEach((user) => {
+						io.in(`$${user.id}`).except(to).emit("sendMessage", to, msg);
+					})
+				}
 			}
 			else
 				client.emit("sendAlert", "[ Alert ]", `You are MUTED in ${to}`);
