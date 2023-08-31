@@ -12,6 +12,7 @@ import { PrismaService } from 'src/prisma.service';
     GameService,
     MatchService,
     PrismaService
-  ]
+  ],
+  exports: [GameGateway]
 })
 export class GameModule {}
