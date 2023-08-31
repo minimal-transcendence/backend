@@ -197,6 +197,14 @@ export default function App() {
       setAlertModal(() => true);
     }
     if (socket) {
+      //test seunchoi
+      socket.on('inGame', (userId) => {
+        console.log(`${userId} is in game`)
+      });
+      socket.on('notInGame', (userId) => {
+        console.log(`${userId} is not in game`)
+      });
+
       socket.on("sendAlert", sendAlert);
       socket.on("sendBlocklist", sendBlocklist);
       socket.on("updateBlocklist", updateBlocklist);
