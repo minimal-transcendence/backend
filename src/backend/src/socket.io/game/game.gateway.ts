@@ -64,8 +64,6 @@ export class GameGateway
 					winner: room.winner.nickname,
 					loser: room.loser.nickname
 					});
-          this.io.server.of('chat').emit("notInGame", room.player[0].userId);
-          this.io.server.of('chat').emit("notInGame", room.player[1].userId);
 				}
 
 				// Set player status
