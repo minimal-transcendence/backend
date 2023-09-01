@@ -59,17 +59,18 @@ export class ChatService {
 		return (res);
 	}
 
-	processMessage(
-			io : Namespace,
-			fromId : number,
-			to : string,
-			body : string,
-			save : boolean,
-		) : formedMessage {
+	makeMessageFormat(
+		fromId : number,
+		body: string,
+		save : boolean,
+		to?: string
+	) : formedMessage | null {
 		let msg = null;
-		if (save){
+		if (save && to){
 			msg = new Message(fromId, body);
 			const room = this.storeRoom.findRoom(to);
+			if (!room)	//ERROR
+				return ;
 			room.messages.push(msg);
 		}
 		const format = {
@@ -78,6 +79,21 @@ export class ChatService {
 			body : body,
 			at : msg? msg.at : Date.now()
 		}
+		return (format);
+	}
+	
+	sendMsgToSocket(socket : ChatSocket, msg : formedMessage, roomname : string){
+		socket.emit("sendMessage", roomname, msg);
+	}
+
+	sendMsgToRoom(
+			io : Namespace,
+			fromId : number,
+			to : string,
+			body : string,
+			save : boolean,
+		) : formedMessage {
+		const format = this.makeMessageFormat(fromId, body, save, to);
 		io.in(to).emit("sendMessage", to, format);
 		return (format);
 	}
@@ -138,7 +154,7 @@ export class ChatService {
 			
 			//save welcome message
 			const body = `Welcome ${user.nickname} !`;
-			this.processMessage(io, 0, roomname, body, true);
+			this.sendMsgToRoom(io, 0, roomname, body, true);
 			
 			//send updateRoomMembers event to room
 			const roomMembers = this.makeRoomUserInfo(roomname);
@@ -243,7 +259,7 @@ export class ChatService {
 		}
 		if (room.userlist.has(client.userId)){
 			if (!room.isMuted(client.userId)){
-				const msg = this.processMessage(io, client.userId, to, body, true);
+				const msg = this.sendMsgToRoom(io, client.userId, to, body, true);
 				//현재 이 방에는 없지만 joinlist에 이 방을 가지고 있는 모든 socket... 쉽지않구만
 				const users = this.storeUser.findAllUser().filter((user) => user.joinlist.has(to));
 				if (users){
@@ -294,7 +310,7 @@ export class ChatService {
 				thisUser.joinlist.delete(roomname);
 				room.deleteUserFromUserlist(userId);
 				const body = `Good bye ${thisUser.nickname}`;
-				this.processMessage(io, 0, roomname, body, true);
+				this.sendMsgToRoom(io, 0, roomname, body, true);
 				//CHECK : except 잘 작동하는지 확인
 				io.to(roomname).except(`$${userId}`).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
 			}
@@ -346,7 +362,7 @@ export class ChatService {
 			}
 			//저장할건가...? (현재 false)
 			const body = `${targetUser.nickname} is Kicked Out`;
-			this.processMessage(io, 0, roomname, body, false);
+			this.sendMsgToRoom(io, 0, roomname, body, false);
 			io.to(roomname).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
 		}
 	}
@@ -371,7 +387,7 @@ export class ChatService {
 			}
 			//저장할건가...? (현재 false)
 			const body = `${targetUser.nickname} is banned`;
-			this.processMessage(io, 0, roomname, body, false);
+			this.sendMsgToRoom(io, 0, roomname, body, false);
 			io.to(roomname).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
 		}
 	}
@@ -381,23 +397,28 @@ export class ChatService {
 		const room = this.storeRoom.findRoom(roomname);
 		if (!this.checkActValidity(client, roomname, targetId, "mute"))
 			return ;
-		if (room.isMuted(targetId))
-			this.processMessage(io, 0, client.id, `${targetName} is already muted`, false);
-
+		if (room.isMuted(targetId)){
+			const msg = this.makeMessageFormat(0, `${targetName} is already muted`, false);
+			this.sendMsgToSocket(client, msg, roomname);
+		}
 		else{
 			if (room.isOperator(targetId))
 				room.deleteUserFromOperators(targetId);	//TODO & CHECK	//혹은 여기서는 그냥 해제 안 하는건?
 			room.addUserToMutelist(targetId);
 			//TODO : 아래로 바꾸고 싶다...! & CHECK!
+			let msg = this.makeMessageFormat(0, `${targetName} is now muted`, false);
+			this.sendMsgToSocket(client, msg, roomname);
 			const sockets = await this.extractSocketsInRoomById(io, targetId, roomname)
 			sockets.forEach((socket) => {
-					this.processMessage(io, 0, targetName, `You are temporaily muted by ${this.storeUser.getNicknameById(client.userId)}`, false);
+					const msg = this.makeMessageFormat(0, `You are temporaily muted by ${this.storeUser.getNicknameById(client.userId)}`, false);
+					this.sendMsgToSocket(socket, msg, roomname);
 				})
 			setTimeout(() => {
 				room.deleteUserFromMutelist(targetId);
 				//TODO & CHECK
 				sockets.forEach((socket) => {
-					this.processMessage(io, 0, targetName, `You are now unmuted `, false);
+					const msg = this.makeMessageFormat(0, `You are now unmuted`, false);
+					this.sendMsgToSocket(socket, msg, roomname);
 				})
 			}, 20000);
 		}
