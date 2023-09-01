@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import axiosApi, { fetch_refresh } from "./FetchInterceptor";
+import axiosApi from "./AxiosInterceptor";
 import styles_profile from "../styles/UserProfileStyle.module.css";
 import { SocketContext, SocketContent } from "@/context/socket";;
 import "../pages/index.css";
@@ -84,21 +84,29 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     let conList:string[] = [];
     let gameList:string[] = [];
     let blockList:string[] = [];
-    socket.emit("requestTargetMember", { userId : userId, tergetId : id });
-    socket.on("responseTargetMember", async (data:any) => {
-        console.log("data:", data);
-        if (data.isConnected === true){
-          conList.push((id).toString());
-        }
-        if (data.isGaming === true){
-          gameList.push((id).toString());
-        }
-        if (data.isBlocked === true){
-          blockList.push((id).toString());
-        }
-      console.log("socket response connection: ", conList);
-      console.log("socket response gaming: ", gameList);
-    })
+
+    function getListBySocket(data:any){
+      conList = [];
+      gameList = [];
+      blockList= [];
+      console.log("data:", data);
+      if (data.isConnected === true){
+        conList.push((id).toString());
+      }
+      if (data.isGaming === true){
+        gameList.push((id).toString());
+      }
+      if (data.isBlocked === true){
+        blockList.push((id).toString());
+      }
+    console.log("socket response target connection: ", conList);
+    console.log("socket response target gaming: ", gameList);
+    }
+
+    if (socket){
+      socket.emit("requestTargetMember", { userId : userId, tergetId : id });
+      socket.once("responseTargetMember", async (data:any) => getListBySocket(data))
+    }
 
     let idList: string[] = [];
     //const responseFriend = await (await fetch_refresh ('http://localhost/api/user/' + userId + '/friend')).json();
@@ -125,7 +133,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     const newData: userDataInterface = {
       id: detailResponse.id,
       nickname: detailResponse.nickname,
-      userProfileURL: "/api/user/" + id + "/photo",
+      userProfileURL: `/api/user/${id}/photo?timestamp=${Date.now()}`,
       win: detailResponse._count.asWinner,
       lose: detailResponse._count.asLoser,
       score:
@@ -143,9 +151,9 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     for (let j = 0; j < matchCount; j++) {
       const newMatchData: userMatchHistory = {
         winner: matchResponse[j].winner.nickname,
-        winnerAvatar: "/api/user/" + matchResponse[j].winner.id + "/photo",
+        winnerAvatar:`/api/user/${matchResponse[j].winner.id}/photo?timestamp=${Date.now()}`,
         loser: matchResponse[j].loser.nickname,
-        loserAvatar: "/api/user/" + matchResponse[j].loser.id + "/photo",
+        loserAvatar: `/api/user/${matchResponse[j].loser.id}/photo?timestamp=${Date.now()}`,
         time: matchResponse[j].createdTime,
       };
       newMatchData.time = newMatchData.time.slice(0, 19);
@@ -302,7 +310,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       for(let i = 0; i <= userData.length ; i++)
       {
         if(copiedData[i].id == userId.toString()){
-          copiedData[i].userProfileURL = "/api/user/" + userId + "/photo";
+          copiedData[i].userProfileURL = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
           break;
         }
       }

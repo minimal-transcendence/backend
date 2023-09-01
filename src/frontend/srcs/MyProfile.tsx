@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import axiosApi, { fetch_refresh } from "./FetchInterceptor";
+import axiosApi from "./AxiosInterceptor";
 import "../pages/index.css";
 import styles from "../styles/MyProfileStyle.module.css";
 
@@ -107,8 +107,7 @@ function MyProfile({
     if (selectedFile) {
       const formData = new FormData();
       formData.append("avatar", selectedFile);
-      console.log(formData);
-      try {
+      /*try {
         const response = await fetch(apiUrl, {
           method: "POST",
           body: formData,
@@ -122,19 +121,46 @@ function MyProfile({
           throw new Error(responseData.error);
         }
         console.log("profile 변경 응답 데이터:", responseData);
-        localStorage.setItem("avatar", "/api/user/" + userId + "/photo",);
-        setAvatarURL("/api/user/" + userId + "/photo");
+        localStorage.setItem("avatar", `/api/user/${userId}/photo?timestamp=${Date.now()}`,);
+        setAvatarURL(`/api/user/${userId}/photo?timestamp=${Date.now()}`);
+        console.log("URL change: " + avatarURL);
         setImageUrl(null);
         setSelectedFile(null);
         alert("프로필 사진이 변경되었습니다");
       } catch (error) {
         console.error("Error uploading image:", error);
         alert("에러 발생 :" + error);
+      }*/
+      try{
+        await axiosApi.post(apiUrl, formData,{
+          headers: {
+          "Content-Type": "multipart/form-data",
+        }})
+        .then((response:any) => {
+            console.log(response);
+            if (response.status != 201){
+              throw(response);
+            }
+            console.log("profile 변경 응답 데이터:", response.data);
+            localStorage.setItem("avatar", `/api/user/${userId}/photo?timestamp=${Date.now()}`,);
+            setAvatarURL(`/api/user/${userId}/photo?timestamp=${Date.now()}`);
+            console.log("URL change: " + avatarURL);
+            setImageUrl(null);
+            setSelectedFile(null);
+            alert("프로필 사진이 변경되었습니다");
+          })
+        .catch((error:any) => {
+          alert("이미지 업로드에 실패했습니다1.");
+          throw(error);
+        })
+      }
+      catch(error){
+        console.error("이미지 업로드 실패: ", error);
       }
     }
 
     if (is2Fa === "false" && checkIs2Fa === true) {
-      /*if (verCode == "" || verCode.length !== 6) {
+      if (verCode == "" || verCode.length !== 6) {
         throw "인증코드를 확인해주세요";
       }
       const faChangeApiUrl = "http://localhost/api/2fa/turn-on";
@@ -150,21 +176,20 @@ function MyProfile({
           },
         })
         .then((response) => {
-          if (response.data.error) {
-            alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
-            console.error("에러 발생:", response.data.error);
+          if (response.status != 201) {
+            throw(response.data.error);
           } else {
             localStorage.setItem("is2fa", "true");
             setIs2Fa("true");
             alert("2차인증이 설정되었습니다");
-            console.log("is2fa 변경 응답 데이터:", response.data);
+            console.log("is2fa 변경 응답 데이터:", JSON.stringify(response));
           }
         })
         .catch((error) => {
           alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
           console.error("에러 발생:", error);
-        });*/
-        try{
+        });
+       /* try{
           if (verCode == '' || verCode.length !== 6){
             throw("인증코드를 확인해주세요");
           }
@@ -198,9 +223,9 @@ function MyProfile({
         catch(error){
           alert("qr인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
           console.error('에러 발생:', error);
-        }
+        }*/
     } else if (is2Fa === "true" && checkIs2Fa === false) {
-      /*if (verCode == "" || verCode.length !== 6) {
+      if (verCode == "" || verCode.length !== 6) {
         throw "인증코드를 확인해주세요";
       }
       const faChangeApiUrl = "http://localhost/api/2fa/turn-off";
@@ -216,21 +241,20 @@ function MyProfile({
           },
         })
         .then((response) => {
-          if (response.data.error) {
-            alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
-            console.error("에러 발생:", response.data.error);
+          if (response.status != 201) {
+            throw(response.data.error);
           } else {
             localStorage.setItem("is2fa", "false");
             setIs2Fa("false");
             alert("2차인증이 해제되었습니다");
-            console.log("is2fa 변경 응답 데이터:", response.data);
+            console.log("is2fa 변경 응답 데이터:", JSON.stringify(response));
           }
         })
         .catch((error) => {
           alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
           console.error("에러 발생:", error);
-        });*/
-    try{
+        });
+    /*try{
         if (verCode == '' || verCode.length !== 6){
           throw("인증코드를 확인해주세요");
         }
@@ -264,7 +288,7 @@ function MyProfile({
       catch(error){
         alert("qr인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
         console.error('에러 발생:', error);
-      }
+      }*/
     }
   }
 
@@ -273,6 +297,9 @@ function MyProfile({
       <div className={styles.profileMainBox}>
         <div>
           <h2>내 프로필</h2>
+          {avatarURL && (
+          <img src={avatarURL} className={styles.selectProfileImage} ></img>
+          )}
         </div>
         <div>
           <br/>
