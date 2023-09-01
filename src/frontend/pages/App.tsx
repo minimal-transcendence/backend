@@ -384,17 +384,19 @@ export default function App() {
                 </>
               }
             </Box>
-
-            <GameContext.Provider //merge check
-              value={{
-                isGameConnected: isGameConnected,
-                matchStartCheck: matchStartCheck,
-                roomName: roomName,
-                gameData: gameData,
-              }}
-            >
-              <Pong gameLoad={gameLoad} />
-            </GameContext.Provider>
+              {gameLoad &&
+                <GameContext.Provider
+                value={{
+                  isGameConnected: isGameConnected,
+                  matchStartCheck: matchStartCheck,
+                  roomName: roomName,
+                  gameData: gameData,
+                }}
+              >
+                <Pong/>
+              </GameContext.Provider>
+              }
+            
 
             <ChatMain
               isDM={isDM}

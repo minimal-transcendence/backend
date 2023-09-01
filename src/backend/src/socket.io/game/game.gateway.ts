@@ -468,13 +468,13 @@ export class GameGateway
           --room.powerPoint[0];
           setTimeout(() => {
             room.powerUp[0] = false;
-          }, 5000);
-        } else if (room.powerPoint[1] > 0) {
+          }, 10000);
+        } else if (client === room.player[1] && room.powerPoint[1] > 0) {
           room.powerUp[1] = true;
           --room.powerPoint[1];
           setTimeout(() => {
             room.powerUp[1] = false;
-          }, 5000);
+          }, 10000);
         }
 
     }
