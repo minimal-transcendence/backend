@@ -170,7 +170,7 @@ export default function Pong() {
       context.fillText("PONG", canvas.width / 2, canvas.height * 0.4);
       context.font = "40px monospace";
       context.fillText("← → : MOVE", canvas.width / 2, canvas.height * 0.5);
-      context.fillText("SPACE[] : POWER-UP", canvas.width / 2, canvas.height * 0.5 + 50);
+      context.fillText("SPACE ⎵ : POWER-UP", canvas.width / 2, canvas.height * 0.5 + 50);
     };
 
     // Draw Game Over
