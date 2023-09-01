@@ -21,7 +21,7 @@ const ChatHeader = ({
   const handleExit = (event: any, currentroomname: string) => {
     event.preventDefault();
     console.log("방나감 ", currentroomname);
-    socket.emit("sendRoomLeave", currentroomname);
+    socket.emit("sendRoomLeave", { roomname: currentroomname });
   };
   const onSubmit = (event: any, value: string, currentRoomName: string) => {
     event.preventDefault();
@@ -32,12 +32,17 @@ const ChatHeader = ({
 
     if (chkAuth) {
       console.log("비번 바꾸기 가능");
-      socket.emit("setRoomPass", currentRoomName, value);
+      socket.emit("setRoomPass", {
+        roomname: currentRoomName,
+        password: value,
+      });
 
       if (roomState !== "Public") {
         console.log("test!!!!!public!!!!!");
         setRoomState("Public");
-        socket.emit("setRoomPublic", currentRoomName);
+        socket.emit("setRoomPublic", {
+          roomname: currentRoomName,
+        });
       }
     }
     setPassword("");
@@ -71,7 +76,9 @@ const ChatHeader = ({
           if (chkAuth) {
             console.log("권한있음. public으로 전환");
             setRoomState("Public");
-            socket.emit("setRoomPublic", currentRoomName);
+            socket.emit("setRoomPublic", {
+              roomname: currentRoomName,
+            });
           }
         }
       } else if (event.target.dataset.name === "password") {
@@ -95,7 +102,9 @@ const ChatHeader = ({
           if (chkAuth) {
             console.log("권한있음. private로 전환");
             setRoomState("Private");
-            socket.emit("setRoomPrivate", currentRoomName);
+            socket.emit("setRoomPrivate", {
+              roomname: currentRoomName,
+            });
           }
         }
       }

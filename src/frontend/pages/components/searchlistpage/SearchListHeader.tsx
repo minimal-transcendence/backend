@@ -43,7 +43,7 @@ export default function SearchListHeader({
   function handleSelectRoom(event: any, room: any) {
     setroomnameModal(room.roomname);
     console.log("in Selectroomname handle ", room?.roomname);
-    socket.emit("selectRoom", room?.roomname);
+    socket.emit("selectRoom", { roomname: room?.roomname });
   }
 
   function handleChk(event: any) {
@@ -54,7 +54,7 @@ export default function SearchListHeader({
         socket.emit("requestAllRoomList");
       else if (event.target.dataset.name === "result") {
         console.log("wehn click result ", query);
-        socket.emit("requestSearchResultRoomList", query);
+        socket.emit("requestSearchResultRoomList", { target: query });
       } else if (event.target.dataset.name === "joined")
         socket.emit("requestMyRoomList");
     } else console.log("in handleChk other");

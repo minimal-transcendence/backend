@@ -297,9 +297,6 @@ function MyProfile({
       <div className={styles.profileMainBox}>
         <div>
           <h2>내 프로필</h2>
-          {avatarURL && (
-          <img src={avatarURL} className={styles.selectProfileImage} ></img>
-          )}
         </div>
         <div>
           <br/>

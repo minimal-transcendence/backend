@@ -110,6 +110,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       }
       console.log("socket response connection: ", conList);
       console.log("socket response gaming: ", gameList);
+      console.log("socket response block: ", blockList);
     }
     
     if (socket){
@@ -221,9 +222,11 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     let copiedData = [...userData];
     if (userData[index].isBlocked == 0){
       copiedData[index].isBlocked = 1;
+      socket.emit("blockUser", {target : userData[index].nickname})
     }
     else{
       copiedData[index].isBlocked = 0;
+      socket.emit("unblockUser", {target : userData[index].nickname})
     }
     setData(copiedData);
   }

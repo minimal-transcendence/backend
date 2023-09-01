@@ -50,6 +50,7 @@ export class GameService {
         ballY: room.ballY,
         paddleX: room.paddleX,
         powerUp: room.powerUp,
+        powerBall: room.powerBall,
         playerScore: room.playerScore,
       });
     }, 15);
@@ -57,7 +58,12 @@ export class GameService {
 
   ballMove(room: GameRoom) {
     // Vertical Speed
-    room.ballY += room.speedY * room.ballDirection;
+    if (room.powerBall) {
+      room.ballY += (room.maxSpeedY + 3) * room.ballDirection;
+    } else {
+      room.ballY += room.speedY * room.ballDirection;
+    }
+
     // Horizontal Speed
     room.ballX += room.speedX;
     // Bounce off Left Wall
@@ -72,12 +78,22 @@ export class GameService {
     if (room.ballY > room.canvasHeight - room.paddleDiff) {
       // Bounce off player paddle (bottom)
       if (room.ballX >= room.paddleX[0] && room.ballX <= room.paddleX[0] + room.paddleWidth) {
+        // Set ball crood right on paddle
+        room.ballY = room.canvasHeight - room.paddleDiff;
+        if (room.powerUp[0]) {
+          // make ball power-up
+          room.powerBall = true;
+        } else {
+          // turn off power-up ball speed
+          room.powerBall = false;
           // Add Speed on Hit
           room.speedY += 1;
           // Max Speed
           if (room.speedY > room.maxSpeedY) {
-              room.speedY = room.maxSpeedY;
+            room.speedY = room.maxSpeedY;
           }
+        }
+          
           room.ballDirection = -room.ballDirection;
           room.speedX = room.speedX > 0 ?
             Math.random() * room.maxSpeedX :
@@ -101,6 +117,7 @@ export class GameService {
           return;
         }
         // Reset Ball
+        room.powerBall = false;
         room.ballX = room.canvasWidth / 2;
         room.ballY = room.canvasHeight / 2;
         room.speedY = room.defaultSpeedY;
@@ -111,12 +128,21 @@ export class GameService {
     if (room.ballY < room.paddleDiff) {
       // Bounce off computer paddle (top)
       if (room.ballX >= room.paddleX[1] && room.ballX <= room.paddleX[1] + room.paddleWidth) {
-        // Add Speed on Hit
-        room.speedY += 1;
+        // Set ball crood right on paddle
+        room.ballY = room.paddleDiff;
+        if (room.powerUp[1]) {
+          // make ball power-up
+          room.powerBall = true;
+        } else {
+          // turn off power-up ball speed
+          room.powerBall = false;
+          // Add Speed on Hit
+          room.speedY += 1;
           // Max Speed
           if (room.speedY > room.maxSpeedY) {
-              room.speedY = room.maxSpeedY;
+            room.speedY = room.maxSpeedY;
           }
+        }
 
           room.ballDirection = -room.ballDirection;
           room.speedX = room.speedX > 0 ?
@@ -141,6 +167,7 @@ export class GameService {
           return;
         }
         // Reset Ball
+        room.powerBall = false;
         room.ballX = room.canvasWidth / 2;
         room.ballY = room.canvasHeight / 2;
         room.speedY = room.defaultSpeedY;
@@ -154,6 +181,18 @@ export class GameService {
 
     io.sockets.forEach((socket: GameSocket) => {
       if (socket.nickname === nickname) {
+        found = socket;
+      }
+    });
+
+    return found;
+  }
+
+  getSocketById(io: Namespace, id: number): GameSocket {
+    let found: GameSocket;
+
+    io.sockets.forEach((socket: GameSocket) => {
+      if (socket.userId === id) {
         found = socket;
       }
     });

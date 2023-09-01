@@ -62,7 +62,7 @@ export default function ChatRoomUser({
       }
       a();
     },
-    [users, page]
+    [users, page, filtered]
   );
   if (!users || !roomname) return;
   else {

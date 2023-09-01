@@ -37,7 +37,7 @@ export default function Search({
             setError("");
           } else {
             console.log("in requestMyRoomList if <", query);
-            socket.emit("requestSearchResultRoomList", query);
+            socket.emit("requestSearchResultRoomList", { target: query });
 
             setLeftHeader("result");
             setError("");

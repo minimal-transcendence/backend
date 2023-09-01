@@ -3,9 +3,10 @@ import { SocketContext } from "@/context/socket";
 import menuIcon from "../../../assets/menu.png";
 import ysungwonIcon from "../../../assets/ysungwon.jpg";
 import ModalOverlay from "../../components/modalpage/ModalOverlay";
-
+import axios from "axios";
 import UserProfile from "../../../srcs/UserProfile";
 import Image from "next/image";
+import axiosApi from "@/srcs/AxiosInterceptor";
 
 export default function ChatRoomUserInfo({
   user,
@@ -28,15 +29,14 @@ export default function ChatRoomUserInfo({
   const gameSocket = useContext(SocketContext).gameSocket;
   const [userProfileModal, setUserProfileModal] = useState<boolean>(false);
 
-  // async function getImgURL(id: string) {
-  //   const thisUser = await fetch("http://localhost/api/user/" + id);
-  //   const data = await thisUser.json();
-  //   console.log("/api/" + data.avatar);
-  // }
-
-  console.log("in ChatRoomUserInfom user: ", JSON.stringify(user, null, 2));
+  console.log("in ChatRoomUserInfo user: ", JSON.stringify(user, null, 2));
+  console.log(
+    "in ChatRoomUserInfo ",
+    JSON.stringify(user?.nickname),
+    JSON.stringify(myNickName)
+  );
   function handleMenu(event: any) {
-    console.log("in hnadleMenu");
+    console.log("in handleMenu");
     if (event.target.dataset.name) {
       console.log(
         `${myNickName}가 ${user?.nickname}를 ${roomname}에서 ${event.target.dataset.name}클릭!!!`
@@ -44,7 +44,10 @@ export default function ChatRoomUserInfo({
       const targetnickname = user?.nickname;
       if (event.target.dataset.name === "kick") {
         console.log("target nickname : " + targetnickname);
-        socket.emit("kickUser", roomname, targetnickname);
+        socket.emit("kickUser", {
+          roomname: roomname,
+          target: targetnickname,
+        });
       } else if (event.target.dataset.name === "profile") {
         console.log("in profileUser ", targetnickname, user?.id, id);
         // socket.emit("profileUser", roomname, targetnickname);
@@ -52,24 +55,39 @@ export default function ChatRoomUserInfo({
         // setUserProfileID(()=> user?.id)
       } else if (event.target.dataset.name === "ban") {
         console.log("in banUser ", roomname, targetnickname);
-        socket.emit("banUser", roomname, targetnickname);
+        socket.emit("banUser", {
+          roomname: roomname,
+          target: targetnickname,
+        });
       } else if (event.target.dataset.name === "mute") {
-        console.log("in muteUser ", roomname, targetnickname);
-        socket.emit("muteUser", roomname, targetnickname);
+        console.log("in muteUser ", {
+          roomname: roomname,
+          target: targetnickname,
+        });
+        socket.emit("muteUser", {
+          roomname: roomname,
+          target: targetnickname,
+        });
       } else if (event.target.dataset.name === "block") {
         console.log("in blockUser111111111111111 ", targetnickname);
         if (targetnickname !== myNickName) {
           console.log("in blockUser222222222222222 ", targetnickname);
-          socket.emit("blockUser", targetnickname);
+          socket.emit("blockUser", { target: targetnickname });
         }
       } else if (event.target.dataset.name === "opAdd") {
         console.log("in addOperator ", roomname, targetnickname);
-        socket.emit("addOperator", roomname, targetnickname);
+        socket.emit("addOperator", {
+          roomname: roomname,
+          target: targetnickname,
+        });
       } else if (event.target.dataset.name === "opDelete") {
         console.log("in deleteOperator ", roomname, targetnickname);
-        socket.emit("deleteOperator", roomname, targetnickname);
+        socket.emit("deleteOperator", {
+          roomname: roomname,
+          target: targetnickname,
+        });
       } else if (event.target.dataset.name === "dmApply")
-        socket.emit("selectDMRoom", targetnickname);
+        socket.emit("selectDMRoom", { target: targetnickname });
       else if (event.target.dataset.name === "oneVsOneEasy") {
         console.log("easy");
         gameSocket.emit("oneOnOneApply", {
@@ -96,19 +114,23 @@ export default function ChatRoomUserInfo({
       console.log("you click other");
     }
   }
-  // getImgURL(id);
   return (
     <>
       <li>
         <div className="userlist-avatar">
-          {/* <img src={ysungwonIcon} width="32" height="32" /> */}
-          <Image
-            className="avatar-img"
-            src={ysungwonIcon}
+          <img
+            src={`http://localhost/api/user/${user?.id}/photo`}
             width="32"
             height="32"
             alt="avataricon"
           />
+          {/* <Image
+            className="avatar-img"
+            src={imgSrc}
+            width="32"
+            height="32"
+            alt="avataricon"
+          /> */}
         </div>
         <p className="userlist-username">
           {roomInfo?.owner === user?.nickname ? "🔱" : ""}
@@ -185,12 +207,14 @@ export default function ChatRoomUserInfo({
         </div>
         <p className="userlist-userstatus-text">
           {(() => {
-            const num = Math.trunc(Math.random() * 5);
-            if (num === 0) return "밥 먹는 중";
-            else if (num === 1) return "GOD님과 게임 하는 중";
-            else if (num === 2) return "온라인";
-            else if (num === 3) return "오프라인";
-            else if (num === 4) return "자리비움";
+            // const num = Math.trunc(Math.random() * 5);
+            // if (num === 0) return "밥 먹는 중";
+            // else if (num === 1) return "GOD님과 게임 하는 중";
+            // else if (num === 2) return "온라인";
+            // else if (num === 3) return "오프라인";
+            // else if (num === 4) return "자리비움";
+            if (user?.isGaming) return "게임중";
+            return "온라인";
           })()}
         </p>
       </li>
