@@ -1,8 +1,9 @@
-import { Injectable, HttpException, HttpStatus, StreamableFile } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, StreamableFile, ConsoleLogger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { Prisma, User } from '@prisma/client';
 import { join } from 'path';
 import { createReadStream } from 'fs';
+import * as fs from 'fs';
 import { ChatGateway } from 'src/socket.io/chat/chat.gateway';
 import { GameGateway } from 'src/socket.io/game/game.gateway';
 
@@ -98,6 +99,13 @@ export class UserService {
 		data : Prisma.UserUpdateInput, 
 		file? : Express.Multer.File)
 	{
+		let oldAvatar : string;
+		if (file) {
+			oldAvatar = await this.prisma.user.findUniqueOrThrow({
+				where : { id },
+				select : { avatar : true }
+			}).then((res) => { return res.avatar })
+		}
 		return await this.prisma.user.update({
 			where : { id : id },
 			data : {
@@ -109,6 +117,13 @@ export class UserService {
 		}).then((res) => {
 			if (file) {
 				this.chatGateway.updateUserAvatar(id);
+				if (oldAvatar != "default.png"){
+					fs.unlink('/photo/' + oldAvatar, (err) => {
+						//err처리
+						if (err)
+							console.log(err);
+					});
+				}
 			}
 			if (data.nickname) {
 				this.chatGateway.updateUserNick(id, data.nickname as string);
