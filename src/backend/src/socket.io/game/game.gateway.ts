@@ -67,14 +67,21 @@ export class GameGateway
 				}
 
 				// Set player status
-				if (room.player[0]) {
-					room.player[0].inGame = false;
-          this.io.server.of('chat').emit('notInGame', room.player[0].userId);
-				}
-				if (room.player[1]) {
-					room.player[1].inGame = false;
-          this.io.server.of('chat').emit('notInGame', room.player[1].userId);
-				}
+				// if (room.player[0]) {
+				// 	room.player[0].inGame = false;
+        //   this.io.server.of('chat').emit('notInGame', room.player[0].userId);
+				// }
+				// if (room.player[1]) {
+				// 	room.player[1].inGame = false;
+        //   this.io.server.of('chat').emit('notInGame', room.player[1].userId);
+				// }
+        //CHECK : if either of player can be non-exist
+        if (room.player[0] && room.player[1])
+            this.gameService.updateInGameStatus(
+            this.io.server.of('chat'),
+            room.player[0], room.player[1],
+            false
+        );
 
 				// Delete GameRoom Instance
 				delete this.gameRooms[e];
@@ -208,10 +215,16 @@ export class GameGateway
         mode: mode
       });
 
-      playerOne.inGame = true;
-      playerTwo.inGame = true;
-      this.io.server.of('chat').emit('inGame', playerOne.userId);
-      this.io.server.of('chat').emit('inGame', playerTwo.userId);
+      // playerOne.inGame = true;
+      // playerTwo.inGame = true;
+      // this.io.server.of('chat').emit('inGame', playerOne.userId);
+      // this.io.server.of('chat').emit('inGame', playerTwo.userId);
+      this.gameService.updateInGameStatus(
+        this.io.server.of('chat'),
+        playerOne,
+        playerTwo,
+        true
+      )
 
       console.log("create game room:", roomName);
 
@@ -278,10 +291,16 @@ export class GameGateway
       return;
     }
 
-    room.player[0].inGame = false;
-    this.io.server.of('chat').emit('notInGame', room.player[0].userId);
-    room.player[1].inGame = false;
-    this.io.server.of('chat').emit('notInGame', room.player[1].userId);
+    //CHECK : 여기서 notInGame event필요한지?
+    // room.player[0].inGame = false;
+    // this.io.server.of('chat').emit('notInGame', room.player[0].userId);
+    // room.player[1].inGame = false;
+    // this.io.server.of('chat').emit('notInGame', room.player[1].userId);
+    this.gameService.updateInGameStatus(
+      this.io.server.of('chat'),
+      room.player[0], room.player[1],
+      false
+    )
 
     this.io.to(roomName).emit('matchDecline', roomName);
     // delete game room
@@ -360,10 +379,16 @@ export class GameGateway
           mode: payload.mode
         });
 
-        fromClient.inGame = true;
-        client.inGame = true;
-        this.io.server.of('chat').emit('inGame', client.userId);
-        this.io.server.of('chat').emit('inGame', fromClient.userId);
+        //TODO : 상태값 바꾸기...!
+        // fromClient.inGame = true;
+        // client.inGame = true;
+        // this.io.server.of('chat').emit('inGame', client.userId);
+        // this.io.server.of('chat').emit('inGame', fromClient.userId);
+        this.gameService.updateInGameStatus(
+          this.io.server.of('chat'),
+          client, fromClient,
+          true
+        )
 
         // Add Players into Game Room
         fromClient.join(roomName);
