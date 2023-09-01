@@ -61,7 +61,7 @@ export default function App() {
   const [alertModal, setAlertModal] = useState<boolean>(false);
   const [alertModalTitle, setAlertModalTitle] = useState<string>("");
   const [alertModalBody, setAlertModalBody] = useState<string>("");
-
+  const [isDM, setIsDM] = useState<boolean>(false);
   // seunchoi - for socket connection
   const [gameLoad, setGameLoad] = useState<boolean>(false);
   // Get Empty Socket Instance
@@ -146,24 +146,28 @@ export default function App() {
           return result;
         });
       });
-      if (roomname === currentRoomName) {
+      if (roomname === currentRoomName && !isDM) {
         console.log("same room!", currentRoomName, roomname);
         setMessages(() => [...messages, data]);
       }
     }
-    function sendDM(from: string, data: any) {
+    function sendDM(to: string, data: any) {
       console.log(
-        `in useEffect sendDM  from<${from}> data<${JSON.stringify(
+        `in useEffect sendDM  to<${to}> data<${JSON.stringify(
           data,
           null,
           2
         )}> 내 방은 <${currentRoomName}>`
       );
-      if (
-        from === currentRoomName ||
-        (from === tmpLoginnickname && data.from === currentRoomName)
-      ) {
-        console.log("same froom!", currentRoomName, from);
+      console.log(
+        "in useEffect sendDM to, curretRoomName, isDM  chk",
+        to,
+        currentRoomName,
+        isDM,
+        data?.from === currentRoomName || to === currentRoomName
+      );
+      if (isDM && (data?.from === currentRoomName || to === currentRoomName)) {
+        console.log("same froom!", currentRoomName, to);
         setMessages(() => [...messages, data]);
       }
     }
@@ -193,6 +197,14 @@ export default function App() {
       setAlertModal(() => true);
     }
     if (socket) {
+      //test seunchoi
+      socket.on('inGame', (userId) => {
+        console.log(`${userId} is in game`)
+      });
+      socket.on('notInGame', (userId) => {
+        console.log(`${userId} is not in game`)
+      });
+
       socket.on("sendAlert", sendAlert);
       socket.on("sendBlocklist", sendBlocklist);
       socket.on("updateBlocklist", updateBlocklist);
@@ -217,7 +229,7 @@ export default function App() {
         socket.off("sendDM", sendDM);
       }
     };
-  }, [currentRoomName, results, messages, socket, blocklist]);
+  }, [currentRoomName, results, messages, socket, blocklist, isDM]);
 
   // seunchoi
   const handleGameOnOff = () => {
@@ -385,6 +397,8 @@ export default function App() {
             </GameContext.Provider>
 
             <ChatMain
+              isDM={isDM}
+              setIsDM={setIsDM}
               roomInfo={roomInfo}
               setRoomInfo={setRoomInfo}
               messages={messages}
@@ -407,7 +421,10 @@ export default function App() {
                   roomname={currentRoomName}
                   myNickName={tmpLoginnickname}
                 />
-                <GameList myNickName={tmpLoginnickname} />
+                <GameList
+                  myNickName={tmpLoginnickname}
+                  setMatchStartCheck={setMatchStartCheck}
+                />
               </>
             </Box>
           </Main>

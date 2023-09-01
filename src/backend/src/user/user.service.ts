@@ -4,12 +4,14 @@ import { Prisma, User } from '@prisma/client';
 import { join } from 'path';
 import { createReadStream } from 'fs';
 import { ChatGateway } from 'src/socket.io/chat/chat.gateway';
+import { GameGateway } from 'src/socket.io/game/game.gateway';
 
 @Injectable()
 export class UserService {
 	constructor(
 		private readonly prisma: PrismaService,
-		private readonly chatGateway : ChatGateway
+		private readonly chatGateway : ChatGateway,
+		private readonly gameGateway : GameGateway
 	){}
 
 	//upsert
@@ -110,6 +112,7 @@ export class UserService {
 			}
 			if (data.nickname) {
 				this.chatGateway.updateUserNick(id, data.nickname as string);
+				this.gameGateway.updateUserNick(id, data.nickname as string);
 			}
 			return (res);
 		}).catch((error) => {

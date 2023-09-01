@@ -271,7 +271,7 @@ export class ChatService {
 			throw new Error("Error : Room does not exist");
 		}
 		if (room.userlist.has(userId) && thisUser.joinlist.has(roomname)){
-			if (room.userlist.size == 1)
+			if (room.userlist.size == 1 && roomname != "DEFAULT")
 			{
 				room.clearRoom();
 				this.storeRoom.deleteRoom(roomname);
@@ -515,7 +515,7 @@ export class ChatService {
 			at : message.at
 		};
 		this.storeMessage.saveMessage(message);
-		io.to([`$${from}$`, `$${to}$`]).emit("sendDM", this.storeUser.getNicknameById(to), res);	//if you touch ${} here is going to change the most
+		io.to([`$${from}$`, `$${to}$`, `$${to}`]).emit("sendDM", this.storeUser.getNicknameById(to), res);	//if you touch ${} here is going to change the most
 	}
 
 	makeDMRoomMessages(client : ChatSocket, to : string) : formedMessage[] | null {
@@ -708,8 +708,11 @@ export class ChatService {
 		user.joinlist.forEach((room) => {
 			const currRoomInfo = this.makeCurrRoomInfo(room);
 			const roomMembers = this.makeRoomUserInfo(room);
+			console.log(JSON.stringify(currRoomInfo));
+			console.log(JSON.stringify(roomMembers));
 			io.in(room).emit("sendRoomMembers", roomMembers);
 			io.in(room).emit("sendCurrRoomInfo", currRoomInfo);
+			console.log(`send change nick event ${newNick} in room ${room}`);0
 		})
 		//dm방 update 필요...
 		const sockets = await io.in(`$${clientId}$`).fetchSockets()
