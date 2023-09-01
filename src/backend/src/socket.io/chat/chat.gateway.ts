@@ -186,8 +186,10 @@ export class ChatGateway
 	}
 
 	@SubscribeMessage('requestTargetMember')
-	handleReqTargetMember(client: ChatSocket, payload : TargetDto){
-		const member = this.chatService.getUserInfoById(client.userId, payload.target);
+	handleReqTargetMember(client: ChatSocket, payload : UserInfoDto){
+		const member = this.chatService.getUserInfoById(client.userId, payload.targetId);
+		console.log("responseTargetMember");
+		console.log(member);
 		client.emit('responseTargetMember', member);
 	}
 	

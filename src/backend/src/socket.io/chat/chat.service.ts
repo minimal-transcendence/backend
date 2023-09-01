@@ -716,7 +716,7 @@ export class ChatService {
 		return (res);
 	}
 
-	getUserInfoById(userId : number, targetId: string) : userInfo {
+	getUserInfoById(userId : number, targetId: number) : userInfo {
 		const target = this.storeUser.findUserById(Number(targetId));
 		return ({
 			id : Number(targetId),

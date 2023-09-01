@@ -104,7 +104,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     }
 
     if (socket){
-      socket.emit("requestTargetMember", { userId : userId, tergetId : id });
+      socket.emit("requestTargetMember", { userId : Number(userId), targetId : Number(id) });
       socket.once("responseTargetMember", async (data:any) => getListBySocket(data))
     }
 
@@ -151,9 +151,9 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     for (let j = 0; j < matchCount; j++) {
       const newMatchData: userMatchHistory = {
         winner: matchResponse[j].winner.nickname,
-        winnerAvatar:`/api/user/${matchResponse[j].winner.id}/photo?timestamp=${Date.now()}`,
+        winnerAvatar:`/api/photo/${matchResponse[j].winner.avatar}`,
         loser: matchResponse[j].loser.nickname,
-        loserAvatar: `/api/user/${matchResponse[j].loser.id}/photo?timestamp=${Date.now()}`,
+        loserAvatar: `/api/photo/${matchResponse[j].loser.avatar}`,
         time: matchResponse[j].createdTime,
       };
       newMatchData.time = newMatchData.time.slice(0, 19);
