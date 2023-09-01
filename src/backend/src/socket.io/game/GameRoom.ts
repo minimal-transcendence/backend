@@ -15,6 +15,7 @@ export class GameRoom {
     // Power Up
     powerUp: boolean[];
     powerPoint: number[];
+    powerBall: boolean;
     // Check Every Player Accept this Match
     playerAccept: boolean[];
     // Canvas
@@ -64,6 +65,7 @@ export class GameRoom {
         // Power Up
         this.powerUp = [false, false];
         this.powerPoint = [1, 1];
+        this.powerBall = false;
         // Score
         this.playerScore = [0, 0];
         //Canvas

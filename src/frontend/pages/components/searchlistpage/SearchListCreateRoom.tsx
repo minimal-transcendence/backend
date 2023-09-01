@@ -19,7 +19,7 @@ export default function SearchListCreateRoom({
       await new Promise((r) => setTimeout(r, 10));
       alert(`입력된 채팅창 이름: ${roomname}`);
       setroomnameModal(roomname);
-      socket.emit("selectRoom", roomname);
+      socket.emit("selectRoom", { roomname: roomname });
     }
     setroomname("");
     setDisabled(false);

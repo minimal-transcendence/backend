@@ -10,7 +10,7 @@ export class TwoFactorAuthService {
     constructor( private userService : UserService ) {}
 
     async generateQrCode(stream: Response, user: User): Promise<any> {
-        if (user.otpSecret) {
+        if (user.isOtpVerified) {
             return stream.send({
                 message: 'you already have otp secret',
             })

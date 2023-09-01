@@ -15,6 +15,8 @@ const ChatMain = ({
   setMessages,
   blocklist,
   gameLoad,
+  isDM,
+  setIsDM,
 }: {
   roomInfo: any;
   setRoomInfo: any;
@@ -25,9 +27,11 @@ const ChatMain = ({
   setMessages: any;
   blocklist: string[];
   gameLoad: boolean;
+  isDM: boolean;
+  setIsDM: any;
 }) => {
   // const [typingStatus, setTypingStatus] = useState("");
-  const [isDM, setIsDM] = useState<boolean>(false);
+
   const [DMtarget, setDMtarget] = useState<string>("");
 
   const [roomState, setRoomState] = useState<string>("");
@@ -72,7 +76,14 @@ const ChatMain = ({
       socket.off("sendCurrRoomInfo", sendCurrRoomInfo);
       socket.off("sendDMRoomInfo", sendDMRoomInfo);
     };
-  }, [currentRoomName, messages, setcurrentRoomName, socket]);
+  }, [
+    currentRoomName,
+    messages,
+    setMessages,
+    setcurrentRoomName,
+    setRoomInfo,
+    socket,
+  ]);
 
   // useEffect(() => {f
   //   socket.on("messageResponse", (data: any) =>

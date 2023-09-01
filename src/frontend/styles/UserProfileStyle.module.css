@@ -1,10 +1,11 @@
 	.mainBox{
 		display: flex;
-		width:1000px;
+		width:1050px;
 		height:800px;
 		padding: 30px;
 		border-radius:20px;
 		flex-direction: row;
+		background-color: white;
 	}
 
 	.profileInner{
@@ -63,14 +64,28 @@
 		background-color: green;
 	  }
 
+	  .circleMine {
+		position: absolute;
+		top: 115px;
+		left: 115px;
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		z-index: 2;
+		border:1px solid white;
+		background-color: skyblue;
+	  }
+
 	.wlsBanner{
 		color: #808080;
+		margin-bottom: 20px;
 	}
 
 	.buttons {
 		display: flex;
 		flex-direction: row; /* 버튼들을 세로로 배치 */
 		gap: 10px; /* 버튼 간격 */
+		padding:10px;
 	}
 
 	.buttons button {
@@ -80,7 +95,6 @@
 		border: none;
 		border-radius: 5px;
 		cursor: pointer;
-		color:white;
 		font-size: 18px;
 		font-weight: bold;
 		font-family: Pretendard, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
@@ -89,12 +103,27 @@
 
 	.followButton{
 		background: #4193EF;
+		color:white;
 	}
 	.followingButton{
 		background: #454545;
+		color:white;
 	}
 	.gameButton{
 		background: #58BF91;
+		color:white;
+	}
+	.disabled{
+		background: #525252;
+		color: rgb(121, 121, 121);
+	}
+	.blockButton{
+		background: #ea4d58;
+		color:white;
+	}
+	.unblockButton{
+		background: #8961ef;
+		color:white;
 	}
 	.fontSet{
 		font-weight: bold;
@@ -115,7 +144,7 @@
 		margin: 10px;
 		padding: 10px;
 		width: 600px;
-		height: 50px;
+		height: 75px;
 		border-radius:20px;
 		background: #445069;
 		color:white;
@@ -125,6 +154,7 @@
 		width: 200px;
 		height: 50px;
 		font-size: 15px;
+		margin-top: 7px;
 		text-align: center;
 		justify-content: center;
 	}
@@ -132,6 +162,7 @@
 	.logName{
 		width: 150px;
 		height: 50px;
+		margin-top: 15px;
 		font-size: 15px;
 		text-align: center;
 		justify-content: center;
@@ -145,6 +176,28 @@
 		width: 50px;
 		height: 50px;
 		font-size: 30px;
+		margin-top: 7px;
 		text-align: center;
 		justify-content: center;
 	}
+
+	.gameButtons {
+		display: flex;
+		flex-direction: column; /* 버튼들을 세로로 배치 */
+		gap: 10px; /* 버튼 간격 */
+		padding:10px;
+		align-items: middle;
+		text-align: center;
+	  }
+	
+	  .gameButtons button {
+		padding: 8px 8px;
+		width: 120px;
+		height: 35px;
+		border: none;
+		font-size: 20px;
+		border-radius: 5px;
+		cursor: pointer;
+		background: #4b8dc3;
+		color:white;
+	  }
