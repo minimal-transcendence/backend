@@ -71,6 +71,25 @@ export default function App() {
   const [gameSocket, setGameSocket] = useState<Socket>(
     io.connect("", { query: { nickname: "" } })
   );
+  const [changedID, setChangedID] = useState<number>(-2);
+  const [changedNickName, setChangedNickName] = useState<string>("");
+  useEffect(() => {
+    function reloadNick(userId: number, newNick: string) {
+      console.log("in useEffect ChatRoom nicknameupdate " + userId + newNick);
+
+      setChangedID(() => userId);
+      setChangedNickName(() => newNick);
+    }
+
+    if (socket) {
+      socket.on("updateUserNick", reloadNick);
+    }
+    return () => {
+      if (socket) {
+        socket.off("updateUserNick", reloadNick);
+      }
+    };
+  }, [socket]);
 
   useEffect(() => {
     const getSocket = (namespace: string, jwt: string, nickname: string) => {
@@ -198,11 +217,11 @@ export default function App() {
     }
     if (socket) {
       //test seunchoi
-      socket.on('inGame', (userId) => {
-        console.log(`${userId} is in game`)
+      socket.on("inGame", (userId) => {
+        console.log(`${userId} is in game`);
       });
-      socket.on('notInGame', (userId) => {
-        console.log(`${userId} is not in game`)
+      socket.on("notInGame", (userId) => {
+        console.log(`${userId} is not in game`);
       });
 
       socket.on("sendAlert", sendAlert);
@@ -384,8 +403,8 @@ export default function App() {
                 </>
               }
             </Box>
-              {gameLoad &&
-                <GameContext.Provider
+            {gameLoad && (
+              <GameContext.Provider
                 value={{
                   isGameConnected: isGameConnected,
                   matchStartCheck: matchStartCheck,
@@ -393,10 +412,9 @@ export default function App() {
                   gameData: gameData,
                 }}
               >
-                <Pong/>
+                <Pong />
               </GameContext.Provider>
-              }
-            
+            )}
 
             <ChatMain
               isDM={isDM}
@@ -422,6 +440,8 @@ export default function App() {
                   users={roomUserList}
                   roomname={currentRoomName}
                   myNickName={tmpLoginnickname}
+                  changedID={changedID}
+                  changedNickName={changedNickName}
                 />
                 <GameList
                   myNickName={tmpLoginnickname}

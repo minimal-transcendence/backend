@@ -11,6 +11,8 @@ export default function ChatRoomUser({
   setRoomInfo,
   roomname,
   myNickName,
+  changedID,
+  changedNickName,
 }: // alertModal,
 // setAlertModal,
 // alertModalTitle,
@@ -25,6 +27,8 @@ export default function ChatRoomUser({
   setRoomInfo: any;
   roomname: string;
   myNickName: string;
+  changedID: number;
+  changedNickName: string;
   // alertModal: any;
   // setAlertModal: any;
   // alertModalTitle: string;
@@ -34,7 +38,7 @@ export default function ChatRoomUser({
 }) {
   // console.log("in chatroomUser, users", users);
   // console.log("in chatroomUser, roomname", roomname);
-
+  const socket = useContext(SocketContext).chatSocket;
   const [page, setPage] = useState<number>(1);
   const [leftArrow, setLeftArrow] = useState<boolean>(false);
   const [rightArrow, setRightArrow] = useState<boolean>(false);
@@ -50,7 +54,7 @@ export default function ChatRoomUser({
     )
       filtered.push(user);
   });
-  console.log("filtered : " + JSON.stringify(filtered));
+  //console.log("filtered : " + JSON.stringify(filtered));
 
   useEffect(
     function () {
@@ -64,6 +68,7 @@ export default function ChatRoomUser({
     },
     [users, page, filtered]
   );
+
   if (!users || !roomname) return;
   else {
     let tmpUsers;
@@ -102,12 +107,13 @@ export default function ChatRoomUser({
               <ChatRoomUserInfo
                 user={user}
                 key={i}
-                num={i}
                 id={id}
                 roomInfo={roomInfo}
                 setRoomInfo={setRoomInfo}
                 roomname={roomname}
                 myNickName={myNickName}
+                changedID={changedID}
+                changedNickName={changedNickName}
               />
             ))}
           </ul>

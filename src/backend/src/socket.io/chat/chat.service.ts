@@ -118,6 +118,8 @@ export class ChatService {
 		if (user.connected === false){
 			user.connected = true;
 			this.updateUserStatus(io, userId, true);
+			if (client.nickname !== user.nickname)
+				user.nickname = client.nickname;
 		}
 		this.userJoinRoomAct(io, client, userId, "DEFAULT")
 	}
@@ -747,6 +749,7 @@ export class ChatService {
 						});
 		sockets.forEach((socket : ChatSocket) => {
 			const DMs = this.makeDMRoomMessages(socket, newNick);
+			console.log("AFFECT?" + socket.nickname);
 			socket.emit("sendDMRoomInfo", newNick, DMs);
 		})
 	}
