@@ -572,10 +572,20 @@ export class ChatService {
 		const DMs = this.makeDMRoomMessages(client, username);
 		const targetId = this.storeUser.getIdByNickname(username);
 		if (DMs != null){
-			client.leave(client.currRoom);
-			client.join(`$${targetId}$`);	//...?
-			client.currRoom = `$${targetId}$`;
+			if (client.currRoom !== `$${targetId}`){
+				client.leave(client.currRoom);
+				client.join(`$${targetId}$`);
+				client.currRoom = `$${targetId}$`;
+			}
 			client.emit("sendDMRoomInfo", username, DMs);
+			if (client.userId !== targetId){
+				const DMRoomMembers = this.makeDMRoomUserInfo(client.userId, targetId);
+				client.emit("sendRoomMembers", DMRoomMembers);
+			}
+			else {
+				const DMRoomMembers = this.makeDMRoomUserInfo(client.userId);
+				client.emit("sendRoomMembers", DMRoomMembers);
+			}
 		}
 	}
 
@@ -604,6 +614,27 @@ export class ChatService {
 				isGaming : target.isGaming
 			})
 		})
+		return (userInfo);
+	}
+
+	//Error catch?
+	makeDMRoomUserInfo(fromId : number, toId? : number) : userInfo[] {
+		const fromUser = this.storeUser.findUserById(fromId);
+		const userInfo = [];
+		if (toId) {
+			const toUser = this.storeUser.findUserById(toId);
+			userInfo.push ({
+				id : toUser.id,
+				nickname : toUser.nickname,
+				isGaming : toUser.isGaming
+			})
+		}
+		userInfo.push({
+			id : fromUser.id,
+			nickname : fromUser.nickname,
+			isGaming : fromUser.isGaming
+		})
+		console.log(userInfo);
 		return (userInfo);
 	}
 
@@ -749,8 +780,9 @@ export class ChatService {
 							return (error.message);
 						});
 		sockets.forEach((socket : ChatSocket) => {
-			const DMs = this.makeDMRoomMessages(socket, newNick);
-			socket.emit("sendDMRoomInfo", newNick, DMs);
+			// const DMs = this.makeDMRoomMessages(socket, newNick);
+			// socket.emit("sendDMRoomInfo", newNick, DMs);
+			this.fetchUserToDMRoom(socket, newNick);
 		})
 		//본인도 update
 		const sockets2 = await io.in(`$${clientId}`).fetchSockets()
@@ -760,12 +792,21 @@ export class ChatService {
 					});
 		sockets2.forEach((socket : ChatSocket) => {
 			socket.nickname = newNick;
-			const regex = new RegExp('^$\d+$$');
+			const isDMRoom = (param : string ) : boolean => {
+				if (param[0] === '$' 
+					&& param[param.length - 1] === '$'
+					&& /^(\d+)$/.test(param.substring(1, param.length - 1)))
+					return true;
+				else
+					return false;
+			};
 			console.log(socket.currRoom);
-			if (!regex.test(sockets.currRoom)){
+			// if (regex.test(sockets.currRoom)){
+			if (isDMRoom(socket.currRoom)){
 				const targetId = Number(socket.currRoom.substring(1, socket.currRoom.length - 1));
 				const target = this.storeUser.getNicknameById(targetId);
-				const DMs = this.makeDMRoomMessages(socket, target);
+				// const DMs = this.makeDMRoomMessages(socket, target);
+				this.fetchUserToDMRoom(socket, target);
 			}
 			else
 				console.log("regex failed");
