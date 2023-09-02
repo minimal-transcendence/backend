@@ -32,19 +32,19 @@ const ChatHeader = ({
 
     if (chkAuth) {
       console.log("비번 바꾸기 가능");
-      socket.emit("setRoomPass", {
-        roomname: currentRoomName,
-        password: value,
-      });
 
       if (roomState !== "Public") {
         console.log("test!!!!!public!!!!!");
         setRoomState("Public");
-        socket.emit("setRoomPublic", {
-          roomname: currentRoomName,
-        });
       }
     }
+    socket.emit("setRoomPass", {
+      roomname: currentRoomName,
+      password: value,
+    });
+    socket.emit("setRoomPublic", {
+      roomname: currentRoomName,
+    });
     setPassword("");
   };
 
@@ -76,10 +76,10 @@ const ChatHeader = ({
           if (chkAuth) {
             console.log("권한있음. public으로 전환");
             setRoomState("Public");
-            socket.emit("setRoomPublic", {
-              roomname: currentRoomName,
-            });
           }
+          socket.emit("setRoomPublic", {
+            roomname: currentRoomName,
+          });
         }
       } else if (event.target.dataset.name === "password") {
         {
@@ -102,10 +102,10 @@ const ChatHeader = ({
           if (chkAuth) {
             console.log("권한있음. private로 전환");
             setRoomState("Private");
-            socket.emit("setRoomPrivate", {
-              roomname: currentRoomName,
-            });
           }
+          socket.emit("setRoomPrivate", {
+            roomname: currentRoomName,
+          });
         }
       }
     } else {

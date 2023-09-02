@@ -79,6 +79,16 @@ export default function App() {
 
       setChangedID(() => userId);
       setChangedNickName(() => newNick);
+
+      const nicknameItem = localStorage.getItem("nickname");
+      const loginIdItem = localStorage.getItem("id");
+
+      if (loginIdItem === String(userId)) {
+        console.log(
+          `id same so nick changed! FROM ${nicknameItem} to ${newNick}`
+        );
+        setTmpLoginnickname(newNick);
+      }
     }
 
     if (socket) {
@@ -434,6 +444,7 @@ export default function App() {
               <>
                 <ChatRoomUser
                   id={tmpLoginID}
+                  isDM={isDM}
                   blocklist={blocklist}
                   roomInfo={roomInfo}
                   setRoomInfo={setRoomInfo}

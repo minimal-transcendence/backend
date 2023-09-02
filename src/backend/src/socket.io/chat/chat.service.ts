@@ -253,8 +253,10 @@ export class ChatService {
 					client.emit("sendAlert", "[ Alert ]", 'Room is already Public');
 			}
 		}
-		else
+		else {
+			console.log("Is not Owner");
 			client.emit("sendAlert", "[ Act Error ]", "Only owner can set room status");
+		}
 	}
 
 	sendChat(io : Namespace, client: ChatSocket, to : string, body : string){

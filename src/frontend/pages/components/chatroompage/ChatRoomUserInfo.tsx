@@ -121,7 +121,9 @@ export default function ChatRoomUserInfo({
       <li>
         <div className="userlist-avatar">
           <img
-            src={`http://localhost/api/user/${user?.id}/photo`}
+            src={`http://localhost/api/user/${
+              user?.id
+            }/photo?timestamp=${Date.now()}`}
             width="32"
             height="32"
             alt="avataricon"
