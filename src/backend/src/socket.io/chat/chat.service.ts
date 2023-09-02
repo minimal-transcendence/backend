@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ChatRoomStoreService, Room } from '../store/store.room.service';
 import { ChatUserStoreService, User } from '../store/store.user.service';
 import { ChatMessageStoreService, Message, DM } from '../store/store.message.service';
@@ -116,6 +116,9 @@ export class ChatService {
 		if (user === undefined)
 			user = this.storeUser.saveUser(userId, new User(userId, client.nickname));
 		if (user.connected === false){
+			if (client.nickname != user.nickname){
+				user.nickname = client.nickname;
+			}
 			user.connected = true;
 			this.updateUserStatus(io, userId, true);
 			if (client.nickname !== user.nickname)
@@ -736,8 +739,8 @@ export class ChatService {
 		user.joinlist.forEach((room) => {
 			const currRoomInfo = this.makeCurrRoomInfo(room);
 			const roomMembers = this.makeRoomUserInfo(room);
-			console.log(JSON.stringify(currRoomInfo));
-			console.log(JSON.stringify(roomMembers));
+			// console.log(JSON.stringify(currRoomInfo));
+			// console.log(JSON.stringify(roomMembers));
 			io.in(room).emit("sendRoomMembers", roomMembers);
 			io.in(room).emit("sendCurrRoomInfo", currRoomInfo);
 			console.log(`send change nick event ${newNick} in room ${room}`);0
@@ -751,6 +754,24 @@ export class ChatService {
 			const DMs = this.makeDMRoomMessages(socket, newNick);
 			console.log("AFFECT?" + socket.nickname);
 			socket.emit("sendDMRoomInfo", newNick, DMs);
+		})
+		//본인도 update
+		const sockets2 = await io.in(`$${clientId}`).fetchSockets()
+					.catch((error) => {
+						// throw new InternalServerErrorException()
+						return (error.message);
+					});
+		sockets2.forEach((socket : ChatSocket) => {
+			socket.nickname = newNick;
+			const regex = new RegExp('^$\d+$$');
+			console.log(socket.currRoom);
+			if (!regex.test(sockets.currRoom)){
+				const targetId = Number(socket.currRoom.substring(1, socket.currRoom.length - 1));
+				const target = this.storeUser.getNicknameById(targetId);
+				const DMs = this.makeDMRoomMessages(socket, target);
+			}
+			else
+				console.log("regex failed");
 		})
 	}
 
