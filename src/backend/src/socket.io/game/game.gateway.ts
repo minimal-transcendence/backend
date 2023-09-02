@@ -67,15 +67,7 @@ export class GameGateway
 				}
 
 				// Set player status
-				// if (room.player[0]) {
-				// 	room.player[0].inGame = false;
-        //   this.io.server.of('chat').emit('notInGame', room.player[0].userId);
-				// }
-				// if (room.player[1]) {
-				// 	room.player[1].inGame = false;
-        //   this.io.server.of('chat').emit('notInGame', room.player[1].userId);
-				// }
-        //CHECK : if either of player can be non-exist
+        // CHECK : if either of player can be non-exist
         if (room.player[0] && room.player[1])
             this.gameService.updateInGameStatus(
             this.io.server.of('chat'),
@@ -141,6 +133,13 @@ export class GameGateway
 						console.log("-------Score-------");
 						console.log(`${room.playerScore[0]} - ${room.player[0].id}`);
 						console.log(`${room.playerScore[1]} - ${room.player[1].id}`);
+            
+            this.gameService.updateInGameStatus(
+              this.io.server.of('chat'),
+              room.player[0],
+              room.player[1],
+              true
+            )
 					} else {
 						this.io.to(room.name).emit('matchDecline', room.name);
 					}
@@ -215,10 +214,6 @@ export class GameGateway
         mode: mode
       });
 
-      // playerOne.inGame = true;
-      // playerTwo.inGame = true;
-      // this.io.server.of('chat').emit('inGame', playerOne.userId);
-      // this.io.server.of('chat').emit('inGame', playerTwo.userId);
       this.gameService.updateInGameStatus(
         this.io.server.of('chat'),
         playerOne,
@@ -291,11 +286,6 @@ export class GameGateway
       return;
     }
 
-    //CHECK : 여기서 notInGame event필요한지?
-    // room.player[0].inGame = false;
-    // this.io.server.of('chat').emit('notInGame', room.player[0].userId);
-    // room.player[1].inGame = false;
-    // this.io.server.of('chat').emit('notInGame', room.player[1].userId);
     this.gameService.updateInGameStatus(
       this.io.server.of('chat'),
       room.player[0], room.player[1],
@@ -379,11 +369,6 @@ export class GameGateway
           mode: payload.mode
         });
 
-        //TODO : 상태값 바꾸기...!
-        // fromClient.inGame = true;
-        // client.inGame = true;
-        // this.io.server.of('chat').emit('inGame', client.userId);
-        // this.io.server.of('chat').emit('inGame', fromClient.userId);
         this.gameService.updateInGameStatus(
           this.io.server.of('chat'),
           client, fromClient,

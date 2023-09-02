@@ -266,13 +266,13 @@ this.rooms.forEach((_, key) => {
   const room : Room = this.storeRoom.findRoom(roomname);
   if (!room || room.userlist.size === 0)
     return ([]);
-    const userInfo = [];
+  const userInfo = [];
   room.userlist.forEach((user) => {
   const target : User = this.storeUser.findUserById(user);
   userInfo.push({
     id : user,
     nickname : target.nickname,
-    isGaming : target.isGaming
+    isGaming : target.isGaming,
     })
   })
   io.in(roomname).emit("sendRoomMembers", userInfo);
