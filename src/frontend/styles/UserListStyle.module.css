@@ -20,7 +20,7 @@
 	margin: 10px;
 	border: 1px solid #ddd;
 	border-radius: 10px;
-	width: 750px;
+	width: 780px;
 	height: 200px;
 	background: #F9F9F9;
 	box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
@@ -35,7 +35,7 @@
 	width: 20px;
 	height: 20px;
 	border-radius: 50%;
-	margin: 20px;
+	margin: 7px;
 	border:1px solid white;
 	background-color: red;
   }
@@ -44,23 +44,39 @@
 	width: 20px;
 	height: 20px;
 	border-radius: 50%;
-	margin: 20px;
+	margin: 7px;
 	border:1px solid white;
 	background-color: green;
   }
 
-  .profileImage{
-	flex:1;
-	width:125px;
-	height:125px;
-	border-radius:20px;
+  .circleMine {
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	margin: 7px;
+	border:1px solid white;
+	background-color: skyblue;
+  }
+
+  .profileImageBox{
+	flex: 0.7;
 	padding:10px;
-	padding-left: 10px;
+	width:170px;
+	height:170px;
+	border:0px solid;
+  }
+
+  .profileImage{
+	width:160px;
+	height:160px;
+	border-radius:20px;
+	padding: 0px;
+	margin: 0px;
 	overflow: hidden;
   }
 
   .profileInfo {
-	flex: 2;
+	flex: 2.3;
 	font-size: 25px;
 	margin-bottom: 3px;
 	font-family: 'Pretendard';
@@ -85,17 +101,44 @@
 	font-size: 20px;
 	border-radius: 5px;
 	cursor: pointer;
-	color:white;
   }
 
   .followIn{
 	background: #4193EF;
+	color:white;
   }
 
   .normalIn{
 	background: #58BF91;
+	color:white;
   }
 
   .unfollowIn{
 	background: #454545;
+	color:white;
+  }
+
+  .disabled{
+	background: #525252;
+	color: rgb(121, 121, 121);
+  }
+
+  .gameButtons {
+	display: flex;
+	flex-direction: row; /* 버튼들을 세로로 배치 */
+	gap: 8px; /* 버튼 간격 */
+	align-items: middle;
+	text-align: center;
+  }
+
+  .gameButtons button {
+	padding: 8px 8px;
+	width: 120px;
+	height: 35px;
+	border: none;
+	font-size: 20px;
+	border-radius: 5px;
+	cursor: pointer;
+	background: #4b8dc3;
+	color:white;
   }

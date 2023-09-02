@@ -39,6 +39,7 @@ export class ChatGateway
 			this.logger.log(`From Client ${client.nickname}, ${client.id}, event : ${any}`);
 		})
 		this.chatService.handleNewConnection(this.io, client);
+
 	}
 
 	async handleDisconnect(@ConnectedSocket() client: ChatSocket) {
@@ -172,10 +173,11 @@ export class ChatGateway
 	}
 	
 	@SubscribeMessage('requestAllMembers')
-	handleReqAllMembers(client: ChatSocket, payload : UserInfoDto){
-		const members = this.chatService.getAllUserInfo(payload.userId);
+	handleReqAllMembers(client: ChatSocket){
+		const members = this.chatService.getAllUserInfo(client.userId);
     	client.emit('responseAllMembers', members);
 	}
+
 	
 	@SubscribeMessage('requestRoomMembers')
 	handleReqRoomMembers(client: ChatSocket, payload : RoomDto){
@@ -184,8 +186,8 @@ export class ChatGateway
 	}
 
 	@SubscribeMessage('requestTargetMember')
-	handleReqTargetMember(client: ChatSocket, payload : UserInfoDto){
-		const member = this.chatService.getUserInfoById(payload.userId, payload.targetId);
+	handleReqTargetMember(client: ChatSocket, payload : TargetDto){
+		const member = this.chatService.getUserInfoById(client.userId, payload.target);
 		client.emit('responseTargetMember', member);
 	}
 	

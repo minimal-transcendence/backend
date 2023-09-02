@@ -694,7 +694,13 @@ export class ChatService {
 
 	//CHECK : 좀 처리가 일관성이 없는게 joinlist도 persistent 하게 할지 말지 안 정해놓고 시작함ㅠ -> 주석 정리시 check
 	getAllUserInfo(userId : number) : userInfo[] {
-		const blocklist = this.storeUser.findUserById(userId).blocklist;
+		// const blocklist = this.storeUser.findUserById(userId).blocklist;
+		const thisUser = this.storeUser.findUserById(Number(userId));
+		const blocklist = thisUser.blocklist;
+		if (!thisUser || !blocklist) {
+			console.log('no data');
+			return ;
+		}
 		const users = this.storeUser.findAllUser();
 		const res = [];
 		users?.forEach((user) => {
@@ -709,14 +715,14 @@ export class ChatService {
 		return (res);
 	}
 
-	getUserInfoById(userId : number, targetId: number) : userInfo {
-		const target = this.storeUser.findUserById(targetId);
+	getUserInfoById(userId : number, targetId: string) : userInfo {
+		const target = this.storeUser.findUserById(Number(targetId));
 		return ({
-			id : targetId,
+			id : Number(targetId),
 			nickname : target.nickname,
 			isGaming : target.isGaming,
 			isConnected : target.connected,
-			isBlocked : this.storeUser.findUserById(userId).blocklist.has(targetId)? true : false
+			isBlocked : this.storeUser.findUserById(userId).blocklist.has(Number(targetId))? true : false
 		});
 	}
 

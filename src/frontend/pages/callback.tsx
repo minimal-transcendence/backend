@@ -48,7 +48,7 @@ function Callback() {
       localStorage.setItem("access_token_exp", jwtDecode.exp.toString());
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("is2fa", "false");
-      localStorage.setItem("avatar", "/api/" + detailResponse.avatar);
+      localStorage.setItem("avatar",`/api/user/${data.id}/photo?timestamp=${Date.now()}`);
       router.push("Home");
     } else if (data.is2faEnabled === true) {
       setShowCodeInput(true);
@@ -98,12 +98,8 @@ function Callback() {
         throw "인증에 실패했습니다 코드를 다시 확인해주세요";
       }
       console.log("인증 결과:", responseData);
-      const detailResponse = await (
-        await fetch("http://localhost/api/user/" + localStorage.getItem("id"))
-      ).json();
-      console.log("인증 결과:", detailResponse);
       localStorage.setItem("access_token", responseData.access_token);
-      localStorage.setItem("avatar", "/api/" + detailResponse.avatar);
+      localStorage.setItem("avatar", `/api/user/${responseData.id}/photo?timestamp=${Date.now()}`);
       localStorage.setItem("isLoggedIn", "true");
       router.push("Home");
     } catch (error) {

@@ -13,9 +13,11 @@ export class WsExceptionFilter {
     if (exception instanceof HttpException) {
       // handle http exception
       console.log("HttpException: invalid data transfer");
+      console.log(exception.message)
     } else {
       // handle websocket exception
       console.log("WsException: invalid data transfer");
+      console.log(exception.message)
     }
   }
 }

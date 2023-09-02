@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import axiosApi, { fetch_refresh } from "./FetchInterceptor";
+import axiosApi from "./AxiosInterceptor";
 import "../pages/index.css";
+import styles from "../styles/MyProfileStyle.module.css";
+
 function MyProfile({
   setIsOpenModal,
   setTmpLoginnickname,
@@ -63,11 +65,10 @@ function MyProfile({
   };
 
   async function fixProfile() {
-    //여기서 refresh 하면될듯
     const apiUrl = "http://localhost/api/user/" + userId;
 
     if (newNickname !== "" && newNickname !== userNickname) {
-      if (newNickname.length >= 20) {
+      if (newNickname.length >= 12) {
         alert("닉네임의 길이는 최대 12자 입니다");
         setNewNickname("");
         return;
@@ -106,8 +107,7 @@ function MyProfile({
     if (selectedFile) {
       const formData = new FormData();
       formData.append("avatar", selectedFile);
-      console.log(formData);
-      try {
+      /*try {
         const response = await fetch(apiUrl, {
           method: "POST",
           body: formData,
@@ -121,14 +121,41 @@ function MyProfile({
           throw new Error(responseData.error);
         }
         console.log("profile 변경 응답 데이터:", responseData);
-        localStorage.setItem("avatar", "/api/" + responseData.avatar);
-        setAvatarURL("/api/" + responseData.avatar);
+        localStorage.setItem("avatar", `/api/user/${userId}/photo?timestamp=${Date.now()}`,);
+        setAvatarURL(`/api/user/${userId}/photo?timestamp=${Date.now()}`);
+        console.log("URL change: " + avatarURL);
         setImageUrl(null);
         setSelectedFile(null);
         alert("프로필 사진이 변경되었습니다");
       } catch (error) {
         console.error("Error uploading image:", error);
         alert("에러 발생 :" + error);
+      }*/
+      try{
+        await axiosApi.post(apiUrl, formData,{
+          headers: {
+          "Content-Type": "multipart/form-data",
+        }})
+        .then((response:any) => {
+            console.log(response);
+            if (response.status != 201){
+              throw(response);
+            }
+            console.log("profile 변경 응답 데이터:", response.data);
+            localStorage.setItem("avatar", `/api/user/${userId}/photo?timestamp=${Date.now()}`,);
+            setAvatarURL(`/api/user/${userId}/photo?timestamp=${Date.now()}`);
+            console.log("URL change: " + avatarURL);
+            setImageUrl(null);
+            setSelectedFile(null);
+            alert("프로필 사진이 변경되었습니다");
+          })
+        .catch((error:any) => {
+          alert("이미지 업로드에 실패했습니다1.");
+          throw(error);
+        })
+      }
+      catch(error){
+        console.error("이미지 업로드 실패: ", error);
       }
     }
 
@@ -141,6 +168,7 @@ function MyProfile({
         id: userId,
         twoFactorAuthCode: verCode,
       };
+      console.log("send: ", JSON.stringify(dataToUpdate));
       await axiosApi
         .post(faChangeApiUrl, JSON.stringify(dataToUpdate), {
           headers: {
@@ -148,20 +176,54 @@ function MyProfile({
           },
         })
         .then((response) => {
-          if (response.data.error) {
-            alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
-            console.error("에러 발생:", response.data.error);
+          if (response.status != 201) {
+            throw(response.data.error);
           } else {
             localStorage.setItem("is2fa", "true");
             setIs2Fa("true");
             alert("2차인증이 설정되었습니다");
-            console.log("is2fa 변경 응답 데이터:", response.data);
+            console.log("is2fa 변경 응답 데이터:", JSON.stringify(response));
           }
         })
         .catch((error) => {
           alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
           console.error("에러 발생:", error);
         });
+       /* try{
+          if (verCode == '' || verCode.length !== 6){
+            throw("인증코드를 확인해주세요");
+          }
+          const faChangeApiUrl = 'http://localhost/api/2fa/turn-on';
+          const dataToUpdate = {
+            id: userId,
+            twoFactorAuthCode: verCode
+          };
+          console.log("2fa send data: ", JSON.stringify(dataToUpdate));
+          await fetch(faChangeApiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dataToUpdate),
+          })
+          .then(async(response)=>{
+            const responseData = await response.json();
+            if (responseData.error){
+              throw new Error(responseData.error);
+            }
+            localStorage.setItem("is2fa", 'true');
+            setIs2Fa('true');
+            alert("2차인증이 설정되었습니다");
+            console.log('is2fa 변경 응답 데이터:', responseData);
+          })
+          .catch((error) => {
+            throw(error);
+          })
+        }
+        catch(error){
+          alert("qr인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
+          console.error('에러 발생:', error);
+        }*/
     } else if (is2Fa === "true" && checkIs2Fa === false) {
       if (verCode == "" || verCode.length !== 6) {
         throw "인증코드를 확인해주세요";
@@ -171,6 +233,7 @@ function MyProfile({
         id: userId,
         twoFactorAuthCode: verCode,
       };
+      console.log("send: ", JSON.stringify(dataToUpdate));
       await axiosApi
         .post(faChangeApiUrl, JSON.stringify(dataToUpdate), {
           headers: {
@@ -178,94 +241,116 @@ function MyProfile({
           },
         })
         .then((response) => {
-          if (response.data.error) {
-            alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
-            console.error("에러 발생:", response.data.error);
+          if (response.status != 201) {
+            throw(response.data.error);
           } else {
             localStorage.setItem("is2fa", "false");
             setIs2Fa("false");
             alert("2차인증이 해제되었습니다");
-            console.log("is2fa 변경 응답 데이터:", response.data);
+            console.log("is2fa 변경 응답 데이터:", JSON.stringify(response));
           }
         })
         .catch((error) => {
           alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
           console.error("에러 발생:", error);
         });
+    /*try{
+        if (verCode == '' || verCode.length !== 6){
+          throw("인증코드를 확인해주세요");
+        }
+        const faChangeApiUrl = 'http://localhost/api/2fa/turn-off';
+        const dataToUpdate = {
+          id: userId,
+          twoFactorAuthCode: verCode
+        };
+        console.log("2fa send data: ", JSON.stringify(dataToUpdate));
+        await fetch(faChangeApiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(dataToUpdate),
+        })
+        .then(async(response)=>{
+          const responseData = await response.json();
+          if (responseData.error){
+            throw new Error(responseData.error);
+          }
+          localStorage.setItem("is2fa", 'false');
+          setIs2Fa('false');
+          alert("2차인증이 해제되었습니다");
+          console.log('is2fa 변경 응답 데이터:', responseData);
+        })
+        .catch((error) => {
+          throw(error);
+        })
+      }
+      catch(error){
+        alert("qr인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
+        console.error('에러 발생:', error);
+      }*/
     }
   }
 
   return (
     <div ref={modalRef} className="modal modal-myprofile">
-      <div>
-        <h2>내 프로필</h2>
-        {avatarURL && <img src={avatarURL} width="100" height="100"></img>}
-      </div>
-      <div>
-        닉네임
-        <br />
-        {userNickname !== null ? (
-          <input
-            placeholder={userNickname}
-            type="text"
-            value={newNickname}
-            onChange={(e) => setNewNickname(e.target.value)}
-          />
-        ) : (
-          <input
-            type="text"
-            value={newNickname}
-            onChange={(e) => setNewNickname(e.target.value)}
-          />
-        )}
-      </div>
-      <div>
-        프로필 사진
-        <br />
-        <input type="file" accept="image/*" onChange={handleFileChange}></input>
-        <br />
-        {imageUrl && (
-          <img src={imageUrl} alt="profile image" width="100" height="100" />
-        )}
-      </div>
-      <div>
-        2차인증 여부
-        <br />
-        <input
-          type="checkbox"
-          checked={checkIs2Fa}
-          onChange={() => setCheckIs2Fa(!checkIs2Fa)}
-        />
-        <span className="slider"></span>
+      <div className={styles.profileMainBox}>
         <div>
-          <img
-            src="http://localhost/api/2fa/qrcode"
-            alt="qr image"
-            width="100"
-            height="100"
-            onError={(e: React.SyntheticEvent<HTMLImageElement>) =>
-              (e.currentTarget.style.display = "none")
-            }
-          />
+          <h2>내 프로필</h2>
         </div>
         <div>
-          {((is2Fa === "true" && checkIs2Fa === false) ||
-            (is2Fa === "false" && checkIs2Fa === true)) && (
-            <span>변경사항 적용을 위해 OTP코드를 입력하세요</span>
+          <br/>
+          <br/>
+          닉네임
+          <br/>
+          {userNickname !== null ?
+          (<input className={styles.nicknameInput} placeholder={userNickname} type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)
+          :
+          (<input className={styles.nicknameInput} type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)}
+        </div>
+        <div>
+          프로필 사진
+          <br/>
+        </div>
+        <div className={styles.profilePicSetBox}>
+          <input type="file" accept='image/*' onChange={handleFileChange}></input>
+          {imageUrl && (
+          <img src={imageUrl} alt="profile image" className={styles.selectProfileImage}/>)}
+          {!imageUrl && avatarURL && (
+          <img src={avatarURL} className={styles.selectProfileImage} ></img>
           )}
         </div>
         <div>
-          <input
-            placeholder="띄워쓰기 제외한 6자리"
-            type="text"
-            value={verCode}
-            onChange={(e) => setVerCode(e.target.value)}
-          />
+          2차인증 여부
+          <br/>
+          <input type="checkbox" id="toggle" name="toggle" onChange={() => setCheckIs2Fa(!checkIs2Fa)} checked={checkIs2Fa} hidden />
+          <label htmlFor="toggle" className={styles.toggleSwitch}>
+              <span className={styles.toggleButton}></span>
+          </label>
+          <div>
+              <img
+              src='http://localhost/api/2fa/qrcode'
+              alt="qr image"
+              width="150"
+              height="150"
+              onError={(e: React.SyntheticEvent<HTMLImageElement>) => e.currentTarget.style.display = 'none'}
+              />
+          </div>
+          <div className={styles.OTPAlert}>
+              {(is2Fa === 'true' && checkIs2Fa === false || is2Fa === 'false' && checkIs2Fa === true) && (
+                  <span>변경사항 적용을 위해 OTP코드를 입력하세요</span>
+              )}
+              {(is2Fa === 'true' && checkIs2Fa === true || is2Fa === 'false' && checkIs2Fa === false) && (
+                  <br/>
+              )}
+          </div>
+          <div>
+              <input className={styles.nicknameInput} placeholder="띄워쓰기 제외한 6자리" type="text" value={verCode} onChange={(e) => setVerCode(e.target.value)} />
+          </div>
         </div>
+        <button className={styles.Button} onClick={fixProfile}>저장</button>
       </div>
-      <button onClick={fixProfile}>저장</button>
     </div>
-  );
-}
+)}
 
 export default MyProfile;
