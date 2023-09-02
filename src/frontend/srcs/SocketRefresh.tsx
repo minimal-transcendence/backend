@@ -26,6 +26,7 @@ export async function refreshToken (setJwt: Function, setJwtExp : Function){
 }
 
 export async function setItems(setJwt : Function, setJwtExp : Function) {
+	console.log("IN SET ITEMS");
 	const jwtExpItem = localStorage.getItem("access_token_exp");
 	if (jwtExpItem) {
 		const jwtExpInt = parseInt(jwtExpItem);

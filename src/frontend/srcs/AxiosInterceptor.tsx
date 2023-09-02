@@ -12,7 +12,6 @@ async function refreshToken() : Promise<any> {
 				window.location.href = '/';
 			}
 		})
-		console.log("didn't catched");
 	return (res);
 }
 
