@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { ChatRoomStoreService, Room } from './store/store.room.service';
-import { ChatUserStoreService, User } from './store/store.user.service';
-import { ChatMessageStoreService, Message, DM } from './store/store.message.service';
+import { ChatRoomStoreService, Room } from '../store/store.room.service';
+import { ChatUserStoreService, User } from '../store/store.user.service';
+import { ChatMessageStoreService, Message, DM } from '../store/store.message.service';
 import { Namespace, Socket } from 'socket.io';
 import {
   currRoomInfo,
@@ -405,7 +405,6 @@ export class ChatService {
 			if (room.isOperator(targetId))
 				room.deleteUserFromOperators(targetId);	//TODO & CHECK	//혹은 여기서는 그냥 해제 안 하는건?
 			room.addUserToMutelist(targetId);
-			//TODO : 아래로 바꾸고 싶다...! & CHECK!
 			let msg = this.makeMessageFormat(0, `${targetName} is now muted`, false);
 			this.sendMsgToSocket(client, msg, roomname);
 			const sockets = await this.extractSocketsInRoomById(io, targetId, roomname)
@@ -415,7 +414,6 @@ export class ChatService {
 				})
 			setTimeout(() => {
 				room.deleteUserFromMutelist(targetId);
-				//TODO & CHECK
 				sockets.forEach((socket) => {
 					const msg = this.makeMessageFormat(0, `You are now unmuted`, false);
 					this.sendMsgToSocket(socket, msg, roomname);
@@ -606,6 +604,7 @@ export class ChatService {
 		return (userInfo);
 	}
 
+	//
 	mappingMessagesUserIdToNickname(messages : Message[]) : formedMessage[] {
 		const res = [];
 		messages.forEach((msg) => {
