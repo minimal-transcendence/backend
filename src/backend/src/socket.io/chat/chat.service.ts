@@ -760,16 +760,12 @@ export class ChatService {
 					});
 		sockets2.forEach((socket : ChatSocket) => {
 			socket.nickname = newNick;
-			//const regex = new RegExp('/^\$\d+\$$');
-			const temp = socket.currRoom.substring(1, socket.currRoom.length - 1);
+			const regex = new RegExp('^$\d+$$');
 			console.log(socket.currRoom);
-			// if (!regex.test(sockets.currRoom)){
-			if (Number(temp)){
+			if (!regex.test(sockets.currRoom)){
 				const targetId = Number(socket.currRoom.substring(1, socket.currRoom.length - 1));
-				console.log("changeNick  : targetId = " + targetId);
 				const target = this.storeUser.getNicknameById(targetId);
 				const DMs = this.makeDMRoomMessages(socket, target);
-				socket.emit("sendDMRoomInfo", target, DMs);
 			}
 			else
 				console.log("regex failed");
