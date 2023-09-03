@@ -28,6 +28,12 @@ export class TargetDto {
 	target : string;
 }
 
+export class NullableTargetDto {
+	@IsOptional()
+	@IsString()
+	target : string;
+}
+
 export class UserInfoDto {
 	@IsNotEmpty()
 	@IsNumber()	//or IsNumberString?
