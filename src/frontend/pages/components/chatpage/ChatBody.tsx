@@ -1,8 +1,9 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import ysungwonIcon from "../../../assets/ysungwon.jpg";
 import Image from "next/image";
 // import { SocketContext } from "@/context/socket";
 import { SocketContext } from "@/context/socket";
+import axiosApi from "../../../srcs/AxiosInterceptor";
 const ChatBody = ({
   messages,
   blocklist,
@@ -17,7 +18,7 @@ const ChatBody = ({
   myNickName: string;
 }) => {
   const socket = useContext(SocketContext).chatSocket;
-
+  const [avatarURL, setAvatarURL] = useState<string | undefined>("");
   const filteredMessage: any[] = [];
   console.log(
     "blocklist : ",
@@ -38,6 +39,7 @@ const ChatBody = ({
   }
   filter(messages);
   console.log("filteredMessage ", filteredMessage);
+
   if (messages?.length === 0) return;
 
   return (
@@ -69,6 +71,7 @@ const ChatBody = ({
             <div className="message-recipient-avatar">
               <img
                 src={`http://localhost/api/user/${message?.fromId}/photo`}
+                // src={avatarURL}
                 width="35"
                 height="35"
                 alt="usericon"

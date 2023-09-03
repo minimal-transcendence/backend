@@ -1,7 +1,7 @@
 import ChatRoomUserInfo from "./ChatRoomUserInfo";
 import { useEffect, useState, useContext } from "react";
 import { SocketContext } from "@/context/socket";
-
+import axiosApi from "../../../srcs/AxiosInterceptor";
 const pageHeight = 8;
 export default function ChatRoomUser({
   id,

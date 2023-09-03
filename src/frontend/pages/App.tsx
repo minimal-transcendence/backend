@@ -24,7 +24,7 @@ import Image from "next/image";
 import TempRandomMatch from "./components/pong/TempRandomMatch";
 import { SocketContext } from "@/context/socket";
 import { GameContext, GameData } from "@/context/game";
-
+import axiosApi from "../srcs/AxiosInterceptor";
 export type UserOnChat = {
   id: string;
   isCreator: boolean;
@@ -73,6 +73,20 @@ export default function App() {
   );
   const [changedID, setChangedID] = useState<number>(-2);
   const [changedNickName, setChangedNickName] = useState<string>("");
+
+  useEffect(() => {
+    async function refresh() {
+      try {
+        const responseDetail = await axiosApi.get(
+          // `http://localhost/api/user/${message?.fromId}/photo`
+          `http://localhost/api/auth/refresh`
+        );
+      } catch {
+        console.log("test errrrr");
+      }
+    }
+    setInterval(refresh, 25000);
+  }, []);
   useEffect(() => {
     function reloadNick(userId: number, newNick: string) {
       console.log("in useEffect ChatRoom nicknameupdate " + userId + newNick);
