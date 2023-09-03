@@ -819,7 +819,10 @@ body {
   transform: translate(-50%, -50%);
 }
 
-.modal-userlist {
+.modal-userlist,
+.modal-myprofile,
+.modal-alert {
+  /* 모달창 크기 */
   width: 850px;
   height: 950px;
   top: 50%;
@@ -884,65 +887,6 @@ body {
   background-color: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(3px);
   z-index: 500;
-}
-/*
-SPACING SYSTEM (px)
-2 / 4 / 8 / 12 / 16 / 24 / 32 / 40 / 48 / 64 / 80 / 96 / 128
-
-FONT SIZE SYSTEM (px)
-10 / 12 / 14 / 16 / 18 / 20 / 24 / 30 / 36 / 44 /52 / 62 / 74 / 86 / 98
-*/
-
-/* button toggle */
-
-input[type="checkbox"] {
-  height: 0;
-  width: 0;
-  visibility: hidden;
-}
-
-label {
-  cursor: pointer;
-  text-indent: -9999px;
-  width: 60px;
-  height: 25px;
-  background: #dee2e6;
-  display: block;
-  border-radius: 25px;
-  position: relative;
-}
-
-label:after {
-  content: "";
-  position: absolute;
-  top: 3px;
-  left: 5px;
-  width: 20px;
-  height: 20px;
-  background: #fff;
-  border-radius: 20px;
-  transition: 0.3s;
-}
-
-input:checked + label {
-  background: #04f30c;
-}
-
-input:checked + label:after {
-  left: calc(100% - 5px);
-  transform: translateX(-100%);
-}
-
-label:active:after {
-  width: 25px;
-}
-
-.accordion {
-  /* width: 700px; */
-  /* margin: 100px auto; */
-  /* display: flex; */
-  /* flex-direction: column; */
-  gap: 24px;
 }
 
 .item {

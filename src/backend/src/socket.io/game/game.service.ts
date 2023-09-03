@@ -2,9 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { GameSocket } from './types';
 import { GameRoom } from './GameRoom';
 import { Namespace } from 'socket.io';
+import { ChatUserStoreService, User } from '../store/store.user.service';
+import { ChatRoomStoreService, Room } from '../store/store.room.service';
 
 @Injectable()
 export class GameService {
+  constructor (
+    private readonly storeUser : ChatUserStoreService,
+    private readonly storeRoom : ChatRoomStoreService
+  ){}
   validatePlayerInRoom(
       player: GameSocket,
       gameRoom: GameRoom,
@@ -214,4 +220,64 @@ export class GameService {
     // console.log("Same object");
     return objectsAreSame;
  }
+
+ /**
+  * 
+  * const condition = (guests) => guests > 4;
+
+// Use Array.from() and Map.prototype.keys() to filter and obtain matching room names
+const roomsWithMoreThan4Guests = Array.from(roomMap.keys()).filter((room) => condition(roomMap.get(room))); 
+this.rooms.forEach((_, key) => {
+			if (key.includes(query)){
+				if (this.findRoom(key).isPrivate == false)
+					res.push(key);
+			}
+		})  
+*/
+
+ updateInGameStatus(io: Namespace, player1 : GameSocket, player2 : GameSocket, inGame : boolean) {
+  const playerOneId = player1.userId;
+  const playerTwoId = player2.userId;
+  //all room list where playerOne or Two is joining
+  const rooms = [];
+  this.storeRoom.rooms.forEach((room, roomname) => {
+    if (room.isJoinning(playerOneId) || room.isJoinning(playerTwoId))
+      rooms.push(roomname);
+  });
+  //
+  if (inGame) {
+    player1.inGame = true;
+    player2.inGame = true;
+    io.emit('inGame', playerOneId);
+    io.emit('inGame', playerTwoId);
+    this.storeUser.findUserById(playerOneId).isGaming = true;
+    this.storeUser.findUserById(playerTwoId).isGaming = true;
+  }
+  else {
+    player1.inGame = false;
+    player2.inGame = false;
+    io.emit('NotInGame', playerOneId);
+    io.emit('NotInGame', playerTwoId);
+    this.storeUser.findUserById(playerOneId).isGaming = false;
+    this.storeUser.findUserById(playerTwoId).isGaming = false;
+  }
+  //emit event for client to update screen
+  rooms.forEach((roomname) => {
+  const room : Room = this.storeRoom.findRoom(roomname);
+  if (!room || room.userlist.size === 0)
+    return ([]);
+  const userInfo = [];
+  room.userlist.forEach((user) => {
+  const target : User = this.storeUser.findUserById(user);
+  userInfo.push({
+    id : user,
+    nickname : target.nickname,
+    isGaming : target.isGaming,
+    })
+  })
+  io.in(roomname).emit("sendRoomMembers", userInfo);
+  })
+}
+
+
 }
