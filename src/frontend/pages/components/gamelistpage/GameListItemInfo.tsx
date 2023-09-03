@@ -41,14 +41,12 @@ export default function GameListItemInfo({
         {game?.to === myNickName ? (
           <li>
             <div className="gamelist-avatar left">
-              <img
-                src={`http://localhost/api/user/${
-                  game?.fromId
-                }/photo?timestamp=${Date.now()}`}
+              {/* <img
+                src={`http://localhost/api/user/${game?.fromId}/photo`}
                 width="32"
                 height="32"
                 alt="avataricon"
-              />
+              /> */}
             </div>
             <div className="gamelist-textInfo">{`${game?.from}님이 ${game?.mode}게임을 신청하셨습니다`}</div>
             <div className="gamelist-confirm">
@@ -64,27 +62,23 @@ export default function GameListItemInfo({
               </span>
             </div>
             <div className="gamelist-avatar right">
-              <img
-                src={`http://localhost/api/user/${
-                  game?.toId
-                }/photo?timestamp=${Date.now()}`}
+              {/* <img
+                src={`http://localhost/api/user/${game?.toId}/photo`}
                 width="32"
                 height="32"
                 alt="avataricon"
-              />
+              /> */}
             </div>
           </li>
         ) : (
           <li>
             <div className="gamelist-avatar left">
-              <img
-                src={`http://localhost/api/user/${
-                  game?.fromId
-                }/photo?timestamp=${Date.now()}`}
+              {/* <img
+                src={`http://localhost/api/user/${game?.fromId}/photo`}
                 width="32"
                 height="32"
                 alt="avataricon"
-              />
+              /> */}
             </div>
             <div className="gamelist-textInfo">{`${game?.to}님에게 ${game?.mode}게임을 신청하셨습니다`}</div>
             <div className="gamelist-confirm">
@@ -93,14 +87,12 @@ export default function GameListItemInfo({
               </span>
             </div>
             <div className="gamelist-avatar right">
-              <img
-                src={`http://localhost/api/user/${
-                  game?.toId
-                }/photo?timestamp=${Date.now()}`}
+              {/* <img
+                src={`http://localhost/api/user/${game?.toId}/photo`}
                 width="32"
                 height="32"
                 alt="avataricon"
-              />
+              /> */}
             </div>
           </li>
         )}

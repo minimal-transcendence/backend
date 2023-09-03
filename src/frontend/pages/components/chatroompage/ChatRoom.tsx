@@ -50,8 +50,8 @@ export default function ChatRoomUser({
     console.log("blocklist in user : " + JSON.stringify(blocklist));
     console.log("user ", JSON.stringify(user, null, 2));
     if (
-      !blocklist.find((b: string) => {
-        return b === user["nickname"];
+      !blocklist.find((b: number) => {
+        return b === user["id"];
       })
     )
       filtered.push(user);

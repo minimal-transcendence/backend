@@ -134,7 +134,7 @@ export default function App() {
       console.log("sendBlocklist update + " + JSON.stringify(result));
       setBlocklist(() => result);
     }
-    function updateBlocklist(target: string) {
+    function updateBlocklist(target: number) {
       console.log("updateBlocklist update");
       setBlocklist(() => [...blocklist, target]);
     }
@@ -165,7 +165,7 @@ export default function App() {
         return results.map((result) => {
           if (result.roomname === roomname) {
             result.lastMessage = `${data.body}`;
-            result.lastMessageFrom = data.from;
+            result.lastMessageFrom = data.fromId;
             if (roomname === currentRoomName) {
               result.messageNew = false;
             } else {

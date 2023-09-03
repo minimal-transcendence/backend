@@ -21,16 +21,16 @@ const ChatBody = ({
   const filteredMessage: any[] = [];
   console.log(
     "blocklist : ",
-    blocklist,
-    "messages1 : " + JSON.stringify(messages)
+    blocklist
+    // "messages1 : " + JSON.stringify(messages)
   );
   function filter(messages: any) {
-    console.log("messages : " + JSON.stringify(messages));
+    // console.log("messages : " + JSON.stringify(messages));
     messages?.forEach((message: any) => {
-      console.log("message " + JSON.stringify(message, null, 2));
+      // console.log("message " + JSON.stringify(message, null, 2));
       if (
         !blocklist.find((b: any) => {
-          return b === message.from;
+          return b === message.fromId;
         })
       )
         filteredMessage.push(message);
@@ -67,14 +67,12 @@ const ChatBody = ({
             key={i}
           >
             <div className="message-recipient-avatar">
-              <img
-                src={`http://localhost/api/user/${
-                  message?.fromId
-                }/photo?timestamp=${Date.now()}`}
+              {/* <img
+                src={`http://localhost/api/user/${message?.fromId}/photo`}
                 width="35"
                 height="35"
                 alt="usericon"
-              />
+              /> */}
               {/* <Image
                 src={`http://localhost/api/user/${message?.fromId}/photo`}
                 width="35"
