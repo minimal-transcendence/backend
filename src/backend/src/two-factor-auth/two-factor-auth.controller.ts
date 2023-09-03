@@ -69,7 +69,7 @@ export class TwoFactorAuthController {
     @UseGuards(JwtGuard)
     @Get('qrcode')
     async getQrCode(@Req() req: any, @Res() res: Response) {
-        const user = req.user;
+        const user: User = await this.userService.findUserById(req.user.id);
         return await this.twoFactorAuthService.generateQrCode(res, user);
     }
 
