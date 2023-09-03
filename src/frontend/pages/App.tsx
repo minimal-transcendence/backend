@@ -225,7 +225,7 @@ export default function App() {
       setAlertModalBody(() => alertBody);
       setAlertModal(() => true);
     }
-    if (socket) {
+    if (socket.connected) {
       //test seunchoi
       socket.on("inGame", (userId) => {
         console.log(`${userId} is in game`);
@@ -246,7 +246,7 @@ export default function App() {
     }
 
     return () => {
-      if (socket) {
+      if (socket.connected) {
         socket.off("sendAlert", sendAlert);
         socket.off("sendBlocklist", sendBlocklist);
         socket.off("updateBlocklist", updateBlocklist);
@@ -259,6 +259,8 @@ export default function App() {
       }
     };
   }, [currentRoomName, results, messages, socket, blocklist, isDM]);
+
+  socket.emit("nothingEvent", "this is nonsense");
 
   // seunchoi
   const handleGameOnOff = () => {

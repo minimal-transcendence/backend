@@ -67,7 +67,7 @@ const ChatBody = ({
             key={i}
           >
             <div className="message-recipient-avatar">
-              <img
+              <Image
                 src={`http://localhost/api/user/${
                   message?.fromId
                 }/photo?timestamp=${Date.now()}`}
@@ -100,3 +100,13 @@ const ChatBody = ({
 };
 
 export default ChatBody;
+
+/*
+소켓 이벤트를 받을때마다 렌더링이 이뤄지는 곳 && api 요청이 필요한 곳
+위 조건에 해당하는 모든 곳에 refresh 로직 적용
+
+!! 바깥에서 한번에 할 수 없을까 => {
+  1. updateUserAvatar를 App.tsx에서 받는다면 가능
+  2.
+}
+*/

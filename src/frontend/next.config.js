@@ -3,4 +3,7 @@ const nextConfig = {};
 
 module.exports = {
   output: "standalone",
+  images: {
+    domains: ["localhost"],
+  },
 };

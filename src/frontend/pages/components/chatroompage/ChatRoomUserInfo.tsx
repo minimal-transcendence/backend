@@ -120,7 +120,7 @@ export default function ChatRoomUserInfo({
     <>
       <li>
         <div className="userlist-avatar">
-          <img
+          <Image
             src={`http://localhost/api/user/${
               user?.id
             }/photo?timestamp=${Date.now()}`}
