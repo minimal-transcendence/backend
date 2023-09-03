@@ -270,7 +270,18 @@ function MyProfile({
             }
             localStorage.setItem("is2fa", 'true');
             setIs2Fa('true');
-            alert("2차인증이 설정되었습니다");
+            alert("2차인증이 설정되었습니다 로그인을 다시 해주세요");
+            localStorage.setItem("isLoggedIn", "false");
+            localStorage.removeItem("id");
+            localStorage.removeItem("nickname");
+            localStorage.removeItem("is2fa");
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("access_token_exp");
+            const ApiUrl = "http://localhost/api/auth/logout";
+            axiosApi.post(ApiUrl, {}).catch((error:any) => {
+              console.log("logout send fail: ", error); //TODO: error handling check
+            });
+            router.push("/");
             console.log('is2fa 변경 응답 데이터:', responseData);
           })
           .catch((error) => {

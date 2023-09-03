@@ -169,10 +169,6 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     setShowMatchList(!(showMatchList));
   }
 
-  function sendBlock(index:number) {
-
-  }
-
   function sendMatch(level: string){
     setUserNickname(localStorage.getItem("nickname"));
     console.log("sendMatch: "+ userNickname + " " + userData[0].nickname + " " + level);
