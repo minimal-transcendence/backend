@@ -1,7 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/router";
 import axiosApi from "./AxiosInterceptor";
+import axios, { AxiosError } from "axios";
+import jwt_decode from "jwt-decode";
 import "../pages/index.css";
 import styles from "../styles/MyProfileStyle.module.css";
+
+type JwtPayload = {
+  id: number;
+  email: string;
+  iat: number;
+  exp: number;
+}
 
 function MyProfile({
   setIsOpenModal,
@@ -32,6 +42,7 @@ function MyProfile({
     setIsOpenModal(false);
   };
   const modalRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     // 이벤트 핸들러 함수
@@ -54,7 +65,46 @@ function MyProfile({
       document.removeEventListener("mousedown", handler);
       // document.removeEventListener('touchstart', handler); // 모바일 대응
     };
-  });
+  },[]);
+
+  useEffect(() => {
+    async function refreshToken() : Promise<any> {
+      console.log("토큰 재발급");
+      const res = await axios.get(
+        'http://localhost/api/auth/refresh',
+        { withCredentials: true }
+        ).then((response)=>{
+          const resData = response.data;
+          localStorage.setItem("access_token",resData.access_token);
+          const jwtDecode = jwt_decode<JwtPayload>(resData.access_token);
+          localStorage.setItem("access_token_exp", jwtDecode.exp.toString());
+        })
+        .catch((error) => {
+                console.log("Axios Error type : ");
+                console.log(typeof error);
+          if (error.response.status === 401) {
+            localStorage.setItem("isLoggedIn", "false");
+            localStorage.removeItem("id");
+            localStorage.removeItem("nickname");
+            localStorage.removeItem("is2fa");
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("access_token_exp");
+            const ApiUrl = "http://localhost/api/auth/logout";
+            axiosApi.post(ApiUrl, {}).catch((error) => {
+              console.log("here i am"); //TODO: error handling check
+            });
+            alert("로그인 정보가 맞지않습니다 다시 로그인해주세요.");
+            router.push("/");
+          }
+        })
+    }
+    const jwtExpItem = localStorage.getItem("access_token_exp");
+		if (jwtExpItem){
+			const jwtExpInt = parseInt(jwtExpItem);
+			if (jwtExpInt * 1000 - Date.now() < 2000)
+				refreshToken();
+		}
+  }, [])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {

@@ -225,7 +225,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       copiedData[index].isBlocked = 1;
       socket.emit("blockUser", {target : userData[index].nickname})
     }
-    else{
+    else if (userData[0].isBlocked == 1){
       copiedData[index].isBlocked = 0;
       socket.emit("unblockUser", {target : userData[index].nickname})
     }

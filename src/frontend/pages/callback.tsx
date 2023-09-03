@@ -99,6 +99,8 @@ function Callback() {
       }
       console.log("인증 결과:", responseData);
       localStorage.setItem("access_token", responseData.access_token);
+      const jwtDecode = jwt_decode<JwtPayload>(responseData.access_token);
+      localStorage.setItem("access_token_exp", jwtDecode.exp.toString());
       localStorage.setItem("avatar", `/api/user/${responseData.id}/photo?timestamp=${Date.now()}`);
       localStorage.setItem("isLoggedIn", "true");
       router.push("Home");

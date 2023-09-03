@@ -190,7 +190,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       copiedData[0].isBlocked = 1;
       socket.emit("blockUser", {target : userData[0].nickname});
     }
-    else{
+    else if (userData[0].isBlocked == 1){
       copiedData[0].isBlocked = 0;
       socket.emit("unblockUser", {target : userData[0].nickname});
     }
