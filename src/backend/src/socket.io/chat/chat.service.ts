@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, InternalServerErrorException, UseFilters } from '@nestjs/common';
 import { ChatRoomStoreService, Room } from '../store/store.room.service';
 import { ChatUserStoreService, User } from '../store/store.user.service';
 import { ChatMessageStoreService, Message, DM } from '../store/store.message.service';
@@ -125,7 +125,7 @@ export class ChatService {
 			if (client.nickname !== user.nickname)
 				user.nickname = client.nickname;
 		}
-		this.userJoinRoomAct(io, client, userId, "DEFAULT")
+		this.userJoinRoomAct(io, client, userId, "DEFAULT");
 	}
 
 	//마지막 하나일 때만 모든 방의 접속을 삭제한다
@@ -145,6 +145,7 @@ export class ChatService {
 	}
 
 	async userJoinRoomAct(io: Namespace, client: any, clientId: number, roomname: string) {
+
 		const user = this.storeUser.findUserById(clientId);
 		if (!user.joinlist.has(roomname)) {
 			const room = this.storeRoom.findRoom(roomname);
@@ -457,8 +458,8 @@ export class ChatService {
 			client.emit("sendAlert", "[ Notice ]", `Successfully unblock ${target}`);
 			const blocklist = [];
 			thisUser.blocklist.forEach((user) =>
-				blocklist.push(this.storeUser.getNicknameById(user)));
-			// client.emit("sendBlocklist", blocklist); -> 여기서는 userlist 보내야 할 듯 CHECK
+			blocklist.push(user));
+			client.emit("sendBlocklist", blocklist); //-> 여기서는 userlist 보내야 할 듯 CHECK
 		}
 		else {
 			client.emit("sendAlert", "[ Notice ]", `${target} is not blocked yet`);
