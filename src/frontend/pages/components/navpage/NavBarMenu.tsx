@@ -73,6 +73,7 @@ export default function Menu({
     localStorage.removeItem("nickname");
     localStorage.removeItem("is2fa");
     localStorage.removeItem("access_token");
+    localStorage.removeItem("access_token_exp");
     localStorage.removeItem("avatar");
     const ApiUrl = "http://localhost/api/auth/logout";
     axiosApi.post(ApiUrl, {}).catch((error) => {

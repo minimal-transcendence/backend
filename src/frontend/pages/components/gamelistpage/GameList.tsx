@@ -3,7 +3,7 @@ import GameListBody from "./GameListBody";
 import { useState, useEffect, useContext } from "react";
 import { SocketContext } from "@/context/socket";
 
-const pageHeight = 8;
+const pageHeight = 4;
 export default function GameList({
   myNickName,
   setMatchStartCheck,
