@@ -1,5 +1,5 @@
 # build stage
-FROM node:18.17.1-alpine AS builder
+FROM node:lts-alpine AS builder
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN npm run build
 
 # prod stage
 
-FROM node:18.17.1-alpine
+FROM node:lts-alpine
 
 RUN apk update && \
     apk add --no-cache nginx
