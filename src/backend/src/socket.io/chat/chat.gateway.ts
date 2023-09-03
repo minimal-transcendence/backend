@@ -11,7 +11,7 @@ import {
 import { Namespace } from 'socket.io';
 import { ChatService } from './chat.service';
 import { ChatSocket } from './types';
-import { MessageDto, RoomDto, RoomEventDto, TargetDto, UserInfoDto } from './dto/chat-events.dto';
+import { MessageDto, NullableTargetDto, RoomDto, RoomEventDto, TargetDto, UserInfoDto } from './dto/chat-events.dto';
 import { WsExceptionFilter } from '../ws-exception.filter';
 
 
@@ -191,7 +191,7 @@ export class ChatGateway
 	}
 
 	@SubscribeMessage('requestSearchResultRoomList')
-	handleReqQueryRes(client: ChatSocket, payload: TargetDto) {
+	handleReqQueryRes(client: ChatSocket, payload: NullableTargetDto) {
 		const roomInfo = this.chatService.getQueryRoomList(client.userId, payload.target);
 		client.emit('responseRoomQuery', roomInfo);
 	}
