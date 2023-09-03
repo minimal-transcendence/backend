@@ -188,9 +188,11 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     let copiedData = [...userData];
     if (userData[0].isBlocked == 0){
       copiedData[0].isBlocked = 1;
+      socket.emit("blockUser", {target : userData[0].nickname});
     }
     else{
       copiedData[0].isBlocked = 0;
+      socket.emit("unblockUser", {target : userData[0].nickname});
     }
     setData(copiedData);
   }
@@ -396,19 +398,19 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
                   </button>
                 )}
                 {userData[0].id != userId && userData[0].isGaming == 0 &&(
-                  <button 
-                    className={styles_profile.gameButton}
-                    onClick={() => {
+              <button
+              className={styles_profile.gameButton}
+              onClick={() => {
                       openMatchList();
                     }}
-                  >
-                    게임 신청 
-                 </button>)}
+              >
+              게임 신청
+              </button>)}
                  {userData[0].id != userId && userData[0].isGaming == 1 &&(
-                  <button 
+                  <button
                     className={styles_profile.disabled}
                   >
-                    게임 중 
+                    게임 중
                  </button>)}
             </div>
             <div className={styles_profile.buttons}>
@@ -417,7 +419,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
                 onClick={() => {
                   blockUser();
                 }}>
-                  차단 
+                  차단
                 </button>)}
               {userData[0].id != userId && userData[0].isBlocked == 1 && (
                 <button className={styles_profile.unblockButton}

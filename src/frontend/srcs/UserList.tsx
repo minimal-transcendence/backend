@@ -22,6 +22,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   const [friendList, setFriendList] = useState<string[]>([]);
 
   const socket = useContext<SocketContent>(SocketContext).chatSocket;
+  const gameSocket = useContext(SocketContext).gameSocket;
 
   interface userMatchHistory {
     winner: string;
@@ -112,7 +113,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       console.log("socket response gaming: ", gameList);
       console.log("socket response block: ", blockList);
     }
-    
+
     if (socket){
       socket.emit("requestAllMembers");
       socket.once("responseAllMembers", async (data:any) => getListBySocket(data));
@@ -210,7 +211,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   function sendMatch(index:number, level: string){
     setUserNickname(localStorage.getItem("nickname"));
     console.log("sendMatch: "+ userNickname + " " + userData[index].nickname + " " + level);
-    socket.emit("oneOnOneApply", {
+    gameSocket.emit("oneOnOneApply", {
       from: userNickname,
       to: userData[index].nickname,
       mode: level,
@@ -497,7 +498,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
                   onClick={() => {
                     blockUser(index,);
                     }}>
-                    차단 
+                    차단
                   </button>)}
                   {userData[index].id != userId && userData[index].isBlocked == 1 && (
                   <button className={styles_profile.unblockButton}
@@ -615,11 +616,18 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             팔로우
           </button>
           )}
-          {userData[index].id == userId && (
+          {userData[index].id == userId && userData[index].isGaming == 0 &&(
           <button
             className={styles.disabled}
           >
             게임 신청
+          </button>
+          )}
+          {userData[index].id == userId && userData[index].isGaming == 1 &&(
+          <button
+            className={styles.disabled}
+          >
+            게임 중
           </button>
           )}
           {userData[index].id != userId && userData[index].isGaming == 0 &&(
@@ -707,7 +715,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
           <div>
             {userData.map((item, index) => (
               <div key={index} className={styles_profile.fontSet}>
-                {userId && userData[index].id != '0' && 
+                {userId && userData[index].id != '0' &&
                   getDetailProfile(index)}
               </div>
             ))}
