@@ -139,46 +139,48 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     const newModalList: boolean[] = [];
     const newMatchList: boolean[] = [];
     for (let i = 0; i < useridx; i++) {
-      const responseDetail = await axiosApi.get(
-        "http://localhost/api/user/" + response[i].id
-      );
-      const detailResponse = responseDetail.data;
-      const responseMatch = await axiosApi.get(
-        "http://localhost/api/user/" + response[i].id + "/matchhistory"
-      );
-      const matchResponse = responseMatch.data;
-      const matchCount = matchResponse.length;
-      const newData: userDataInterface = {
-        id: detailResponse.id,
-        nickname: detailResponse.nickname,
-        userProfileURL: `/api/user/${response[i].id}/photo?timestamp=${Date.now()}`,
-        win: detailResponse._count.asWinner,
-        lose: detailResponse._count.asLoser,
-        score:
-          parseInt(detailResponse._count.asWinner) * 10 -
-          parseInt(detailResponse._count.asLoser) * 10,
-        lastLogin: detailResponse.lastLogin,
-        isFriend: checkIsInclude(idList, detailResponse.id),
-        isLogin: checkIsInclude(conList, detailResponse.id),
-        isGaming: checkIsInclude(gameList, detailResponse.id),
-        isBlocked: checkIsInclude(blockList, detailResponse.id),
-        matchhistory: [],
-      };
-      for (let j = 0; j < matchCount; j++) {
-        const newMatchData: userMatchHistory = {
-          winner: matchResponse[j].winner.nickname,
-          winnerAvatar: `/api/photo/${matchResponse[j].winner.avatar}`,
-          loser: matchResponse[j].loser.nickname,
-          loserAvatar: `/api/photo/${matchResponse[j].loser.avatar}`,
-          time: matchResponse[j].createdTime,
+      if(response[i].id != 0){
+        const responseDetail = await axiosApi.get(
+          "http://localhost/api/user/" + response[i].id
+        );
+        const detailResponse = responseDetail.data;
+        const responseMatch = await axiosApi.get(
+          "http://localhost/api/user/" + response[i].id + "/matchhistory"
+        );
+        const matchResponse = responseMatch.data;
+        const matchCount = matchResponse.length;
+        const newData: userDataInterface = {
+          id: detailResponse.id,
+          nickname: detailResponse.nickname,
+          userProfileURL: `/api/user/${response[i].id}/photo?timestamp=${Date.now()}`,
+          win: detailResponse._count.asWinner,
+          lose: detailResponse._count.asLoser,
+          score:
+            parseInt(detailResponse._count.asWinner) * 10 -
+            parseInt(detailResponse._count.asLoser) * 10,
+          lastLogin: detailResponse.lastLogin,
+          isFriend: checkIsInclude(idList, detailResponse.id),
+          isLogin: checkIsInclude(conList, detailResponse.id),
+          isGaming: checkIsInclude(gameList, detailResponse.id),
+          isBlocked: checkIsInclude(blockList, detailResponse.id),
+          matchhistory: [],
         };
-        newMatchData.time = newMatchData.time.slice(0, 19);
-        newMatchData.time = newMatchData.time.replace("T", " ");
-        newData.matchhistory.push(newMatchData);
+        for (let j = 0; j < matchCount; j++) {
+          const newMatchData: userMatchHistory = {
+            winner: matchResponse[j].winner.nickname,
+            winnerAvatar: `/api/photo/${matchResponse[j].winner.avatar}`,
+            loser: matchResponse[j].loser.nickname,
+            loserAvatar: `/api/photo/${matchResponse[j].loser.avatar}`,
+            time: matchResponse[j].createdTime,
+          };
+          newMatchData.time = newMatchData.time.slice(0, 19);
+          newMatchData.time = newMatchData.time.replace("T", " ");
+          newData.matchhistory.push(newMatchData);
+        }
+        newDataList.push(newData);
+        newModalList.push(false);
+        newMatchList.push(false);
       }
-      newDataList.push(newData);
-      newModalList.push(false);
-      newMatchList.push(false);
     }
     setData(newDataList);
     setShowModals(newModalList);
