@@ -427,6 +427,10 @@ export class ChatService {
 
 	//TODO : makeBlocklist method & makeUserRender method 필요해....
 	blockUser(io : Namespace, client : ChatSocket, target : string) {
+		if (client.nickname === target){
+			client.emit("sendAlert", "[ Act Error ]", "You can't block yourself");
+			return ;
+		}
 		const thisUser = this.storeUser.findUserById(client.userId);
 		const targetId = this.storeUser.getIdByNickname(target);
 		if (thisUser.blocklist.has(targetId))
@@ -436,7 +440,7 @@ export class ChatService {
 			client.emit("sendAlert", "[ Notice ]", `Successfully block ${target}`);
 			const blocklist = [];
 			thisUser.blocklist.forEach((user) => 
-					blocklist.push(this.storeUser.getNicknameById(user)));
+					blocklist.push(user));
 			client.emit("sendBlocklist", blocklist);
 		}
 	}
