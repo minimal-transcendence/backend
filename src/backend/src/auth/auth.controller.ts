@@ -77,7 +77,6 @@ export class AuthController {
     @UseGuards(JwtRefreshGuard)
     @Get('refresh')
     async refresh(@Req() req: any, @Res() res: Response) {
-        console.log(req);
         const user = await this.userService.findUserById(req.user.id);
 
         const access_token = await this.authService.generateAccessToken({

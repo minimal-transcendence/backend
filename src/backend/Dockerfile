@@ -2,13 +2,17 @@
 #	build stage
 ####################
 
-FROM node:18-alpine3.17 AS builder
+FROM node:18.17.1-alpine AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+# RUN npm install
+
+RUN npm install -g npm-check-updates && \
+    ncu -u && \
+    npm install
 
 COPY . .
 COPY *.png /photo/
@@ -22,7 +26,7 @@ RUN npm run build
 # production stage
 ####################
 
-FROM node:18-alpine3.17
+FROM node:18.17.1-alpine
 
 WORKDIR /app
 
@@ -36,6 +40,10 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/*.png /photo/
 
 RUN npm install --only-production
+
+RUN npm install -g npm-check-updates && \
+    ncu -u && \
+    npm install --only-production
 
 # prisma
 COPY ./prisma ./prisma
