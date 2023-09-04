@@ -245,7 +245,7 @@ export default function App() {
       socket.on("inGame", (userId) => {
         console.log(`${userId} is in game`);
       });
-      socket.on("notInGame", (userId) => {
+      socket.on("NotInGame", (userId) => {
         console.log(`${userId} is not in game`);
       });
 

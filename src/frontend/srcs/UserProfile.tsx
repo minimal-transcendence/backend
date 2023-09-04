@@ -348,7 +348,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       socket.on("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
       socket.on("updateUserAvatar", (userId : number) => reloadAvatar(userId));
       gameSocket.on('inGame', (userId : number) => reloadGameStatusIn(userId));
-      gameSocket.on('notInGame', (userId : number) => reloadGameStatusOut(userId));
+      gameSocket.on('NotInGame', (userId : number) => reloadGameStatusOut(userId));
     }
     return () => {
       if (socket) {
@@ -356,7 +356,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
         socket.off("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
         socket.off("updateUserAvatar", (userId : number) => reloadAvatar(userId));
         gameSocket.off('inGame', (userId : number) => reloadGameStatusIn(userId));
-        gameSocket.off('notInGame', (userId : number) => reloadGameStatusOut(userId));
+        gameSocket.off('NotInGame', (userId : number) => reloadGameStatusOut(userId));
       }
     };
   }, [socket, userData]);
