@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import axiosApi from "./AxiosInterceptor";
 import styles_profile from "../styles/UserProfileStyle.module.css";
-import { SocketContext, SocketContent } from "@/context/socket";
+import { SocketContext, SocketContent } from "@/context/socket";;
 import "../pages/index.css";
 
 function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
@@ -82,30 +82,30 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     setFriendList([]);
     setShowMatchList(false);
 
-    let conList: string[] = [];
-    let gameList: string[] = [];
-    let blockList: string[] = [];
+    let conList:string[] = [];
+    let gameList:string[] = [];
+    let blockList:string[] = [];
 
-    function getListBySocket(data: any) {
+    function getListBySocket(data:any){
       conList = [];
       gameList = [];
-      blockList = [];
+      blockList= [];
       console.log("data:", data);
-      if (data.isConnected === true) {
-        conList.push(id.toString());
+      if (data.isConnected === true){
+        conList.push((id).toString());
       }
-      if (data.isGaming === true) {
-        gameList.push(id.toString());
+      if (data.isGaming === true){
+        gameList.push((id).toString());
       }
-      if (data.isBlocked === true) {
-        blockList.push(id.toString());
+      if (data.isBlocked === true){
+        blockList.push((id).toString());
       }
-      console.log("socket response target connection: ", conList);
-      console.log("socket response target gaming: ", gameList);
+    console.log("socket response target connection: ", conList);
+    console.log("socket response target gaming: ", gameList);
     }
 
     if (socket){
-      socket.emit("requestTargetMember", { userId : userId, tergetId : id });
+      socket.emit("requestTargetMember", { userId : Number(userId), targetId : Number(id) });
       socket.once("responseTargetMember", async (data:any) => getListBySocket(data))
     }
 
@@ -134,7 +134,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     const newData: userDataInterface = {
       id: detailResponse.id,
       nickname: detailResponse.nickname,
-      userProfileURL: `/api/user/${id}/photo`,
+      userProfileURL: `/api/user/${id}/photo?timestamp=${Date.now()}`,
       win: detailResponse._count.asWinner,
       lose: detailResponse._count.asLoser,
       score:
@@ -152,9 +152,9 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     for (let j = 0; j < matchCount; j++) {
       const newMatchData: userMatchHistory = {
         winner: matchResponse[j].winner.nickname,
-        winnerAvatar:`/api/user/${matchResponse[j].winner.id}/photo?timestamp=${Date.now()}`,
+        winnerAvatar:`/api/photo/${matchResponse[j].winner.avatar}`,
         loser: matchResponse[j].loser.nickname,
-        loserAvatar: `/api/user/${matchResponse[j].loser.id}/photo?timestamp=${Date.now()}`,
+        loserAvatar: `/api/photo/${matchResponse[j].loser.avatar}`,
         time: matchResponse[j].createdTime,
       };
       newMatchData.time = newMatchData.time.slice(0, 19);
@@ -167,11 +167,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   };
 
   function openMatchList() {
-    setShowMatchList(!showMatchList);
-  }
-
-  function sendBlock(index:number) {
-
+    setShowMatchList(!(showMatchList));
   }
 
   function sendMatch(level: string){
@@ -185,12 +181,13 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     alert(userData[0].nickname + "님에게 게임 신청이 전송되었습니다");
   }
 
-  function blockUser() {
+  function blockUser(){
     let copiedData = [...userData];
-    if (userData[0].isBlocked == 0) {
+    if (userData[0].isBlocked == 0){
       copiedData[0].isBlocked = 1;
+      socket.emit("blockUser", {target : userData[0].nickname});
     }
-    else{
+    else if (userData[0].isBlocked == 1){
       copiedData[0].isBlocked = 0;
       socket.emit("unblockUser", {target : userData[0].nickname});
     }
@@ -264,9 +261,9 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   }, []);
 
   useEffect(() => {
-    async function reloadStatus(userId: number, isConnected: boolean) {
+    async function reloadStatus(userId : number, isConnected : boolean){
       console.log("Status Update! " + userId + isConnected);
-      if (isConnected === true) {
+      if (isConnected === true){
         let copiedData = [...userData];
         for(let i = 0; i < copiedData.length ; i++)
         {
@@ -276,7 +273,8 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
           }
         }
         setData(copiedData);
-      } else {
+      }
+      else{
         let copiedData = [...userData];
         for(let i = 0; i < copiedData.length ; i++)
         {
@@ -289,7 +287,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       }
     }
 
-    async function reloadNick(userId: number, newNick: string) {
+    async function reloadNick(userId : number, newNick : string){
       let copiedData = null;
       console.log("Nickname Update! " + userId + newNick);
       for(let i = 0; i < userData.length ; i++)
@@ -300,12 +298,12 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
           break;
         }
       }
-      if (copiedData != null) {
+      if (copiedData != null){
         setData(copiedData);
       }
     }
 
-    async function reloadAvatar(userId: number) {
+    async function reloadAvatar(userId : number){
       console.log("Avatar Update! " + userId);
       let copiedData = [...userData];
       for(let i = 0; i < userData.length ; i++)
@@ -315,7 +313,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
           break;
         }
       }
-      if (copiedData != null) {
+      if (copiedData != null){
         setData(copiedData);
       }
     }
@@ -428,19 +426,19 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
                   </button>
                 )}
                 {userData[0].id != userId && userData[0].isGaming == 0 &&(
-                  <button 
-                    className={styles_profile.gameButton}
-                    onClick={() => {
+              <button
+              className={styles_profile.gameButton}
+              onClick={() => {
                       openMatchList();
                     }}
-                  >
-                    게임 신청 
-                 </button>)}
+              >
+              게임 신청
+              </button>)}
                  {userData[0].id != userId && userData[0].isGaming == 1 &&(
-                  <button 
+                  <button
                     className={styles_profile.disabled}
                   >
-                    게임 중 
+                    게임 중
                  </button>)}
             </div>
             <div className={styles_profile.buttons}>
@@ -449,45 +447,27 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
                 onClick={() => {
                   blockUser();
                 }}>
-                  차단 
+                  차단
                 </button>)}
               {userData[0].id != userId && userData[0].isBlocked == 1 && (
-                <button
-                  className={styles_profile.unblockButton}
-                  onClick={() => {
-                    blockUser();
-                  }}
-                >
+                <button className={styles_profile.unblockButton}
+                onClick={() => {
+                  blockUser();
+                }}>
                   차단 해제
-                </button>
-              )}
+                </button>)}
               {showMatchList && (
-                <div className={styles_profile.gameButtons}>
-                  <button
-                    onClick={() => {
-                      sendMatch("easy");
-                    }}
-                  >
-                    {" "}
-                    EASY{" "}
-                  </button>
-                  <button
-                    onClick={() => {
-                      sendMatch("normal");
-                    }}
-                  >
-                    {" "}
-                    NORMAL{" "}
-                  </button>
-                  <button
-                    onClick={() => {
-                      sendMatch("hard");
-                    }}
-                  >
-                    {" "}
-                    HARD{" "}
-                  </button>
-                </div>
+              <div className={styles_profile.gameButtons}>
+                <button onClick={() => {
+                sendMatch("easy");
+                }}> EASY </button>
+                <button onClick={() => {
+                sendMatch("normal");
+                }}> NORMAL </button>
+                <button onClick={() => {
+                sendMatch("hard");
+                }}> HARD </button>
+              </div>
               )}
             </div>
           </div>
