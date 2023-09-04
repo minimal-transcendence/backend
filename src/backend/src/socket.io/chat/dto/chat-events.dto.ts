@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, IsNumberString } from 'class-validator';
 import { IntersectionType } from '@nestjs/mapped-types';
 
 //why not type then class?
@@ -35,10 +35,11 @@ export class NullableTargetDto {
 }
 
 export class UserInfoDto {
-	@IsNotEmpty()
+	@IsOptional()
 	@IsNumber()	//or IsNumberString?
 	userId : number;
 
+	@IsOptional()
 	@IsNumber()
 	targetId : number;
 }

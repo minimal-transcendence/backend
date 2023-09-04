@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import axiosApi from "./AxiosInterceptor";
 import styles_profile from "../styles/UserProfileStyle.module.css";
-import { SocketContext, SocketContent } from "@/context/socket";
+import { SocketContext, SocketContent } from "@/context/socket";;
 import "../pages/index.css";
 
 function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
@@ -67,6 +67,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   }
 
   const socket = useContext<SocketContent>(SocketContext).chatSocket;
+  const gameSocket = useContext<SocketContent>(SocketContext).gameSocket;
 
   function checkIsInclude(id: string[], userid: string) {
     if (id.includes(userid.toString())) {
@@ -81,33 +82,31 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     setFriendList([]);
     setShowMatchList(false);
 
-    let conList: string[] = [];
-    let gameList: string[] = [];
-    let blockList: string[] = [];
+    let conList:string[] = [];
+    let gameList:string[] = [];
+    let blockList:string[] = [];
 
-    function getListBySocket(data: any) {
+    function getListBySocket(data:any){
       conList = [];
       gameList = [];
-      blockList = [];
+      blockList= [];
       console.log("data:", data);
-      if (data.isConnected === true) {
-        conList.push(id.toString());
+      if (data.isConnected === true){
+        conList.push((id).toString());
       }
-      if (data.isGaming === true) {
-        gameList.push(id.toString());
+      if (data.isGaming === true){
+        gameList.push((id).toString());
       }
-      if (data.isBlocked === true) {
-        blockList.push(id.toString());
+      if (data.isBlocked === true){
+        blockList.push((id).toString());
       }
-      console.log("socket response target connection: ", conList);
-      console.log("socket response target gaming: ", gameList);
+    console.log("socket response target connection: ", conList);
+    console.log("socket response target gaming: ", gameList);
     }
 
-    if (socket) {
-      socket.emit("requestTargetMember", { userId: userId, tergetId: id });
-      socket.once("responseTargetMember", async (data: any) =>
-        getListBySocket(data)
-      );
+    if (socket){
+      socket.emit("requestTargetMember", { userId : Number(userId), targetId : Number(id) });
+      socket.once("responseTargetMember", async (data:any) => getListBySocket(data))
     }
 
     let idList: string[] = [];
@@ -135,7 +134,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     const newData: userDataInterface = {
       id: detailResponse.id,
       nickname: detailResponse.nickname,
-      userProfileURL: `/api/user/${id}/photo`,
+      userProfileURL: `/api/user/${id}/photo?timestamp=${Date.now()}`,
       win: detailResponse._count.asWinner,
       lose: detailResponse._count.asLoser,
       score:
@@ -153,9 +152,9 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     for (let j = 0; j < matchCount; j++) {
       const newMatchData: userMatchHistory = {
         winner: matchResponse[j].winner.nickname,
-        winnerAvatar: `/api/user/${matchResponse[j].winner.id}/photo`,
+        winnerAvatar:`/api/photo/${matchResponse[j].winner.avatar}`,
         loser: matchResponse[j].loser.nickname,
-        loserAvatar: `/api/user/${matchResponse[j].loser.id}/photo`,
+        loserAvatar: `/api/photo/${matchResponse[j].loser.avatar}`,
         time: matchResponse[j].createdTime,
       };
       newMatchData.time = newMatchData.time.slice(0, 19);
@@ -168,17 +167,13 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   };
 
   function openMatchList() {
-    setShowMatchList(!showMatchList);
+    setShowMatchList(!(showMatchList));
   }
 
-  function sendBlock(index: number) {}
-
-  function sendMatch(level: string) {
+  function sendMatch(level: string){
     setUserNickname(localStorage.getItem("nickname"));
-    console.log(
-      "sendMatch: " + userNickname + " " + userData[0].nickname + " " + level
-    );
-    socket.emit("oneOnOneApply", {
+    console.log("sendMatch: "+ userNickname + " " + userData[0].nickname + " " + level);
+    gameSocket.emit("oneOnOneApply", {
       from: userNickname,
       to: userData[0].nickname,
       mode: level,
@@ -186,12 +181,15 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     alert(userData[0].nickname + "님에게 게임 신청이 전송되었습니다");
   }
 
-  function blockUser() {
+  function blockUser(){
     let copiedData = [...userData];
-    if (userData[0].isBlocked == 0) {
+    if (userData[0].isBlocked == 0){
       copiedData[0].isBlocked = 1;
-    } else {
+      socket.emit("blockUser", {target : userData[0].nickname});
+    }
+    else if (userData[0].isBlocked == 1){
       copiedData[0].isBlocked = 0;
+      socket.emit("unblockUser", {target : userData[0].nickname});
     }
     setData(copiedData);
   }
@@ -263,21 +261,24 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   }, []);
 
   useEffect(() => {
-    async function reloadStatus(userId: number, isConnected: boolean) {
+    async function reloadStatus(userId : number, isConnected : boolean){
       console.log("Status Update! " + userId + isConnected);
-      if (isConnected === true) {
+      if (isConnected === true){
         let copiedData = [...userData];
-        for (let i = 0; i <= copiedData.length; i++) {
-          if (copiedData[i].id == userId.toString()) {
+        for(let i = 0; i < copiedData.length ; i++)
+        {
+          if(copiedData[i].id == userId.toString()){
             copiedData[i].isLogin = 1;
             break;
           }
         }
         setData(copiedData);
-      } else {
+      }
+      else{
         let copiedData = [...userData];
-        for (let i = 0; i <= copiedData.length; i++) {
-          if (copiedData[i].id == userId.toString()) {
+        for(let i = 0; i < copiedData.length ; i++)
+        {
+          if(copiedData[i].id == userId.toString()){
             copiedData[i].isLogin = 0;
             break;
           }
@@ -286,48 +287,99 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       }
     }
 
-    async function reloadNick(userId: number, newNick: string) {
+    async function reloadNick(userId : number, newNick : string){
       let copiedData = null;
       console.log("Nickname Update! " + userId + newNick);
-      for (let i = 0; i <= userData.length; i++) {
-        if (userData[i].id == userId.toString()) {
+      for(let i = 0; i < userData.length ; i++)
+      {
+        if(userData[i].id == userId.toString()){
           copiedData = [...userData];
+          const matchCount = copiedData[i].matchhistory.length;
+          for(let j = 0; j < matchCount; j++){
+            if (copiedData[i].matchhistory[j].winner == copiedData[i].nickname)
+              copiedData[i].matchhistory[j].winner = newNick;
+            else if (copiedData[i].matchhistory[j].loser == copiedData[i].nickname)
+              copiedData[i].matchhistory[j].loser = newNick;
+          }
           copiedData[i].nickname = newNick;
           break;
         }
       }
-      if (copiedData != null) {
+      if (copiedData != null){
         setData(copiedData);
       }
     }
 
-    async function reloadAvatar(userId: number) {
+    async function reloadAvatar(userId : number){
       console.log("Avatar Update! " + userId);
       let copiedData = [...userData];
-      for (let i = 0; i <= userData.length; i++) {
-        if (copiedData[i].id == userId.toString()) {
-          copiedData[i].userProfileURL = `/api/user/${userId}/photo`;
+      for(let i = 0; i < userData.length ; i++)
+      {
+        if(copiedData[i].id == userId.toString()){
+          copiedData[i].userProfileURL = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
+          const matchCount = copiedData[i].matchhistory.length;
+          for(let j = 0; j < matchCount; j++){
+            if (copiedData[i].matchhistory[j].winner == copiedData[i].nickname)
+              copiedData[i].matchhistory[j].winnerAvatar = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
+            else if (copiedData[i].matchhistory[j].loser == copiedData[i].nickname)
+              copiedData[i].matchhistory[j].loserAvatar = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
+          }
           break;
         }
       }
-      if (copiedData != null) {
+      if (copiedData != null){
         setData(copiedData);
       }
     }
-
-    if (socket) {
-      socket.on("updateUserStatus", reloadStatus);
-      socket.on("updateUserNick", reloadNick);
-      socket.on("updateUserAvatar", reloadAvatar);
+    async function reloadGameStatusIn(userId : any){
+      console.log(`${userId} is in game!!`);
+      let copiedData = null;
+      for(let i = 0; i < userData.length ; i++)
+      {
+        if(userData[i].id == userId){
+          let copiedData = [...userData];
+          copiedData[i].isGaming = 1;
+          console.log(userId + "의 정보를 1로 변경");
+          break;
+        }
+      }
+      if (copiedData != null){
+        setData(copiedData);
+      }
+    }
+    async function reloadGameStatusOut(userId : any){
+      console.log(`${userId} is not in game!!`);
+      let copiedData = null;
+      for(let i = 0; i < userData.length ; i++)
+      {
+        if(userData[i].id == userId){
+          let copiedData = [...userData];
+          copiedData[i].isGaming = 0;
+          console.log(userId + "의 정보를 0으로 변경");
+          break;
+        }
+      }
+      if (copiedData != null){
+        setData(copiedData);
+      }
+    }
+    if (socket){
+      socket.on("updateUserStatus", (userId:number, isConnected:boolean) => reloadStatus(userId, isConnected));
+      socket.on("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
+      socket.on("updateUserAvatar", (userId : number) => reloadAvatar(userId));
+      socket.on('inGame', (userId : any) => reloadGameStatusIn(userId));
+      socket.on('NotInGame', (userId : any) => reloadGameStatusOut(userId));
     }
     return () => {
       if (socket) {
-        socket.off("updateUserStatus", reloadStatus);
-        socket.off("updateUserNick", reloadNick);
-        socket.off("updateUserAvatar", reloadAvatar);
+        socket.off("updateUserStatus", (userId:number, isConnected:boolean) => reloadStatus(userId, isConnected));
+        socket.off("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
+        socket.off("updateUserAvatar", (userId : number) => reloadAvatar(userId));
+        socket.off('inGame', (userId : any) => reloadGameStatusIn(userId));
+        socket.off('NotInGame', (userId : any) => reloadGameStatusOut(userId));
       }
     };
-  }, [socket, userData]);
+  }, [socket, userData, gameSocket]);
 
   function getDetailProfile() {
     return (
@@ -367,90 +419,73 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
               </h2>
             </div>
             <div className={styles_profile.buttons}>
-              {userData[0].id != userId && userData[0].isFriend === 0 && (
-                <button
-                  className={styles_profile.followButton}
-                  onClick={() => {
-                    follow(0);
-                  }}
-                >
-                  {" "}
-                  팔로우{" "}
-                </button>
-              )}
-              {userData[0].id != userId && userData[0].isFriend === 1 && (
-                <button
-                  className={styles_profile.followingButton}
-                  onClick={() => {
-                    unFollow(0);
-                  }}
-                >
-                  {" "}
-                  언팔로우{" "}
-                </button>
-              )}
-              {userData[0].id != userId && userData[0].isGaming == 0 && (
-                <button
-                  className={styles_profile.gameButton}
-                  onClick={() => {
-                    openMatchList();
-                  }}
-                >
-                  게임 신청
-                </button>
-              )}
-              {userData[0].id != userId && userData[0].isGaming == 1 && (
-                <button className={styles_profile.disabled}>게임 중</button>
-              )}
+              {userData[0].id != userId &&
+                userData[0].isFriend === 0 && (
+                  <button
+                    className={styles_profile.followButton}
+                    onClick={() => {
+                      follow(0);
+                    }}
+                  >
+                    {" "}
+                    팔로우{" "}
+                  </button>
+                )}
+              {userData[0].id != userId &&
+                userData[0].isFriend === 1 && (
+                  <button
+                    className={styles_profile.followingButton}
+                    onClick={() => {
+                      unFollow(0);
+                    }}
+                  >
+                    {" "}
+                    언팔로우{" "}
+                  </button>
+                )}
+                {userData[0].id != userId && userData[0].isGaming == 0 &&(
+              <button
+              className={styles_profile.gameButton}
+              onClick={() => {
+                      openMatchList();
+                    }}
+              >
+              게임 신청
+              </button>)}
+                 {userData[0].id != userId && userData[0].isGaming == 1 &&(
+                  <button
+                    className={styles_profile.disabled}
+                  >
+                    게임 중
+                 </button>)}
             </div>
             <div className={styles_profile.buttons}>
-              {userData[0].id != userId && userData[0].isBlocked == 0 && (
-                <button
-                  className={styles_profile.blockButton}
-                  onClick={() => {
-                    blockUser();
-                  }}
-                >
+              {userData[0].id != userId && userData[0].isBlocked == 0 &&(
+                <button className={styles_profile.blockButton}
+                onClick={() => {
+                  blockUser();
+                }}>
                   차단
-                </button>
-              )}
+                </button>)}
               {userData[0].id != userId && userData[0].isBlocked == 1 && (
-                <button
-                  className={styles_profile.unblockButton}
-                  onClick={() => {
-                    blockUser();
-                  }}
-                >
+                <button className={styles_profile.unblockButton}
+                onClick={() => {
+                  blockUser();
+                }}>
                   차단 해제
-                </button>
-              )}
+                </button>)}
               {showMatchList && (
-                <div className={styles_profile.gameButtons}>
-                  <button
-                    onClick={() => {
-                      sendMatch("easy");
-                    }}
-                  >
-                    {" "}
-                    EASY{" "}
-                  </button>
-                  <button
-                    onClick={() => {
-                      sendMatch("normal");
-                    }}
-                  >
-                    {" "}
-                    NORMAL{" "}
-                  </button>
-                  <button
-                    onClick={() => {
-                      sendMatch("hard");
-                    }}
-                  >
-                    {" "}
-                    HARD{" "}
-                  </button>
-                </div>
+              <div className={styles_profile.gameButtons}>
+                <button onClick={() => {
+                sendMatch("easy");
+                }}> EASY </button>
+                <button onClick={() => {
+                sendMatch("normal");
+                }}> NORMAL </button>
+                <button onClick={() => {
+                sendMatch("hard");
+                }}> HARD </button>
+              </div>
               )}
             </div>
           </div>

@@ -64,7 +64,8 @@ export class UserService {
 				score: true,
 				lastLogin: true
 			},
-			orderBy: { lastLogin: 'desc' }
+			orderBy: { lastLogin: 'desc' },
+			where : { id : { not : 0 }}
 		});
 		return (res);
 	}
