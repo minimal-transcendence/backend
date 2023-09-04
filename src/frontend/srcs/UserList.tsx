@@ -378,6 +378,13 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       {
         if(userData[i].id == userId.toString()){
           copiedData = [...userData];
+          const matchCount = copiedData[i].matchhistory.length;
+          for(let j = 0; j < matchCount; j++){
+            if (copiedData[i].matchhistory[j].winner == copiedData[i].nickname)
+              copiedData[i].matchhistory[j].winner = newNick;
+            else if (copiedData[i].matchhistory[j].loser == copiedData[i].nickname)
+              copiedData[i].matchhistory[j].loser = newNick;
+          }
           copiedData[i].nickname = newNick;
           break;
         }
@@ -389,12 +396,19 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
 
     async function reloadAvatar(userId : number){
       console.log("Avatar Update! " + userId);
-      let copiedData = [...userData];
-      console.log("길이: "+ userData.length);
+      let copiedData = null;
       for(let i = 0; i < userData.length ; i++)
       {
-        if(copiedData[i].id == userId.toString()){
+        if(userData[i].id == userId.toString()){
+          let copiedData = [...userData];
           copiedData[i].userProfileURL = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
+          const matchCount = copiedData[i].matchhistory.length;
+          for(let j = 0; j < matchCount; j++){
+            if (copiedData[i].matchhistory[j].winner == copiedData[i].nickname)
+              copiedData[i].matchhistory[j].winnerAvatar = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
+            else if (copiedData[i].matchhistory[j].loser == copiedData[i].nickname)
+              copiedData[i].matchhistory[j].loserAvatar = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
+          }
           break;
         }
       }
@@ -402,13 +416,15 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         setData(copiedData);
       }
     }
-    async function reloadGameStatusIn(userId : number){
-      console.log(`${userId} is in game`);
-      let copiedData = [...userData];
+    async function reloadGameStatusIn(userId : any){
+      console.log(`${userId} is in game!!`);
+      let copiedData = null;
       for(let i = 0; i < userData.length ; i++)
       {
-        if(copiedData[i].id == userId.toString()){
+        if(userData[i].id == userId){
+          let copiedData = [...userData];
           copiedData[i].isGaming = 1;
+          console.log(userId + "의 정보를 1로 변경");
           break;
         }
       }
@@ -416,13 +432,15 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         setData(copiedData);
       }
     }
-    async function reloadGameStatusOut(userId : number){
-      console.log(`${userId} is not in game`);
-      let copiedData = [...userData];
+    async function reloadGameStatusOut(userId : any){
+      console.log(`${userId} is not in game!!`);
+      let copiedData = null;
       for(let i = 0; i < userData.length ; i++)
       {
-        if(copiedData[i].id == userId.toString()){
+        if(userData[i].id == userId){
+          let copiedData = [...userData];
           copiedData[i].isGaming = 0;
+          console.log(userId + "의 정보를 0으로 변경");
           break;
         }
       }
@@ -434,19 +452,19 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       socket.on("updateUserStatus", (userId:number, isConnected:boolean) => reloadStatus(userId, isConnected));
       socket.on("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
       socket.on("updateUserAvatar", (userId : number) => reloadAvatar(userId));
-      gameSocket.on('inGame', (userId : number) => reloadGameStatusIn(userId));
-      gameSocket.on('NotInGame', (userId : number) => reloadGameStatusOut(userId));
+      socket.on('inGame', (userId : any) => reloadGameStatusIn(userId));
+      socket.on('NotInGame', (userId : any) => reloadGameStatusOut(userId));
     }
     return () => {
       if (socket) {
         socket.off("updateUserStatus", (userId:number, isConnected:boolean) => reloadStatus(userId, isConnected));
         socket.off("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
         socket.off("updateUserAvatar", (userId : number) => reloadAvatar(userId));
-        gameSocket.off('inGame', (userId : number) => reloadGameStatusIn(userId));
-        gameSocket.off('NotInGame', (userId : number) => reloadGameStatusOut(userId));
+        socket.off('inGame', (userId : any) => reloadGameStatusIn(userId));
+        socket.off('NotInGame', (userId : any) => reloadGameStatusOut(userId));
       }
     };
-  }, [socket, userData, showModals]);
+  }, [socket, userData, showModals, gameSocket]);
 
   function getDetailProfile(index: number) {
     return (
