@@ -332,11 +332,12 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       }
     }
     async function reloadGameStatusIn(userId : any){
-      console.log(`${userId} is in game`);
-      let copiedData = [...userData];
+      console.log(`${userId} is in game!!`);
+      let copiedData = null;
       for(let i = 0; i < userData.length ; i++)
       {
-        if(copiedData[i].id == userId.toString()){
+        if(userData[i].id == userId){
+          let copiedData = [...userData];
           copiedData[i].isGaming = 1;
           console.log(userId + "의 정보를 1로 변경");
           break;
@@ -347,11 +348,12 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       }
     }
     async function reloadGameStatusOut(userId : any){
-      console.log(`${userId} is not in game`);
-      let copiedData = [...userData];
+      console.log(`${userId} is not in game!!`);
+      let copiedData = null;
       for(let i = 0; i < userData.length ; i++)
       {
-        if(copiedData[i].id == userId.toString()){
+        if(userData[i].id == userId){
+          let copiedData = [...userData];
           copiedData[i].isGaming = 0;
           console.log(userId + "의 정보를 0으로 변경");
           break;
