@@ -156,31 +156,40 @@ export default function ChatRoomUserInfo({
               <div className="dropdown-item" data-name="profile">
                 Profile
               </div>
-              <div className="dropdown-item" data-name="kick">
-                Kick
-              </div>
-              <div className="dropdown-item" data-name="ban">
-                Ban
-              </div>
-              <div className="dropdown-item" data-name="mute">
-                Mute
-              </div>
-              <div className="dropdown-item" data-name="block">
-                block
-              </div>
-
-              <div className="dropdown-item dropdown-second">
-                Operator
-                <div className="dropdown-content-second">
-                  <div className="dropdown-item-second" data-name="opAdd">
-                    Add Operator
-                  </div>
-                  <div className="dropdown-item-second" data-name="opDelete">
-                    Delete Operator
+              {/* Operator */}
+              {roomInfo?.owner !== user?.nickname && !roomInfo?.operators.includes(user?.nickname) &&
+                (roomInfo?.operators.includes(myNickName) || roomInfo?.owner === myNickName)
+                && user?.nickname !== myNickName && (<>
+                <div className={"dropdown-item"} data-name="kick">
+                  Kick
+                </div>
+                <div className="dropdown-item" data-name="ban">
+                  Ban
+                </div>
+                <div className="dropdown-item" data-name="mute">
+                  Mute
+                </div>
+                <div className="dropdown-item" data-name="block">
+                  block
+                </div>
+                </>)}
+              {/* Owner */}
+              {(roomInfo?.owner === myNickName && user?.nickname !== myNickName) && (<>
+                <div className="dropdown-item dropdown-second">
+                  Operator
+                  <div className="dropdown-content-second">
+                    <div className="dropdown-item-second" data-name="opAdd">
+                      Add Operator
+                    </div>
+                    <div className="dropdown-item-second" data-name="opDelete">
+                      Delete Operator
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="dropdown-item" data-name="dmApply">
+                </>)}
+              {/* Other User */}
+              {user?.nickname !== myNickName && (<>
+                <div className="dropdown-item" data-name="dmApply">
                 1:1 Chat
               </div>
               <div className="dropdown-item dropdown-second">
@@ -206,6 +215,7 @@ export default function ChatRoomUserInfo({
                   </div>
                 </div>
               </div>
+              </>)}
             </div>
           </div>
         </div>
