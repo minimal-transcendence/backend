@@ -314,7 +314,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             return ;
           }
         }
-        reloadData();
+        //reloadData();
         /*console.log("신규 유저");
         const responseDetail = await axiosApi.get('http://localhost/api/user/' + userId, );
         const detailResponse = responseDetail.data;
