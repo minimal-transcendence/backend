@@ -170,8 +170,8 @@ function MyProfile({
           throw new Error(responseData.error);
         }
         console.log("profile 변경 응답 데이터:", responseData);
-        localStorage.setItem("avatar", `/api/user/${userId}/photo?timestamp=${Date.now()}`,);
-        setAvatarURL(`/api/user/${userId}/photo?timestamp=${Date.now()}`);
+        localStorage.setItem("avatar", `/api/user/${userId}/photo`,);
+        setAvatarURL(`/api/user/${userId}/photo`);
         console.log("URL change: " + avatarURL);
         setImageUrl(null);
         setSelectedFile(null);
@@ -180,30 +180,31 @@ function MyProfile({
         console.error("Error uploading image:", error);
         alert("에러 발생 :" + error);
       }*/
-      try{
-        await axiosApi.post(apiUrl, formData,{
-          headers: {
-          "Content-Type": "multipart/form-data",
-        }})
-        .then((response:any) => {
+      try {
+        await axiosApi
+          .post(apiUrl, formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          })
+          .then((response: any) => {
             console.log(response);
-            if (response.status != 201){
-              throw(response);
+            if (response.status != 201) {
+              throw response;
             }
             console.log("profile 변경 응답 데이터:", response.data);
-            localStorage.setItem("avatar", `/api/user/${userId}/photo?timestamp=${Date.now()}`,);
-            setAvatarURL(`/api/user/${userId}/photo?timestamp=${Date.now()}`);
+            localStorage.setItem("avatar", `/api/user/${userId}/photo`);
+            setAvatarURL(`/api/user/${userId}/photo`);
             console.log("URL change: " + avatarURL);
             setImageUrl(null);
             setSelectedFile(null);
             alert("프로필 사진이 변경되었습니다");
           })
-        .catch((error:any) => {
-          alert("이미지 업로드에 실패했습니다1.");
-          throw(error);
-        })
-      }
-      catch(error){
+          .catch((error: any) => {
+            alert("이미지 업로드에 실패했습니다1.");
+            throw error;
+          });
+      } catch (error) {
         console.error("이미지 업로드 실패: ", error);
       }
     }
@@ -232,7 +233,7 @@ function MyProfile({
         })
         .then((response) => {
           if (response.status != 201) {
-            throw(response.data.error);
+            throw response.data.error;
           } else {
             localStorage.setItem("is2fa", "true");
             setIs2Fa("true");
@@ -314,7 +315,7 @@ function MyProfile({
         })
         .then((response) => {
           if (response.status != 201) {
-            throw(response.data.error);
+            throw response.data.error;
           } else {
             localStorage.setItem("is2fa", "false");
             setIs2Fa("false");
@@ -371,33 +372,61 @@ function MyProfile({
           <h2>내 프로필</h2>
         </div>
         <div>
-          <br/>
-          <br/>
+          <br />
+          <br />
           닉네임
-          <br/>
-          {userNickname !== null ?
-          (<input className={styles.nicknameInput} placeholder={userNickname} type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)
-          :
-          (<input className={styles.nicknameInput} type="text" value={newNickname} onChange={(e) => setNewNickname(e.target.value)} />)}
+          <br />
+          {userNickname !== null ? (
+            <input
+              className={styles.nicknameInput}
+              placeholder={userNickname}
+              type="text"
+              value={newNickname}
+              onChange={(e) => setNewNickname(e.target.value)}
+            />
+          ) : (
+            <input
+              className={styles.nicknameInput}
+              type="text"
+              value={newNickname}
+              onChange={(e) => setNewNickname(e.target.value)}
+            />
+          )}
         </div>
         <div>
           프로필 사진
-          <br/>
+          <br />
         </div>
         <div className={styles.profilePicSetBox}>
-          <input type="file" accept='image/*' onChange={handleFileChange}></input>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+          ></input>
           {imageUrl && (
-          <img src={imageUrl} alt="profile image" className={styles.selectProfileImage}/>)}
+            <img
+              src={imageUrl}
+              alt="profile image"
+              className={styles.selectProfileImage}
+            />
+          )}
           {!imageUrl && avatarURL && (
-          <img src={avatarURL} className={styles.selectProfileImage} ></img>
+            <img src={avatarURL} className={styles.selectProfileImage}></img>
           )}
         </div>
         <div>
           2차인증 여부
-          <br/>
-          <input type="checkbox" id="toggle" name="toggle" onChange={() => setCheckIs2Fa(!checkIs2Fa)} checked={checkIs2Fa} hidden />
+          <br />
+          <input
+            type="checkbox"
+            id="toggle"
+            name="toggle"
+            onChange={() => setCheckIs2Fa(!checkIs2Fa)}
+            checked={checkIs2Fa}
+            hidden
+          />
           <label htmlFor="toggle" className={styles.toggleSwitch}>
-              <span className={styles.toggleButton}></span>
+            <span className={styles.toggleButton}></span>
           </label>
           <div>
             {QRUrl != ' ' && (
@@ -411,20 +440,29 @@ function MyProfile({
               )}
           </div>
           <div className={styles.OTPAlert}>
-              {(is2Fa === 'true' && checkIs2Fa === false || is2Fa === 'false' && checkIs2Fa === true) && (
-                  <span>변경사항 적용을 위해 OTP코드를 입력하세요</span>
-              )}
-              {(is2Fa === 'true' && checkIs2Fa === true || is2Fa === 'false' && checkIs2Fa === false) && (
-                  <br/>
-              )}
+            {((is2Fa === "true" && checkIs2Fa === false) ||
+              (is2Fa === "false" && checkIs2Fa === true)) && (
+              <span>변경사항 적용을 위해 OTP코드를 입력하세요</span>
+            )}
+            {((is2Fa === "true" && checkIs2Fa === true) ||
+              (is2Fa === "false" && checkIs2Fa === false)) && <br />}
           </div>
           <div>
-              <input className={styles.nicknameInput} placeholder="띄워쓰기 제외한 6자리" type="text" value={verCode} onChange={(e) => setVerCode(e.target.value)} />
+            <input
+              className={styles.nicknameInput}
+              placeholder="띄워쓰기 제외한 6자리"
+              type="text"
+              value={verCode}
+              onChange={(e) => setVerCode(e.target.value)}
+            />
           </div>
         </div>
-        <button className={styles.Button} onClick={fixProfile}>저장</button>
+        <button className={styles.Button} onClick={fixProfile}>
+          저장
+        </button>
       </div>
     </div>
-)}
+  );
+}
 
 export default MyProfile;

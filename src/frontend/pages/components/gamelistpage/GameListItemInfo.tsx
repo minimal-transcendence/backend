@@ -43,8 +43,8 @@ export default function GameListItemInfo({
             <div className="gamelist-avatar left">
               <img
                 src={`http://localhost/api/user/${game?.fromId}/photo`}
-                width="32"
-                height="32"
+                width="35"
+                height="35"
                 alt="avataricon"
               />
             </div>
@@ -64,8 +64,8 @@ export default function GameListItemInfo({
             <div className="gamelist-avatar right">
               <img
                 src={`http://localhost/api/user/${game?.toId}/photo`}
-                width="32"
-                height="32"
+                width="35"
+                height="35"
                 alt="avataricon"
               />
             </div>
@@ -75,8 +75,8 @@ export default function GameListItemInfo({
             <div className="gamelist-avatar left">
               <img
                 src={`http://localhost/api/user/${game?.fromId}/photo`}
-                width="32"
-                height="32"
+                width="35"
+                height="35"
                 alt="avataricon"
               />
             </div>
@@ -89,8 +89,8 @@ export default function GameListItemInfo({
             <div className="gamelist-avatar right">
               <img
                 src={`http://localhost/api/user/${game?.toId}/photo`}
-                width="32"
-                height="32"
+                width="35"
+                height="35"
                 alt="avataricon"
               />
             </div>

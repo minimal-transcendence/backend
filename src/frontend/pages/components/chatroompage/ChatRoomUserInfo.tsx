@@ -10,20 +10,22 @@ import axiosApi from "@/srcs/AxiosInterceptor";
 
 export default function ChatRoomUserInfo({
   user,
-  num,
   roomInfo,
   setRoomInfo,
   roomname,
   myNickName,
   id,
+  changedID,
+  changedNickName,
 }: {
   user: any;
-  num: number;
   roomInfo: any;
   setRoomInfo: any;
   roomname: string;
   myNickName: string;
   id: any;
+  changedID: number;
+  changedNickName: string;
 }) {
   const socket = useContext(SocketContext).chatSocket;
   const gameSocket = useContext(SocketContext).gameSocket;
@@ -72,8 +74,8 @@ export default function ChatRoomUserInfo({
         console.log("in blockUser111111111111111 ", targetnickname);
         if (targetnickname !== myNickName) {
           console.log("in blockUser222222222222222 ", targetnickname);
-          socket.emit("blockUser", { target: targetnickname });
         }
+        socket.emit("blockUser", { target: targetnickname });
       } else if (event.target.dataset.name === "opAdd") {
         console.log("in addOperator ", roomname, targetnickname);
         socket.emit("addOperator", {
@@ -118,8 +120,10 @@ export default function ChatRoomUserInfo({
     <>
       <li>
         <div className="userlist-avatar">
-          <img
-            src={`http://localhost/api/user/${user?.id}/photo`}
+          <Image
+            src={`http://localhost/api/user/${
+              user?.id
+            }/photo?timestamp=${Date.now()}`}
             width="32"
             height="32"
             alt="avataricon"
@@ -135,7 +139,7 @@ export default function ChatRoomUserInfo({
         <p className="userlist-username">
           {roomInfo?.owner === user?.nickname ? "🔱" : ""}
           {roomInfo?.operators.includes(user?.nickname) ? "⚜️" : ""}{" "}
-          {user?.nickname}
+          {user?.id === changedID ? changedNickName : user?.nickname}
           {user?.nickname === myNickName ? "🎆" : ""}
         </p>
         <div className="userlist-KBOM-box">

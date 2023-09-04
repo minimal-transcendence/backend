@@ -112,7 +112,7 @@ export class GameGateway
 		// leave game
 		if (client.inGame) {
       // Notify every socket that client is not in game
-      // this.io.server.of('chat').emit("notInGame", client.nickname);
+      // this.io.server.of('chat').emit("NotInGame", client.nickname);
 			for (let e in this.gameRooms) {
 				const room: GameRoom = this.gameRooms[e];
 				// If client is in game
@@ -147,7 +147,25 @@ export class GameGateway
 			}
 		}
 
-		const sockets = this.io.sockets;
+    // clear invitation
+    const sockets = this.io.sockets;
+
+    sockets.forEach((socket: GameSocket) => {
+      let disconnectedInvitation = false;
+      // disconnected socket's list
+      client.invitationList.forEach((invit: Invitation) => {
+        if (socket.invitationList.includes(invit)) {
+          disconnectedInvitation = true;
+          socket.invitationList = socket.invitationList.filter(item => item !== invit);
+        }
+      })
+
+      // 
+      if (disconnectedInvitation) {
+        socket.emit('updateInvitationList', socket.invitationList);
+      }
+    });
+
 		this.logger.log(`Game Client Disconnected : ${client.nickname}`);
 		this.logger.debug(`Number of connected Game sockets: ${sockets.size}`)
 	}
@@ -554,14 +572,24 @@ export class GameGateway
 
     // emit
     sockets.forEach((socket: GameSocket) => {
-      socket.invitationList.every((invit: Invitation) => {
-        if (invit.from === newNick || invit.to === newNick) {
+      client.invitationList.every((invit: Invitation) => {
+        if (socket.invitationList.includes(invit)) {
           socket.emit('updateInvitationList', socket.invitationList);
           return false;
         }
         return true;
-      });
+      })
     });
+
+    // sockets.forEach((socket: GameSocket) => {
+    //   socket.invitationList.every((invit: Invitation) => {
+    //     if (invit.from === newNick || invit.to === newNick) {
+    //       socket.emit('updateInvitationList', socket.invitationList);
+    //       return false;
+    //     }
+    //     return true;
+    //   });
+    // });
 
     console.log(`${client.nickname} is now ${newNick}`);
     client.nickname = newNick;

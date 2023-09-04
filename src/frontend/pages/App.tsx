@@ -24,7 +24,7 @@ import Image from "next/image";
 import TempRandomMatch from "./components/pong/TempRandomMatch";
 import { SocketContext } from "@/context/socket";
 import { GameContext, GameData } from "@/context/game";
-
+import axiosApi from "../srcs/AxiosInterceptor";
 export type UserOnChat = {
   id: string;
   isCreator: boolean;
@@ -71,8 +71,52 @@ export default function App() {
   const [gameSocket, setGameSocket] = useState<Socket>(
     io.connect("", { query: { nickname: "" } })
   );
+  const [changedID, setChangedID] = useState<number>(-2);
+  const [changedNickName, setChangedNickName] = useState<string>("");
+
+  // useEffect(() => {
+  //   async function refresh() {
+  //     try {
+  //       const responseDetail = await axiosApi.get(
+  //         // `http://localhost/api/user/${message?.fromId}/photo`
+  //         `http://localhost/api/auth/refresh`
+  //       );
+  //     } catch {
+  //       console.log("test errrrr");
+  //     }
+  //   }
+  //   setInterval(refresh, 25000);
+  // }, []);
+  useEffect(() => {
+    function reloadNick(userId: number, newNick: string) {
+      console.log("in useEffect ChatRoom nicknameupdate " + userId + newNick);
+
+      setChangedID(() => userId);
+      setChangedNickName(() => newNick);
+
+      const nicknameItem = localStorage.getItem("nickname");
+      const loginIdItem = localStorage.getItem("id");
+
+      if (loginIdItem === String(userId)) {
+        console.log(
+          `id same so nick changed! FROM ${nicknameItem} to ${newNick}`
+        );
+        setTmpLoginnickname(newNick);
+      }
+    }
+
+    if (socket) {
+      socket.on("updateUserNick", reloadNick);
+    }
+    return () => {
+      if (socket) {
+        socket.off("updateUserNick", reloadNick);
+      }
+    };
+  }, [socket]);
 
   useEffect(() => {
+    console.log("Run only mount");
     const getSocket = (namespace: string, jwt: string, nickname: string) => {
       return io.connect(`http://localhost/${namespace}`, {
         query: { nickname: nickname },
@@ -105,7 +149,7 @@ export default function App() {
       console.log("sendBlocklist update + " + JSON.stringify(result));
       setBlocklist(() => result);
     }
-    function updateBlocklist(target: string) {
+    function updateBlocklist(target: number) {
       console.log("updateBlocklist update");
       setBlocklist(() => [...blocklist, target]);
     }
@@ -136,7 +180,7 @@ export default function App() {
         return results.map((result) => {
           if (result.roomname === roomname) {
             result.lastMessage = `${data.body}`;
-            result.lastMessageFrom = data.from;
+            result.lastMessageFrom = data.fromId;
             if (roomname === currentRoomName) {
               result.messageNew = false;
             } else {
@@ -198,11 +242,11 @@ export default function App() {
     }
     if (socket) {
       //test seunchoi
-      socket.on('inGame', (userId) => {
-        console.log(`${userId} is in game`)
+      socket.on("inGame", (userId) => {
+        console.log(`${userId} is in game`);
       });
-      socket.on('notInGame', (userId) => {
-        console.log(`${userId} is not in game`)
+      socket.on("NotInGame", (userId) => {
+        console.log(`${userId} is not in game`);
       });
 
       socket.on("sendAlert", sendAlert);
@@ -384,8 +428,8 @@ export default function App() {
                 </>
               }
             </Box>
-              {gameLoad &&
-                <GameContext.Provider
+            {gameLoad && (
+              <GameContext.Provider
                 value={{
                   isGameConnected: isGameConnected,
                   matchStartCheck: matchStartCheck,
@@ -393,10 +437,9 @@ export default function App() {
                   gameData: gameData,
                 }}
               >
-                <Pong/>
+                <Pong />
               </GameContext.Provider>
-              }
-            
+            )}
 
             <ChatMain
               isDM={isDM}
@@ -416,12 +459,15 @@ export default function App() {
               <>
                 <ChatRoomUser
                   id={tmpLoginID}
+                  isDM={isDM}
                   blocklist={blocklist}
                   roomInfo={roomInfo}
                   setRoomInfo={setRoomInfo}
                   users={roomUserList}
                   roomname={currentRoomName}
                   myNickName={tmpLoginnickname}
+                  changedID={changedID}
+                  changedNickName={changedNickName}
                 />
                 <GameList
                   myNickName={tmpLoginnickname}

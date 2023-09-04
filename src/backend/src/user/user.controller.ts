@@ -8,15 +8,17 @@ import { join } from 'path';
 import { createReadStream } from 'fs';
 
 @Controller('user')
-@UseGuards(JwtGuard)
+// @UseGuards(JwtGuard)
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
+	@UseGuards(JwtGuard)
 	@Get('/')
 	getAllUser() : Promise<object[]> {
 		return (this.userService.getAllUser());
 	}
 
+	@UseGuards(JwtGuard)
 	@Get(':id')
 	getOneUser(@Param('id', ParseIntPipe) id : number) : Promise<object> {
 		return (this.userService.getUserById(id));
@@ -30,6 +32,7 @@ export class UserController {
 			dest: '/photo',	//없는 폴더면 자동 생성
 		})
 	)
+	@UseGuards(JwtGuard)
 	@Post(':id')
 	async updateUserAvatar(
 		@Req() req : any,
@@ -52,6 +55,7 @@ export class UserController {
 		return this.userService.updateUserById(id, data, file);
 	}
 
+	@UseGuards(JwtGuard)
 	@Patch(':id')
 	async updateUser(
 		@Param('id', ParseIntPipe) id : number,
@@ -59,12 +63,14 @@ export class UserController {
 		return this.userService.updateUserById(id, data);
 	}
 
+	@UseGuards(JwtGuard)
 	@Get(':id/friend')
 	async getUserFriends(@Param('id', ParseIntPipe) id : number) : Promise<object> {
 		return this.userService.getUserFriendsById(id);
 	}
 
 	//dto 검증 필요
+	@UseGuards(JwtGuard)
 	@Patch(':id/friend')
 	updateUserFriends(
 		@Req() req : any,
@@ -80,6 +86,7 @@ export class UserController {
 	}
 
 
+	@UseGuards(JwtGuard)
 	@Get(':id/matchhistory')
 	async getUserMatchHistory(@Param('id', ParseIntPipe) id : number)
 		 : Promise<object[]> {
@@ -87,6 +94,7 @@ export class UserController {
 	}
 
 	//return await / just return?
+	// seunchoi: no guard here
 	@Get(':id/photo')
 	async streamUserImage(@Param('id') id : number) {
 		return await this.userService.getUserImageById(id)
@@ -97,6 +105,7 @@ export class UserController {
 }
 
 //TODO : discuss router & authorization
+@UseGuards(JwtGuard)
 @Controller('photo/:img')
 export class avatarController {
 	constructor(private readonly userService: UserService) {}

@@ -60,7 +60,8 @@ export default function SearchList({
       socket.off("sendRoomList", sendRoomList);
       socket.off("requestPassword", requestPassword);
     };
-  }, [socket, isOpenModal, results]);
+  }, [socket]);
+  // }, [socket, isOpenModal, results]);
 
   if (results?.length === 0) {
     console.log("no resuslt");
