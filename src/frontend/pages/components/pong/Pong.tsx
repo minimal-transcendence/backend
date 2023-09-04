@@ -319,7 +319,6 @@ export default function Pong() {
 
     // Listen Key Event - keydown
     const handleKeydown = (e: KeyboardEvent) => {
-      console.log(e);
       switch (e.key) {
         case "ArrowLeft":
           keys.left.pressed = true;
