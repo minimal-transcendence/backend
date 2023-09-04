@@ -67,6 +67,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   }
 
   const socket = useContext<SocketContent>(SocketContext).chatSocket;
+  const gameSocket = useContext<SocketContent>(SocketContext).gameSocket;
 
   function checkIsInclude(id: string[], userid: string) {
     if (id.includes(userid.toString())) {
@@ -175,10 +176,8 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
 
   function sendMatch(level: string){
     setUserNickname(localStorage.getItem("nickname"));
-    console.log(
-      "sendMatch: " + userNickname + " " + userData[0].nickname + " " + level
-    );
-    socket.emit("oneOnOneApply", {
+    console.log("sendMatch: "+ userNickname + " " + userData[0].nickname + " " + level);
+    gameSocket.emit("oneOnOneApply", {
       from: userNickname,
       to: userData[0].nickname,
       mode: level,
@@ -316,17 +315,48 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
         setData(copiedData);
       }
     }
-
-    if (socket) {
-      socket.on("updateUserStatus", reloadStatus);
-      socket.on("updateUserNick", reloadNick);
-      socket.on("updateUserAvatar", reloadAvatar);
+    async function reloadGameStatusIn(userId : number){
+      console.log(`${userId} is in game`);
+      let copiedData = [...userData];
+      for(let i = 0; i <= userData.length ; i++)
+      {
+        if(copiedData[i].id == userId.toString()){
+          copiedData[i].isGaming = 1;
+          break;
+        }
+      }
+      if (copiedData != null){
+        setData(copiedData);
+      }
+    }
+    async function reloadGameStatusOut(userId : number){
+      console.log(`${userId} is not in game`);
+      let copiedData = [...userData];
+      for(let i = 0; i <= userData.length ; i++)
+      {
+        if(copiedData[i].id == userId.toString()){
+          copiedData[i].isGaming = 0;
+          break;
+        }
+      }
+      if (copiedData != null){
+        setData(copiedData);
+      }
+    }
+    if (socket){
+      socket.on("updateUserStatus", (userId:number, isConnected:boolean) => reloadStatus(userId, isConnected));
+      socket.on("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
+      socket.on("updateUserAvatar", (userId : number) => reloadAvatar(userId));
+      gameSocket.on('inGame', (userId : number) => reloadGameStatusIn(userId));
+      gameSocket.on('notInGame', (userId : number) => reloadGameStatusOut(userId));
     }
     return () => {
       if (socket) {
-        socket.off("updateUserStatus", reloadStatus);
-        socket.off("updateUserNick", reloadNick);
-        socket.off("updateUserAvatar", reloadAvatar);
+        socket.off("updateUserStatus", (userId:number, isConnected:boolean) => reloadStatus(userId, isConnected));
+        socket.off("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
+        socket.off("updateUserAvatar", (userId : number) => reloadAvatar(userId));
+        gameSocket.off('inGame', (userId : number) => reloadGameStatusIn(userId));
+        gameSocket.off('notInGame', (userId : number) => reloadGameStatusOut(userId));
       }
     };
   }, [socket, userData]);
