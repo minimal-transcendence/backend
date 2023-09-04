@@ -5,13 +5,7 @@ import axios, { AxiosError } from "axios";
 import jwt_decode from "jwt-decode";
 import "../pages/index.css";
 import styles from "../styles/MyProfileStyle.module.css";
-
-type JwtPayload = {
-  id: number;
-  email: string;
-  iat: number;
-  exp: number;
-}
+import { JwtPayload } from "./SocketRefresh";
 
 function MyProfile({
   setIsOpenModal,
@@ -23,6 +17,7 @@ function MyProfile({
   const [newNickname, setNewNickname] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [QRUrl, setQRUrl] = useState<string>(" ");
   const [userNickname, setUserNickname] = useState<string | null>(
     localStorage.getItem("nickname")
   );
@@ -69,7 +64,7 @@ function MyProfile({
 
   async function refreshToken() : Promise<any> {
     console.log("토큰 재발급");
-    const res = await axios.get(
+    await axios.get(
       'http://localhost/api/auth/refresh',
       { withCredentials: true }
       ).then((response)=>{
@@ -77,6 +72,7 @@ function MyProfile({
         localStorage.setItem("access_token",resData.access_token);
         const jwtDecode = jwt_decode<JwtPayload>(resData.access_token);
         localStorage.setItem("access_token_exp", jwtDecode.exp.toString());
+        setQRUrl("http://localhost/api/2fa/qrcode");
       })
       .catch((error:any) => {
               console.log("Axios Error type : ");
@@ -104,6 +100,8 @@ function MyProfile({
 			const jwtExpInt = parseInt(jwtExpItem);
 			if (jwtExpInt * 1000 - Date.now() < 2000)
 				refreshToken();
+      else
+        setQRUrl("http://localhost/api/2fa/qrcode");
 		}
   }, [])
 
@@ -402,13 +400,15 @@ function MyProfile({
               <span className={styles.toggleButton}></span>
           </label>
           <div>
+            {QRUrl != ' ' && (
               <img
-              src='http://localhost/api/2fa/qrcode'
+              src={QRUrl}
               alt="qr image"
               width="150"
               height="150"
               onError={(e: React.SyntheticEvent<HTMLImageElement>) => e.currentTarget.style.display = 'none'}
               />
+              )}
           </div>
           <div className={styles.OTPAlert}>
               {(is2Fa === 'true' && checkIs2Fa === false || is2Fa === 'false' && checkIs2Fa === true) && (

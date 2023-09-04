@@ -1,6 +1,6 @@
 import jwt_decode from "jwt-decode";
 
-type JwtPayload = {
+export type JwtPayload = {
     id: number;
     email: string;
     iat: number;

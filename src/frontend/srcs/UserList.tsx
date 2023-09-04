@@ -305,58 +305,55 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     async function reloadStatus(userId : number, isConnected : boolean){
       console.log("Status Update! " + userId + isConnected);
       if (isConnected === true){
-        let isChange = 0;
         let copiedData = [...userData];
         for(let i = 0; i <= copiedData.length ; i++)
         {
           if(copiedData[i].id == userId.toString()){
             copiedData[i].isLogin = 1;
-            isChange = 1;
-            break;
+            setData(copiedData);
+            return ;
           }
         }
-        if (isChange == 0){
-          const responseDetail = await axiosApi.get('http://localhost/api/user/' + userId, );
-          const detailResponse = responseDetail.data;
-          const responseMatch = await axiosApi.get('http://localhost/api/user/' + userId + '/matchhistory', );
-          const matchResponse = responseMatch.data;
-          const matchCount = matchResponse.length;
-          const copiedModalList = [...showModals];
-          const copiedMatchList = [...showMatchList];
-          const newData: userDataInterface = {
-            id: detailResponse.id,
-            nickname: detailResponse.nickname,
-            userProfileURL: `/api/user/${detailResponse.id}/photo?timestamp=${Date.now()}`,
-            win: detailResponse._count.asWinner,
-            lose: detailResponse._count.asLoser,
-            score: (parseInt(detailResponse._count.asWinner) * 10 - parseInt(detailResponse._count.asLoser) * 10),
-            lastLogin: detailResponse.lastLogin,
-            isFriend: checkIsInclude(friendList, detailResponse.id),
-            isLogin: 1,
-            isGaming: 0,
-            isBlocked: 0,
-            matchhistory: [],
+        const responseDetail = await axiosApi.get('http://localhost/api/user/' + userId, );
+        const detailResponse = responseDetail.data;
+        const responseMatch = await axiosApi.get('http://localhost/api/user/' + userId + '/matchhistory', );
+        const matchResponse = responseMatch.data;
+        const matchCount = matchResponse.length;
+        const copiedModalList = [...showModals];
+        const copiedMatchList = [...showMatchList];
+        const newData: userDataInterface = {
+          id: userId.toString(),
+          nickname: detailResponse.nickname,
+          userProfileURL: `/api/user/${userId.toString()}/photo?timestamp=${Date.now()}`,
+          win: detailResponse._count.asWinner,
+          lose: detailResponse._count.asLoser,
+          score: (parseInt(detailResponse._count.asWinner) * 10 - parseInt(detailResponse._count.asLoser) * 10),
+          lastLogin: detailResponse.lastLogin,
+          isFriend: checkIsInclude(friendList, userId.toString()),
+          isLogin: 1,
+          isGaming: 0,
+          isBlocked: 0,
+          matchhistory: [],
+        };
+        console.log("URL: " + newData.userProfileURL);
+        for(let j = 0 ; j < matchCount ; j++){
+          const newMatchData: userMatchHistory = {
+            winner: matchResponse[j].winner.nickname,
+            winnerAvatar: `/api/photo/${matchResponse[j].winner.avatar}`,
+            loser: matchResponse[j].loser.nickname,
+            loserAvatar: `/api/photo/${matchResponse[j].loser.avatar}`,
+            time: matchResponse[j].createdTime,
           };
-          console.log("URL: " + newData.userProfileURL);
-          for(let j = 0 ; j < matchCount ; j++){
-            const newMatchData: userMatchHistory = {
-              winner: matchResponse[j].winner.nickname,
-              winnerAvatar: `/api/photo/${matchResponse[j].winner.avatar}`,
-              loser: matchResponse[j].loser.nickname,
-              loserAvatar: `/api/photo/${matchResponse[j].loser.avatar}`,
-              time: matchResponse[j].createdTime,
-            };
-            newMatchData.time = newMatchData.time.slice(0,19);
-            newMatchData.time = newMatchData.time.replace('T', ' ');
-            newData.matchhistory.push(newMatchData);
-          }
-
-          copiedData.push(newData);
-          copiedModalList.push(false);
-          copiedMatchList.push(false);
-          setShowModals(copiedModalList);
-          setShowMatchList(copiedMatchList);
+          newMatchData.time = newMatchData.time.slice(0,19);
+          newMatchData.time = newMatchData.time.replace('T', ' ');
+          newData.matchhistory.push(newMatchData);
         }
+
+        copiedData.push(newData);
+        copiedModalList.push(false);
+        copiedMatchList.push(false);
+        setShowModals(copiedModalList);
+        setShowMatchList(copiedMatchList);
         setData(copiedData);
       }
       else{
@@ -402,17 +399,48 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         setData(copiedData);
       }
     }
-
+    async function reloadGameStatusIn(userId : number){
+      console.log(`${userId} is in game`);
+      let copiedData = [...userData];
+      for(let i = 0; i <= userData.length ; i++)
+      {
+        if(copiedData[i].id == userId.toString()){
+          copiedData[i].isGaming = 1;
+          break;
+        }
+      }
+      if (copiedData != null){
+        setData(copiedData);
+      }
+    }
+    async function reloadGameStatusOut(userId : number){
+      console.log(`${userId} is not in game`);
+      let copiedData = [...userData];
+      for(let i = 0; i <= userData.length ; i++)
+      {
+        if(copiedData[i].id == userId.toString()){
+          copiedData[i].isGaming = 0;
+          break;
+        }
+      }
+      if (copiedData != null){
+        setData(copiedData);
+      }
+    }
     if (socket){
-      socket.on("updateUserStatus", reloadStatus);
-      socket.on("updateUserNick", reloadNick);
-      socket.on("updateUserAvatar", reloadAvatar);
+      socket.on("updateUserStatus", (userId:number, isConnected:boolean) => reloadStatus(userId, isConnected));
+      socket.on("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
+      socket.on("updateUserAvatar", (userId : number) => reloadAvatar(userId));
+      gameSocket.on('inGame', (userId : number) => reloadGameStatusIn(userId));
+      gameSocket.on('notInGame', (userId : number) => reloadGameStatusOut(userId));
     }
     return () => {
       if (socket) {
-        socket.off("updateUserStatus", reloadStatus);
-        socket.off("updateUserNick", reloadNick);
-        socket.off("updateUserAvatar", reloadAvatar);
+        socket.off("updateUserStatus", (userId:number, isConnected:boolean) => reloadStatus(userId, isConnected));
+        socket.off("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
+        socket.off("updateUserAvatar", (userId : number) => reloadAvatar(userId));
+        gameSocket.off('inGame', (userId : number) => reloadGameStatusIn(userId));
+        gameSocket.off('notInGame', (userId : number) => reloadGameStatusOut(userId));
       }
     };
   }, [socket, userData, showModals]);
