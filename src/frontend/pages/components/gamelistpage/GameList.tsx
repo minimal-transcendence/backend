@@ -11,7 +11,7 @@ export default function GameList({
   myNickName: string;
   setMatchStartCheck: any;
 }) {
-  const socket = useContext(SocketContext).chatSocket;
+  // const socket = useContext(SocketContext).chatSocket;
   const gameSocket = useContext(SocketContext).gameSocket;
   const [gameList, setGameList] = useState<any>([]);
 

@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import ysungwonIcon from "../../../assets/ysungwon.jpg";
 import Image from "next/image";
 // import { SocketContext } from "@/context/socket";
-import { SocketContext } from "@/context/socket";
+// import { SocketContext } from "@/context/socket";
 import axiosApi from "../../../srcs/AxiosInterceptor";
 const ChatBody = ({
   messages,
@@ -17,7 +17,7 @@ const ChatBody = ({
   lastMessageRef: any;
   myNickName: string;
 }) => {
-  const socket = useContext(SocketContext).chatSocket;
+  // const socket = useContext(SocketContext).chatSocket;
   const [avatarURL, setAvatarURL] = useState<string | undefined>("");
   const filteredMessage: any[] = [];
   console.log(

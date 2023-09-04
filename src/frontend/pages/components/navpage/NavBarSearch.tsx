@@ -51,7 +51,8 @@ export default function Search({
       }
       fetchResults();
     },
-    [query, setError, setIsLoading, setLeftHeader, socket]
+    // [query, setError, setIsLoading, setLeftHeader, socket]
+    [query, socket]
   );
   return (
     <input

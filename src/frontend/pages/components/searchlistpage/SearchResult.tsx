@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { SocketContext } from "@/context/socket";
+// import { SocketContext } from "@/context/socket";
 export default function SearchResult({
   el,
   onSelectRoom,
@@ -9,7 +9,7 @@ export default function SearchResult({
   onSelectRoom: any;
   blocklist: any;
 }) {
-  const socket = useContext(SocketContext);
+  // const socket = useContext(SocketContext);
   console.log(
     `blocklist ${blocklist}, el?.lastMessageFrom ${
       el?.lastMessageFrom
