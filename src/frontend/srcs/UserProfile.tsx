@@ -103,11 +103,9 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       console.log("socket response target gaming: ", gameList);
     }
 
-    if (socket) {
-      socket.emit("requestTargetMember", { userId: userId, tergetId: id });
-      socket.once("responseTargetMember", async (data: any) =>
-        getListBySocket(data)
-      );
+    if (socket){
+      socket.emit("requestTargetMember", { userId : userId, tergetId : id });
+      socket.once("responseTargetMember", async (data:any) => getListBySocket(data))
     }
 
     let idList: string[] = [];
@@ -153,9 +151,9 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     for (let j = 0; j < matchCount; j++) {
       const newMatchData: userMatchHistory = {
         winner: matchResponse[j].winner.nickname,
-        winnerAvatar: `/api/user/${matchResponse[j].winner.id}/photo`,
+        winnerAvatar:`/api/user/${matchResponse[j].winner.id}/photo?timestamp=${Date.now()}`,
         loser: matchResponse[j].loser.nickname,
-        loserAvatar: `/api/user/${matchResponse[j].loser.id}/photo`,
+        loserAvatar: `/api/user/${matchResponse[j].loser.id}/photo?timestamp=${Date.now()}`,
         time: matchResponse[j].createdTime,
       };
       newMatchData.time = newMatchData.time.slice(0, 19);
@@ -171,9 +169,11 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     setShowMatchList(!showMatchList);
   }
 
-  function sendBlock(index: number) {}
+  function sendBlock(index:number) {
 
-  function sendMatch(level: string) {
+  }
+
+  function sendMatch(level: string){
     setUserNickname(localStorage.getItem("nickname"));
     console.log(
       "sendMatch: " + userNickname + " " + userData[0].nickname + " " + level
@@ -190,8 +190,10 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     let copiedData = [...userData];
     if (userData[0].isBlocked == 0) {
       copiedData[0].isBlocked = 1;
-    } else {
+    }
+    else{
       copiedData[0].isBlocked = 0;
+      socket.emit("unblockUser", {target : userData[0].nickname});
     }
     setData(copiedData);
   }
@@ -367,53 +369,54 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
               </h2>
             </div>
             <div className={styles_profile.buttons}>
-              {userData[0].id != userId && userData[0].isFriend === 0 && (
-                <button
-                  className={styles_profile.followButton}
-                  onClick={() => {
-                    follow(0);
-                  }}
-                >
-                  {" "}
-                  팔로우{" "}
-                </button>
-              )}
-              {userData[0].id != userId && userData[0].isFriend === 1 && (
-                <button
-                  className={styles_profile.followingButton}
-                  onClick={() => {
-                    unFollow(0);
-                  }}
-                >
-                  {" "}
-                  언팔로우{" "}
-                </button>
-              )}
-              {userData[0].id != userId && userData[0].isGaming == 0 && (
-                <button
-                  className={styles_profile.gameButton}
-                  onClick={() => {
-                    openMatchList();
-                  }}
-                >
-                  게임 신청
-                </button>
-              )}
-              {userData[0].id != userId && userData[0].isGaming == 1 && (
-                <button className={styles_profile.disabled}>게임 중</button>
-              )}
+              {userData[0].id != userId &&
+                userData[0].isFriend === 0 && (
+                  <button
+                    className={styles_profile.followButton}
+                    onClick={() => {
+                      follow(0);
+                    }}
+                  >
+                    {" "}
+                    팔로우{" "}
+                  </button>
+                )}
+              {userData[0].id != userId &&
+                userData[0].isFriend === 1 && (
+                  <button
+                    className={styles_profile.followingButton}
+                    onClick={() => {
+                      unFollow(0);
+                    }}
+                  >
+                    {" "}
+                    언팔로우{" "}
+                  </button>
+                )}
+                {userData[0].id != userId && userData[0].isGaming == 0 &&(
+                  <button 
+                    className={styles_profile.gameButton}
+                    onClick={() => {
+                      openMatchList();
+                    }}
+                  >
+                    게임 신청 
+                 </button>)}
+                 {userData[0].id != userId && userData[0].isGaming == 1 &&(
+                  <button 
+                    className={styles_profile.disabled}
+                  >
+                    게임 중 
+                 </button>)}
             </div>
             <div className={styles_profile.buttons}>
-              {userData[0].id != userId && userData[0].isBlocked == 0 && (
-                <button
-                  className={styles_profile.blockButton}
-                  onClick={() => {
-                    blockUser();
-                  }}
-                >
-                  차단
-                </button>
-              )}
+              {userData[0].id != userId && userData[0].isBlocked == 0 &&(
+                <button className={styles_profile.blockButton}
+                onClick={() => {
+                  blockUser();
+                }}>
+                  차단 
+                </button>)}
               {userData[0].id != userId && userData[0].isBlocked == 1 && (
                 <button
                   className={styles_profile.unblockButton}

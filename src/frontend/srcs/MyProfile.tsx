@@ -1,7 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/router";
 import axiosApi from "./AxiosInterceptor";
+import axios, { AxiosError } from "axios";
+import jwt_decode from "jwt-decode";
 import "../pages/index.css";
 import styles from "../styles/MyProfileStyle.module.css";
+
+type JwtPayload = {
+  id: number;
+  email: string;
+  iat: number;
+  exp: number;
+}
 
 function MyProfile({
   setIsOpenModal,
@@ -32,6 +42,7 @@ function MyProfile({
     setIsOpenModal(false);
   };
   const modalRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     // 이벤트 핸들러 함수
@@ -54,7 +65,47 @@ function MyProfile({
       document.removeEventListener("mousedown", handler);
       // document.removeEventListener('touchstart', handler); // 모바일 대응
     };
-  });
+  },[]);
+
+  async function refreshToken() : Promise<any> {
+    console.log("토큰 재발급");
+    const res = await axios.get(
+      'http://localhost/api/auth/refresh',
+      { withCredentials: true }
+      ).then((response)=>{
+        const resData = response.data;
+        localStorage.setItem("access_token",resData.access_token);
+        const jwtDecode = jwt_decode<JwtPayload>(resData.access_token);
+        localStorage.setItem("access_token_exp", jwtDecode.exp.toString());
+      })
+      .catch((error:any) => {
+              console.log("Axios Error type : ");
+              console.log(typeof error);
+        if (error.response.status === 401) {
+          localStorage.setItem("isLoggedIn", "false");
+          localStorage.removeItem("id");
+          localStorage.removeItem("nickname");
+          localStorage.removeItem("is2fa");
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("access_token_exp");
+          const ApiUrl = "http://localhost/api/auth/logout";
+          axiosApi.post(ApiUrl, {}).catch((error:any) => {
+            console.log("logout send fail: ", error); //TODO: error handling check
+          });
+          alert("로그인 정보가 맞지않습니다 다시 로그인해주세요.");
+          router.push("/");
+        }
+      })
+  }
+
+  useEffect(() => {
+    const jwtExpItem = localStorage.getItem("access_token_exp");
+		if (jwtExpItem){
+			const jwtExpInt = parseInt(jwtExpItem);
+			if (jwtExpInt * 1000 - Date.now() < 2000)
+				refreshToken();
+		}
+  }, [])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -161,7 +212,13 @@ function MyProfile({
     }
 
     if (is2Fa === "false" && checkIs2Fa === true) {
-      if (verCode == "" || verCode.length !== 6) {
+      const jwtExpItem = localStorage.getItem("access_token_exp");
+      if (jwtExpItem){
+        const jwtExpInt = parseInt(jwtExpItem);
+        if (jwtExpInt * 1000 - Date.now() < 2000)
+          refreshToken();
+      }
+      /*if (verCode == "" || verCode.length !== 6) {
         throw "인증코드를 확인해주세요";
       }
       const faChangeApiUrl = "http://localhost/api/2fa/turn-on";
@@ -189,8 +246,8 @@ function MyProfile({
         .catch((error) => {
           alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
           console.error("에러 발생:", error);
-        });
-      /* try{
+        });*/
+       try{
           if (verCode == '' || verCode.length !== 6){
             throw("인증코드를 확인해주세요");
           }
@@ -214,7 +271,18 @@ function MyProfile({
             }
             localStorage.setItem("is2fa", 'true');
             setIs2Fa('true');
-            alert("2차인증이 설정되었습니다");
+            alert("2차인증이 설정되었습니다 로그인을 다시 해주세요");
+            localStorage.setItem("isLoggedIn", "false");
+            localStorage.removeItem("id");
+            localStorage.removeItem("nickname");
+            localStorage.removeItem("is2fa");
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("access_token_exp");
+            const ApiUrl = "http://localhost/api/auth/logout";
+            axiosApi.post(ApiUrl, {}).catch((error:any) => {
+              console.log("logout send fail: ", error); //TODO: error handling check
+            });
+            router.push("/");
             console.log('is2fa 변경 응답 데이터:', responseData);
           })
           .catch((error) => {
@@ -224,9 +292,15 @@ function MyProfile({
         catch(error){
           alert("qr인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
           console.error('에러 발생:', error);
-        }*/
+        }
     } else if (is2Fa === "true" && checkIs2Fa === false) {
-      if (verCode == "" || verCode.length !== 6) {
+      const jwtExpItem = localStorage.getItem("access_token_exp");
+      if (jwtExpItem){
+        const jwtExpInt = parseInt(jwtExpItem);
+        if (jwtExpInt * 1000 - Date.now() < 2000)
+          refreshToken();
+      }
+      /*if (verCode == "" || verCode.length !== 6) {
         throw "인증코드를 확인해주세요";
       }
       const faChangeApiUrl = "http://localhost/api/2fa/turn-off";
@@ -254,8 +328,8 @@ function MyProfile({
         .catch((error) => {
           alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
           console.error("에러 발생:", error);
-        });
-      /*try{
+        });*/
+    try{
         if (verCode == '' || verCode.length !== 6){
           throw("인증코드를 확인해주세요");
         }
@@ -289,7 +363,7 @@ function MyProfile({
       catch(error){
         alert("qr인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
         console.error('에러 발생:', error);
-      }*/
+      }
     }
   }
 

@@ -20,7 +20,7 @@ export class TwoFactorAuthService {
 		this.userService.updateUserById(user.id, {
 			otpSecret : secret,
 		})
-		
+
         const otpAuthUrl = authenticator.keyuri(user.email, 'seunchoi-2fa', secret);
         return toFileStream(stream, otpAuthUrl);
     }
