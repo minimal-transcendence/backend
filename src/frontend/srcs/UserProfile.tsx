@@ -45,8 +45,10 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   });
   interface userMatchHistory {
     winner: string;
+    winnerId: string;
     winnerAvatar: string;
     loser: string;
+    loserId: string;
     loserAvatar: string;
     time: string;
   }
@@ -152,8 +154,10 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     for (let j = 0; j < matchCount; j++) {
       const newMatchData: userMatchHistory = {
         winner: matchResponse[j].winner.nickname,
+        winnerId: matchResponse[j].winner.id,
         winnerAvatar:`/api/photo/${matchResponse[j].winner.avatar}`,
         loser: matchResponse[j].loser.nickname,
+        loserId: matchResponse[j].loser.id,
         loserAvatar: `/api/photo/${matchResponse[j].loser.avatar}`,
         time: matchResponse[j].createdTime,
       };
@@ -288,19 +292,21 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     }
 
     async function reloadNick(userId : number, newNick : string){
-      let copiedData = null;
+      let copiedData = [...userData];
       console.log("Nickname Update! " + userId + newNick);
       for(let i = 0; i < userData.length ; i++)
       {
-        if(userData[i].id == userId.toString()){
-          copiedData = [...userData];
           const matchCount = copiedData[i].matchhistory.length;
           for(let j = 0; j < matchCount; j++){
-            if (copiedData[i].matchhistory[j].winner == copiedData[i].nickname)
+            if (copiedData[i].matchhistory[j].winnerId == userId.toString())
               copiedData[i].matchhistory[j].winner = newNick;
-            else if (copiedData[i].matchhistory[j].loser == copiedData[i].nickname)
+            else if (copiedData[i].matchhistory[j].loserId == userId.toString())
               copiedData[i].matchhistory[j].loser = newNick;
           }
+      }
+      for(let i = 0; i < userData.length ; i++)
+      {
+        if (userData[i].id == userId.toString()){
           copiedData[i].nickname = newNick;
           break;
         }
@@ -317,14 +323,13 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       {
         if(copiedData[i].id == userId.toString()){
           copiedData[i].userProfileURL = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
+        }
           const matchCount = copiedData[i].matchhistory.length;
           for(let j = 0; j < matchCount; j++){
-            if (copiedData[i].matchhistory[j].winner == copiedData[i].nickname)
+            if (copiedData[i].matchhistory[j].winnerId == userId.toString())
               copiedData[i].matchhistory[j].winnerAvatar = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
-            else if (copiedData[i].matchhistory[j].loser == copiedData[i].nickname)
+            else if (copiedData[i].matchhistory[j].loserId == userId.toString())
               copiedData[i].matchhistory[j].loserAvatar = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
-          }
-          break;
         }
       }
       if (copiedData != null){
@@ -364,7 +369,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       }
     }
     if (socket){
-      socket.on("updateUserStatus", (userId:number, isConnected:boolean) => reloadStatus(userId, isConnected));
+      socket.on("updateUserStatus", (userId : number, isConnected : boolean) => reloadStatus(userId, isConnected));
       socket.on("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
       socket.on("updateUserAvatar", (userId : number) => reloadAvatar(userId));
       socket.on('inGame', (userId : any) => reloadGameStatusIn(userId));
