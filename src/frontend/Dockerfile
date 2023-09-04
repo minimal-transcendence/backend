@@ -1,11 +1,14 @@
 # build stage
-FROM node:18-alpine AS builder
+FROM node:18.17.1-alpine AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+# RUN npm install
+RUN npm install -g npm-check-updates && \
+    ncu -u && \
+    npm install
 
 COPY . .
 
@@ -13,7 +16,7 @@ RUN npm run build
 
 # prod stage
 
-FROM node:18-alpine
+FROM node:18.17.1-alpine
 
 RUN apk update && \
     apk add --no-cache nginx

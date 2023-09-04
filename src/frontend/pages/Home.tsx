@@ -5,25 +5,35 @@ import MyProfile from "../srcs/MyProfile";
 import UserProfile from "../srcs/UserProfile";
 import App from "./App";
 // import axiosApi from "@/srcs/AxiosInterceptor";
-import { setItems } from "@/srcs/SocketRefresh";
+// import { refreshToken, setItems } from "@/srcs/SocketRefresh";
+import { socketRefreshToken } from "@/srcs/SocketRefresh";
 
 function Home() {
   const router = useRouter();
   const [myProfileModal, setMyProfileModal] = useState<boolean>(false);
   const [userListModal, setUserListModal] = useState<boolean>(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [jwt, setJWT] = useState<string>('');
-  const [jwtExp, setJwtExp] = useState<string>('');
+  // const [jwt, setJWT] = useState<string>('');
+  // const [jwtExp, setJwtExp] = useState<string>('');
+
+  const [validToken, setValidToken] = useState<boolean>(false);
 
   // 이미 로그인되었는지 확인
   useEffect(() => {
-    setItems(setJWT, setJwtExp);
+    // setItems(setJWT, setJwtExp);
     //TODO : 만약 setItem에서 실패하면 storedIsLoggedIn은 false로 set해야하지는 않는지...?
     const storedIsLoggedIn = localStorage.getItem("isLoggedIn");
-    if (storedIsLoggedIn === "true") {
+    const jwtExp = localStorage.getItem("access_token_exp");
+
+    if (jwtExp) {
+      socketRefreshToken(setValidToken, Number(jwtExp)); // async/await
+    }
+
+
+    if (storedIsLoggedIn === "true" && validToken) {
       setIsLoggedIn(true);
     }
-  }, []);
+  }, [validToken]);
 
   if (!isLoggedIn) {
     // 로그인 상태가 아닐 경우, 로그인 페이지로 이동
@@ -59,7 +69,7 @@ function Home() {
         </div>
             <UserProfile id='1' />  */}
         <div>
-          <App />
+          <App/>
         </div>
       </div>
     );

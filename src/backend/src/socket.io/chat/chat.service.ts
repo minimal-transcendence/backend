@@ -122,6 +122,8 @@ export class ChatService {
 			user.connected = true;
 			client.emit("sendBlocklist", [...user.blocklist]);
 			this.updateUserStatus(io, userId, true);
+			if (client.nickname !== user.nickname)
+				user.nickname = client.nickname;
 		}
 		this.userJoinRoomAct(io, client, userId, "DEFAULT");
 	}
@@ -252,8 +254,10 @@ export class ChatService {
 					client.emit("sendAlert", "[ Alert ]", 'Room is already Public');
 			}
 		}
-		else
+		else {
+			console.log("Is not Owner");
 			client.emit("sendAlert", "[ Act Error ]", "Only owner can set room status");
+		}
 	}
 
 	sendChat(io: Namespace, client: ChatSocket, to: string, body: string) {
@@ -547,11 +551,11 @@ export class ChatService {
 		const toId = this.storeUser.getIdByNickname(to);
 		const fromUser = this.storeUser.findUserById(client.userId);
 		const toUser = this.storeUser.findUserById(toId);
-		if (fromUser.blocklist.has(toId)) {
+		if (fromUser?.blocklist?.has(toId)) {
 			client.emit("sendAlert", "[ Act Error ]", `You already blocked ${to}`)
 			return null;
 		}
-		else if (toUser.blocklist.has(client.userId)) {
+		else if (toUser?.blocklist?.has(client.userId)) {
 			//TODO : discuss : 그래도 이건 기능적으로 볼 수 있어야하는거 아닌가...? 차라리 block된 유저라고 해주면 모를까...
 			client.emit("sendAlert", "[ Act Error ]", `You are blocked by ${fromUser.nickname}`)
 			return null;
@@ -767,7 +771,7 @@ export class ChatService {
 	async userChangeNick(io: Namespace, clientId: number, newNick: string) {
 		const user = this.storeUser.findUserById(clientId);
 		user.nickname = newNick;
-		console.log("changeNickEvent");
+		// console.log("changeNickEvent");
 		user.joinlist.forEach((room) => {
 			const currRoomInfo = this.makeCurrRoomInfo(room);
 			const roomMembers = this.makeRoomUserInfo(room);

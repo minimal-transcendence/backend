@@ -1,16 +1,19 @@
 import ChatRoomUserInfo from "./ChatRoomUserInfo";
 import { useEffect, useState, useContext } from "react";
 import { SocketContext } from "@/context/socket";
-
+import axiosApi from "../../../srcs/AxiosInterceptor";
 const pageHeight = 8;
 export default function ChatRoomUser({
   id,
+  isDM,
   users,
   blocklist,
   roomInfo,
   setRoomInfo,
   roomname,
   myNickName,
+  changedID,
+  changedNickName,
 }: // alertModal,
 // setAlertModal,
 // alertModalTitle,
@@ -19,12 +22,15 @@ export default function ChatRoomUser({
 // setAlertModalBody,
 {
   id: any;
+  isDM: boolean;
   users: any;
   blocklist: any;
   roomInfo: any;
   setRoomInfo: any;
   roomname: string;
   myNickName: string;
+  changedID: number;
+  changedNickName: string;
   // alertModal: any;
   // setAlertModal: any;
   // alertModalTitle: string;
@@ -34,7 +40,7 @@ export default function ChatRoomUser({
 }) {
   // console.log("in chatroomUser, users", users);
   // console.log("in chatroomUser, roomname", roomname);
-
+  const socket = useContext(SocketContext).chatSocket;
   const [page, setPage] = useState<number>(1);
   const [leftArrow, setLeftArrow] = useState<boolean>(false);
   const [rightArrow, setRightArrow] = useState<boolean>(false);
@@ -44,13 +50,13 @@ export default function ChatRoomUser({
     console.log("blocklist in user : " + JSON.stringify(blocklist));
     console.log("user ", JSON.stringify(user, null, 2));
     if (
-      !blocklist.find((b: string) => {
-        return b === user["nickname"];
+      !blocklist.find((b: number) => {
+        return b === user["id"];
       })
     )
       filtered.push(user);
   });
-  console.log("filtered : " + JSON.stringify(filtered));
+  //console.log("filtered : " + JSON.stringify(filtered));
 
   useEffect(
     function () {
@@ -64,6 +70,7 @@ export default function ChatRoomUser({
     },
     [users, page, filtered]
   );
+
   if (!users || !roomname) return;
   else {
     let tmpUsers;
@@ -81,7 +88,7 @@ export default function ChatRoomUser({
       <>
         <div className="wrp">
           <div className="userlist-header">
-            <h4>{roomname} 유저목록</h4>
+            <h4>{isDM ? `${roomname}과의 DM` : `${roomname}방 유저목록`}</h4>
 
             <button
               onClick={() => setPage(() => page - 1)}
@@ -102,12 +109,13 @@ export default function ChatRoomUser({
               <ChatRoomUserInfo
                 user={user}
                 key={i}
-                num={i}
                 id={id}
                 roomInfo={roomInfo}
                 setRoomInfo={setRoomInfo}
                 roomname={roomname}
                 myNickName={myNickName}
+                changedID={changedID}
+                changedNickName={changedNickName}
               />
             ))}
           </ul>
