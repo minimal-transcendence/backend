@@ -49,7 +49,7 @@ export default function App() {
   const [roomUserList, setRoomUserList] = useState<any>(null);
 
   const [roomnameModal, setroomnameModal] = useState<string>("");
-  const [currentRoomName, setcurrentRoomName] = useState<string>("");
+  const [currentRoomName, setCurrentRoomName] = useState<string>("");
   const [leftHeader, setLeftHeader] = useState<string>("");
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -161,7 +161,6 @@ export default function App() {
 
       setRoomUserList(() => result);
       setLeftHeader(() => "joined");
-      // setcurrentRoomName(() => result[0].roomname);
       setQuery("");
     }
 
@@ -176,20 +175,6 @@ export default function App() {
         )}> 내 방은 <${currentRoomName}>`
       );
 
-      setTempSearchList((results) => {
-        return results.map((result) => {
-          if (result.roomname === roomname) {
-            result.lastMessage = `${data.body}`;
-            result.lastMessageFrom = data.fromId;
-            if (roomname === currentRoomName) {
-              result.messageNew = false;
-            } else {
-              result.messageNew = true;
-            }
-          }
-          return result;
-        });
-      });
       if (roomname === currentRoomName && !isDM) {
         console.log("same room!", currentRoomName, roomname);
         setMessages(() => [...messages, data]);
@@ -423,6 +408,8 @@ export default function App() {
                     setLeftHeader={setLeftHeader}
                     setroomnameModal={setroomnameModal}
                     blocklist={blocklist}
+                    currentRoomName={currentRoomName}
+                    setCurrentRoomName={setCurrentRoomName}
                   />
                   <DMlist />
                 </>
@@ -449,7 +436,7 @@ export default function App() {
               messages={messages}
               setMessages={setMessages}
               currentRoomName={currentRoomName}
-              setcurrentRoomName={setcurrentRoomName}
+              setCurrentRoomName={setCurrentRoomName}
               myNickName={tmpLoginnickname}
               blocklist={blocklist}
               gameLoad={gameLoad}

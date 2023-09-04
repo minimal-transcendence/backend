@@ -14,6 +14,7 @@ export default function SearchListHeader({
   setLeftHeader,
   setroomnameModal,
   blocklist,
+  setCurrentRoomName,
 }: {
   results: any;
   query: any;
@@ -21,6 +22,7 @@ export default function SearchListHeader({
   setLeftHeader: any;
   setroomnameModal: any;
   blocklist: any;
+  setCurrentRoomName: any;
 }) {
   const socket = useContext(SocketContext).chatSocket;
 
@@ -43,6 +45,7 @@ export default function SearchListHeader({
 
   function handleSelectRoom(event: any, room: any) {
     setroomnameModal(room.roomname);
+
     console.log("in Selectroomname handle ", room?.roomname);
     socket.emit("selectRoom", { roomname: room?.roomname });
   }

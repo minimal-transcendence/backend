@@ -15,6 +15,8 @@ export default function SearchList({
   setIsOpenModal,
   setTempSearchList,
   blocklist,
+  currentRoomName,
+  setCurrentRoomName,
 }: {
   results: any;
   query: any;
@@ -25,6 +27,8 @@ export default function SearchList({
   setIsOpenModal: any;
   setTempSearchList: any;
   blocklist: any;
+  currentRoomName: string;
+  setCurrentRoomName: any;
 }) {
   const socket = useContext(SocketContext).chatSocket;
   console.log("in searchList ", results);
@@ -39,8 +43,10 @@ export default function SearchList({
     }
     function sendRoomList(result: any) {
       console.log(
-        `in useEffect sendRoomList <${JSON.stringify(result, null, 2)}>`
+        `in useEffect sendRoomList <${JSON.stringify(result, null, 2)}>
+        currentRoomName <${currentRoomName}>`
       );
+
       setTempSearchList(() => result);
     }
     function responseRoomQuery(result: any) {
@@ -59,7 +65,7 @@ export default function SearchList({
       socket.off("sendRoomList", sendRoomList);
       socket.off("requestPassword", requestPassword);
     };
-  }, [socket, isOpenModal, results]);
+  }, [socket, isOpenModal, results, currentRoomName]);
 
   return (
     <>
@@ -71,6 +77,7 @@ export default function SearchList({
           leftHeader={leftHeader}
           setLeftHeader={setLeftHeader}
           setroomnameModal={setroomnameModal}
+          setCurrentRoomName={setCurrentRoomName}
         />
       </div>
     </>

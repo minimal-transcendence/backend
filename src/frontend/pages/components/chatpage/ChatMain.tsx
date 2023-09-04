@@ -9,7 +9,7 @@ const ChatMain = ({
   roomInfo,
   setRoomInfo,
   currentRoomName,
-  setcurrentRoomName,
+  setCurrentRoomName,
   myNickName,
   messages,
   setMessages,
@@ -21,7 +21,7 @@ const ChatMain = ({
   roomInfo: any;
   setRoomInfo: any;
   currentRoomName: string;
-  setcurrentRoomName: any;
+  setCurrentRoomName: any;
   myNickName: string;
   messages: any;
   setMessages: any;
@@ -49,7 +49,7 @@ const ChatMain = ({
         )}>  currentRoomName : <${currentRoomName}>`
       );
       setRoomInfo(() => result);
-      setcurrentRoomName(() => result.roomname);
+      setCurrentRoomName(() => result.roomname);
 
       setMessages(() => result.messages);
       setIsDM(() => false);
@@ -65,7 +65,7 @@ const ChatMain = ({
         )}> currentRoomName : <${currentRoomName}>`
       );
 
-      setcurrentRoomName(() => target);
+      setCurrentRoomName(() => target);
       setMessages(() => messages);
       setIsDM(() => true);
       setDMtarget(() => target);
@@ -80,7 +80,7 @@ const ChatMain = ({
     currentRoomName,
     messages,
     setMessages,
-    setcurrentRoomName,
+    setCurrentRoomName,
     setRoomInfo,
     socket,
   ]);
