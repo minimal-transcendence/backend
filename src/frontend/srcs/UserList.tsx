@@ -378,6 +378,13 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       {
         if(userData[i].id == userId.toString()){
           copiedData = [...userData];
+          const matchCount = copiedData[i].matchhistory.length;
+          for(let j = 0; j < matchCount; j++){
+            if (copiedData[i].matchhistory[j].winner == copiedData[i].nickname)
+              copiedData[i].matchhistory[j].winner = newNick;
+            else if (copiedData[i].matchhistory[j].loser == copiedData[i].nickname)
+              copiedData[i].matchhistory[j].loser = newNick;
+          }
           copiedData[i].nickname = newNick;
           break;
         }
@@ -395,6 +402,13 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       {
         if(copiedData[i].id == userId.toString()){
           copiedData[i].userProfileURL = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
+          const matchCount = copiedData[i].matchhistory.length;
+          for(let j = 0; j < matchCount; j++){
+            if (copiedData[i].matchhistory[j].winner == copiedData[i].nickname)
+              copiedData[i].matchhistory[j].winnerAvatar = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
+            else if (copiedData[i].matchhistory[j].loser == copiedData[i].nickname)
+              copiedData[i].matchhistory[j].loserAvatar = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
+          }
           break;
         }
       }
@@ -664,7 +678,6 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
           </button>
           )}
           {userData[index].id != userId && userData[index].isGaming == 0 &&(
-            <div>
             <button
               className={styles.normalIn}
               onClick={() => {
@@ -673,10 +686,8 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             >
               게임 신청
             </button>
-            </div>
           )}
           {userData[index].id != userId && userData[index].isGaming == 1 &&(
-            <div>
             <button
               className={styles.disabled}
               onClick={() => {
@@ -684,7 +695,6 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
               }}>
               게임 중
             </button>
-            </div>
           )}
           <button
             className={styles.normalIn}
