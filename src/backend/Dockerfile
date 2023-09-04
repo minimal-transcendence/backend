@@ -2,14 +2,13 @@
 #	build stage
 ####################
 
-FROM node:18.17.1-alpine AS builder
+FROM node:lts-alpine AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
 
 # RUN npm install
-
 RUN npm install -g npm-check-updates && \
     ncu -u && \
     npm install
@@ -26,7 +25,7 @@ RUN npm run build
 # production stage
 ####################
 
-FROM node:18.17.1-alpine
+FROM node:lts-alpine
 
 WORKDIR /app
 
@@ -39,8 +38,7 @@ COPY --from=builder /app/package*.json .
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/*.png /photo/
 
-RUN npm install --only-production
-
+# RUN npm install --only-production
 RUN npm install -g npm-check-updates && \
     ncu -u && \
     npm install --only-production

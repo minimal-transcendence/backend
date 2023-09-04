@@ -74,19 +74,19 @@ export default function App() {
   const [changedID, setChangedID] = useState<number>(-2);
   const [changedNickName, setChangedNickName] = useState<string>("");
 
-  useEffect(() => {
-    async function refresh() {
-      try {
-        const responseDetail = await axiosApi.get(
-          // `http://localhost/api/user/${message?.fromId}/photo`
-          `http://localhost/api/auth/refresh`
-        );
-      } catch {
-        console.log("test errrrr");
-      }
-    }
-    setInterval(refresh, 25000);
-  }, []);
+  // useEffect(() => {
+  //   async function refresh() {
+  //     try {
+  //       const responseDetail = await axiosApi.get(
+  //         // `http://localhost/api/user/${message?.fromId}/photo`
+  //         `http://localhost/api/auth/refresh`
+  //       );
+  //     } catch {
+  //       console.log("test errrrr");
+  //     }
+  //   }
+  //   setInterval(refresh, 25000);
+  // }, []);
   useEffect(() => {
     function reloadNick(userId: number, newNick: string) {
       console.log("in useEffect ChatRoom nicknameupdate " + userId + newNick);
@@ -116,6 +116,7 @@ export default function App() {
   }, [socket]);
 
   useEffect(() => {
+    console.log("Run only mount");
     const getSocket = (namespace: string, jwt: string, nickname: string) => {
       return io.connect(`http://localhost/${namespace}`, {
         query: { nickname: nickname },
@@ -239,7 +240,7 @@ export default function App() {
       setAlertModalBody(() => alertBody);
       setAlertModal(() => true);
     }
-    if (socket) {
+    if (socket.connected) {
       //test seunchoi
       socket.on("inGame", (userId) => {
         console.log(`${userId} is in game`);
@@ -260,7 +261,7 @@ export default function App() {
     }
 
     return () => {
-      if (socket) {
+      if (socket.connected) {
         socket.off("sendAlert", sendAlert);
         socket.off("sendBlocklist", sendBlocklist);
         socket.off("updateBlocklist", updateBlocklist);

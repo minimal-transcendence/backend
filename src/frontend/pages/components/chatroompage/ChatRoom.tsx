@@ -1,6 +1,6 @@
 import ChatRoomUserInfo from "./ChatRoomUserInfo";
 import { useEffect, useState, useContext } from "react";
-import { SocketContext } from "@/context/socket";
+// import { SocketContext } from "@/context/socket";
 import axiosApi from "../../../srcs/AxiosInterceptor";
 const pageHeight = 8;
 export default function ChatRoomUser({
@@ -40,7 +40,7 @@ export default function ChatRoomUser({
 }) {
   // console.log("in chatroomUser, users", users);
   // console.log("in chatroomUser, roomname", roomname);
-  const socket = useContext(SocketContext).chatSocket;
+  // const socket = useContext(SocketContext).chatSocket;
   const [page, setPage] = useState<number>(1);
   const [leftArrow, setLeftArrow] = useState<boolean>(false);
   const [rightArrow, setRightArrow] = useState<boolean>(false);
@@ -68,7 +68,8 @@ export default function ChatRoomUser({
       }
       a();
     },
-    [users, page, filtered]
+    [page, filtered]
+    // [users, page, filtered]
   );
 
   if (!users || !roomname) return;
