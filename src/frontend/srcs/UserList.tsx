@@ -664,6 +664,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
           </button>
           )}
           {userData[index].id != userId && userData[index].isGaming == 0 &&(
+            <div>
             <button
               className={styles.normalIn}
               onClick={() => {
@@ -672,8 +673,10 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             >
               게임 신청
             </button>
+            </div>
           )}
           {userData[index].id != userId && userData[index].isGaming == 1 &&(
+            <div>
             <button
               className={styles.disabled}
               onClick={() => {
@@ -681,6 +684,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
               }}>
               게임 중
             </button>
+            </div>
           )}
           <button
             className={styles.normalIn}
