@@ -36,15 +36,16 @@ const ChatHeader = ({
       if (roomState !== "Public") {
         console.log("test!!!!!public!!!!!");
         setRoomState("Public");
+        socket.emit("setRoomPublic", {
+          roomname: currentRoomName,
+        });
       }
     }
     socket.emit("setRoomPass", {
       roomname: currentRoomName,
       password: value,
     });
-    socket.emit("setRoomPublic", {
-      roomname: currentRoomName,
-    });
+
     setPassword("");
   };
 

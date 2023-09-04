@@ -42,11 +42,9 @@ export default function GameListItemInfo({
           <li>
             <div className="gamelist-avatar left">
               <img
-                src={`http://localhost/api/user/${
-                  game?.fromId
-                }/photo?timestamp=${Date.now()}`}
-                width="32"
-                height="32"
+                src={`http://localhost/api/user/${game?.fromId}/photo`}
+                width="35"
+                height="35"
                 alt="avataricon"
               />
             </div>
@@ -65,11 +63,9 @@ export default function GameListItemInfo({
             </div>
             <div className="gamelist-avatar right">
               <img
-                src={`http://localhost/api/user/${
-                  game?.toId
-                }/photo?timestamp=${Date.now()}`}
-                width="32"
-                height="32"
+                src={`http://localhost/api/user/${game?.toId}/photo`}
+                width="35"
+                height="35"
                 alt="avataricon"
               />
             </div>
@@ -78,11 +74,9 @@ export default function GameListItemInfo({
           <li>
             <div className="gamelist-avatar left">
               <img
-                src={`http://localhost/api/user/${
-                  game?.fromId
-                }/photo?timestamp=${Date.now()}`}
-                width="32"
-                height="32"
+                src={`http://localhost/api/user/${game?.fromId}/photo`}
+                width="35"
+                height="35"
                 alt="avataricon"
               />
             </div>
@@ -94,11 +88,9 @@ export default function GameListItemInfo({
             </div>
             <div className="gamelist-avatar right">
               <img
-                src={`http://localhost/api/user/${
-                  game?.toId
-                }/photo?timestamp=${Date.now()}`}
-                width="32"
-                height="32"
+                src={`http://localhost/api/user/${game?.toId}/photo`}
+                width="35"
+                height="35"
                 alt="avataricon"
               />
             </div>
