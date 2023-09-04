@@ -331,13 +331,14 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
         setData(copiedData);
       }
     }
-    async function reloadGameStatusIn(userId : number){
+    async function reloadGameStatusIn(userId : any){
       console.log(`${userId} is in game`);
       let copiedData = [...userData];
       for(let i = 0; i < userData.length ; i++)
       {
         if(copiedData[i].id == userId.toString()){
           copiedData[i].isGaming = 1;
+          console.log(userId + "의 정보를 1로 변경");
           break;
         }
       }
@@ -345,13 +346,14 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
         setData(copiedData);
       }
     }
-    async function reloadGameStatusOut(userId : number){
+    async function reloadGameStatusOut(userId : any){
       console.log(`${userId} is not in game`);
       let copiedData = [...userData];
       for(let i = 0; i < userData.length ; i++)
       {
         if(copiedData[i].id == userId.toString()){
           copiedData[i].isGaming = 0;
+          console.log(userId + "의 정보를 0으로 변경");
           break;
         }
       }
@@ -363,16 +365,16 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       socket.on("updateUserStatus", (userId:number, isConnected:boolean) => reloadStatus(userId, isConnected));
       socket.on("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
       socket.on("updateUserAvatar", (userId : number) => reloadAvatar(userId));
-      gameSocket.on('inGame', (userId : number) => reloadGameStatusIn(userId));
-      gameSocket.on('NotInGame', (userId : number) => reloadGameStatusOut(userId));
+      socket.on('inGame', (userId : any) => reloadGameStatusIn(userId));
+      socket.on('NotInGame', (userId : any) => reloadGameStatusOut(userId));
     }
     return () => {
       if (socket) {
         socket.off("updateUserStatus", (userId:number, isConnected:boolean) => reloadStatus(userId, isConnected));
         socket.off("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
         socket.off("updateUserAvatar", (userId : number) => reloadAvatar(userId));
-        gameSocket.off('inGame', (userId : number) => reloadGameStatusIn(userId));
-        gameSocket.off('NotInGame', (userId : number) => reloadGameStatusOut(userId));
+        socket.off('inGame', (userId : any) => reloadGameStatusIn(userId));
+        socket.off('NotInGame', (userId : any) => reloadGameStatusOut(userId));
       }
     };
   }, [socket, userData, gameSocket]);
