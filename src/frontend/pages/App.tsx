@@ -240,7 +240,7 @@ export default function App() {
       setAlertModalBody(() => alertBody);
       setAlertModal(() => true);
     }
-    if (socket.connected) {
+    if (socket) {
       //test seunchoi
       socket.on("inGame", (userId) => {
         console.log(`${userId} is in game`);
@@ -261,7 +261,7 @@ export default function App() {
     }
 
     return () => {
-      if (socket.connected) {
+      if (socket) {
         socket.off("sendAlert", sendAlert);
         socket.off("sendBlocklist", sendBlocklist);
         socket.off("updateBlocklist", updateBlocklist);
