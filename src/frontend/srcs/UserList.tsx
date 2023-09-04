@@ -22,7 +22,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   const [friendList, setFriendList] = useState<string[]>([]);
 
   const socket = useContext<SocketContent>(SocketContext).chatSocket;
-  const gameSocket = useContext(SocketContext).gameSocket;
+  const gameSocket = useContext<SocketContent>(SocketContext).gameSocket;
 
   interface userMatchHistory {
     winner: string;

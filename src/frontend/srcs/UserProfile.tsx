@@ -67,6 +67,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   }
 
   const socket = useContext<SocketContent>(SocketContext).chatSocket;
+  const gameSocket = useContext<SocketContent>(SocketContext).gameSocket;
 
   function checkIsInclude(id: string[], userid: string) {
     if (id.includes(userid.toString())) {
@@ -172,7 +173,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   function sendMatch(level: string){
     setUserNickname(localStorage.getItem("nickname"));
     console.log("sendMatch: "+ userNickname + " " + userData[0].nickname + " " + level);
-    socket.emit("oneOnOneApply", {
+    gameSocket.emit("oneOnOneApply", {
       from: userNickname,
       to: userData[0].nickname,
       mode: level,
