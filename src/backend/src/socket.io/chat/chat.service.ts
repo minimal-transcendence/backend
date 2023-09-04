@@ -451,6 +451,10 @@ export class ChatService {
 	//TODO & CHECK unblockUser 할 때도 이렇게 하면 되나...?
 	//이 경우에는 currRoomInfo, members 모두 보내줘야 하는거 아닌지...?
 	unblockUser(io: Namespace, client: ChatSocket, target: string) {
+		if (client.nickname === target){
+			client.emit("sendAlert", "[ Act Error ]", "You don't need to unblock yourself");
+			return ;
+		}
 		const thisUser = this.storeUser.findUserById(client.userId);
 		const targetId = this.storeUser.getIdByNickname(target);
 		if (thisUser.blocklist.has(targetId)) {
@@ -459,7 +463,13 @@ export class ChatService {
 			const blocklist = [];
 			thisUser.blocklist.forEach((user) =>
 			blocklist.push(user));
-			client.emit("sendBlocklist", blocklist); //-> 여기서는 userlist 보내야 할 듯 CHECK
+			client.emit("sendBlocklist", blocklist);
+			thisUser.joinlist.forEach((room) => {
+				const currRoomInfo = this.makeCurrRoomInfo(room);
+				const roomMembers = this.makeRoomUserInfo(room);
+				io.in(room).emit("sendRoomMembers", roomMembers);
+				io.in(room).emit("sendCurrRoomInfo", currRoomInfo);
+			})
 		}
 		else {
 			client.emit("sendAlert", "[ Notice ]", `${target} is not blocked yet`);
@@ -767,38 +777,29 @@ export class ChatService {
 		});
 	}
 
-	//currRoomInfo, currRoomMembers가 game쪽에서도 필요하다 이럴수가...
-	async userChangeNick(io: Namespace, clientId: number, newNick: string) {
-		const user = this.storeUser.findUserById(clientId);
-		user.nickname = newNick;
-		// console.log("changeNickEvent");
+	async triggerWindowUpdate(io : Namespace, user : User) {
 		user.joinlist.forEach((room) => {
 			const currRoomInfo = this.makeCurrRoomInfo(room);
 			const roomMembers = this.makeRoomUserInfo(room);
-			// console.log(JSON.stringify(currRoomInfo));
-			// console.log(JSON.stringify(roomMembers));
 			io.in(room).emit("sendRoomMembers", roomMembers);
 			io.in(room).emit("sendCurrRoomInfo", currRoomInfo);
-			console.log(`send change nick event ${newNick} in room ${room}`); 0
+			console.log(`send change nick event ${user.nickname} in room ${room}`); 0
 		})
-		//dm방 update 필요...
-		const sockets = await io.in(`$${clientId}$`).fetchSockets()
+		const sockets = await io.in(`$${user.id}$`).fetchSockets()
 			.catch((error) => {
 				return (error.message);
 			});
 		sockets.forEach((socket: ChatSocket) => {
-			// const DMs = this.makeDMRoomMessages(socket, newNick);
-			// socket.emit("sendDMRoomInfo", newNick, DMs);
-			this.fetchUserToDMRoom(socket, newNick);
+			this.fetchUserToDMRoom(socket, user.nickname);
 		})
 		//본인도 update
-		const sockets2 = await io.in(`$${clientId}`).fetchSockets()
+		const sockets2 = await io.in(`$${user.id}`).fetchSockets()
 			.catch((error) => {
 				// throw new InternalServerErrorException()
 				return (error.message);
 			});
 		sockets2.forEach((socket: ChatSocket) => {
-			socket.nickname = newNick;
+			socket.nickname = user.nickname;
 			const isDMRoom = (param: string): boolean => {
 				if (param[0] === '$'
 					&& param[param.length - 1] === '$'
@@ -807,18 +808,22 @@ export class ChatService {
 				else
 					return false;
 			};
-			console.log(socket.currRoom);
-			// if (regex.test(sockets.currRoom)){
 			if (isDMRoom(socket.currRoom)) {
 				const targetId = Number(socket.currRoom.substring(1, socket.currRoom.length - 1));
 				const target = this.storeUser.getNicknameById(targetId);
-				// const DMs = this.makeDMRoomMessages(socket, target);
 				this.fetchUserToDMRoom(socket, target);
 			}
-			else
-				console.log("regex failed");
 		})
 	}
 
+	async userChangeNick(io: Namespace, clientId: number, newNick: string) {
+		const user = this.storeUser.findUserById(clientId);
+		user.nickname = newNick;
+		this.triggerWindowUpdate(io, user);
+	}
 
+	async userChangeAvatar(io: Namespace, clientId: number) {
+		const user = this.storeUser.findUserById(clientId);
+		this.triggerWindowUpdate(io, user);
+	}
 }
