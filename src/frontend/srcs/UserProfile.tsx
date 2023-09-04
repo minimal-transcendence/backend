@@ -268,8 +268,9 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       console.log("Status Update! " + userId + isConnected);
       if (isConnected === true) {
         let copiedData = [...userData];
-        for (let i = 0; i <= copiedData.length; i++) {
-          if (copiedData[i].id == userId.toString()) {
+        for(let i = 0; i < copiedData.length ; i++)
+        {
+          if(copiedData[i].id == userId.toString()){
             copiedData[i].isLogin = 1;
             break;
           }
@@ -277,8 +278,9 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
         setData(copiedData);
       } else {
         let copiedData = [...userData];
-        for (let i = 0; i <= copiedData.length; i++) {
-          if (copiedData[i].id == userId.toString()) {
+        for(let i = 0; i < copiedData.length ; i++)
+        {
+          if(copiedData[i].id == userId.toString()){
             copiedData[i].isLogin = 0;
             break;
           }
@@ -290,8 +292,9 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     async function reloadNick(userId: number, newNick: string) {
       let copiedData = null;
       console.log("Nickname Update! " + userId + newNick);
-      for (let i = 0; i <= userData.length; i++) {
-        if (userData[i].id == userId.toString()) {
+      for(let i = 0; i < userData.length ; i++)
+      {
+        if(userData[i].id == userId.toString()){
           copiedData = [...userData];
           copiedData[i].nickname = newNick;
           break;
@@ -305,9 +308,10 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     async function reloadAvatar(userId: number) {
       console.log("Avatar Update! " + userId);
       let copiedData = [...userData];
-      for (let i = 0; i <= userData.length; i++) {
-        if (copiedData[i].id == userId.toString()) {
-          copiedData[i].userProfileURL = `/api/user/${userId}/photo`;
+      for(let i = 0; i < userData.length ; i++)
+      {
+        if(copiedData[i].id == userId.toString()){
+          copiedData[i].userProfileURL = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
           break;
         }
       }
@@ -318,7 +322,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     async function reloadGameStatusIn(userId : number){
       console.log(`${userId} is in game`);
       let copiedData = [...userData];
-      for(let i = 0; i <= userData.length ; i++)
+      for(let i = 0; i < userData.length ; i++)
       {
         if(copiedData[i].id == userId.toString()){
           copiedData[i].isGaming = 1;
@@ -332,7 +336,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     async function reloadGameStatusOut(userId : number){
       console.log(`${userId} is not in game`);
       let copiedData = [...userData];
-      for(let i = 0; i <= userData.length ; i++)
+      for(let i = 0; i < userData.length ; i++)
       {
         if(copiedData[i].id == userId.toString()){
           copiedData[i].isGaming = 0;
@@ -348,7 +352,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       socket.on("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
       socket.on("updateUserAvatar", (userId : number) => reloadAvatar(userId));
       gameSocket.on('inGame', (userId : number) => reloadGameStatusIn(userId));
-      gameSocket.on('notInGame', (userId : number) => reloadGameStatusOut(userId));
+      gameSocket.on('NotInGame', (userId : number) => reloadGameStatusOut(userId));
     }
     return () => {
       if (socket) {
@@ -356,7 +360,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
         socket.off("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
         socket.off("updateUserAvatar", (userId : number) => reloadAvatar(userId));
         gameSocket.off('inGame', (userId : number) => reloadGameStatusIn(userId));
-        gameSocket.off('notInGame', (userId : number) => reloadGameStatusOut(userId));
+        gameSocket.off('NotInGame', (userId : number) => reloadGameStatusOut(userId));
       }
     };
   }, [socket, userData]);
