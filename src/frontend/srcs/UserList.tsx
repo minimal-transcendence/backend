@@ -306,7 +306,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       console.log("Status Update! " + userId + isConnected);
       if (isConnected === true){
         let copiedData = [...userData];
-        for(let i = 0; i <= copiedData.length ; i++)
+        for(let i = 0; i < copiedData.length ; i++)
         {
           if(copiedData[i].id == userId.toString()){
             copiedData[i].isLogin = 1;
@@ -314,6 +314,8 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             return ;
           }
         }
+        reloadData();
+        /*console.log("신규 유저");
         const responseDetail = await axiosApi.get('http://localhost/api/user/' + userId, );
         const detailResponse = responseDetail.data;
         const responseMatch = await axiosApi.get('http://localhost/api/user/' + userId + '/matchhistory', );
@@ -354,11 +356,11 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         copiedMatchList.push(false);
         setShowModals(copiedModalList);
         setShowMatchList(copiedMatchList);
-        setData(copiedData);
+        setData(copiedData);*/
       }
       else{
         let copiedData = [...userData];
-        for(let i = 0; i <= copiedData.length ; i++)
+        for(let i = 0; i < copiedData.length ; i++)
         {
           if(copiedData[i].id == userId.toString()){
             copiedData[i].isLogin = 0;
@@ -372,7 +374,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     async function reloadNick(userId : number, newNick : string){
       let copiedData = null;
       console.log("Nickname Update! " + userId + newNick);
-      for(let i = 0; i <= userData.length ; i++)
+      for(let i = 0; i < userData.length ; i++)
       {
         if(userData[i].id == userId.toString()){
           copiedData = [...userData];
@@ -388,7 +390,8 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     async function reloadAvatar(userId : number){
       console.log("Avatar Update! " + userId);
       let copiedData = [...userData];
-      for(let i = 0; i <= userData.length ; i++)
+      console.log("길이: "+ userData.length);
+      for(let i = 0; i < userData.length ; i++)
       {
         if(copiedData[i].id == userId.toString()){
           copiedData[i].userProfileURL = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
@@ -402,7 +405,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     async function reloadGameStatusIn(userId : number){
       console.log(`${userId} is in game`);
       let copiedData = [...userData];
-      for(let i = 0; i <= userData.length ; i++)
+      for(let i = 0; i < userData.length ; i++)
       {
         if(copiedData[i].id == userId.toString()){
           copiedData[i].isGaming = 1;
@@ -416,7 +419,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     async function reloadGameStatusOut(userId : number){
       console.log(`${userId} is not in game`);
       let copiedData = [...userData];
-      for(let i = 0; i <= userData.length ; i++)
+      for(let i = 0; i < userData.length ; i++)
       {
         if(copiedData[i].id == userId.toString()){
           copiedData[i].isGaming = 0;
