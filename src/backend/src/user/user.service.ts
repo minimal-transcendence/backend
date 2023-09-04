@@ -11,43 +11,43 @@ import { GameGateway } from 'src/socket.io/game/game.gateway';
 export class UserService {
 	constructor(
 		private readonly prisma: PrismaService,
-		private readonly chatGateway : ChatGateway,
-		private readonly gameGateway : GameGateway
-	){}
+		private readonly chatGateway: ChatGateway,
+		private readonly gameGateway: GameGateway
+	) { }
 
 	//upsert
 	async createUser(data: Prisma.UserCreateInput): Promise<User> {
-		while (!data.nickname){
+		while (!data.nickname) {
 			data.nickname = `user_${Math.floor(Math.random() * 1000)}`;
 			const isUnique = await this.prisma.user.findUnique({
-				where : { nickname : data.nickname },
-				select : { nickname : true }
+				where: { nickname: data.nickname },
+				select: { nickname: true }
 			});
 			if (isUnique)
 				data.nickname = null;
 		}
 		return await this.prisma.user.upsert({
-			where : {
-				id : data.id,
+			where: {
+				id: data.id,
 			},
-			update : {},
+			update: {},
 			create: {
-				id : data.id,
+				id: data.id,
 				nickname: data.nickname,
-				email : data.email
+				email: data.email
 			}
 		})
 	}
 
 	async findUserById(userId: number): Promise<any | undefined> {
-        const user = await this.prisma.user.findUnique({
-            where: {
-                id: userId,
-            },
-        })
+		const user = await this.prisma.user.findUnique({
+			where: {
+				id: userId,
+			},
+		})
 
-        return user
-    }
+		return user
+	}
 
 	/*
 		[ TODO ] 
@@ -55,69 +55,69 @@ export class UserService {
 	2. 최근 접속 순 (updatedAt) 정렬? or score순? or 복합
 	3. pagenation 필요? (유저 목록 표시 방법 : scroll, board-style, etc.)
 	*/
-	async getAllUser() : Promise<object[]>{
+	async getAllUser(): Promise<object[]> {
 		const res = await this.prisma.user.findMany({
 			select: {
 				id: true,
-				nickname : true,
-				avatar : true,
-				score : true,
-				lastLogin : true
+				nickname: true,
+				avatar: true,
+				score: true,
+				lastLogin: true
 			},
-			orderBy: { lastLogin : 'desc' }
+			orderBy: { lastLogin: 'desc' }
 		});
 		return (res);
 	}
 
 	//findUnique or Throw
-	async getUserById(id : number) : Promise<object>{
+	async getUserById(id: number): Promise<object> {
 		return await this.prisma.user.findUniqueOrThrow({
-			where: { id : id },
+			where: { id: id },
 			select: {
-				id : true,
-				nickname : true,
-				email : true,
-				avatar : true,
-				score : true,
-				lastLogin : true,
+				id: true,
+				nickname: true,
+				email: true,
+				avatar: true,
+				score: true,
+				lastLogin: true,
 				_count: {
-					select : {
-						asWinner : true,
-						asLoser : true,
+					select: {
+						asWinner: true,
+						asLoser: true,
 					}
 				}
-			}}).then((res) => {
-				return (res);
-			})
+			}
+		}).then((res) => {
+			return (res);
+		})
 			.catch((error) => {
-				return { message: 'An error occurred', error: error.message};
+				return { message: 'An error occurred', error: error.message };
 			});
 	}
 	//현재 문법 가능한지 check
 	async updateUserById(
-		id: number, 
-		data : Prisma.UserUpdateInput, 
-		file? : Express.Multer.File)
-	{
-		let oldAvatar : string;
+		id: number,
+		data: Prisma.UserUpdateInput,
+		file?: Express.Multer.File) {
+		let oldAvatar: string;
 		if (file) {
 			oldAvatar = await this.prisma.user.findUniqueOrThrow({
-				where : { id },
-				select : { avatar : true }
+				where: { id },
+				select: { avatar: true }
 			}).then((res) => { return res.avatar })
 		}
 		return await this.prisma.user.update({
-			where : { id : id },
-			data : {
+			where: { id: id },
+			data: {
 				...data,
-				id : undefined,
-				friends : undefined,
-				avatar : file != null ? file.filename.toString() : undefined,
+				id: undefined,
+				friends: undefined,
+				avatar: file != null ? file.filename.toString() : undefined,
 			}
 		}).then((res) => {
 			if (file) {
-				this.chatGateway.updateUserAvatar(id);
-				if (oldAvatar != "default.png"){
+				this.chatGateway.updateUserAvatar(id, file.path.toString() as string);
+				if (oldAvatar != "default.png") {
 					fs.unlink('/photo/' + oldAvatar, (err) => {
 						//err처리
 						if (err)
@@ -131,53 +131,53 @@ export class UserService {
 			}
 			return (res);
 		}).catch((error) => {
-			if (error instanceof Prisma.PrismaClientValidationError){
-				return { error : "Validation Error" };
+			if (error instanceof Prisma.PrismaClientValidationError) {
+				return { error: "Validation Error" };
 			}
 			else
-				return { code : error.code, error : error.message };
+				return { code: error.code, error: error.message };
 		});
 	}
 
 	//만약 Id list 뿐만 아니라 친구들의 정보값이 필요하면 friend[] 로 설정해야
-	async getUserFriendsListById(id : number) : Promise<object> {
+	async getUserFriendsListById(id: number): Promise<object> {
 		return await this.prisma.user.findUniqueOrThrow({
-			where : { id : id }
+			where: { id: id }
 		})
-		.then((res) => { return res.friends })
-		.catch((error) => {
-			return { message: '', error: error.message };
-		})
+			.then((res) => { return res.friends })
+			.catch((error) => {
+				return { message: '', error: error.message };
+			})
 	}
 
 	async getUserFriendsById(id: number): Promise<object> {
 		return this.prisma.user.findUniqueOrThrow({
 			where: { id: id },
-		  })
-		  .then((user) => {
-			return Promise.all(
-			  user.friends.map((element) => {
-				return this.getUserById(element);
-			  })
-			);
-		  })
-		  .then((friendList) => {
-			return { friendList };
-		  })
-		  .catch((error) => {
-			return { message: '', error: error.message };
-		  });
-	  }
+		})
+			.then((user) => {
+				return Promise.all(
+					user.friends.map((element) => {
+						return this.getUserById(element);
+					})
+				);
+			})
+			.then((friendList) => {
+				return { friendList };
+			})
+			.catch((error) => {
+				return { message: '', error: error.message };
+			});
+	}
 
 	// 이런 문법 괜찮은가...?
 	// 이이런 구조 괜찮은가....?
 	// 권한 체크! -> 완료
 	// HTTP EXCEPTION -> 완료
 	// validation 필요//
-	async updateFriendsById(id : number, data : {
-		friend: number ;
-		isAdd : boolean ;
-	}) : Promise<object>{
+	async updateFriendsById(id: number, data: {
+		friend: number;
+		isAdd: boolean;
+	}): Promise<object> {
 		if (id == data.friend)
 			throw new HttpException(
 				"I am a good friend of myself...",
@@ -185,14 +185,14 @@ export class UserService {
 			);
 		//find user
 		const user = await this.prisma.user.findUniqueOrThrow({
-			where : { id },
-			select : { friends : true }
+			where: { id },
+			select: { friends: true }
 		});
-	
+
 		if (data.isAdd == true) {
 			//friend validatity check
 			await this.prisma.user.findUniqueOrThrow({
-				where : { id : data.friend },
+				where: { id: data.friend },
 			});
 			if (user.friends.includes(data.friend))
 				throw new HttpException(
@@ -200,10 +200,10 @@ export class UserService {
 					HttpStatus.BAD_REQUEST
 				);
 			return this.prisma.user.update({
-				where : { id },
-				data : {
-					friends : {
-						push : data.friend,
+				where: { id },
+				data: {
+					friends: {
+						push: data.friend,
 					}
 				}
 			})
@@ -215,10 +215,10 @@ export class UserService {
 					HttpStatus.BAD_REQUEST,
 				);
 			return await this.prisma.user.update({
-				where : { id },
-				data : {
-					friends : {
-						set : user.friends.filter((num) => num !== data.friend ),
+				where: { id },
+				data: {
+					friends: {
+						set: user.friends.filter((num) => num !== data.friend),
 					}
 				}
 			});
@@ -227,34 +227,34 @@ export class UserService {
 
 	//CreatedTime 출력법 어떻게?
 	//TODO : 여기 useful information 필요하다고 되어있음... score 필요할까?
-	async getUserMatchHistoryById(id : number) : Promise<object[]>{
+	async getUserMatchHistoryById(id: number): Promise<object[]> {
 		return await this.prisma.matchHistory.findMany({
-			where : {
-				OR: [ {winnerId: id}, {loserId: id}]
+			where: {
+				OR: [{ winnerId: id }, { loserId: id }]
 			},
-			select : {
-				winner : {
-					select : { 
-						nickname : true,
-						avatar : true
+			select: {
+				winner: {
+					select: {
+						nickname: true,
+						avatar: true
 					}
 				},
-				loser : {
-					select : {
-						nickname : true,
-						avatar : true
+				loser: {
+					select: {
+						nickname: true,
+						avatar: true
 					}
 				},
-				createdTime : true
+				createdTime: true
 			},
-			orderBy : { createdTime : 'desc' }
+			orderBy: { createdTime: 'desc' }
 		})
 	}
 
-	async getUserImageById(id : number) {
+	async getUserImageById(id: number) {
 		const fileName = await this.prisma.user.findUnique({
-			where : { id },
-			select : { avatar : true },
+			where: { id },
+			select: { avatar: true },
 		}).then((res) => {
 			return res.avatar
 		});
