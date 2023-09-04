@@ -2,9 +2,9 @@ import { useEffect, useState, useContext } from "react";
 import { SocketContext } from "@/context/socket";
 
 import SearchListCreateRoom from "./SearchListCreateRoom";
-import ErrorMessage from "./ErrorMessage";
-import SearchListHeader from "./SearchListHeader";
-const NO_SEARCH_RESULT_ERROR = "There is no room! : ";
+
+import SearchListMain from "./SearchListMain";
+
 export default function SearchList({
   results,
   query,
@@ -37,7 +37,6 @@ export default function SearchList({
       alert(`requestPassword이벤트가 왔어요zx. ${roomname} ${isOpenModal}`);
       setIsOpenModal(true);
     }
-
     function sendRoomList(result: any) {
       console.log(
         `in useEffect sendRoomList <${JSON.stringify(result, null, 2)}>`
@@ -61,30 +60,11 @@ export default function SearchList({
       socket.off("requestPassword", requestPassword);
     };
   }, [socket, isOpenModal, results]);
-  // }, [socket, isOpenModal, results]);
 
-  if (results?.length === 0) {
-    console.log("no resuslt");
-    return (
-      <>
-        <div className="wrp">
-          <SearchListHeader
-            results={results}
-            query={query}
-            blocklist={blocklist}
-            leftHeader={leftHeader}
-            setLeftHeader={setLeftHeader}
-            setroomnameModal={setroomnameModal}
-          />
-          <ErrorMessage message={NO_SEARCH_RESULT_ERROR + query} />
-        </div>
-      </>
-    );
-  }
   return (
     <>
       <div className="wrp">
-        <SearchListHeader
+        <SearchListMain
           results={results}
           query={query}
           blocklist={blocklist}
