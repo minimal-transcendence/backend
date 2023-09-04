@@ -26,7 +26,7 @@ export default function SearchListHeader({
   const [page, setPage] = useState<number>(1);
   const [leftArrow, setLeftArrow] = useState<boolean>(false);
   const [rightArrow, setRightArrow] = useState<boolean>(false);
-
+  const [lastClicked, setLastClicked] = useState<any>(new Date().getTime());
   useEffect(
     function () {
       function a() {
@@ -47,6 +47,11 @@ export default function SearchListHeader({
   }
 
   function handleChk(event: any) {
+    if (new Date().getTime() - lastClicked < 1000) {
+      console.log("Last Click ", lastClicked);
+      return; // dont do anything
+    }
+    setLastClicked(() => new Date().getTime());
     if (event.target.dataset.name) {
       console.log("in handleChk ", event.target.dataset.name);
       setLeftHeader(event.target.dataset.name);

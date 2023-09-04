@@ -1,6 +1,5 @@
 # !/bin/sh
 echo "Nginx Started..." && \
-
 # Manually set next's hostname to localhost
 if cat /app/server.js | grep -q "const hostname = process.env.HOSTNAME || 'localhost'"; then
 	echo "Set hostname to 'localhost'"
@@ -8,8 +7,5 @@ if cat /app/server.js | grep -q "const hostname = process.env.HOSTNAME || 'local
 else
 	echo "server.js already setup" 
 fi
-
 nginx
-
-
 node server.js
