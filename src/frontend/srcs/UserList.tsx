@@ -102,7 +102,6 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       gameList = [];
       blockList= [];
       for(let i = 0; i < data.length ; i++){
-        console.log("data:", data[i]);
         if (data[i].isConnected === true){
           conList.push((data[i].id).toString());
         }
@@ -188,7 +187,8 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         newMatchList.push(false);
       }
     }
-    setData(newDataList);
+    const sortedList = newDataList.sort((a, b) => b.score - a.score);
+    setData(sortedList);
     setShowModals(newModalList);
     setShowMatchList(newMatchList);
   };
@@ -311,20 +311,17 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   useEffect(() => {
     async function reloadStatus(userId : number, isConnected : boolean){
       console.log("Status Update! " + userId + isConnected);
-      console.log("ReloadStatus: "+ reloadCheck);
       if (isConnected === true){
         let copiedData = [...userData];
         for(let i = 0; i < copiedData.length ; i++)
         {
           if(copiedData[i].id == userId.toString()){
-            console.log("이미 있는 유저");
             copiedData[i].isLogin = 1;
             setData(copiedData);
             return ;
           }
         }
         if (!reloadCheck){
-          console.log("reload!");
           reloadData();
         }
         /*console.log("신규 유저");
@@ -439,7 +436,6 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         if(userData[i].id == userId){
           let copiedData = [...userData];
           copiedData[i].isGaming = 1;
-          console.log(userId + "의 정보를 1로 변경");
           break;
         }
       }
@@ -455,7 +451,6 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         if(userData[i].id == userId){
           let copiedData = [...userData];
           copiedData[i].isGaming = 0;
-          console.log(userId + "의 정보를 0으로 변경");
           break;
         }
       }
@@ -545,14 +540,19 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
                   언팔로우{" "}
                   </button>
                 )}
-                {userData[index].id != userId && userData[index].isGaming == 0 && (
+                {userData[index].id != userId && userData[index].isLogin == 0 &&  (
+                <button className={styles_profile.disabled}
+                >
+                    미 접속
+                </button>)}
+                {userData[index].id != userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && (
                 <button className={styles_profile.gameButton}
                 onClick={() => {
                 openMatchList(index);
                 }}>
                     게임 신청
                 </button>)}
-                {userData[index].id != userId && userData[index].isGaming == 1 && (
+                {userData[index].id != userId && userData[index].isGaming == 1 && userData[index].isLogin == 1 &&  (
                 <button className={styles_profile.disabled}
                 >
                     게임 중
@@ -682,21 +682,28 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             팔로우
           </button>
           )}
-          {userData[index].id == userId && userData[index].isGaming == 0 &&(
+          {userData[index].isLogin == 0 && (
+          <button
+            className={styles.disabled}
+          >
+            미 접속
+          </button>
+          )}
+          {userData[index].id == userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && (
           <button
             className={styles.disabled}
           >
             게임 신청
           </button>
           )}
-          {userData[index].id == userId && userData[index].isGaming == 1 &&(
+          {userData[index].id == userId && userData[index].isGaming == 1 && userData[index].isLogin == 1 && (
           <button
             className={styles.disabled}
           >
             게임 중
           </button>
           )}
-          {userData[index].id != userId && userData[index].isGaming == 0 &&(
+          {userData[index].id != userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && (
             <button
               className={styles.normalIn}
               onClick={() => {
@@ -706,7 +713,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
               게임 신청
             </button>
           )}
-          {userData[index].id != userId && userData[index].isGaming == 1 &&(
+          {userData[index].id != userId && userData[index].isGaming == 1 && userData[index].isLogin == 1 && (
             <button
               className={styles.disabled}
               onClick={() => {

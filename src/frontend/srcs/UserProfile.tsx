@@ -92,7 +92,6 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       conList = [];
       gameList = [];
       blockList= [];
-      console.log("data:", data);
       if (data.isConnected === true){
         conList.push((id).toString());
       }
@@ -344,7 +343,6 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
         if(userData[i].id == userId){
           let copiedData = [...userData];
           copiedData[i].isGaming = 1;
-          console.log(userId + "의 정보를 1로 변경");
           break;
         }
       }
@@ -360,7 +358,6 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
         if(userData[i].id == userId){
           let copiedData = [...userData];
           copiedData[i].isGaming = 0;
-          console.log(userId + "의 정보를 0으로 변경");
           break;
         }
       }
@@ -448,21 +445,27 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
                     언팔로우{" "}
                   </button>
                 )}
-                {userData[0].id != userId && userData[0].isGaming == 0 &&(
-              <button
-              className={styles_profile.gameButton}
-              onClick={() => {
-                      openMatchList();
-                    }}
-              >
-              게임 신청
-              </button>)}
-                 {userData[0].id != userId && userData[0].isGaming == 1 &&(
+                  {userData[0].id != userId && userData[0].isLogin == 0 && (
+                    <button
+                      className={styles_profile.disabled}
+                    >
+                      미 접속
+                  </button>)}
+                {userData[0].id != userId && userData[0].isGaming == 0 && userData[0].isLogin == 1 && (
                   <button
-                    className={styles_profile.disabled}
-                  >
-                    게임 중
-                 </button>)}
+                    className={styles_profile.gameButton}
+                    onClick={() => {
+                            openMatchList();
+                          }}
+                    >
+                    게임 신청
+                  </button>)}
+                 {userData[0].id != userId && userData[0].isGaming == 1 && userData[0].isLogin == 1 && (
+                    <button
+                      className={styles_profile.disabled}
+                    >
+                      게임 중
+                  </button>)}
             </div>
             <div className={styles_profile.buttons}>
               {userData[0].id != userId && userData[0].isBlocked == 0 &&(

@@ -213,37 +213,8 @@ function MyProfile({
       if (jwtExpItem){
         const jwtExpInt = parseInt(jwtExpItem);
         if (jwtExpInt * 1000 - Date.now() < 2000)
-          refreshToken();
+          await refreshToken();
       }
-      /*if (verCode == "" || verCode.length !== 6) {
-        throw "인증코드를 확인해주세요";
-      }
-      const faChangeApiUrl = "http://localhost/api/2fa/turn-on";
-      const dataToUpdate = {
-        id: userId,
-        twoFactorAuthCode: verCode,
-      };
-      console.log("send: ", JSON.stringify(dataToUpdate));
-      await axiosApi
-        .post(faChangeApiUrl, JSON.stringify(dataToUpdate), {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
-        .then((response) => {
-          if (response.status != 201) {
-            throw(response.data.error);
-          } else {
-            localStorage.setItem("is2fa", "true");
-            setIs2Fa("true");
-            alert("2차인증이 설정되었습니다");
-            console.log("is2fa 변경 응답 데이터:", JSON.stringify(response));
-          }
-        })
-        .catch((error) => {
-          alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
-          console.error("에러 발생:", error);
-        });*/
        try{
           if (verCode == '' || verCode.length !== 6){
             throw("인증코드를 확인해주세요");
@@ -266,28 +237,32 @@ function MyProfile({
             if (responseData.error){
               throw new Error(responseData.error);
             }
-            localStorage.setItem("is2fa", 'true');
-            setIs2Fa('true');
-            alert("2차인증이 설정되었습니다 로그인을 다시 해주세요");
-            localStorage.setItem("isLoggedIn", "false");
-            localStorage.removeItem("id");
-            localStorage.removeItem("nickname");
-            localStorage.removeItem("is2fa");
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("access_token_exp");
-            const ApiUrl = "http://localhost/api/auth/logout";
-            axiosApi.post(ApiUrl, {}).catch((error:any) => {
-              console.log("logout send fail: ", error); //TODO: error handling check
-            });
-            router.push("/");
-            console.log('is2fa 변경 응답 데이터:', responseData);
-          })
-          .catch((error) => {
-            throw(error);
-          })
+            if (responseData.message == "2fa turn on"){
+              localStorage.setItem("is2fa", 'true');
+              setIs2Fa('true');
+              alert("2차인증이 설정되었습니다 다시 로그인해주세요.");
+              setVerCode('');
+              console.log('is2fa 변경 응답 데이터:', responseData);
+              localStorage.setItem("isLoggedIn", "false");
+              localStorage.removeItem("id");
+              localStorage.removeItem("nickname");
+              localStorage.removeItem("is2fa");
+              localStorage.removeItem("access_token");
+              localStorage.removeItem("access_token_exp");
+              const ApiUrl = "http://localhost/api/auth/logout";
+              axiosApi.post(ApiUrl, {}).catch((error:any) => {
+                console.log("logout send fail: ", error); //TODO: error handling check
+              });
+              router.push("/");
+            }
+            else{
+              alert("다시 시도해주세요.");
+            }
+            })
         }
         catch(error){
           alert("qr인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
+          setVerCode('');
           console.error('에러 발생:', error);
         }
     } else if (is2Fa === "true" && checkIs2Fa === false) {
@@ -295,37 +270,8 @@ function MyProfile({
       if (jwtExpItem){
         const jwtExpInt = parseInt(jwtExpItem);
         if (jwtExpInt * 1000 - Date.now() < 2000)
-          refreshToken();
+          await refreshToken();
       }
-      /*if (verCode == "" || verCode.length !== 6) {
-        throw "인증코드를 확인해주세요";
-      }
-      const faChangeApiUrl = "http://localhost/api/2fa/turn-off";
-      const dataToUpdate = {
-        id: userId,
-        twoFactorAuthCode: verCode,
-      };
-      console.log("send: ", JSON.stringify(dataToUpdate));
-      await axiosApi
-        .post(faChangeApiUrl, JSON.stringify(dataToUpdate), {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
-        .then((response) => {
-          if (response.status != 201) {
-            throw(response.data.error);
-          } else {
-            localStorage.setItem("is2fa", "false");
-            setIs2Fa("false");
-            alert("2차인증이 해제되었습니다");
-            console.log("is2fa 변경 응답 데이터:", JSON.stringify(response));
-          }
-        })
-        .catch((error) => {
-          alert("인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
-          console.error("에러 발생:", error);
-        });*/
     try{
         if (verCode == '' || verCode.length !== 6){
           throw("인증코드를 확인해주세요");
@@ -351,6 +297,7 @@ function MyProfile({
           localStorage.setItem("is2fa", 'false');
           setIs2Fa('false');
           alert("2차인증이 해제되었습니다");
+          setVerCode('');
           console.log('is2fa 변경 응답 데이터:', responseData);
         })
         .catch((error) => {
@@ -359,6 +306,7 @@ function MyProfile({
       }
       catch(error){
         alert("qr인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
+        setVerCode('');
         console.error('에러 발생:', error);
       }
     }
