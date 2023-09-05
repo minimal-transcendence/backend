@@ -205,6 +205,7 @@ export class ChatGateway
 
 	updateUserAvatar(userId: number, filePath: string) {
 		this.io.emit("updateUserAvatar", userId, filePath);
+		this.chatService.userChangeAvatar(this.io, userId);
 	}
 
 	//check handleDisconnect
