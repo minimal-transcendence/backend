@@ -33,30 +33,33 @@ export default function DirectMessageList({
   }, [directMessageList, page]);
 
   useEffect(() => {
-    function updateInvitationList(result: any) {
-      console.log(
-        "in useEffect updateInvitationList ",
-        JSON.stringify(result, null, 2)
-      );
-      setDirectMessageList(() => result);
-    }
+    setDirectMessageList(() => [...directMessageMap]);
+  }, [directMessageMap]);
+  console.log(
+    `!!!!!!!!!!! directMessageList <${JSON.stringify(
+      directMessageList,
+      null,
+      2
+    )}>`
+  );
 
-    if (socket) {
-      socket.on("updateInvitationList", updateInvitationList);
-    }
-    return () => {
-      if (socket) {
-        socket.off("updateInvitationList", updateInvitationList);
-      }
-    };
-  }, [socket]); // gameData?
+  directMessageMap?.forEach((value: any, key: any) => {
+    console.log(
+      `In directMessageMapLSIT   value <${JSON.stringify(
+        value,
+        null,
+        2
+      )}>  key <${JSON.stringify(key, null, 2)}>`
+    );
+  });
 
   if (!directMessageList) return;
   else {
     let tmpList;
     if (directMessageList?.length <= pageHeight) {
       console.log(
-        `directMessageList length가 ${directMessageList.length}이므로 1페이지 미만.`
+        `directMessageList length가 ${directMessageList.length}이므로 1페이지 미만.
+        directMessageList <${directMessageList}>`
       );
       tmpList = directMessageList;
     } else {

@@ -13,7 +13,7 @@ export default function DirectMessageListBody({
     console.log("gamelengh 0");
     return;
   } else {
-    console.log("gmaelist", JSON.stringify(tmpList, null, 2));
+    console.log("DMlist", JSON.stringify(tmpList, null, 2));
     return (
       <div className="gamelist-body">
         <ul className="gamelist-lists">
