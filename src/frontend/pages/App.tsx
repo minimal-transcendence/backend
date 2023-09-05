@@ -9,6 +9,7 @@ import NavBar from "./components/navpage/NavBar";
 import GameList from "./components/gamelistpage/GameList";
 import ChatMain from "./components/chatpage/ChatMain";
 import SearchList from "./components/searchlistpage/SearchList";
+import DirectMessageList from "./components/dmlist/DirectMessageList";
 import ChatRoomUser from "./components/chatroompage/ChatRoom";
 
 import ModalAlert from "./components/modalpage/ModalAlert";
@@ -75,6 +76,8 @@ export default function App() {
   const [changedNickName, setChangedNickName] = useState<string>("");
 
   const [lastMessageList, setLastMessageList] = useState<any>(new Map());
+  const [directMessageMap, setDirectMessageMap] = useState<any>(new Map());
+
   useEffect(() => {
     function reloadNick(userId: number, newNick: string) {
       console.log("in useEffect ChatRoom nicknameupdate " + userId + newNick);
@@ -217,7 +220,31 @@ export default function App() {
         isDM,
         data?.from === currentRoomName || to === currentRoomName
       );
-      if (isDM && (data?.from === currentRoomName || to === currentRoomName)) {
+
+      let max = directMessageMap;
+
+      max.set(data?.from, {
+        data,
+        messageNew: false,
+      });
+
+      max.forEach((value: any, key: any) => {
+        console.log(
+          `In SEND DM   value <${JSON.stringify(
+            value,
+            null,
+            2
+          )}>  key <${JSON.stringify(key, null, 2)}>`
+        );
+      });
+
+      setDirectMessageMap(() => max);
+
+      if (
+        isDM &&
+        ((data?.from === currentRoomName && to === tmpLoginnickname) ||
+          (to === currentRoomName && data?.from === tmpLoginnickname))
+      ) {
         console.log("same froom!", currentRoomName, to);
         setMessages(() => [...messages, data]);
       }
@@ -435,7 +462,13 @@ export default function App() {
                     lastMessageList={lastMessageList}
                     setLastMessageList={setLastMessageList}
                   />
-                  <DMlist />
+                  <DirectMessageList
+                    myNickName={tmpLoginnickname}
+                    directMessageMap={directMessageMap}
+                    setDirectMessageMap={setDirectMessageMap}
+                    isDM={isDM}
+                    setIsDM={setIsDM}
+                  />
                 </>
               }
             </Box>

@@ -52,7 +52,6 @@ const ChatMain = ({
           2
         )}>  currentRoomName : <${currentRoomName}>`
       );
-      let max = new Map();
 
       setRoomInfo(() => result);
       setCurrentRoomName(() => result.roomname);
