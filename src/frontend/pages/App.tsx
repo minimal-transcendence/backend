@@ -74,19 +74,7 @@ export default function App() {
   const [changedID, setChangedID] = useState<number>(-2);
   const [changedNickName, setChangedNickName] = useState<string>("");
 
-  // useEffect(() => {
-  //   async function refresh() {
-  //     try {
-  //       const responseDetail = await axiosApi.get(
-  //         // `http://localhost/api/user/${message?.fromId}/photo`
-  //         `http://localhost/api/auth/refresh`
-  //       );
-  //     } catch {
-  //       console.log("test errrrr");
-  //     }
-  //   }
-  //   setInterval(refresh, 25000);
-  // }, []);
+  const [lastMessageList, setLastMessageList] = useState<any>(new Map());
   useEffect(() => {
     function reloadNick(userId: number, newNick: string) {
       console.log("in useEffect ChatRoom nicknameupdate " + userId + newNick);
@@ -174,6 +162,40 @@ export default function App() {
           2
         )}> 내 방은 <${currentRoomName}>`
       );
+
+      let max = lastMessageList;
+      results.map((result: any) => {
+        let chkNew;
+
+        if (currentRoomName === result.roomname) {
+          console.log(
+            `in sendMessage  currentRoomName <${currentRoomName}> result.roomname <${result.roomname}>`
+          );
+          result.messageNew = false;
+          result.lastMessage = data.body;
+          max.set(result.roomname, {
+            lastMessage: result.lastMessage,
+            messageNew: false,
+          });
+          return result;
+        }
+        return result;
+      });
+      max.forEach((value: any, key: any) => {
+        console.log(
+          `value <${JSON.stringify(value, null, 2)}>  key <${JSON.stringify(
+            key,
+            null,
+            2
+          )}>`
+        );
+      });
+
+      console.log(
+        `in sendMessage,  results <${JSON.stringify(results, null, 2)}>`
+      );
+      setLastMessageList(() => max);
+      setTempSearchList(() => results);
 
       if (roomname === currentRoomName && !isDM) {
         console.log("same room!", currentRoomName, roomname);
@@ -410,6 +432,8 @@ export default function App() {
                     blocklist={blocklist}
                     currentRoomName={currentRoomName}
                     setCurrentRoomName={setCurrentRoomName}
+                    lastMessageList={lastMessageList}
+                    setLastMessageList={setLastMessageList}
                   />
                   <DMlist />
                 </>
@@ -440,6 +464,8 @@ export default function App() {
               myNickName={tmpLoginnickname}
               blocklist={blocklist}
               gameLoad={gameLoad}
+              lastMessageList={lastMessageList}
+              setLastMessageList={setLastMessageList}
             />
 
             <Box>

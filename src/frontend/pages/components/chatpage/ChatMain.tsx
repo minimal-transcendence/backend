@@ -17,6 +17,8 @@ const ChatMain = ({
   gameLoad,
   isDM,
   setIsDM,
+  lastMessageList,
+  setLastMessageList,
 }: {
   roomInfo: any;
   setRoomInfo: any;
@@ -29,6 +31,8 @@ const ChatMain = ({
   gameLoad: boolean;
   isDM: boolean;
   setIsDM: any;
+  lastMessageList: any;
+  setLastMessageList: any;
 }) => {
   // const [typingStatus, setTypingStatus] = useState("");
 
@@ -48,13 +52,15 @@ const ChatMain = ({
           2
         )}>  currentRoomName : <${currentRoomName}>`
       );
+      let max = new Map();
+
       setRoomInfo(() => result);
       setCurrentRoomName(() => result.roomname);
-
       setMessages(() => result.messages);
       setIsDM(() => false);
       setRoomState(() => (result?.isPrivate ? "Private" : "Public"));
     }
+
     function sendDMRoomInfo(target: any, messages: any) {
       console.log(
         `in useEffect sendDMRoomInfo  

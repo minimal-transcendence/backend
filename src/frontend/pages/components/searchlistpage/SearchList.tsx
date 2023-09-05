@@ -17,6 +17,8 @@ export default function SearchList({
   blocklist,
   currentRoomName,
   setCurrentRoomName,
+  lastMessageList,
+  setLastMessageList,
 }: {
   results: any;
   query: any;
@@ -29,6 +31,8 @@ export default function SearchList({
   blocklist: any;
   currentRoomName: string;
   setCurrentRoomName: any;
+  lastMessageList: any;
+  setLastMessageList: any;
 }) {
   const socket = useContext(SocketContext).chatSocket;
   console.log("in searchList ", results);
@@ -41,13 +45,107 @@ export default function SearchList({
       alert(`requestPassword이벤트가 왔어요zx. ${roomname} ${isOpenModal}`);
       setIsOpenModal(true);
     }
-    function sendRoomList(result: any) {
+    function sendRoomList(newResults: any) {
       console.log(
-        `in useEffect sendRoomList <${JSON.stringify(result, null, 2)}>
+        `in useEffect sendRoomList <${JSON.stringify(newResults, null, 2)}>
         currentRoomName <${currentRoomName}>`
       );
 
-      setTempSearchList(() => result);
+      let max = lastMessageList;
+      newResults.map((result: any) => {
+        let chkNew;
+        if (!max.get(result.roomname)) {
+          console.log(`result.roomname <${result.roomname}>
+          max.get(result.roomname) <${max.get(result.roomname)}>`);
+          max.set(result.roomname, {
+            lastMessage: result?.lastMessage,
+            messageNew: true,
+          });
+          console.log(
+            `after get,set, map <${JSON.stringify(
+              max.get(result.roomname),
+              null,
+              2
+            )}>`
+          );
+          result.messageNew = true;
+        }
+        if (currentRoomName === result.roomname) {
+          console.log(
+            `curRoom === result.roomname currentRoomname <${currentRoomName}> result.roomname <${result.roomname}>`
+          );
+          result.messageNew = false;
+          max.set(result.roomname, {
+            lastMessage: result.lastMessage,
+            messageNew: false,
+          });
+          return result;
+        } else {
+          if (
+            max.get(result.roomname)?.lastMessage === result?.lastMessage &&
+            result.messageNew === false
+          ) {
+            console.log(
+              `when same,,??? 
+              smaechk <${
+                max.get(result.roomname)?.lastMessage === result?.lastMessage
+              }>
+              result.roomname <${result.roomname}>
+              max[result.roomname] <${JSON.stringify(
+                max.get(result.roomname),
+                null,
+                2
+              )}>
+              max[result.roomname]?.lastMessage  <${
+                max.get(result.roomname)?.lastMessage
+              }> result?.lastMessage <${result?.lastMessage}>`
+            );
+            result.messageNew = false;
+            max.set(result.roomname, {
+              lastMessage: result.lastMessage,
+              messageNew: false,
+            });
+            return result;
+          } else if (
+            max.get(result.roomname)?.lastMessage !== result?.lastMessage
+          ) {
+            console.log(
+              `not smae, 
+              chk <${
+                max.get(result.roomname)?.lastMessage !== result?.lastMessage
+              }>
+              result.roomname <${result.roomname}>
+              max[result.roomname] <${JSON.stringify(
+                max.get(result.roomname),
+                null,
+                2
+              )}>
+              max[result.roomname]?.lastMessage  <${
+                max.get(result.roomname)?.lastMessage
+              }> result?.lastMessage <${result?.lastMessage}>`
+            );
+            result.messageNew = true;
+            max.set(result.roomname, {
+              lastMessage: result.lastMessage,
+              messageNew: true,
+            });
+            return result;
+          }
+        }
+      });
+      max.forEach((value: any, key: any) => {
+        console.log(
+          `value <${JSON.stringify(value, null, 2)}>  key <${JSON.stringify(
+            key,
+            null,
+            2
+          )}>`
+        );
+      });
+
+      console.log(`newResults <${JSON.stringify(newResults, null, 2)}>`);
+      setLastMessageList(() => max);
+      setTempSearchList(() => newResults);
     }
     function responseRoomQuery(result: any) {
       console.log(
@@ -65,7 +163,7 @@ export default function SearchList({
       socket.off("sendRoomList", sendRoomList);
       socket.off("requestPassword", requestPassword);
     };
-  }, [socket, isOpenModal, results, currentRoomName]);
+  }, [socket, isOpenModal, results, currentRoomName, lastMessageList]);
 
   return (
     <>
