@@ -66,11 +66,12 @@ export default function App() {
   const [gameLoad, setGameLoad] = useState<boolean>(false);
   // Get Empty Socket Instance
   const [socket, setSocket] = useState<Socket>(
-    io.connect("", { query: { nickname: "" } })
+    io.connect("", { query: { nickname: "" }, autoConnect: false })
   );
   const [gameSocket, setGameSocket] = useState<Socket>(
-    io.connect("", { query: { nickname: "" } })
+    io.connect("", { query: { nickname: "" }, autoConnect: false })
   );
+
   const [changedID, setChangedID] = useState<number>(-2);
   const [changedNickName, setChangedNickName] = useState<string>("");
 
@@ -116,7 +117,6 @@ export default function App() {
   }, [socket]);
 
   useEffect(() => {
-    console.log("Run only mount");
     const getSocket = (namespace: string, jwt: string, nickname: string) => {
       return io.connect(`http://localhost/${namespace}`, {
         query: { nickname: nickname },
@@ -143,6 +143,17 @@ export default function App() {
       setGameSocket(getSocket("game", jwtItem, nicknameItem));
     }
   }, []);
+
+  //TEST
+  // useEffect(() => {
+  //   const interval: any = setInterval(() => {
+  //     const e = Date.now();
+  //     setQuery(e.toString());
+  //   }, 100);
+  //   setTimeout(() => {
+  //     clearInterval(interval);
+  //   }, 100000)
+  // }, [])
 
   useEffect(() => {
     function sendBlocklist(result: any) {
