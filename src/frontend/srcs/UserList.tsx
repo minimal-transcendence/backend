@@ -12,6 +12,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   const [showProfile, setShowProfile] = useState(true);
   const [showDetailProfile, setDetailShowprofile] = useState(false);
   const [showMatchList, setShowMatchList] = useState<boolean[]>([]);
+  const [reloadCheck, setReloadCheck] = useState<boolean>(false);
   const [userNickname, setUserNickname] = useState<string | null>(
     localStorage.getItem("nickname")
   );
@@ -90,6 +91,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     setShowModals([]);
     setShowProfile(true);
     setDetailShowprofile(false);
+    setReloadCheck(false);
 
     let conList:string[] = [];
     let gameList:string[] = [];
@@ -192,6 +194,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   };
 
   function profilePopup(index: number) {
+    setReloadCheck(true);
     let copiedData = [...showModals];
     copiedData[index] = true;
     setShowModals(copiedData);
@@ -305,32 +308,24 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     reloadData();
   }, []);
 
-  async function checkModal(){
-    let copiedModal = [...showModals];
-    for(let i = 0; i < copiedModal.length ; i++)
-    {
-      if (copiedModal[i] == true){
-        return false;
-      }
-    }
-    return true;
-  }
-
   useEffect(() => {
     async function reloadStatus(userId : number, isConnected : boolean){
       console.log("Status Update! " + userId + isConnected);
+      console.log("ReloadStatus: "+ reloadCheck);
       if (isConnected === true){
         let copiedData = [...userData];
         for(let i = 0; i < copiedData.length ; i++)
         {
           if(copiedData[i].id == userId.toString()){
+            console.log("이미 있는 유저");
             copiedData[i].isLogin = 1;
             setData(copiedData);
             return ;
           }
         }
-        if (showDetailProfile == false && await checkModal()){
-          //reloadData();
+        if (!reloadCheck){
+          console.log("reload!");
+          reloadData();
         }
         /*console.log("신규 유저");
         const responseDetail = await axiosApi.get('http://localhost/api/user/' + userId, );
@@ -477,14 +472,14 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     }
     return () => {
       if (socket) {
-        socket.off("updateUserStatus", (userId:number, isConnected:boolean) => reloadStatus(userId, isConnected));
-        socket.off("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
-        socket.off("updateUserAvatar", (userId : number) => reloadAvatar(userId));
-        socket.off('inGame', (userId : any) => reloadGameStatusIn(userId));
-        socket.off('NotInGame', (userId : any) => reloadGameStatusOut(userId));
+        socket.removeAllListeners("updateUserStatus");
+        socket.removeAllListeners("updateUserNick");
+        socket.removeAllListeners("updateUserAvatar");
+        socket.removeAllListeners('inGame');
+        socket.removeAllListeners('NotInGame');
       }
     };
-  }, [socket, userData, showModals, gameSocket, showDetailProfile]);
+  }, [socket, userData, gameSocket, reloadCheck]);
 
   function getDetailProfile(index: number) {
     return (
