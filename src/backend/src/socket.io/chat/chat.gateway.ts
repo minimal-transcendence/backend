@@ -89,8 +89,8 @@ export class ChatGateway
 	}
 
 	@SubscribeMessage('setRoomPass')
-	handleSetRoomPass(client: ChatSocket, payload: RoomDto) {
-		this.chatService.setPassword(
+	async handleSetRoomPass(client: ChatSocket, payload: RoomDto) {
+		await this.chatService.setPassword(
 			this.io, client, payload.roomname, payload.password
 		);
 	}

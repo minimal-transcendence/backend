@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { Message } from './store.message.service';
 
 export class Room {
@@ -27,8 +28,8 @@ export class Room {
 		this.isPrivate = false;
 	}
 
-	isPassword(input : string) : boolean {
-		return (input === this.password);
+	async isPassword(input : string) : Promise<boolean> {
+		return await bcrypt.compare(input, this.password);
 	}
 
 	isOwner(userid : number) : boolean {

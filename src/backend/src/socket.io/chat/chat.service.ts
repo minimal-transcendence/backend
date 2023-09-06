@@ -3,6 +3,7 @@ import { ChatRoomStoreService, Room } from '../store/store.room.service';
 import { ChatUserStoreService, User } from '../store/store.user.service';
 import { ChatMessageStoreService, Message, DM } from '../store/store.message.service';
 import { Namespace, Socket } from 'socket.io';
+import * as bcrypt from 'bcrypt';
 import {
 	currRoomInfo,
 	formedMessage,
@@ -185,7 +186,7 @@ export class ChatService {
 			const pwExist = room.password ? true : false;
 			if (pwExist) {
 				if (password) {
-					if (room.isPassword(password)) {
+					if (await room.isPassword(password)) {
 						if (this.BanCheck(io, client, room))
 							this.userJoinRoomAct(io, client, userId, roomname);
 					}
@@ -203,10 +204,12 @@ export class ChatService {
 	}
 
 	//TODO : Alert message 일관성 있게 정리하기
-	setPassword(io: Namespace, client: ChatSocket, roomname: string, password: string) {
+	async setPassword(io: Namespace, client: ChatSocket, roomname: string, password: string) {
 		const room = this.storeRoom.findRoom(roomname);
 		if (room.isOwner(client.userId)) {
-			room.updatePassword(password);
+			const saltOrRounds = 10;
+			const hashedPassword = await bcrypt.hash(password, saltOrRounds);
+			room.updatePassword(hashedPassword);
 			client.emit("sendAlert", "[ Notice ]", "Password is updated");
 		}
 		else
