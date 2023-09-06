@@ -68,6 +68,7 @@ export default function DirectMessageList({
           />
           <DirectMessageListBody
             tmpList={tmpList}
+            isDM={isDM}
             myNickName={myNickName}
             currentRoomName={currentRoomName}
             directMessageList={directMessageList}

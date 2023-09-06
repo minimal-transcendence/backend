@@ -9,6 +9,7 @@ export default function DirectMessageListBody({
   setDirectMessageMap,
   directMessageList,
   directMessageMap,
+  isDM,
 }: {
   myNickName: string;
   tmpList: any;
@@ -17,6 +18,7 @@ export default function DirectMessageListBody({
   setDirectMessageMap: any;
   directMessageList: any;
   directMessageMap: any;
+  isDM: boolean;
 }) {
   // const socket = useContext(SocketContext).chatSocket;
   if (tmpList?.length === 0 || !tmpList) {
@@ -32,6 +34,7 @@ export default function DirectMessageListBody({
               messageInfo={messageInfo}
               key={i}
               myNickName={myNickName}
+              isDM={isDM}
               currentRoomName={currentRoomName}
               setDirectMessageList={setDirectMessageList}
               setDirectMessageMap={setDirectMessageMap}

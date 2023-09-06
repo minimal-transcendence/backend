@@ -9,6 +9,7 @@ export default function DirectMessageListItemInfo({
   directMessageList,
   directMessageMap,
   currentRoomName,
+  isDM,
 }: {
   messageInfo: any;
   myNickName: string;
@@ -18,6 +19,7 @@ export default function DirectMessageListItemInfo({
   directMessageList: any;
   directMessageMap: any;
   currentRoomName: string;
+  isDM: boolean;
 }) {
   const gameSocket = useContext(SocketContext).gameSocket;
 
@@ -37,7 +39,7 @@ export default function DirectMessageListItemInfo({
     messageInfo?.[1]?.data?.from <${messageInfo?.[1]?.data?.from}> 
     currentRoomName <${currentRoomName}>
     `);
-    if (messageInfo?.[1]?.data?.from === currentRoomName) {
+    if (messageInfo?.[1]?.data?.from === currentRoomName && isDM) {
       console.log("해당 방 입장");
       const tmpList: any = [];
       directMessageList?.map((e: any) => {
