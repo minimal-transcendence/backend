@@ -9,12 +9,6 @@ export default function SearchResult({
   onSelectRoom: any;
   blocklist: any;
 }) {
-  // const socket = useContext(SocketContext);
-  console.log(
-    `blocklist ${blocklist}, el?.lastMessageFrom ${
-      el?.lastMessageFrom
-    } includes ${!blocklist?.includes(el?.lastMessageFrom)}`
-  );
   return (
     <li onClick={() => onSelectRoom(event, el)}>
       <div>
