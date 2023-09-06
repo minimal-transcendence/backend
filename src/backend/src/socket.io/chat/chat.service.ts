@@ -773,7 +773,7 @@ export class ChatService {
 				return (error.message);
 			});
 		sockets.forEach((socket: ChatSocket) => {
-			this.fetchUserToDMRoom(socket, user.nickname);
+			this.fetchUserToDMRoom(io, socket, user.nickname);
 		})
 		//본인도 update
 		const sockets2 = await io.in(`$${user.id}`).fetchSockets()
@@ -794,7 +794,7 @@ export class ChatService {
 			if (isDMRoom(socket.currRoom)) {
 				const targetId = Number(socket.currRoom.substring(1, socket.currRoom.length - 1));
 				const target = this.storeUser.getNicknameById(targetId);
-				this.fetchUserToDMRoom(socket, target);
+				this.fetchUserToDMRoom(io, socket, target);
 			}
 		})
 	}
