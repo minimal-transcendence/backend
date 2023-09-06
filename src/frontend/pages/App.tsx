@@ -47,7 +47,7 @@ export default function App() {
   const [tmpIsLoggedIn, setTmpIsLoggedIn] = useState<boolean>(false);
 
   const [results, setTempSearchList] = useState<TempSearch[]>([]);
-  const [query, setQuery] = useState("");
+
   const [roomUserList, setRoomUserList] = useState<any>(null);
 
   const [roomnameModal, setroomnameModal] = useState<string>("");
@@ -200,7 +200,7 @@ export default function App() {
 
       setRoomUserList(() => result);
       setLeftHeader(() => "joined");
-      setQuery("");
+      // setQuery("");
     }
 
     function sendMessage(roomname: string, data: any) {
@@ -499,7 +499,7 @@ export default function App() {
       {
         <>
           <ModalOverlay isOpenModal={alertModal} />
-          <div>
+          <>
             {alertModal && (
               <ModalAlert
                 alertTitle={alertModalTitle}
@@ -507,9 +507,9 @@ export default function App() {
                 setIsOpenModal={setAlertModal}
               />
             )}
-          </div>
+          </>
           <ModalOverlay isOpenModal={isOpenModal} />
-          <div>
+          <>
             {isOpenModal && (
               <ModalBasic
                 roomname={roomnameModal}
@@ -517,7 +517,7 @@ export default function App() {
                 innerText={"방클릭해서 드갈때 비번입력 ㄱ"}
               />
             )}
-          </div>
+          </>
           {/* seunchoi - TEST */}
           <button disabled={!isGameConnected} onClick={handleGameOnOff}>
             game on/off
@@ -536,8 +536,6 @@ export default function App() {
               ) /*todo - match accept modal*/
             }
             <NavBar
-              query={query}
-              setQuery={setQuery}
               setIsLoading={setIsLoading}
               setTmpLoginnickname={setTmpLoginnickname}
               setLeftHeader={setLeftHeader}
@@ -550,7 +548,6 @@ export default function App() {
                 <>
                   <SearchList
                     results={results}
-                    query={query}
                     setTempSearchList={setTempSearchList}
                     isOpenModal={isOpenModal}
                     setIsOpenModal={setIsOpenModal}
@@ -562,6 +559,8 @@ export default function App() {
                     setCurrentRoomName={setCurrentRoomName}
                     lastMessageList={lastMessageList}
                     setLastMessageList={setLastMessageList}
+                    setError={setError}
+                    setIsLoading={setIsLoading}
                   />
                   <DirectMessageList
                     myNickName={tmpLoginnickname}

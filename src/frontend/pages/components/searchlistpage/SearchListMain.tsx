@@ -5,7 +5,8 @@ import SearchListCreateRoom from "./SearchListCreateRoom";
 import SearchSelect from "./SearchSelect";
 import SearchResult from "./SearchResult";
 import ErrorMessage from "./ErrorMessage";
-const NO_SEARCH_RESULT_ERROR = "There is no room! : ";
+const NO_SEARCH_RESULT_ERROR = "Please Input Query!";
+const YOU_CAN_MAKE_ROOM_ERROR = "You Can Make Room Name With :";
 const pageHeight = 5;
 export default function SearchListHeader({
   results,
@@ -15,6 +16,9 @@ export default function SearchListHeader({
   setroomnameModal,
   blocklist,
   setCurrentRoomName,
+  setError,
+  setIsLoading,
+  setQuery,
 }: {
   results: any;
   query: any;
@@ -23,6 +27,9 @@ export default function SearchListHeader({
   setroomnameModal: any;
   blocklist: any;
   setCurrentRoomName: any;
+  setError: any;
+  setIsLoading: any;
+  setQuery: any;
 }) {
   const socket = useContext(SocketContext).chatSocket;
 
@@ -67,6 +74,7 @@ export default function SearchListHeader({
       } else if (event.target.dataset.name === "joined")
         socket.emit("requestMyRoomList");
     } else console.log("in handleChk other");
+    setQuery(() => "");
   }
 
   let tmpResults;
@@ -80,7 +88,14 @@ export default function SearchListHeader({
   return (
     <>
       <div className="list-rooms-search">
-        <SearchListCreateRoom setroomnameModal={setroomnameModal} />
+        <SearchListCreateRoom
+          setIsLoading={setIsLoading}
+          setLeftHeader={setLeftHeader}
+          setError={setError}
+          query={query}
+          setQuery={setQuery}
+          setroomnameModal={setroomnameModal}
+        />
       </div>
       <div className="selection-list" onClick={() => handleChk(event)}>
         <SearchSelect
@@ -106,7 +121,11 @@ export default function SearchListHeader({
       </div>
       <ul className="list list-rooms">
         {results?.length === 0 || !results ? (
-          <ErrorMessage message={NO_SEARCH_RESULT_ERROR + query} />
+          <ErrorMessage
+            message1={NO_SEARCH_RESULT_ERROR}
+            message2={YOU_CAN_MAKE_ROOM_ERROR}
+            query={query}
+          />
         ) : (
           tmpResults?.map((el: any) => (
             <SearchResult

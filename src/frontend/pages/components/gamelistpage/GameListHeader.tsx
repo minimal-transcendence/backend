@@ -15,7 +15,7 @@ export default function GameListHeader({
 }) {
   return (
     <div className="gamelist-header">
-      <h4>{myNickName} 님의 Game-List</h4>
+      <h4>Inception</h4>
 
       <button
         onClick={() => setPage(() => page - 1)}

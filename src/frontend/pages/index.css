@@ -46,27 +46,28 @@ body {
   font-family: "Noto Sans KR", sans-serif;
   color: var(--color-text);
   background-color: var(--color-background-900);
-  padding: 1.4rem;
+  padding: 0 1.4rem;
   height: 100%;
 }
 
+.wrp {
+  width: 15rem;
+}
 .nav-bar {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  align-items: center;
+  display: flex;
   justify-content: center;
-  height: 2.2rem;
-  padding: 0 1.2rem 3.5rem;
+  /* padding: 0 1.2rem 1.5rem; */
+  padding-bottom: 1rem;
   background-color: var(--color-primary);
   border-bottom: 1px solid var(--color-border);
 }
 .nav-bar-menu {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   align-items: center;
 }
 .nav-bar-menu-l {
-  width: 25rem;
+  width: 15rem;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   align-items: center;
@@ -109,7 +110,7 @@ body {
 }
 .chat-main {
   width: 50rem;
-  max-width: 62rem;
+  min-width: 20rem;
   border-right: 1px solid var(--color-border);
   background-color: var(--color-background-500);
   padding: 2rem 0rem 0rem;
@@ -347,15 +348,29 @@ body {
 .error {
   text-align: center;
   font-size: 1rem;
-  padding: 4.8rem;
+  padding: 3rem 4rem 1rem 2.5rem;
   color: var(--color-text-light);
 }
-
+.error-alert {
+  font-size: 5rem;
+}
+.error-make {
+  font-size: 5rem;
+}
+.error-query {
+  font-size: 1.2rem;
+  font-weight: 1000;
+}
+.error-message {
+  margin-bottom: 4rem;
+}
 .logo {
   display: flex;
   justify-content: center;
   align-content: center;
   gap: 0.8rem;
+  width: 50rem;
+  min-width: 20rem;
 }
 
 .logo h1 {
@@ -364,18 +379,10 @@ body {
   color: var(--color-text);
 }
 
-.search {
-  justify-self: center;
-  border: none;
-  padding: 0.6rem 1.6rem;
-  font-size: 1rem;
-  border-radius: 0.7rem;
-  width: 40rem;
-  transition: all 0.3s;
-  color: var(--color-text);
-  background-color: var(--color-holder);
+.gameAccept-div {
+  width: 15rem;
+  min-width: 15rem;
 }
-
 .search::placeholder {
   color: var(--color-text-very-light);
   font-size: 1rem;
@@ -386,7 +393,17 @@ body {
   outline: none;
   transform: translateY(-2px);
 }
-
+.search {
+  justify-self: center;
+  border: none;
+  padding: 0.6rem 1.6rem;
+  font-size: 1rem;
+  border-radius: 0.7rem;
+  width: 10rem;
+  transition: all 0.3s;
+  color: var(--color-text);
+  background-color: var(--color-holder);
+}
 .num-results {
   font-size: 1rem;
 }
@@ -661,8 +678,8 @@ body {
 }
 
 .selection-list span.selected {
-  font-weight: 500;
-  color: var(--color-text-dark);
+  font-weight: 800;
+  color: var(--color-text-very-light);
 }
 
 .summary {

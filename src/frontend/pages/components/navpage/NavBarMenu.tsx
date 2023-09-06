@@ -183,25 +183,30 @@ export default function Menu({
             />
           </p>
         </div>
-      </div>
-      <ModalOverlay isOpenModal={myProfileModal} />
-      <div>
-        {myProfileModal && (
+        <div>
           <>
-            <MyProfile
-              setIsOpenModal={setMyProfileModal}
-              setTmpLoginnickname={setTmpLoginnickname}
-            />
+            <ModalOverlay isOpenModal={myProfileModal} />
+            {myProfileModal && (
+              <>
+                <MyProfile
+                  setIsOpenModal={setMyProfileModal}
+                  setTmpLoginnickname={setTmpLoginnickname}
+                />
+              </>
+            )}
           </>
-        )}
-      </div>
-      <ModalOverlay isOpenModal={userListModal} />
-      <div>
-        {userListModal && (
+        </div>
+
+        <div>
           <>
-            <UserList setIsOpenModal={setUserListModal} />
+            <ModalOverlay isOpenModal={userListModal} />
+            {userListModal && (
+              <>
+                <UserList setIsOpenModal={setUserListModal} />
+              </>
+            )}
           </>
-        )}
+        </div>
       </div>
     </>
   );
