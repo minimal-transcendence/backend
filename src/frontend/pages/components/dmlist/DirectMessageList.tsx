@@ -5,19 +5,24 @@ import DirectMessageListBody from "./DirectMessageListBody";
 const pageHeight = 4;
 export default function DirectMessageList({
   myNickName,
+  currentRoomName,
+  directMessageList,
+  setDirectMessageList,
   directMessageMap,
   setDirectMessageMap,
   isDM,
   setIsDM,
 }: {
   myNickName: string;
+  currentRoomName: string;
+  directMessageList: any;
+  setDirectMessageList: any;
   directMessageMap: any;
   setDirectMessageMap: any;
   isDM: boolean;
   setIsDM: any;
 }) {
   const socket = useContext(SocketContext).chatSocket;
-  const [directMessageList, setDirectMessageList] = useState<any>([]);
 
   const [page, setPage] = useState<number>(1);
   const [leftArrow, setLeftArrow] = useState<boolean>(false);
@@ -31,27 +36,6 @@ export default function DirectMessageList({
       setRightArrow(() => false);
     if (page === 1) setLeftArrow(() => false);
   }, [directMessageList, page]);
-
-  useEffect(() => {
-    setDirectMessageList(() => [...directMessageMap]);
-  }, [directMessageMap]);
-  console.log(
-    `!!!!!!!!!!! directMessageList <${JSON.stringify(
-      directMessageList,
-      null,
-      2
-    )}>`
-  );
-
-  directMessageMap?.forEach((value: any, key: any) => {
-    console.log(
-      `In directMessageMapLSIT   value <${JSON.stringify(
-        value,
-        null,
-        2
-      )}>  key <${JSON.stringify(key, null, 2)}>`
-    );
-  });
 
   if (!directMessageList) return;
   else {
@@ -82,7 +66,15 @@ export default function DirectMessageList({
             rightArrow={rightArrow}
             myNickName={myNickName}
           />
-          <DirectMessageListBody tmpList={tmpList} myNickName={myNickName} />
+          <DirectMessageListBody
+            tmpList={tmpList}
+            myNickName={myNickName}
+            currentRoomName={currentRoomName}
+            directMessageList={directMessageList}
+            directMessageMap={directMessageMap}
+            setDirectMessageList={setDirectMessageList}
+            setDirectMessageMap={setDirectMessageMap}
+          />
         </div>
       </>
     );

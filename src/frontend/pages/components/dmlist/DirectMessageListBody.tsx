@@ -4,9 +4,19 @@ import { useContext } from "react";
 export default function DirectMessageListBody({
   myNickName,
   tmpList,
+  currentRoomName,
+  setDirectMessageList,
+  setDirectMessageMap,
+  directMessageList,
+  directMessageMap,
 }: {
   myNickName: string;
   tmpList: any;
+  currentRoomName: string;
+  setDirectMessageList: any;
+  setDirectMessageMap: any;
+  directMessageList: any;
+  directMessageMap: any;
 }) {
   // const socket = useContext(SocketContext).chatSocket;
   if (tmpList?.length === 0 || !tmpList) {
@@ -17,11 +27,16 @@ export default function DirectMessageListBody({
     return (
       <div className="gamelist-body">
         <ul className="gamelist-lists">
-          {tmpList.map((game: any, i: number) => (
+          {tmpList.map((messageInfo: any, i: number) => (
             <DirectMessageListItemInfo
-              game={game}
+              messageInfo={messageInfo}
               key={i}
               myNickName={myNickName}
+              currentRoomName={currentRoomName}
+              setDirectMessageList={setDirectMessageList}
+              setDirectMessageMap={setDirectMessageMap}
+              directMessageList={directMessageList}
+              directMessageMap={directMessageMap}
             />
           ))}
         </ul>

@@ -77,7 +77,7 @@ export default function App() {
 
   const [lastMessageList, setLastMessageList] = useState<any>(new Map());
   const [directMessageMap, setDirectMessageMap] = useState<any>(new Map());
-
+  const [directMessageList, setDirectMessageList] = useState<any>([]);
   useEffect(() => {
     function reloadNick(userId: number, newNick: string) {
       console.log("in useEffect ChatRoom nicknameupdate " + userId + newNick);
@@ -223,10 +223,11 @@ export default function App() {
 
       let max = directMessageMap;
 
-      max.set(data?.from, {
-        data,
-        messageNew: false,
-      });
+      if (data?.from !== tmpLoginnickname)
+        max.set(data?.from, {
+          data,
+          messageNew: false,
+        });
 
       max.forEach((value: any, key: any) => {
         console.log(
@@ -238,6 +239,23 @@ export default function App() {
         );
       });
 
+      console.log(
+        `!!!!!!!!!!! directMessageList <${JSON.stringify(
+          directMessageList,
+          null,
+          2
+        )}>`
+      );
+      directMessageMap?.forEach((value: any, key: any) => {
+        console.log(
+          `In directMessageMapLSIT   value <${JSON.stringify(
+            value,
+            null,
+            2
+          )}>  key <${JSON.stringify(key, null, 2)}>`
+        );
+      });
+      setDirectMessageList(() => [...directMessageMap]);
       setDirectMessageMap(() => max);
 
       if (
@@ -307,7 +325,16 @@ export default function App() {
         socket.off("sendDM", sendDM);
       }
     };
-  }, [currentRoomName, results, messages, socket, blocklist, isDM]);
+  }, [
+    currentRoomName,
+    results,
+    messages,
+    socket,
+    blocklist,
+    isDM,
+    directMessageMap,
+    directMessageList,
+  ]);
 
   // seunchoi
   const handleGameOnOff = () => {
@@ -464,10 +491,13 @@ export default function App() {
                   />
                   <DirectMessageList
                     myNickName={tmpLoginnickname}
+                    directMessageList={directMessageList}
+                    setDirectMessageList={setDirectMessageList}
                     directMessageMap={directMessageMap}
                     setDirectMessageMap={setDirectMessageMap}
                     isDM={isDM}
                     setIsDM={setIsDM}
+                    currentRoomName={currentRoomName}
                   />
                 </>
               }
