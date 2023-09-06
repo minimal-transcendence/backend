@@ -271,11 +271,10 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   async function follow(index: number) {
     const apiUrl = "http://localhost/api/user/" + userId + "/friend";
     const dataToUpdate = {
-      id: userId,
+      id: Number(userId),
       isAdd: true,
-      friend: userData[index].id,
+      friend: Number(userData[index].id),
     };
-
     await axiosApi
       .patch(apiUrl, JSON.stringify(dataToUpdate), {
         headers: {
@@ -302,9 +301,9 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   async function unFollow(index: number) {
     const apiUrl = "http://localhost/api/user/" + userId + "/friend";
     const dataToUpdate = {
-      id: userId,
+      id: Number(userId),
       isAdd: false,
-      friend: userData[index].id,
+      friend: Number(userData[index].id),
     };
 
     await axiosApi
