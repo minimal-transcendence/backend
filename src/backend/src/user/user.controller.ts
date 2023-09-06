@@ -6,6 +6,7 @@ import { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { join } from 'path';
 import { createReadStream } from 'fs';
+import { UpdateFriendDto } from './dto/update-friend.dto';
 
 @Controller('user')
 export class UserController {
@@ -73,10 +74,7 @@ export class UserController {
 	updateUserFriends(
 		@Req() req : any,
 		@Param('id', ParseIntPipe) id : number,
-		@Body() data : {
-			friend: number ;
-			isAdd : boolean ;
-		}
+		@Body() data : UpdateFriendDto
 		) : Promise<object> {
 			if (req.user.id != id)
 				throw new HttpException("Unauthorized action", HttpStatus.BAD_REQUEST);
@@ -91,10 +89,9 @@ export class UserController {
 			return this.userService.getUserMatchHistoryById(id);
 	}
 
-	//return await / just return?
 	// seunchoi: no guard here
 	@Get(':id/photo')
-	async streamUserImage(@Param('id') id : number) {
+	async streamUserImage(@Param('id', ParseIntPipe) id : number) {
 		return await this.userService.getUserImageById(id)
 			.catch((error) => {
 				throw new HttpException(error.message, HttpStatus.NOT_FOUND);
