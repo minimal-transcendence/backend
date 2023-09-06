@@ -122,22 +122,24 @@ export default function App() {
     };
   }, [socket]);
 
-  useEffect(()=>{
-    async function checkLogout(userId:number, isConnected:boolean){
-      if (isConnected == false && userId == Number(tmpLoginID)){
+  useEffect(() => {
+    async function checkLogout(userId: number, isConnected: boolean) {
+      if (isConnected == false && userId == Number(tmpLoginID)) {
         alert("로그인 정보가 만료되었습니다");
-        setTimeout(()=>router.push("/"), 1000)
+        setTimeout(() => router.push("/"), 1000);
       }
     }
-    if(socket){
-      socket.on("updateUserStatus", (userId : number, isConnected : boolean) => checkLogout(userId, isConnected));
+    if (socket) {
+      socket.on("updateUserStatus", (userId: number, isConnected: boolean) =>
+        checkLogout(userId, isConnected)
+      );
     }
-    return() => {
-      if(socket){
+    return () => {
+      if (socket) {
         socket.removeAllListeners("updateUserStatus");
       }
-    }
-  }, [socket, tmpLoginID])
+    };
+  }, [socket, tmpLoginID]);
 
   useEffect(() => {
     console.log("Run only mount");
@@ -279,7 +281,7 @@ export default function App() {
       let max = directMessageMap;
 
       if (data?.from !== tmpLoginnickname && !blocklist.includes(data?.fromId))
-        max.set(data?.from, {
+        max.set(data?.fromId, {
           data,
           messageNew: false,
         });
@@ -347,6 +349,22 @@ export default function App() {
       setAlertModalBody(() => alertBody);
       setAlertModal(() => true);
     }
+
+    function userCheckedDM({ fromId }: { fromId: number }) {
+      const tmpList: any = [];
+      directMessageList.map((e: any) => {
+        if (e?.[1].data.fromId !== fromId) tmpList.push(e);
+      });
+      let tmpMap = directMessageMap;
+      tmpMap.delete(fromId);
+
+      console.log(`in userCheckedDM after fromId <${fromId}>
+      tmpList <${JSON.stringify(tmpList, null, 2)}>
+      tmpMap <${JSON.stringify(tmpMap, null, 2)}>
+      `);
+      setDirectMessageList(() => tmpList);
+      setDirectMessageMap(() => tmpMap);
+    }
     if (socket) {
       //test seunchoi
       socket.on("inGame", (userId) => {
@@ -356,6 +374,7 @@ export default function App() {
         console.log(`${userId} is not in game`);
       });
 
+      socket.on("userCheckedDM", userCheckedDM);
       socket.on("sendAlert", sendAlert);
       socket.on("sendBlocklist", sendBlocklist);
       socket.on("updateBlocklist", updateBlocklist);
@@ -369,6 +388,7 @@ export default function App() {
 
     return () => {
       if (socket) {
+        socket.off("userCheckedDM", userCheckedDM);
         socket.off("sendAlert", sendAlert);
         socket.off("sendBlocklist", sendBlocklist);
         socket.off("updateBlocklist", updateBlocklist);

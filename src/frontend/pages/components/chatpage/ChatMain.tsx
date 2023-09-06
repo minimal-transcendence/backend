@@ -60,16 +60,21 @@ const ChatMain = ({
       setRoomState(() => (result?.isPrivate ? "Private" : "Public"));
     }
 
-    function sendDMRoomInfo(target: any, messages: any) {
+    function sendDMRoomInfo(target: any, targetId: number, messages: any) {
       console.log(
         `in useEffect sendDMRoomInfo  
-        target <${JSON.stringify(target, null, 2)}> messages <${JSON.stringify(
+        target <${JSON.stringify(
+          target,
+          null,
+          2
+        )}> targetId <${targetId}> messages <${JSON.stringify(
           messages,
           null,
           2
         )}> currentRoomName : <${currentRoomName}>`
       );
 
+      socket.emit("checkDMAlert", { fromId: targetId });
       setCurrentRoomName(() => target);
       setMessages(() => messages);
       setIsDM(() => true);

@@ -40,10 +40,11 @@ export default function DirectMessageListItemInfo({
     `);
     const tmpList: any = [];
     directMessageList.map((e: any) => {
-      if (e?.[1].data.from !== messageInfo?.[1]?.data?.from) tmpList.push(e);
+      if (e?.[1].data.fromId !== messageInfo?.[1]?.data?.fromId)
+        tmpList.push(e);
     });
     let tmpMap = directMessageMap;
-    tmpMap.delete(messageInfo?.[1]?.data?.from);
+    tmpMap.delete(messageInfo?.[1]?.data?.fromId);
     console.log(`in handleAccept after from <${messageInfo?.[1]?.data?.from}>
     tmpList <${JSON.stringify(tmpList, null, 2)}>
     tmpMap <${JSON.stringify(tmpMap, null, 2)}>
