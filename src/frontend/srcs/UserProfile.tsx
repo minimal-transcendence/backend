@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
+import { useRouter } from "next/router";
 import axiosApi from "./AxiosInterceptor";
 import styles_profile from "../styles/UserProfileStyle.module.css";
 import { SocketContext, SocketContent } from "@/context/socket";;
@@ -20,6 +21,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     setIsOpenModal(false);
   };
   const modalRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     // 이벤트 핸들러 함수
@@ -78,6 +80,28 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       return 0;
     }
   }
+
+  function logout(message:string){
+    localStorage.setItem("isLoggedIn", "false");
+          localStorage.removeItem("id");
+          localStorage.removeItem("nickname");
+          localStorage.removeItem("is2fa");
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("access_token_exp");
+          const ApiUrl = "http://localhost/api/auth/logout";
+          axiosApi.post(ApiUrl, {}).catch((error:any) => {
+            console.log("logout send fail: ", error); //TODO: error handling check
+          });
+          alert(message);
+          router.push("/");
+  }
+
+  useEffect(() => {
+    const jwtExpItem = localStorage.getItem("access_token_exp");
+		if (!jwtExpItem){
+      logout("로그인 정보가 맞지않습니다 다시 로그인해주세요.");
+		}
+  }, [])
 
   const reloadData = async () => {
     setData([]);
@@ -377,11 +401,11 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     }
     return () => {
       if (socket) {
-        socket.off("updateUserStatus", (userId:number, isConnected:boolean) => reloadStatus(userId, isConnected));
-        socket.off("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
-        socket.off("updateUserAvatar", (userId : number) => reloadAvatar(userId));
-        socket.off('inGame', (userId : any) => reloadGameStatusIn(userId));
-        socket.off('NotInGame', (userId : any) => reloadGameStatusOut(userId));
+        socket.removeAllListeners("updateUserStatus");
+        socket.removeAllListeners("updateUserNick");
+        socket.removeAllListeners("updateUserAvatar");
+        socket.removeAllListeners('inGame');
+        socket.removeAllListeners('NotInGame');
       }
     };
   }, [socket, userData, gameSocket]);
@@ -461,7 +485,13 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
                     >
                       미 접속
                   </button>)}
-                {userData[0].id != userId && userData[0].isGaming == 0 && userData[0].isLogin == 1 && (
+                  {userData[0].id != userId && userData[0].isLogin == 1 && userData[0].isBlocked == 1 &&(
+                    <button
+                      className={styles_profile.disabled}
+                    >
+                      차단 중
+                  </button>)}
+                {userData[0].id != userId && userData[0].isGaming == 0 && userData[0].isLogin == 1 && userData[0].isBlocked == 0 &&(
                   <button
                     className={styles_profile.gameButton}
                     onClick={() => {
@@ -470,7 +500,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
                     >
                     게임 신청
                   </button>)}
-                 {userData[0].id != userId && userData[0].isGaming == 1 && userData[0].isLogin == 1 && (
+                 {userData[0].id != userId && userData[0].isGaming == 1 && userData[0].isLogin == 1 && userData[0].isBlocked == 0 &&(
                     <button
                       className={styles_profile.disabled}
                     >
