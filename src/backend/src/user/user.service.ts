@@ -236,12 +236,14 @@ export class UserService {
 			select: {
 				winner: {
 					select: {
+						id: true,
 						nickname: true,
 						avatar: true
 					}
 				},
 				loser: {
 					select: {
+						id: true,
 						nickname: true,
 						avatar: true
 					}

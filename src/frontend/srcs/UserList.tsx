@@ -12,6 +12,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   const [showProfile, setShowProfile] = useState(true);
   const [showDetailProfile, setDetailShowprofile] = useState(false);
   const [showMatchList, setShowMatchList] = useState<boolean[]>([]);
+  const [reloadCheck, setReloadCheck] = useState<boolean>(false);
   const [userNickname, setUserNickname] = useState<string | null>(
     localStorage.getItem("nickname")
   );
@@ -26,8 +27,10 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
 
   interface userMatchHistory {
     winner: string;
+    winnerId: string;
     winnerAvatar: string;
     loser: string;
+    loserId: string;
     loserAvatar: string;
     time: string;
   }
@@ -88,6 +91,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     setShowModals([]);
     setShowProfile(true);
     setDetailShowprofile(false);
+    setReloadCheck(false);
 
     let conList:string[] = [];
     let gameList:string[] = [];
@@ -98,7 +102,6 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       gameList = [];
       blockList= [];
       for(let i = 0; i < data.length ; i++){
-        console.log("data:", data[i]);
         if (data[i].isConnected === true){
           conList.push((data[i].id).toString());
         }
@@ -168,8 +171,10 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         for (let j = 0; j < matchCount; j++) {
           const newMatchData: userMatchHistory = {
             winner: matchResponse[j].winner.nickname,
+            winnerId: matchResponse[j].winner.id,
             winnerAvatar: `/api/photo/${matchResponse[j].winner.avatar}`,
             loser: matchResponse[j].loser.nickname,
+            loserId: matchResponse[j].loser.id,
             loserAvatar: `/api/photo/${matchResponse[j].loser.avatar}`,
             time: matchResponse[j].createdTime,
           };
@@ -182,12 +187,14 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         newMatchList.push(false);
       }
     }
-    setData(newDataList);
+    const sortedList = newDataList.sort((a, b) => b.score - a.score);
+    setData(sortedList);
     setShowModals(newModalList);
     setShowMatchList(newMatchList);
   };
 
   function profilePopup(index: number) {
+    setReloadCheck(true);
     let copiedData = [...showModals];
     copiedData[index] = true;
     setShowModals(copiedData);
@@ -314,7 +321,9 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             return ;
           }
         }
-        //reloadData();
+        if (!reloadCheck){
+          reloadData();
+        }
         /*console.log("신규 유저");
         const responseDetail = await axiosApi.get('http://localhost/api/user/' + userId, );
         const detailResponse = responseDetail.data;
@@ -341,8 +350,10 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         for(let j = 0 ; j < matchCount ; j++){
           const newMatchData: userMatchHistory = {
             winner: matchResponse[j].winner.nickname,
+            winnerId: matchResponse[j].winner.id,
             winnerAvatar: `/api/photo/${matchResponse[j].winner.avatar}`,
             loser: matchResponse[j].loser.nickname,
+            loserId: matchResponse[j].loser.id,
             loserAvatar: `/api/photo/${matchResponse[j].loser.avatar}`,
             time: matchResponse[j].createdTime,
           };
@@ -372,19 +383,21 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     }
 
     async function reloadNick(userId : number, newNick : string){
-      let copiedData = null;
+      let copiedData = [...userData];
       console.log("Nickname Update! " + userId + newNick);
       for(let i = 0; i < userData.length ; i++)
       {
-        if(userData[i].id == userId.toString()){
-          copiedData = [...userData];
           const matchCount = copiedData[i].matchhistory.length;
           for(let j = 0; j < matchCount; j++){
-            if (copiedData[i].matchhistory[j].winner == copiedData[i].nickname)
+            if (copiedData[i].matchhistory[j].winnerId == userId.toString())
               copiedData[i].matchhistory[j].winner = newNick;
-            else if (copiedData[i].matchhistory[j].loser == copiedData[i].nickname)
+            else if (copiedData[i].matchhistory[j].loserId == userId.toString())
               copiedData[i].matchhistory[j].loser = newNick;
           }
+      }
+      for(let i = 0; i < userData.length ; i++)
+      {
+        if (userData[i].id == userId.toString()){
           copiedData[i].nickname = newNick;
           break;
         }
@@ -396,26 +409,25 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
 
     async function reloadAvatar(userId : number){
       console.log("Avatar Update! " + userId);
-      let copiedData = null;
+      let copiedData = [...userData];
       for(let i = 0; i < userData.length ; i++)
       {
-        if(userData[i].id == userId.toString()){
-          let copiedData = [...userData];
+        if(copiedData[i].id == userId.toString()){
           copiedData[i].userProfileURL = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
+        }
           const matchCount = copiedData[i].matchhistory.length;
           for(let j = 0; j < matchCount; j++){
-            if (copiedData[i].matchhistory[j].winner == copiedData[i].nickname)
+            if (copiedData[i].matchhistory[j].winnerId == userId.toString())
               copiedData[i].matchhistory[j].winnerAvatar = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
-            else if (copiedData[i].matchhistory[j].loser == copiedData[i].nickname)
+            else if (copiedData[i].matchhistory[j].loserId == userId.toString())
               copiedData[i].matchhistory[j].loserAvatar = `/api/user/${userId}/photo?timestamp=${Date.now()}`;
-          }
-          break;
         }
       }
       if (copiedData != null){
         setData(copiedData);
       }
     }
+
     async function reloadGameStatusIn(userId : any){
       console.log(`${userId} is in game!!`);
       let copiedData = null;
@@ -424,7 +436,6 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         if(userData[i].id == userId){
           let copiedData = [...userData];
           copiedData[i].isGaming = 1;
-          console.log(userId + "의 정보를 1로 변경");
           break;
         }
       }
@@ -440,7 +451,6 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         if(userData[i].id == userId){
           let copiedData = [...userData];
           copiedData[i].isGaming = 0;
-          console.log(userId + "의 정보를 0으로 변경");
           break;
         }
       }
@@ -457,14 +467,14 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     }
     return () => {
       if (socket) {
-        socket.off("updateUserStatus", (userId:number, isConnected:boolean) => reloadStatus(userId, isConnected));
-        socket.off("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
-        socket.off("updateUserAvatar", (userId : number) => reloadAvatar(userId));
-        socket.off('inGame', (userId : any) => reloadGameStatusIn(userId));
-        socket.off('NotInGame', (userId : any) => reloadGameStatusOut(userId));
+        socket.removeAllListeners("updateUserStatus");
+        socket.removeAllListeners("updateUserNick");
+        socket.removeAllListeners("updateUserAvatar");
+        socket.removeAllListeners('inGame');
+        socket.removeAllListeners('NotInGame');
       }
     };
-  }, [socket, userData, showModals, gameSocket]);
+  }, [socket, userData, gameSocket, reloadCheck]);
 
   function getDetailProfile(index: number) {
     return (
@@ -530,14 +540,19 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
                   언팔로우{" "}
                   </button>
                 )}
-                {userData[index].id != userId && userData[index].isGaming == 0 && (
+                {userData[index].id != userId && userData[index].isLogin == 0 &&  (
+                <button className={styles_profile.disabled}
+                >
+                    미 접속
+                </button>)}
+                {userData[index].id != userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && (
                 <button className={styles_profile.gameButton}
                 onClick={() => {
                 openMatchList(index);
                 }}>
                     게임 신청
                 </button>)}
-                {userData[index].id != userId && userData[index].isGaming == 1 && (
+                {userData[index].id != userId && userData[index].isGaming == 1 && userData[index].isLogin == 1 &&  (
                 <button className={styles_profile.disabled}
                 >
                     게임 중
@@ -667,21 +682,28 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             팔로우
           </button>
           )}
-          {userData[index].id == userId && userData[index].isGaming == 0 &&(
+          {userData[index].isLogin == 0 && (
+          <button
+            className={styles.disabled}
+          >
+            미 접속
+          </button>
+          )}
+          {userData[index].id == userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && (
           <button
             className={styles.disabled}
           >
             게임 신청
           </button>
           )}
-          {userData[index].id == userId && userData[index].isGaming == 1 &&(
+          {userData[index].id == userId && userData[index].isGaming == 1 && userData[index].isLogin == 1 && (
           <button
             className={styles.disabled}
           >
             게임 중
           </button>
           )}
-          {userData[index].id != userId && userData[index].isGaming == 0 &&(
+          {userData[index].id != userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && (
             <button
               className={styles.normalIn}
               onClick={() => {
@@ -691,7 +713,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
               게임 신청
             </button>
           )}
-          {userData[index].id != userId && userData[index].isGaming == 1 &&(
+          {userData[index].id != userId && userData[index].isGaming == 1 && userData[index].isLogin == 1 && (
             <button
               className={styles.disabled}
               onClick={() => {
