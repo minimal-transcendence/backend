@@ -142,20 +142,8 @@ export default function App() {
       blockListItem = blockListItem.substr(1, blockListItem.length - 2);
       const arr = blockListItem.split(",");
       const numberArray: any = [];
-
-      // Store length of array of string
-      // in variable length
       const length = arr.length;
-
-      // Iterate through array of string using
-      // for loop
-      // push all elements of array of string
-      // in array of numbers by typecasting
-      // them to integers using parseInt function
-      for (var i = 0; i < length; i++)
-        // Instead of parseInt(), Number()
-        // can also be used
-        numberArray.push(parseInt(arr[i]));
+      for (var i = 0; i < length; i++) numberArray.push(parseInt(arr[i]));
 
       console.log(
         `BlockLIST SETTTTTT  ${JSON.stringify(
