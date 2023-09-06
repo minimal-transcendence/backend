@@ -278,9 +278,9 @@ export default function App() {
           data,
           messageNew: false,
         });
-      if (data?.fromId === DMTargetId) {
-        socket.emit("checkDMAlert", { fromId: data?.fromId });
-      }
+      // if (data?.fromId === DMTargetId) {
+      //   socket.emit("userCheckedDM", data?.fromId);
+      // }
       max.forEach((value: any, key: any) => {
         console.log(
           `In SEND DM   value <${JSON.stringify(
@@ -345,7 +345,7 @@ export default function App() {
       setAlertModal(() => true);
     }
 
-    function userCheckedDM({ fromId }: { fromId: number }) {
+    function userCheckedDM(fromId: number) {
       const tmpList: any = [];
       directMessageList.map((e: any) => {
         if (e?.[1].data.fromId !== fromId) tmpList.push(e);
