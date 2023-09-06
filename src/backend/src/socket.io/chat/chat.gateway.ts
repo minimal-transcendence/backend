@@ -31,7 +31,6 @@ export class ChatGateway
 	}
 
 	handleConnection(@ConnectedSocket() client: ChatSocket) {
-		//db 랑 연동할 것인지...?
 		this.logger.log(`Client Connected : ${client.nickname}, ${client.id}`);
 
 		client.onAny((any: any) => {
@@ -122,7 +121,6 @@ export class ChatGateway
 		);
 	}
 
-	//과연...?
 	@SubscribeMessage('kickUser')
 	handleKickUser(client: ChatSocket, payload: RoomEventDto) {
 		this.chatService.kickUser(
@@ -208,9 +206,8 @@ export class ChatGateway
 		this.chatService.userChangeAvatar(this.io, userId);
 	}
 
-	//check handleDisconnect
 	logout(clientId: number) {
-		this.io.in(`$${clientId}`).disconnectSockets(true);
 		this.chatService.updateUserStatus(this.io, clientId, false);
+		this.io.in(`$${clientId}`).disconnectSockets(true);
 	}
 }

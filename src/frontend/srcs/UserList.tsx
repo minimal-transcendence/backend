@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
+import { useRouter } from "next/router";
 import axiosApi from "./AxiosInterceptor";
 import styles from "../styles/UserListStyle.module.css";
 import styles_profile from "../styles/UserProfileStyle.module.css";
@@ -54,6 +55,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     setIsOpenModal(false);
   };
   const modalRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     // 이벤트 핸들러 함수
@@ -77,6 +79,28 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       // document.removeEventListener('touchstart', handler); // 모바일 대응
     };
   });
+
+  function logout(message:string){
+    localStorage.setItem("isLoggedIn", "false");
+          localStorage.removeItem("id");
+          localStorage.removeItem("nickname");
+          localStorage.removeItem("is2fa");
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("access_token_exp");
+          const ApiUrl = "http://localhost/api/auth/logout";
+          axiosApi.post(ApiUrl, {}).catch((error:any) => {
+            console.log("logout send fail: ", error); //TODO: error handling check
+          });
+          alert(message);
+          router.push("/");
+  }
+
+  useEffect(() => {
+    const jwtExpItem = localStorage.getItem("access_token_exp");
+		if (!jwtExpItem){
+      logout("로그인 정보가 맞지않습니다 다시 로그인해주세요.");
+		}
+  }, [])
 
   function checkIsInclude(id: string[], userid: string) {
     if (id.includes(userid.toString())) {
@@ -519,7 +543,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
                 </h2>
               </div>
               <div className={styles_profile.buttons}>
-                {userData[index].isBlocked === 1 &&(
+                {userData[index].id != userId && userData[index].isBlocked == 1 &&(
                   <button
                     className={styles.disabled}
                   >
@@ -527,7 +551,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
                   </button>
                 )}
                 {userData[index].id != userId &&
-                userData[index].isFriend === 0 && userData[index].isBlocked === 0 &&(
+                userData[index].isFriend == 0 && userData[index].isBlocked == 0 &&(
                   <button
                     className={styles_profile.followButton}
                     onClick={() => {
@@ -539,7 +563,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
                   </button>
                 )}
                 {userData[index].id != userId &&
-                userData[index].isFriend === 1 && userData[index].isBlocked === 0 &&(
+                userData[index].isFriend == 1 && userData[index].isBlocked == 0 &&(
                   <button
                   className={styles_profile.followingButton}
                   onClick={() => {
@@ -550,19 +574,24 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
                   언팔로우{" "}
                   </button>
                 )}
-                {userData[index].id != userId && userData[index].isLogin == 0 &&  (
+                {userData[index].id != userId && userData[index].isLogin == 0 &&(
                 <button className={styles_profile.disabled}
                 >
                     미 접속
                 </button>)}
-                {userData[index].id != userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && (
+                {userData[index].id != userId && userData[index].isLogin == 1 &&  userData[index].isBlocked == 1 &&(
+                <button className={styles_profile.disabled}
+                >
+                    차단 중
+                </button>)}
+                {userData[index].id != userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && userData[index].isBlocked == 0 &&(
                 <button className={styles_profile.gameButton}
                 onClick={() => {
                 openMatchList(index);
                 }}>
                     게임 신청
                 </button>)}
-                {userData[index].id != userId && userData[index].isGaming == 1 && userData[index].isLogin == 1 &&  (
+                {userData[index].id != userId && userData[index].isGaming == 1 && userData[index].isLogin == 1 && userData[index].isBlocked == 0 &&(
                 <button className={styles_profile.disabled}
                 >
                     게임 중
@@ -653,10 +682,10 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
           {userData[index].id == userId && (
             <div className={styles.circleMine}></div>
           )}
-          {userData[index].id != userId && userData[index].isLogin === 0 && userData[index].isBlocked === 0 &&(
+          {userData[index].id != userId && userData[index].isLogin === 0 && (
             <div className={styles.circleLogout}></div>
           )}
-          {userData[index].id != userId && userData[index].isLogin === 1 && userData[index].isBlocked === 0 &&(
+          {userData[index].id != userId && userData[index].isLogin === 1 && (
             <div className={styles.circleLogin}></div>
           )}
         </div>
@@ -672,7 +701,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
               팔로우
             </button>
           )}
-          {userData[index].isBlocked === 1 &&(
+          {userData[index].id != userId && userData[index].isBlocked === 1 &&(
             <button
               className={styles.disabled}
             >
@@ -706,21 +735,28 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             미 접속
           </button>
           )}
-          {userData[index].id == userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && (
+          {userData[index].isLogin == 1 && userData[index].isBlocked == 1 &&(
+          <button
+            className={styles.disabled}
+          >
+            차단 중
+          </button>
+          )}
+          {userData[index].id == userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && userData[index].isBlocked == 0 &&(
           <button
             className={styles.disabled}
           >
             게임 신청
           </button>
           )}
-          {userData[index].id == userId && userData[index].isGaming == 1 && userData[index].isLogin == 1 && (
+          {userData[index].id == userId && userData[index].isGaming == 1 && userData[index].isLogin == 1 && userData[index].isBlocked == 0 &&(
           <button
             className={styles.disabled}
           >
             게임 중
           </button>
           )}
-          {userData[index].id != userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && (
+          {userData[index].id != userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && userData[index].isBlocked == 0 &&(
             <button
               className={styles.normalIn}
               onClick={() => {
@@ -730,7 +766,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
               게임 신청
             </button>
           )}
-          {userData[index].id != userId && userData[index].isGaming == 1 && userData[index].isLogin == 1 && (
+          {userData[index].id != userId && userData[index].isGaming == 1 && userData[index].isLogin == 1 && userData[index].isBlocked == 0 &&(
             <button
               className={styles.disabled}
               onClick={() => {
