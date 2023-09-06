@@ -71,7 +71,7 @@ export class ChatGateway
 	@SubscribeMessage('selectDMRoom')
 	handleEnterDMRoom(client: ChatSocket, payload: TargetDto) {
 		this.chatService.fetchUserToDMRoom(
-			client, payload.target
+			this.io, client, payload.target
 		);
 	}
 
@@ -89,8 +89,8 @@ export class ChatGateway
 	}
 
 	@SubscribeMessage('setRoomPass')
-	handleSetRoomPass(client: ChatSocket, payload: RoomDto) {
-		this.chatService.setPassword(
+	async handleSetRoomPass(client: ChatSocket, payload: RoomDto) {
+		await this.chatService.setPassword(
 			this.io, client, payload.roomname, payload.password
 		);
 	}
@@ -210,6 +210,7 @@ export class ChatGateway
 
 	//check handleDisconnect
 	logout(clientId: number) {
-		this.io.in(`$${clientId}`).disconnectSockets(true); //false?
+		this.io.in(`$${clientId}`).disconnectSockets(true);
+		this.chatService.updateUserStatus(this.io, clientId, false);
 	}
 }
