@@ -67,10 +67,10 @@ export default function App() {
   const [gameLoad, setGameLoad] = useState<boolean>(false);
   // Get Empty Socket Instance
   const [socket, setSocket] = useState<Socket>(
-    io.connect("", { query: { nickname: "" } })
+    io.connect("", { query: { nickname: "" }, autoConnect: false })
   );
   const [gameSocket, setGameSocket] = useState<Socket>(
-    io.connect("", { query: { nickname: "" } })
+    io.connect("", { query: { nickname: "" }, autoConnect: false })
   );
   const [changedID, setChangedID] = useState<number>(-2);
   const [changedNickName, setChangedNickName] = useState<string>("");
