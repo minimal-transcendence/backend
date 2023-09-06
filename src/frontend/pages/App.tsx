@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 import * as io from "socket.io-client";
 import { Socket } from "socket.io-client";
@@ -74,6 +75,8 @@ export default function App() {
   const [changedID, setChangedID] = useState<number>(-2);
   const [changedNickName, setChangedNickName] = useState<string>("");
 
+  const router = useRouter();
+
   // useEffect(() => {
   //   async function refresh() {
   //     try {
@@ -114,6 +117,23 @@ export default function App() {
       }
     };
   }, [socket]);
+
+  useEffect(()=>{
+    async function checkLogout(userId:number, isConnected:boolean){
+      if (isConnected == false && userId == Number(tmpLoginID)){
+        alert("로그인 정보가 만료되었습니다");
+        setTimeout(()=>router.push("/"), 1000)
+      }
+    }
+    if(socket){
+      socket.on("updateUserStatus", (userId : number, isConnected : boolean) => checkLogout(userId, isConnected));
+    }
+    return() => {
+      if(socket){
+        socket.removeAllListeners("updateUserStatus");
+      }
+    }
+  }, [socket, tmpLoginID])
 
   useEffect(() => {
     console.log("Run only mount");

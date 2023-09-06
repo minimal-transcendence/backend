@@ -62,6 +62,21 @@ function MyProfile({
     };
   },[]);
 
+  function logout(message:string){
+    localStorage.setItem("isLoggedIn", "false");
+          localStorage.removeItem("id");
+          localStorage.removeItem("nickname");
+          localStorage.removeItem("is2fa");
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("access_token_exp");
+          const ApiUrl = "http://localhost/api/auth/logout";
+          axiosApi.post(ApiUrl, {}).catch((error:any) => {
+            console.log("logout send fail: ", error); //TODO: error handling check
+          });
+          alert(message);
+          router.push("/");
+  }
+
   async function refreshToken() : Promise<any> {
     console.log("토큰 재발급");
     await axios.get(
@@ -78,18 +93,7 @@ function MyProfile({
               console.log("Axios Error type : ");
               console.log(typeof error);
         if (error.response.status === 401) {
-          localStorage.setItem("isLoggedIn", "false");
-          localStorage.removeItem("id");
-          localStorage.removeItem("nickname");
-          localStorage.removeItem("is2fa");
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("access_token_exp");
-          const ApiUrl = "http://localhost/api/auth/logout";
-          axiosApi.post(ApiUrl, {}).catch((error:any) => {
-            console.log("logout send fail: ", error); //TODO: error handling check
-          });
-          alert("로그인 정보가 맞지않습니다 다시 로그인해주세요.");
-          router.push("/");
+          logout("로그인 정보가 맞지않습니다 다시 로그인해주세요.")
         }
       })
   }
@@ -103,6 +107,9 @@ function MyProfile({
       else
         setQRUrl("http://localhost/api/2fa/qrcode");
 		}
+    else{
+      logout("로그인 정보가 맞지않습니다 다시 로그인해주세요.");
+    }
   }, [])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
