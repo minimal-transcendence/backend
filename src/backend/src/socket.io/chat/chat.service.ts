@@ -25,7 +25,6 @@ export class ChatService {
 	}
 
 	updateUserStatus(io: Namespace, userId: number, isConnected: boolean) {
-		console.log("userId : " + userId + " isConnected : " + isConnected);
 		io.emit("updateUserStatus", userId, isConnected);
 	}
 
