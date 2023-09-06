@@ -6,7 +6,16 @@ import UserProfile from "../srcs/UserProfile";
 import App from "./App";
 // import axiosApi from "@/srcs/AxiosInterceptor";
 // import { refreshToken, setItems } from "@/srcs/SocketRefresh";
-import { socketRefreshToken } from "@/srcs/SocketRefresh";
+// import { socketRefreshToken } from "@/srcs/SocketRefresh";
+import jwt_decode from "jwt-decode";
+import { JwtPayload } from "./callback";
+
+// type JwtPayload = {
+//     id: number;
+//     email: string;
+//     iat: number;
+//     exp: number;
+// }
 
 function Home() {
   const router = useRouter();
@@ -20,13 +29,46 @@ function Home() {
 
   // 이미 로그인되었는지 확인
   useEffect(() => {
+    //seunchoi - refresh
+    const socketRefreshToken = async (jwtExp: number) => {
+      if (jwtExp * 1000 - Date.now() < 2000) {
+        await fetch('api/auth/refresh')
+        .then((response) => {
+          if (!response.ok){
+            throw new Error(`invalid refresh token ${response.status.toString()}`);
+          }
+          return (response.json())
+        })
+        .then((json) => {
+          localStorage.setItem("access_token", json.access_token);
+          const jwtDecode = jwt_decode<JwtPayload>(json.access_token);
+          localStorage.setItem("access_token_exp", jwtDecode.exp.toString());
+          console.log("Response from refresh", json);
+          setValidToken(true); // success
+        })
+        .catch((error) => {
+          console.log(error);
+          localStorage.setItem("isLoggedIn", "false");
+          localStorage.removeItem("id");
+          localStorage.removeItem("nickname");
+          localStorage.removeItem("is2fa");
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("avatar");
+          router.push("/");
+        })
+      } else {
+        console.log("Doesn't need to refresh");
+        setValidToken(true); // success
+      }
+    }
+
     // setItems(setJWT, setJwtExp);
     //TODO : 만약 setItem에서 실패하면 storedIsLoggedIn은 false로 set해야하지는 않는지...?
     const storedIsLoggedIn = localStorage.getItem("isLoggedIn");
     const jwtExp = localStorage.getItem("access_token_exp");
 
     if (jwtExp) {
-      socketRefreshToken(setValidToken, Number(jwtExp)); // async/await
+      socketRefreshToken(Number(jwtExp)); // async/await
     }
 
 
