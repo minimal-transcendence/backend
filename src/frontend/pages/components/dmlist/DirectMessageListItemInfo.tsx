@@ -98,9 +98,10 @@ export default function DirectMessageListItemInfo({
           </div>
 
           <div className="dmlist-button-div" data-name="x">
-            <div className="dmlist-button-x" data-name="x">
-              X
-            </div>
+            <span className="dmlist-button-x" data-name="x">
+              {" "}
+              X{" "}
+            </span>
           </div>
         </li>
       </>

@@ -353,7 +353,11 @@ export default function App() {
       let tmpMap = directMessageMap;
       tmpMap.delete(fromId);
 
-      console.log(`in userCheckedDM after fromId <${fromId}>
+      console.log(`in userCheckedDM after fromId <${JSON.stringify(
+        fromId,
+        null,
+        2
+      )}>
       tmpList <${JSON.stringify(tmpList, null, 2)}>
       tmpMap <${JSON.stringify(tmpMap, null, 2)}>
       `);
