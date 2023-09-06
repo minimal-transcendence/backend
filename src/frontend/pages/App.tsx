@@ -136,12 +136,22 @@ export default function App() {
     }
     const jwtItem = localStorage.getItem("access_token");
 
+    let chatConnection: Socket;
+    let gameConnection: Socket;
+
     // Run whenever jwt state updated
     if (nicknameItem && jwtItem) {
       console.log("Try Web Socket Connection");
-      setSocket(getSocket("chat", jwtItem, nicknameItem));
-      setGameSocket(getSocket("game", jwtItem, nicknameItem));
+      chatConnection = getSocket("chat", jwtItem, nicknameItem)
+      gameConnection = getSocket("game", jwtItem, nicknameItem)
+      setSocket(chatConnection);
+      setGameSocket(gameConnection);
     }
+
+    return (() => {
+      chatConnection.disconnect();
+      gameConnection.disconnect();
+    })
   }, []);
 
   //TEST
