@@ -211,5 +211,6 @@ export class ChatGateway
 	//check handleDisconnect
 	logout(clientId: number) {
 		this.io.in(`$${clientId}`).disconnectSockets(true);
+		this.chatService.updateUserStatus(this.io, clientId, false);
 	}
 }
