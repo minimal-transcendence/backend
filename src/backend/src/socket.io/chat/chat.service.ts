@@ -410,41 +410,41 @@ export class ChatService {
 		}
 	}
 
-	async blockUser(io : Namespace, client : ChatSocket, target : string) {
-		if (client.nickname === target){
+	async blockUser(io: Namespace, client: ChatSocket, target: string) {
+		if (client.nickname === target) {
 			// client.emit("sendAlert", "[ Act Error ]", "You can't block yourself");
-			return ;
+			return;
 		}
 		const thisUser = this.storeUser.findUserById(client.userId);
 		const targetId = this.storeUser.getIdByNickname(target);
 		// if (thisUser.blocklist.has(targetId))
 		// 	client.emit("sendAlert", "[ Notice ]", "You've already blocked this user");
 		// else {
-			(thisUser.addUserToBlocklist(targetId));
-			// client.emit("sendAlert", "[ Notice ]", `Successfully block ${target}`);
-			const blocklist = [];
-			thisUser.blocklist.forEach((user) => 
-					blocklist.push(user));
-			// client의 모든 소켓을 찾아서, 그 소켓의 currRoom에 block된 유저가 있는지 찾아서 --> 차선
-			// client.emit("sendBlocklist", blocklist);	//++
-			io.in(`$${client.userId}`).emit("sendBlocklist", blocklist);
-			const sockets = await io.in(`$${targetId}$`).fetchSockets()
-							.then((res) => { return ( res )})
-							.catch((error) => {
-								return (error.message);	//사실 문제있는 코드인데...
-							})
-			sockets.forEach((socket : ChatSocket) => {
-				if (socket.userId === client.userId)
-					this.userJoinRoomAct(io, client, client.userId, 'DEFAULT');
+		(thisUser.addUserToBlocklist(targetId));
+		// client.emit("sendAlert", "[ Notice ]", `Successfully block ${target}`);
+		const blocklist = [];
+		thisUser.blocklist.forEach((user) =>
+			blocklist.push(user));
+		// client의 모든 소켓을 찾아서, 그 소켓의 currRoom에 block된 유저가 있는지 찾아서 --> 차선
+		// client.emit("sendBlocklist", blocklist);	//++
+		io.in(`$${client.userId}`).emit("sendBlocklist", blocklist);
+		const sockets = await io.in(`$${targetId}$`).fetchSockets()
+			.then((res) => { return (res) })
+			.catch((error) => {
+				return (error.message);	//사실 문제있는 코드인데...
 			})
-			//client의 currentRoom 중
+		sockets.forEach((socket: ChatSocket) => {
+			if (socket.userId === client.userId)
+				this.userJoinRoomAct(io, client, client.userId, 'DEFAULT');
+		})
+		//client의 currentRoom 중
 		// }
 	}
 
 	unblockUser(io: Namespace, client: ChatSocket, target: string) {
-		if (client.nickname === target){
+		if (client.nickname === target) {
 			// client.emit("sendAlert", "[ Act Error ]", "You don't need to unblock yourself");
-			return ;
+			return;
 		}
 		const thisUser = this.storeUser.findUserById(client.userId);
 		const targetId = this.storeUser.getIdByNickname(target);
@@ -453,7 +453,7 @@ export class ChatService {
 			// client.emit("sendAlert", "[ Notice ]", `Successfully unblock ${target}`);
 			const blocklist = [];
 			thisUser.blocklist.forEach((user) =>
-			blocklist.push(user));
+				blocklist.push(user));
 			// client.emit("sendBlocklist", blocklist);
 			io.in(`$${client.userId}`).emit("sendBlocklist", blocklist);
 			thisUser.joinlist.forEach((room) => {
@@ -575,7 +575,7 @@ export class ChatService {
 		}
 	}
 
-	fetchUserToDMRoom(io : Namespace, client: ChatSocket, username: string) {
+	fetchUserToDMRoom(io: Namespace, client: ChatSocket, username: string) {
 		const DMs = this.makeDMRoomMessages(client, username);
 		const targetId = this.storeUser.getIdByNickname(username);
 		if (DMs != null) {
@@ -593,9 +593,14 @@ export class ChatService {
 				const DMRoomMembers = this.makeDMRoomUserInfo(client.userId);
 				client.emit("sendRoomMembers", DMRoomMembers);
 			}
-			io.in(`$${client.userId}`).emit("userCheckedDM", { "fromId" : targetId });
+			this.checkedDM(io, client.userId, targetId);
 		}
 	}
+
+	checkedDM(io: Namespace, clientId: number, targetId: number) {
+		io.in(`$${clientId}`).emit("userCheckedDM", { "fromId": targetId });
+	}
+
 
 	makeRoomInfo(blocklist: Set<number>, roomlist: string[] | Set<string>): roomInfo[] {
 		const res = [];
@@ -731,6 +736,7 @@ export class ChatService {
 	// 	})
 	// }
 
+
 	getAllUserInfo(userId: number): userInfo[] {
 		const thisUser = this.storeUser.findUserById(Number(userId));
 		if (!thisUser) {
@@ -752,7 +758,7 @@ export class ChatService {
 		return (res);
 	}
 
-	getUserInfoById(userId : number, targetId: number) : userInfo {
+	getUserInfoById(userId: number, targetId: number): userInfo {
 		const target = this.storeUser.findUserById(Number(targetId));
 		return ({
 			id: Number(targetId),
@@ -763,7 +769,7 @@ export class ChatService {
 		});
 	}
 
-	async triggerWindowUpdate(io : Namespace, user : User) {
+	async triggerWindowUpdate(io: Namespace, user: User) {
 		user.joinlist.forEach((room) => {
 			const currRoomInfo = this.makeCurrRoomInfo(room);
 			const roomMembers = this.makeRoomUserInfo(room);

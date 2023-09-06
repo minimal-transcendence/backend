@@ -271,11 +271,9 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   async function follow(index: number) {
     const apiUrl = "http://localhost/api/user/" + userId + "/friend";
     const dataToUpdate = {
-      id: userId,
       isAdd: true,
-      friend: userData[index].id,
+      friend: Number(userData[index].id),
     };
-
     await axiosApi
       .patch(apiUrl, JSON.stringify(dataToUpdate), {
         headers: {
@@ -302,9 +300,8 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   async function unFollow(index: number) {
     const apiUrl = "http://localhost/api/user/" + userId + "/friend";
     const dataToUpdate = {
-      id: userId,
       isAdd: false,
-      friend: userData[index].id,
+      friend: Number(userData[index].id),
     };
 
     await axiosApi
@@ -810,17 +807,19 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       <>
         {showProfile && (
           <div>
-            {showprofileOption === false && (
-              <button onClick={() => setShowprofileOption(true)}>
-                전체 보기
-              </button>
-            )}
-            {showprofileOption === true && (
-              <button onClick={() => setShowprofileOption(false)}>
-                친구만 보기
-              </button>
-            )}
-            <button onClick={() => reloadData()}>새로 고침</button>
+            <div className={styles.listButtons}>
+              {showprofileOption === false && (
+                <button onClick={() => setShowprofileOption(true)}>
+                  전체 보기
+                </button>
+              )}
+              {showprofileOption === true && (
+                <button onClick={() => setShowprofileOption(false)}>
+                  친구만 보기
+                </button>
+              )}
+              <button onClick={() => reloadData()}>새로 고침</button>
+            </div>
             <div className={styles.profileMainBox}>
               {userData.map((item, index) => (
                 <div key={index} className={styles_profile.fontSet}>
