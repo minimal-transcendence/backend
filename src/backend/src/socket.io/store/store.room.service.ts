@@ -90,15 +90,7 @@ export class Room {
 		this.mutelist.delete(userid);
 	}
 	
-	private clearSets(){
-		this.userlist.clear();
-		this.operators.clear();
-		this.mutelist.clear();
-		this.banlist.clear();
-	}
-
 	clearRoom(){
-		// this.clearSets();	//CHECK : if necessary
 		this.operators = null;
 		this.mutelist = null;
 		this.banlist = null;
