@@ -32,6 +32,7 @@ export default function SearchListCreateRoom({
       socket.emit("selectRoom", { roomname: roomname });
     }
     setroomname("");
+    setQuery(() => "");
     setDisabled(false);
   };
 

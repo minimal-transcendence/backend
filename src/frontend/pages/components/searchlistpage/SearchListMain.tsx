@@ -73,8 +73,8 @@ export default function SearchListHeader({
         socket.emit("requestSearchResultRoomList", { target: query });
       } else if (event.target.dataset.name === "joined")
         socket.emit("requestMyRoomList");
+      setQuery(() => "");
     } else console.log("in handleChk other");
-    setQuery(() => "");
   }
 
   let tmpResults;
