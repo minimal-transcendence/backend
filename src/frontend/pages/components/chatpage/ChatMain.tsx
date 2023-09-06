@@ -9,7 +9,7 @@ const ChatMain = ({
   roomInfo,
   setRoomInfo,
   currentRoomName,
-  setcurrentRoomName,
+  setCurrentRoomName,
   myNickName,
   messages,
   setMessages,
@@ -17,11 +17,13 @@ const ChatMain = ({
   gameLoad,
   isDM,
   setIsDM,
+  lastMessageList,
+  setLastMessageList,
 }: {
   roomInfo: any;
   setRoomInfo: any;
   currentRoomName: string;
-  setcurrentRoomName: any;
+  setCurrentRoomName: any;
   myNickName: string;
   messages: any;
   setMessages: any;
@@ -29,6 +31,8 @@ const ChatMain = ({
   gameLoad: boolean;
   isDM: boolean;
   setIsDM: any;
+  lastMessageList: any;
+  setLastMessageList: any;
 }) => {
   // const [typingStatus, setTypingStatus] = useState("");
 
@@ -48,13 +52,14 @@ const ChatMain = ({
           2
         )}>  currentRoomName : <${currentRoomName}>`
       );
-      setRoomInfo(() => result);
-      setcurrentRoomName(() => result.roomname);
 
+      setRoomInfo(() => result);
+      setCurrentRoomName(() => result.roomname);
       setMessages(() => result.messages);
       setIsDM(() => false);
       setRoomState(() => (result?.isPrivate ? "Private" : "Public"));
     }
+
     function sendDMRoomInfo(target: any, messages: any) {
       console.log(
         `in useEffect sendDMRoomInfo  
@@ -65,7 +70,7 @@ const ChatMain = ({
         )}> currentRoomName : <${currentRoomName}>`
       );
 
-      setcurrentRoomName(() => target);
+      setCurrentRoomName(() => target);
       setMessages(() => messages);
       setIsDM(() => true);
       setDMtarget(() => target);
@@ -80,7 +85,7 @@ const ChatMain = ({
     currentRoomName,
     messages,
     setMessages,
-    setcurrentRoomName,
+    setCurrentRoomName,
     setRoomInfo,
     socket,
   ]);
