@@ -3,6 +3,7 @@ import { ChatRoomStoreService, Room } from '../store/store.room.service';
 import { ChatUserStoreService, User } from '../store/store.user.service';
 import { ChatMessageStoreService, Message, DM } from '../store/store.message.service';
 import { Namespace, Socket } from 'socket.io';
+import * as bcrypt from 'bcrypt';
 import {
 	currRoomInfo,
 	formedMessage,
@@ -28,7 +29,6 @@ export class ChatService {
 		io.emit("updateUserStatus", userId, isConnected);
 	}
 
-	//fetchSockets() returns RemoteSockets{}
 	updateChatScreen(client: Socket, clientId: number, roomname: string) {
 		const user = this.storeUser.findUserById(clientId);
 		const currRoomInfo = this.makeCurrRoomInfo(roomname);
@@ -98,17 +98,6 @@ export class ChatService {
 		return (format);
 	}
 
-	// bindUserRoom et unbindUserRoom
-	// bindUserRoom(user : User, room : Room, roomname : string) {
-	// 	user.joinlist.add(roomname);
-	// 	room.addUserToUserlist(user.id);
-	// }
-
-	// unbindUserRoom(user : User, room : Room, roomname : string) {
-	// 	user.joinlist.delete(roomname);
-	// 	room.deleteUserFromUserlist(user.id);
-	// }
-
 	handleNewConnection(io: Namespace, client: ChatSocket) {
 		const userId = client.userId;
 		client.join(`$${userId}`);
@@ -128,24 +117,18 @@ export class ChatService {
 		this.userJoinRoomAct(io, client, userId, "DEFAULT");
 	}
 
-	//마지막 하나일 때만 모든 방의 접속을 삭제한다
-	//TODO & CHECK : if it works well...?
 	async handleDisconnection(io: Namespace, client: ChatSocket): Promise<void> {
 		const userId = client.userId;
 		const isLastConn = (await io.in(`$${userId}`).fetchSockets()).length === 0;
 		if (isLastConn) {
-			console.log("is Last disconnction");
 			const user = this.storeUser.findUserById(userId);
 			user.connected = false;
 			this.userLeaveRooms(io, client, user.joinlist);
 			this.updateUserStatus(io, userId, false);
 		}
-		else
-			console.log("is not Last disconnction");
 	}
 
 	async userJoinRoomAct(io: Namespace, client: any, clientId: number, roomname: string) {
-
 		const user = this.storeUser.findUserById(clientId);
 		if (!user.joinlist.has(roomname)) {
 			const room = this.storeRoom.findRoom(roomname);
@@ -203,7 +186,7 @@ export class ChatService {
 			const pwExist = room.password ? true : false;
 			if (pwExist) {
 				if (password) {
-					if (room.isPassword(password)) {
+					if (await room.isPassword(password)) {
 						if (this.BanCheck(io, client, room))
 							this.userJoinRoomAct(io, client, userId, roomname);
 					}
@@ -221,17 +204,18 @@ export class ChatService {
 	}
 
 	//TODO : Alert message 일관성 있게 정리하기
-	setPassword(io: Namespace, client: ChatSocket, roomname: string, password: string) {
+	async setPassword(io: Namespace, client: ChatSocket, roomname: string, password: string) {
 		const room = this.storeRoom.findRoom(roomname);
 		if (room.isOwner(client.userId)) {
-			room.updatePassword(password);
+			const saltOrRounds = 10;
+			const hashedPassword = await bcrypt.hash(password, saltOrRounds);
+			room.updatePassword(hashedPassword);
 			client.emit("sendAlert", "[ Notice ]", "Password is updated");
 		}
 		else
 			client.emit("sendAlert", "[ Act Error ]", "Only owner can change password");
 	}
 
-	//CHECK : error check
 	setRoomStatus(io: Namespace, client: ChatSocket, roomname: string, toPrivate: boolean) {
 		const room = this.storeRoom.findRoom(roomname);
 		if (!room)
@@ -268,7 +252,7 @@ export class ChatService {
 		if (room.userlist.has(client.userId)) {
 			if (!room.isMuted(client.userId)) {
 				const msg = this.sendMsgToRoom(io, client.userId, to, body, true);
-				//현재 이 방에는 없지만 joinlist에 이 방을 가지고 있는 모든 socket... 쉽지않구만
+				//process sockets which has this room in their joinlist, but not currently in this room
 				const users = this.storeUser.findAllUser().filter((user) => user.joinlist.has(to));
 				if (users) {
 					users.forEach((user) => {
@@ -301,7 +285,7 @@ export class ChatService {
 				thisUser.joinlist.delete(roomname);
 			}
 			else {
-				//TODO : owner나 operator update 될 때 모든 유저에게 currRoomInfo 보내야하지 않는지...? < 보내자!
+				//CHECK
 				if (room.isOwner(userId)) {
 					const newOwner = room.userlist.values().next().value;
 					room.updateOwner(newOwner);
@@ -321,8 +305,6 @@ export class ChatService {
 				io.to(roomname).except(`$${userId}`).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
 			}
 		}
-		else
-			console.log("you are not joining in this room : try leave");
 	}
 
 	async userLeaveRoomAct(io: Namespace, targetId: number, roomname: string, alertMsg?: string) {
@@ -408,8 +390,8 @@ export class ChatService {
 			this.sendMsgToSocket(client, msg, roomname);
 		}
 		else {
-			if (room.isOperator(targetId))
-				room.deleteUserFromOperators(targetId);	//TODO & CHECK	//혹은 여기서는 그냥 해제 안 하는건?
+			// if (room.isOperator(targetId))
+			// 	room.deleteUserFromOperators(targetId);	//TODO & CHECK	//혹은 여기서는 그냥 해제 안 하는건?
 			room.addUserToMutelist(targetId);
 			let msg = this.makeMessageFormat(0, `${targetName} is now muted`, false);
 			this.sendMsgToSocket(client, msg, roomname);
@@ -428,42 +410,62 @@ export class ChatService {
 		}
 	}
 
-	//TODO : makeBlocklist method & makeUserRender method 필요해....
-	blockUser(io : Namespace, client : ChatSocket, target : string) {
+	async blockUser(io : Namespace, client : ChatSocket, target : string) {
 		if (client.nickname === target){
-			client.emit("sendAlert", "[ Act Error ]", "You can't block yourself");
+			// client.emit("sendAlert", "[ Act Error ]", "You can't block yourself");
 			return ;
 		}
 		const thisUser = this.storeUser.findUserById(client.userId);
 		const targetId = this.storeUser.getIdByNickname(target);
-		if (thisUser.blocklist.has(targetId))
-			client.emit("sendAlert", "[ Notice ]", "You've already blocked this user");
-		else {
+		// if (thisUser.blocklist.has(targetId))
+		// 	client.emit("sendAlert", "[ Notice ]", "You've already blocked this user");
+		// else {
 			(thisUser.addUserToBlocklist(targetId));
-			client.emit("sendAlert", "[ Notice ]", `Successfully block ${target}`);
+			// client.emit("sendAlert", "[ Notice ]", `Successfully block ${target}`);
 			const blocklist = [];
 			thisUser.blocklist.forEach((user) => 
 					blocklist.push(user));
-			client.emit("sendBlocklist", blocklist);
-		}
+			// client의 모든 소켓을 찾아서, 그 소켓의 currRoom에 block된 유저가 있는지 찾아서 --> 차선
+			// client.emit("sendBlocklist", blocklist);	//++
+			io.in(`$${client.userId}`).emit("sendBlocklist", blocklist);
+			const sockets = await io.in(`$${targetId}$`).fetchSockets()
+							.then((res) => { return ( res )})
+							.catch((error) => {
+								return (error.message);	//사실 문제있는 코드인데...
+							})
+			sockets.forEach((socket : ChatSocket) => {
+				if (socket.userId === client.userId)
+					this.userJoinRoomAct(io, client, client.userId, 'DEFAULT');
+			})
+			//client의 currentRoom 중
+		// }
 	}
 
-	//TODO & CHECK unblockUser 할 때도 이렇게 하면 되나...?
-	//이 경우에는 currRoomInfo, members 모두 보내줘야 하는거 아닌지...?
 	unblockUser(io: Namespace, client: ChatSocket, target: string) {
+		if (client.nickname === target){
+			// client.emit("sendAlert", "[ Act Error ]", "You don't need to unblock yourself");
+			return ;
+		}
 		const thisUser = this.storeUser.findUserById(client.userId);
 		const targetId = this.storeUser.getIdByNickname(target);
 		if (thisUser.blocklist.has(targetId)) {
 			(thisUser.deleteUserFromBlockList(targetId));
-			client.emit("sendAlert", "[ Notice ]", `Successfully unblock ${target}`);
+			// client.emit("sendAlert", "[ Notice ]", `Successfully unblock ${target}`);
 			const blocklist = [];
 			thisUser.blocklist.forEach((user) =>
 			blocklist.push(user));
-			client.emit("sendBlocklist", blocklist); //-> 여기서는 userlist 보내야 할 듯 CHECK
+			// client.emit("sendBlocklist", blocklist);
+			io.in(`$${client.userId}`).emit("sendBlocklist", blocklist);
+			thisUser.joinlist.forEach((room) => {
+				const currRoomInfo = this.makeCurrRoomInfo(room);
+				const roomMembers = this.makeRoomUserInfo(room);
+				io.in(room).emit("sendRoomMembers", roomMembers);
+				io.in(room).emit("sendCurrRoomInfo", currRoomInfo);
+			})
 		}
-		else {
-			client.emit("sendAlert", "[ Notice ]", `${target} is not blocked yet`);
-		}
+		// else {
+		// 	client.emit("sendAlert", "[ Notice ]", `${target} is not blocked yet`);
+		// }
 	}
 
 	addOperator(io: Namespace, client: ChatSocket, roomname: string, target: string) {
@@ -519,7 +521,6 @@ export class ChatService {
 	}
 
 
-	//TODO : 여기도 최근 메세지! <- 그러려면? blockList있어야 됨
 	getQueryRoomList(userId: number, query: string | null): roomInfo[] | null {
 		if (query === null || query.length === 0)
 			return ([]);
@@ -531,7 +532,6 @@ export class ChatService {
 	}
 
 
-	//TODO & CHECK : make DMform MessageFrom 함수 있으면 편하지 않을까
 	fetchDM(io: Namespace, client: ChatSocket, target: string, body: string) {
 		const from = client.userId;
 		const to = this.storeUser.getIdByNickname(target);
@@ -547,6 +547,7 @@ export class ChatService {
 		io.to([`$${from}$`, `$${to}$`, `$${to}`]).emit("sendDM", this.storeUser.getNicknameById(to), res);	//if you touch ${} here is going to change the most
 	}
 
+	//need alert?
 	makeDMRoomMessages(client: ChatSocket, to: string): formedMessage[] | null {
 		const toId = this.storeUser.getIdByNickname(to);
 		const fromUser = this.storeUser.findUserById(client.userId);
@@ -556,7 +557,6 @@ export class ChatService {
 			return null;
 		}
 		else if (toUser?.blocklist?.has(client.userId)) {
-			//TODO : discuss : 그래도 이건 기능적으로 볼 수 있어야하는거 아닌가...? 차라리 block된 유저라고 해주면 모를까...
 			client.emit("sendAlert", "[ Act Error ]", `You are blocked by ${fromUser.nickname}`)
 			return null;
 		}
@@ -575,7 +575,7 @@ export class ChatService {
 		}
 	}
 
-	fetchUserToDMRoom(client: ChatSocket, username: string) {
+	fetchUserToDMRoom(io : Namespace, client: ChatSocket, username: string) {
 		const DMs = this.makeDMRoomMessages(client, username);
 		const targetId = this.storeUser.getIdByNickname(username);
 		if (DMs != null) {
@@ -593,6 +593,7 @@ export class ChatService {
 				const DMRoomMembers = this.makeDMRoomUserInfo(client.userId);
 				client.emit("sendRoomMembers", DMRoomMembers);
 			}
+			io.in(`$${client.userId}`).emit("userCheckedDM", { "fromId" : targetId });
 		}
 	}
 
@@ -602,7 +603,7 @@ export class ChatService {
 			const message = this.storeRoom.findRoom(room).getLastMessage(blocklist);
 			res.push({
 				roomname: room,
-				lastMessage: message.body	//body만 보내도록
+				lastMessage: message.body
 			})
 		})
 		return res;
@@ -645,7 +646,6 @@ export class ChatService {
 		return (userInfo);
 	}
 
-	//
 	mappingMessagesUserIdToNickname(messages: Message[]): formedMessage[] {
 		const res = [];
 		messages.forEach((msg) => {
@@ -683,8 +683,6 @@ export class ChatService {
 		return (res)
 	}
 
-	//TODO : sendAlert message 분리하려면 이 함수에서 Socket 받아야함!
-	//채팅방에서 어떤 행동을 할 때 가능한지 모두 체크 : 권한, 유효성, etc.
 	checkActValidity(client: ChatSocket, roomname: string, target: number, act: string): boolean {
 		const actor = client.userId;
 		if (actor === target) {
@@ -725,23 +723,21 @@ export class ChatService {
 		return (true);
 	}
 
-	//TODO : 되는지 확인 // 이거 쓸건지...? -> 문제없으면 빼자
-	async emitEventsToAllSockets(io: Namespace, targetId: number, eventname: string, args1?: any, args2?: any): Promise<void> {
-		const sockets = await io.in(`$${targetId}`).fetchSockets();
-		sockets.forEach((socket) => {
-			socket.emit(eventname, args1, args2);
-		})
-	}
+	// //TODO : 되는지 확인 // 이거 쓸건지...? -> 문제없으면 빼자
+	// async emitEventsToAllSockets(io: Namespace, targetId: number, eventname: string, args1?: any, args2?: any): Promise<void> {
+	// 	const sockets = await io.in(`$${targetId}`).fetchSockets();
+	// 	sockets.forEach((socket) => {
+	// 		socket.emit(eventname, args1, args2);
+	// 	})
+	// }
 
-	//CHECK : 좀 처리가 일관성이 없는게 joinlist도 persistent 하게 할지 말지 안 정해놓고 시작함ㅠ -> 주석 정리시 check
 	getAllUserInfo(userId: number): userInfo[] {
-		// const blocklist = this.storeUser.findUserById(userId).blocklist;
 		const thisUser = this.storeUser.findUserById(Number(userId));
-		const blocklist = thisUser.blocklist;
-		if (!thisUser || !blocklist) {
-			console.log('no data');
+		if (!thisUser) {
+			console.log('no user data');	//error handling
 			return;
 		}
+		const blocklist = thisUser.blocklist;
 		const users = this.storeUser.findAllUser();
 		const res = [];
 		users?.forEach((user) => {
@@ -756,7 +752,7 @@ export class ChatService {
 		return (res);
 	}
 
-	getUserInfoById(userId: number, targetId: string): userInfo {
+	getUserInfoById(userId : number, targetId: number) : userInfo {
 		const target = this.storeUser.findUserById(Number(targetId));
 		return ({
 			id: Number(targetId),
@@ -767,38 +763,29 @@ export class ChatService {
 		});
 	}
 
-	//currRoomInfo, currRoomMembers가 game쪽에서도 필요하다 이럴수가...
-	async userChangeNick(io: Namespace, clientId: number, newNick: string) {
-		const user = this.storeUser.findUserById(clientId);
-		user.nickname = newNick;
-		// console.log("changeNickEvent");
+	async triggerWindowUpdate(io : Namespace, user : User) {
 		user.joinlist.forEach((room) => {
 			const currRoomInfo = this.makeCurrRoomInfo(room);
 			const roomMembers = this.makeRoomUserInfo(room);
-			// console.log(JSON.stringify(currRoomInfo));
-			// console.log(JSON.stringify(roomMembers));
 			io.in(room).emit("sendRoomMembers", roomMembers);
 			io.in(room).emit("sendCurrRoomInfo", currRoomInfo);
-			console.log(`send change nick event ${newNick} in room ${room}`); 0
+			console.log(`send change nick event ${user.nickname} in room ${room}`); 0
 		})
-		//dm방 update 필요...
-		const sockets = await io.in(`$${clientId}$`).fetchSockets()
+		const sockets = await io.in(`$${user.id}$`).fetchSockets()
 			.catch((error) => {
 				return (error.message);
 			});
 		sockets.forEach((socket: ChatSocket) => {
-			// const DMs = this.makeDMRoomMessages(socket, newNick);
-			// socket.emit("sendDMRoomInfo", newNick, DMs);
-			this.fetchUserToDMRoom(socket, newNick);
+			this.fetchUserToDMRoom(io, socket, user.nickname);
 		})
 		//본인도 update
-		const sockets2 = await io.in(`$${clientId}`).fetchSockets()
+		const sockets2 = await io.in(`$${user.id}`).fetchSockets()
 			.catch((error) => {
-				// throw new InternalServerErrorException()
+				// throw new InternalServerErrorException()	//웨.. 안 돼 흑흑
 				return (error.message);
 			});
 		sockets2.forEach((socket: ChatSocket) => {
-			socket.nickname = newNick;
+			socket.nickname = user.nickname;
 			const isDMRoom = (param: string): boolean => {
 				if (param[0] === '$'
 					&& param[param.length - 1] === '$'
@@ -807,18 +794,22 @@ export class ChatService {
 				else
 					return false;
 			};
-			console.log(socket.currRoom);
-			// if (regex.test(sockets.currRoom)){
 			if (isDMRoom(socket.currRoom)) {
 				const targetId = Number(socket.currRoom.substring(1, socket.currRoom.length - 1));
 				const target = this.storeUser.getNicknameById(targetId);
-				// const DMs = this.makeDMRoomMessages(socket, target);
-				this.fetchUserToDMRoom(socket, target);
+				this.fetchUserToDMRoom(io, socket, target);
 			}
-			else
-				console.log("regex failed");
 		})
 	}
 
+	async userChangeNick(io: Namespace, clientId: number, newNick: string) {
+		const user = this.storeUser.findUserById(clientId);
+		user.nickname = newNick;
+		this.triggerWindowUpdate(io, user);
+	}
 
+	async userChangeAvatar(io: Namespace, clientId: number) {
+		const user = this.storeUser.findUserById(clientId);
+		this.triggerWindowUpdate(io, user);
+	}
 }

@@ -75,7 +75,7 @@ export default function ChatRoomUserInfo({
         if (targetnickname !== myNickName) {
           console.log("in blockUser222222222222222 ", targetnickname);
         }
-        socket.emit("blockUser", { target: targetnickname });
+        socket.emit("blockUser", { target: targetnickname, modal: true });
       } else if (event.target.dataset.name === "opAdd") {
         console.log("in addOperator ", roomname, targetnickname);
         socket.emit("addOperator", {
@@ -157,65 +157,77 @@ export default function ChatRoomUserInfo({
                 Profile
               </div>
               {/* Operator */}
-              {roomInfo?.owner !== user?.nickname && !roomInfo?.operators.includes(user?.nickname) &&
-                (roomInfo?.operators.includes(myNickName) || roomInfo?.owner === myNickName)
-                && user?.nickname !== myNickName && (<>
-                <div className={"dropdown-item"} data-name="kick">
-                  Kick
-                </div>
-                <div className="dropdown-item" data-name="ban">
-                  Ban
-                </div>
-                <div className="dropdown-item" data-name="mute">
-                  Mute
-                </div>
-                <div className="dropdown-item" data-name="block">
-                  block
-                </div>
-                </>)}
+              {roomInfo?.owner !== user?.nickname &&
+                !roomInfo?.operators.includes(user?.nickname) &&
+                (roomInfo?.operators.includes(myNickName) ||
+                  roomInfo?.owner === myNickName) &&
+                user?.nickname !== myNickName && (
+                  <>
+                    <div className={"dropdown-item"} data-name="kick">
+                      Kick
+                    </div>
+                    <div className="dropdown-item" data-name="ban">
+                      Ban
+                    </div>
+                    <div className="dropdown-item" data-name="mute">
+                      Mute
+                    </div>
+                  </>
+                )}
               {/* Owner */}
-              {(roomInfo?.owner === myNickName && user?.nickname !== myNickName) && (<>
-                <div className="dropdown-item dropdown-second">
-                  Operator
-                  <div className="dropdown-content-second">
-                    <div className="dropdown-item-second" data-name="opAdd">
-                      Add Operator
+              {roomInfo?.owner === myNickName &&
+                user?.nickname !== myNickName && (
+                  <>
+                    <div className="dropdown-item dropdown-second">
+                      Operator
+                      <div className="dropdown-content-second">
+                        <div className="dropdown-item-second" data-name="opAdd">
+                          Add Operator
+                        </div>
+                        <div
+                          className="dropdown-item-second"
+                          data-name="opDelete"
+                        >
+                          Delete Operator
+                        </div>
+                      </div>
                     </div>
-                    <div className="dropdown-item-second" data-name="opDelete">
-                      Delete Operator
-                    </div>
-                  </div>
-                </div>
-                </>)}
+                  </>
+                )}
               {/* Other User */}
-              {user?.nickname !== myNickName && (<>
-                <div className="dropdown-item" data-name="dmApply">
-                1:1 Chat
-              </div>
-              <div className="dropdown-item dropdown-second">
-                1:1 Game
-                <div className="dropdown-content-second">
-                  <div
-                    className="dropdown-item-second"
-                    data-name="oneVsOneEasy"
-                  >
-                    Easy Mode
+              {user?.nickname !== myNickName && (
+                <>
+                  <div className="dropdown-item" data-name="block">
+                    block
                   </div>
-                  <div
-                    className="dropdown-item-second"
-                    data-name="oneVsOneNormal"
-                  >
-                    Normal Mode
+                  <div className="dropdown-item" data-name="dmApply">
+                    1:1 Chat
                   </div>
-                  <div
-                    className="dropdown-item-second"
-                    data-name="oneVsOneHard"
-                  >
-                    Hard Mode
+                  <div className="dropdown-item dropdown-second">
+                    1:1 Game
+                    <div className="dropdown-content-second">
+                      <div
+                        className="dropdown-item-second"
+                        data-name="oneVsOneEasy"
+                      >
+                        Easy Mode
+                      </div>
+                      <div
+                        className="dropdown-item-second"
+                        data-name="oneVsOneNormal"
+                      >
+                        Normal Mode
+                      </div>
+                      <div
+                        className="dropdown-item-second"
+                        data-name="oneVsOneHard"
+                      >
+                        Hard Mode
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-              </>)}
+                </>
+              )}
             </div>
           </div>
         </div>

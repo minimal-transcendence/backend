@@ -33,15 +33,7 @@ export class User {
 		this.joinlist.delete(roomname);
 	}
 
-	//메모리 관리 방법을 생각하면 필요없는 것 같은데...
-	private clearSets(){
-		this.blocklist.clear();
-		this.joinlist.clear();
-	}
-
-	//clearSets...?
 	clearUser(){
-		this.clearSets();
 		this.blocklist = null;
 		this.joinlist = null;
 	}

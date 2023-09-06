@@ -9,8 +9,6 @@ export default function SearchSelect({
   leftHeader: any;
   setLeftHeader: any;
 }) {
-  // const socket = useContext(SocketContext).chatSocket;
-
   return (
     <>
       <span

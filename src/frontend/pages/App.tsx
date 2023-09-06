@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 import * as io from "socket.io-client";
 import { Socket } from "socket.io-client";
@@ -9,6 +10,7 @@ import NavBar from "./components/navpage/NavBar";
 import GameList from "./components/gamelistpage/GameList";
 import ChatMain from "./components/chatpage/ChatMain";
 import SearchList from "./components/searchlistpage/SearchList";
+import DirectMessageList from "./components/dmlist/DirectMessageList";
 import ChatRoomUser from "./components/chatroompage/ChatRoom";
 
 import ModalAlert from "./components/modalpage/ModalAlert";
@@ -49,14 +51,14 @@ export default function App() {
   const [roomUserList, setRoomUserList] = useState<any>(null);
 
   const [roomnameModal, setroomnameModal] = useState<string>("");
-  const [currentRoomName, setcurrentRoomName] = useState<string>("");
+  const [currentRoomName, setCurrentRoomName] = useState<string>("");
   const [leftHeader, setLeftHeader] = useState<string>("");
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
-  const [messages, setMessages] = useState<any>([]);
+  const [messages, setMessages] = useState<any>(new Array());
   const [roomInfo, setRoomInfo] = useState<any>(null);
-  const [blocklist, setBlocklist] = useState<any>([]);
+  const [blocklist, setBlocklist] = useState<any>(new Array());
 
   const [alertModal, setAlertModal] = useState<boolean>(false);
   const [alertModalTitle, setAlertModalTitle] = useState<string>("");
@@ -75,6 +77,8 @@ export default function App() {
   const [changedID, setChangedID] = useState<number>(-2);
   const [changedNickName, setChangedNickName] = useState<string>("");
 
+  const router = useRouter();
+
   // useEffect(() => {
   //   async function refresh() {
   //     try {
@@ -88,6 +92,9 @@ export default function App() {
   //   }
   //   setInterval(refresh, 25000);
   // }, []);
+  const [lastMessageList, setLastMessageList] = useState<any>(new Map());
+  const [directMessageMap, setDirectMessageMap] = useState<any>(new Map());
+  const [directMessageList, setDirectMessageList] = useState<any>(new Array());
   useEffect(() => {
     function reloadNick(userId: number, newNick: string) {
       console.log("in useEffect ChatRoom nicknameupdate " + userId + newNick);
@@ -115,6 +122,23 @@ export default function App() {
       }
     };
   }, [socket]);
+
+  useEffect(()=>{
+    async function checkLogout(userId:number, isConnected:boolean){
+      if (isConnected == false && userId == Number(tmpLoginID)){
+        alert("로그인 정보가 만료되었습니다");
+        setTimeout(()=>router.push("/"), 1000)
+      }
+    }
+    if(socket){
+      socket.on("updateUserStatus", (userId : number, isConnected : boolean) => checkLogout(userId, isConnected));
+    }
+    return() => {
+      if(socket){
+        socket.removeAllListeners("updateUserStatus");
+      }
+    }
+  }, [socket, tmpLoginID])
 
   useEffect(() => {
     const getSocket = (namespace: string, jwt: string, nickname: string) => {
@@ -166,12 +190,49 @@ export default function App() {
   // }, [])
 
   useEffect(() => {
+    let blockListItem = localStorage.getItem("blocklist");
+
+    if (typeof blockListItem === "string") {
+      blockListItem = blockListItem.substr(1, blockListItem.length - 2);
+      const arr = blockListItem.split(",");
+      const numberArray: any = [];
+
+      // Store length of array of string
+      // in variable length
+      const length = arr.length;
+
+      // Iterate through array of string using
+      // for loop
+      // push all elements of array of string
+      // in array of numbers by typecasting
+      // them to integers using parseInt function
+      for (var i = 0; i < length; i++)
+        // Instead of parseInt(), Number()
+        // can also be used
+        numberArray.push(parseInt(arr[i]));
+
+      console.log(
+        `BlockLIST SETTTTTT  ${JSON.stringify(
+          blockListItem,
+          null,
+          2
+        )}   <${JSON.stringify(arr, null, 2)}
+        <${JSON.stringify(numberArray, null, 2)}
+        >`
+      );
+      setBlocklist(() => numberArray);
+    }
+  }, []);
+
+  useEffect(() => {
     function sendBlocklist(result: any) {
       console.log("sendBlocklist update + " + JSON.stringify(result));
-      setBlocklist(() => result);
+      localStorage.setItem("blocklist", JSON.stringify(result));
+      setBlocklist(() => [...result]);
     }
     function updateBlocklist(target: number) {
       console.log("updateBlocklist update");
+      localStorage.setItem("blocklist", JSON.stringify([...blocklist, target]));
       setBlocklist(() => [...blocklist, target]);
     }
     function sendRoomMembers(result: any) {
@@ -182,7 +243,6 @@ export default function App() {
 
       setRoomUserList(() => result);
       setLeftHeader(() => "joined");
-      // setcurrentRoomName(() => result[0].roomname);
       setQuery("");
     }
 
@@ -197,20 +257,40 @@ export default function App() {
         )}> 내 방은 <${currentRoomName}>`
       );
 
-      setTempSearchList((results) => {
-        return results.map((result) => {
-          if (result.roomname === roomname) {
-            result.lastMessage = `${data.body}`;
-            result.lastMessageFrom = data.fromId;
-            if (roomname === currentRoomName) {
-              result.messageNew = false;
-            } else {
-              result.messageNew = true;
-            }
-          }
+      let max = lastMessageList;
+      results.map((result: any) => {
+        let chkNew;
+
+        if (currentRoomName === result.roomname) {
+          console.log(
+            `in sendMessage  currentRoomName <${currentRoomName}> result.roomname <${result.roomname}>`
+          );
+          result.messageNew = false;
+          result.lastMessage = data.body;
+          max.set(result.roomname, {
+            lastMessage: result.lastMessage,
+            messageNew: false,
+          });
           return result;
-        });
+        }
+        return result;
       });
+      max.forEach((value: any, key: any) => {
+        console.log(
+          `value <${JSON.stringify(value, null, 2)}>  key <${JSON.stringify(
+            key,
+            null,
+            2
+          )}>`
+        );
+      });
+
+      console.log(
+        `in sendMessage,  results <${JSON.stringify(results, null, 2)}>`
+      );
+      setLastMessageList(() => max);
+      setTempSearchList(() => results);
+
       if (roomname === currentRoomName && !isDM) {
         console.log("same room!", currentRoomName, roomname);
         setMessages(() => [...messages, data]);
@@ -231,7 +311,49 @@ export default function App() {
         isDM,
         data?.from === currentRoomName || to === currentRoomName
       );
-      if (isDM && (data?.from === currentRoomName || to === currentRoomName)) {
+
+      let max = directMessageMap;
+
+      if (data?.from !== tmpLoginnickname && !blocklist.includes(data?.from))
+        max.set(data?.from, {
+          data,
+          messageNew: false,
+        });
+
+      max.forEach((value: any, key: any) => {
+        console.log(
+          `In SEND DM   value <${JSON.stringify(
+            value,
+            null,
+            2
+          )}>  key <${JSON.stringify(key, null, 2)}>`
+        );
+      });
+
+      console.log(
+        `!!!!!!!!!!! directMessageList <${JSON.stringify(
+          directMessageList,
+          null,
+          2
+        )}>`
+      );
+      directMessageMap?.forEach((value: any, key: any) => {
+        console.log(
+          `In directMessageMapLSIT   value <${JSON.stringify(
+            value,
+            null,
+            2
+          )}>  key <${JSON.stringify(key, null, 2)}>`
+        );
+      });
+      setDirectMessageList(() => [...directMessageMap]);
+      setDirectMessageMap(() => max);
+
+      if (
+        isDM &&
+        ((data?.from === currentRoomName && to === tmpLoginnickname) ||
+          (to === currentRoomName && data?.from === tmpLoginnickname))
+      ) {
         console.log("same froom!", currentRoomName, to);
         setMessages(() => [...messages, data]);
       }
@@ -266,7 +388,7 @@ export default function App() {
       socket.on("inGame", (userId) => {
         console.log(`${userId} is in game`);
       });
-      socket.on("notInGame", (userId) => {
+      socket.on("NotInGame", (userId) => {
         console.log(`${userId} is not in game`);
       });
 
@@ -294,7 +416,16 @@ export default function App() {
         socket.off("sendDM", sendDM);
       }
     };
-  }, [currentRoomName, results, messages, socket, blocklist, isDM]);
+  }, [
+    currentRoomName,
+    results,
+    messages,
+    socket,
+    blocklist,
+    isDM,
+    directMessageMap,
+    directMessageList,
+  ]);
 
   // seunchoi
   const handleGameOnOff = () => {
@@ -444,8 +575,21 @@ export default function App() {
                     setLeftHeader={setLeftHeader}
                     setroomnameModal={setroomnameModal}
                     blocklist={blocklist}
+                    currentRoomName={currentRoomName}
+                    setCurrentRoomName={setCurrentRoomName}
+                    lastMessageList={lastMessageList}
+                    setLastMessageList={setLastMessageList}
                   />
-                  <DMlist />
+                  <DirectMessageList
+                    myNickName={tmpLoginnickname}
+                    directMessageList={directMessageList}
+                    setDirectMessageList={setDirectMessageList}
+                    directMessageMap={directMessageMap}
+                    setDirectMessageMap={setDirectMessageMap}
+                    isDM={isDM}
+                    setIsDM={setIsDM}
+                    currentRoomName={currentRoomName}
+                  />
                 </>
               }
             </Box>
@@ -470,10 +614,12 @@ export default function App() {
               messages={messages}
               setMessages={setMessages}
               currentRoomName={currentRoomName}
-              setcurrentRoomName={setcurrentRoomName}
+              setCurrentRoomName={setCurrentRoomName}
               myNickName={tmpLoginnickname}
               blocklist={blocklist}
               gameLoad={gameLoad}
+              lastMessageList={lastMessageList}
+              setLastMessageList={setLastMessageList}
             />
 
             <Box>

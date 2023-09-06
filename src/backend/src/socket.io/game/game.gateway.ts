@@ -110,7 +110,7 @@ export class GameGateway
 		// leave game
 		if (client.inGame) {
       // Notify every socket that client is not in game
-      // this.io.server.of('chat').emit("notInGame", client.nickname);
+      // this.io.server.of('chat').emit("NotInGame", client.nickname);
 			for (let e in this.gameRooms) {
 				const room: GameRoom = this.gameRooms[e];
 				// If client is in game

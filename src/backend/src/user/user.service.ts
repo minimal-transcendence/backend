@@ -15,7 +15,6 @@ export class UserService {
 		private readonly gameGateway: GameGateway
 	) { }
 
-	//upsert
 	async createUser(data: Prisma.UserCreateInput): Promise<User> {
 		while (!data.nickname) {
 			data.nickname = `user_${Math.floor(Math.random() * 1000)}`;
@@ -49,12 +48,6 @@ export class UserService {
 		return user
 	}
 
-	/*
-		[ TODO ] 
-	1. id, nickname, score 등 화면에 뿌릴 column 목록 정하기
-	2. 최근 접속 순 (updatedAt) 정렬? or score순? or 복합
-	3. pagenation 필요? (유저 목록 표시 방법 : scroll, board-style, etc.)
-	*/
 	async getAllUser(): Promise<object[]> {
 		const res = await this.prisma.user.findMany({
 			select: {
@@ -64,12 +57,12 @@ export class UserService {
 				score: true,
 				lastLogin: true
 			},
-			orderBy: { lastLogin: 'desc' }
+			orderBy: { lastLogin: 'desc' },
+			where : { id : { not : 0 }}
 		});
 		return (res);
 	}
 
-	//findUnique or Throw
 	async getUserById(id: number): Promise<object> {
 		return await this.prisma.user.findUniqueOrThrow({
 			where: { id: id },
@@ -90,11 +83,11 @@ export class UserService {
 		}).then((res) => {
 			return (res);
 		})
-			.catch((error) => {
-				return { message: 'An error occurred', error: error.message };
-			});
+		.catch((error) => {
+			return { message: 'An error occurred', error: error.message };
+		});
 	}
-	//현재 문법 가능한지 check
+
 	async updateUserById(
 		id: number,
 		data: Prisma.UserUpdateInput,
@@ -119,7 +112,7 @@ export class UserService {
 				this.chatGateway.updateUserAvatar(id, file.path.toString() as string);
 				if (oldAvatar != "default.png") {
 					fs.unlink('/photo/' + oldAvatar, (err) => {
-						//err처리
+						//file erase failure
 						if (err)
 							console.log(err);
 					});
@@ -144,29 +137,29 @@ export class UserService {
 		return await this.prisma.user.findUniqueOrThrow({
 			where: { id: id }
 		})
-			.then((res) => { return res.friends })
-			.catch((error) => {
-				return { message: '', error: error.message };
-			})
+		.then((res) => { return res.friends })
+		.catch((error) => {
+			return { message: '', error: error.message };
+		})
 	}
 
 	async getUserFriendsById(id: number): Promise<object> {
-		return this.prisma.user.findUniqueOrThrow({
+		return await this.prisma.user.findUniqueOrThrow({
 			where: { id: id },
 		})
-			.then((user) => {
-				return Promise.all(
-					user.friends.map((element) => {
-						return this.getUserById(element);
-					})
-				);
-			})
-			.then((friendList) => {
-				return { friendList };
-			})
-			.catch((error) => {
-				return { message: '', error: error.message };
-			});
+		.then((user) => {
+			return Promise.all(
+				user.friends.map((element) => {
+					return this.getUserById(element);
+				})
+			);
+		})
+		.then((friendList) => {
+			return { friendList };
+		})
+		.catch((error) => {
+			return { message: '', error: error.message };
+		});
 	}
 
 	// 이런 문법 괜찮은가...?
@@ -225,8 +218,6 @@ export class UserService {
 		}
 	}
 
-	//CreatedTime 출력법 어떻게?
-	//TODO : 여기 useful information 필요하다고 되어있음... score 필요할까?
 	async getUserMatchHistoryById(id: number): Promise<object[]> {
 		return await this.prisma.matchHistory.findMany({
 			where: {
@@ -235,12 +226,14 @@ export class UserService {
 			select: {
 				winner: {
 					select: {
+						id: true,
 						nickname: true,
 						avatar: true
 					}
 				},
 				loser: {
 					select: {
+						id: true,
 						nickname: true,
 						avatar: true
 					}
