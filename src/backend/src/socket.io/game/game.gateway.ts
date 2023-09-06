@@ -99,9 +99,7 @@ export class GameGateway
       return Math.floor(Math.random() * (max - min + 1) + min);
     }
     const randomNumber = getRandom(0, 36);
-    console.log("Random Number:", randomNumber);
     client.color = "hsl(" + (randomNumber * 10) + ",100%, 50%)"
-    console.log("Color:", client.color);
 
 		const sockets = this.io.sockets;
 		this.logger.log(`Game Client Connected : ${client.nickname}`);
