@@ -48,9 +48,15 @@ export default function ChatRoomUser({
   const filtered: string[] = [];
   users?.forEach((user: any) => {
     console.log("blocklist in user : " + JSON.stringify(blocklist));
+    console.log(
+      `Room Array.isArray(blocklist) : <${Array.isArray(
+        blocklist
+      )}> type <${typeof blocklist}>`
+    );
     console.log("user ", JSON.stringify(user, null, 2));
     if (
-      !blocklist.find((b: number) => {
+      Array.isArray(blocklist) &&
+      !blocklist?.find((b: number) => {
         return b === user["id"];
       })
     )

@@ -8,7 +8,6 @@ import { join } from 'path';
 import { createReadStream } from 'fs';
 
 @Controller('user')
-// @UseGuards(JwtGuard)
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
@@ -26,13 +25,13 @@ export class UserController {
 
 	//TODO : error code & error msg customize
 	//TODO : catch HttpException
+	@UseGuards(JwtGuard)
 	@UseInterceptors(FileInterceptor(
 		'avatar',
 		{
 			dest: '/photo',	//없는 폴더면 자동 생성
 		})
 	)
-	@UseGuards(JwtGuard)
 	@Post(':id')
 	async updateUserAvatar(
 		@Req() req : any,
@@ -42,7 +41,6 @@ export class UserController {
 			.addFileTypeValidator({
 				fileType: '.(jpeg|jpg|png|gif)',
 			})
-			// .addMaxSizeValidator({ maxSize: 1024 * 1024 * 4 })	// 4mb?
 			.build({
 				fileIsRequired: true
 			})
@@ -50,7 +48,7 @@ export class UserController {
 		@Body() data : Prisma.UserUpdateInput,
 		) : Promise<any>{
 		if (req.user.id != id)
-			throw new HttpException("unauthorized action", HttpStatus.BAD_REQUEST);
+			throw new HttpException("Unauthorized action", HttpStatus.BAD_REQUEST);
 		
 		return this.userService.updateUserById(id, data, file);
 	}
@@ -81,7 +79,7 @@ export class UserController {
 		}
 		) : Promise<object> {
 			if (req.user.id != id)
-				throw new HttpException("unauthorized action", HttpStatus.BAD_REQUEST);
+				throw new HttpException("Unauthorized action", HttpStatus.BAD_REQUEST);
 			return this.userService.updateFriendsById(id, data);
 	}
 
@@ -104,7 +102,7 @@ export class UserController {
 	}
 }
 
-//TODO : discuss router & authorization
+//TODO : 얘는 가드를 하는 건 좀 이상한 것 같은데..
 @UseGuards(JwtGuard)
 @Controller('photo/:img')
 export class avatarController {

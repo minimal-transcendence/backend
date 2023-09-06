@@ -31,7 +31,6 @@ export class ChatGateway
 	}
 
 	handleConnection(@ConnectedSocket() client: ChatSocket) {
-		//db 랑 연동할 것인지...?
 		this.logger.log(`Client Connected : ${client.nickname}, ${client.id}`);
 
 		client.onAny((any: any) => {
@@ -71,7 +70,7 @@ export class ChatGateway
 	@SubscribeMessage('selectDMRoom')
 	handleEnterDMRoom(client: ChatSocket, payload: TargetDto) {
 		this.chatService.fetchUserToDMRoom(
-			client, payload.target
+			this.io, client, payload.target
 		);
 	}
 
@@ -89,8 +88,8 @@ export class ChatGateway
 	}
 
 	@SubscribeMessage('setRoomPass')
-	handleSetRoomPass(client: ChatSocket, payload: RoomDto) {
-		this.chatService.setPassword(
+	async handleSetRoomPass(client: ChatSocket, payload: RoomDto) {
+		await this.chatService.setPassword(
 			this.io, client, payload.roomname, payload.password
 		);
 	}
@@ -122,7 +121,6 @@ export class ChatGateway
 		);
 	}
 
-	//과연...?
 	@SubscribeMessage('kickUser')
 	handleKickUser(client: ChatSocket, payload: RoomEventDto) {
 		this.chatService.kickUser(
@@ -208,10 +206,8 @@ export class ChatGateway
 		this.chatService.userChangeAvatar(this.io, userId);
 	}
 
-	//check handleDisconnect
 	logout(clientId: number) {
 		this.chatService.updateUserStatus(this.io, clientId, false);
-		this.io.in(`$${clientId}`).disconnectSockets(true); //false?
-		console.log("logout");
+		this.io.in(`$${clientId}`).disconnectSockets(true);
 	}
 }
