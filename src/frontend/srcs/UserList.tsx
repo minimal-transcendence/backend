@@ -233,6 +233,9 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     if (userData[index].isBlocked == 0){
       copiedData[index].isBlocked = 1;
       socket.emit("blockUser", {target : userData[index].nickname})
+      if (userData[index].isFriend == 1){
+        unFollow(index);
+      }
     }
     else if (userData[index].isBlocked == 1){
       copiedData[index].isBlocked = 0;
@@ -516,8 +519,15 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
                 </h2>
               </div>
               <div className={styles_profile.buttons}>
+                {userData[index].isBlocked === 1 &&(
+                  <button
+                    className={styles.disabled}
+                  >
+                    차단 중
+                  </button>
+                )}
                 {userData[index].id != userId &&
-                userData[index].isFriend === 0 && (
+                userData[index].isFriend === 0 && userData[index].isBlocked === 0 &&(
                   <button
                     className={styles_profile.followButton}
                     onClick={() => {
@@ -529,7 +539,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
                   </button>
                 )}
                 {userData[index].id != userId &&
-                userData[index].isFriend === 1 && (
+                userData[index].isFriend === 1 && userData[index].isBlocked === 0 &&(
                   <button
                   className={styles_profile.followingButton}
                   onClick={() => {
@@ -643,10 +653,10 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
           {userData[index].id == userId && (
             <div className={styles.circleMine}></div>
           )}
-          {userData[index].id != userId && userData[index].isLogin === 0 && (
+          {userData[index].id != userId && userData[index].isLogin === 0 && userData[index].isBlocked === 0 &&(
             <div className={styles.circleLogout}></div>
           )}
-          {userData[index].id != userId && userData[index].isLogin === 1 && (
+          {userData[index].id != userId && userData[index].isLogin === 1 && userData[index].isBlocked === 0 &&(
             <div className={styles.circleLogin}></div>
           )}
         </div>
@@ -662,7 +672,14 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
               팔로우
             </button>
           )}
-          {userData[index].id != userId && userData[index].isFriend === 1 && (
+          {userData[index].isBlocked === 1 &&(
+            <button
+              className={styles.disabled}
+            >
+              차단 중
+            </button>
+          )}
+          {userData[index].id != userId && userData[index].isFriend === 1 && userData[index].isBlocked === 0 &&(
           <button
             className={styles.unfollowIn}
             onClick={() => {
@@ -672,7 +689,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             언팔로우
           </button>
           )}
-          {userData[index].id != userId && userData[index].isFriend === 0 && (
+          {userData[index].id != userId && userData[index].isFriend === 0 && userData[index].isBlocked === 0 &&(
           <button
             className={styles.followIn}
             onClick={() => {

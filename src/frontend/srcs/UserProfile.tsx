@@ -189,6 +189,9 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     if (userData[0].isBlocked == 0){
       copiedData[0].isBlocked = 1;
       socket.emit("blockUser", {target : userData[0].nickname});
+      if (userData[0].isFriend == 1){
+        unFollow(0);
+      }
     }
     else if (userData[0].isBlocked == 1){
       copiedData[0].isBlocked = 0;
@@ -421,8 +424,15 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
               </h2>
             </div>
             <div className={styles_profile.buttons}>
+            {userData[0].isBlocked === 1 &&(
+                  <button
+                    className={styles_profile.disabled}
+                  >
+                    차단 중
+                  </button>
+                )}
               {userData[0].id != userId &&
-                userData[0].isFriend === 0 && (
+                userData[0].isFriend === 0 && userData[0].isBlocked === 0 &&(
                   <button
                     className={styles_profile.followButton}
                     onClick={() => {
@@ -434,7 +444,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
                   </button>
                 )}
               {userData[0].id != userId &&
-                userData[0].isFriend === 1 && (
+                userData[0].isFriend === 1 && userData[0].isBlocked === 0 &&(
                   <button
                     className={styles_profile.followingButton}
                     onClick={() => {
