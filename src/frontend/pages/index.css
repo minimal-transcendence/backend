@@ -356,6 +356,7 @@ body {
 }
 .error-make {
   font-size: 5rem;
+  padding-bottom: 1rem;
 }
 .error-query {
   font-size: 1.2rem;
@@ -363,6 +364,7 @@ body {
 }
 .error-message {
   margin-bottom: 4rem;
+  padding-top: 1rem;
 }
 .logo {
   display: flex;
@@ -1149,4 +1151,180 @@ label:active:after {
   /* display: flex; */
   /* flex-direction: column; */
   gap: 24px;
+}
+
+*,
+::before,
+::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  /* background-color: #111111; */
+}
+
+.card {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  color: #fff;
+  background: transparent;
+  overflow: hidden;
+  border-radius: 50%;
+  border-top: 2px solid rgba(0, 0, 0, 0.5);
+  border-right: 2px solid rgba(200, 200, 200, 0.5);
+  border-bottom: 2px solid rgba(150, 150, 150, 0.5);
+  border-left: 2px solid rgba(50, 50, 50, 0.5);
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  padding: 1em;
+}
+
+p {
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.card span {
+  position: absolute;
+  border-radius: 100vmax;
+}
+
+.top {
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 5px;
+  background: linear-gradient(
+    90deg,
+    transparent 50%,
+    rgba(0, 0, 0, 0.5),
+    rgb(0, 0, 0)
+  );
+}
+
+.bottom {
+  right: 0;
+  bottom: 0;
+  height: 5px;
+  background: linear-gradient(
+    90deg,
+    rgb(200, 200, 200),
+    rgba(200, 200, 200, 0.5),
+    transparent 50%
+  );
+}
+
+.right {
+  top: 0;
+  right: 0;
+  width: 5px;
+  height: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 30%,
+    rgba(150, 150, 150, 0.5),
+    rgb(150, 150, 150)
+  );
+}
+
+.left {
+  left: 0;
+  bottom: 0;
+  width: 5px;
+  height: 0;
+  background: linear-gradient(
+    180deg,
+    rgb(50, 50, 50),
+    rgba(50, 50, 50, 0.5),
+    transparent 70%
+  );
+}
+
+.top {
+  animation: animateTop 3s ease-in-out infinite;
+}
+
+.bottom {
+  animation: animateBottom 3s ease-in-out infinite;
+}
+
+.right {
+  animation: animateRight 3s ease-in-out infinite;
+}
+
+.left {
+  animation: animateLeft 3s ease-in-out infinite;
+}
+
+@keyframes animateTop {
+  25% {
+    width: 100%;
+    opacity: 1;
+  }
+
+  30%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes animateBottom {
+  0%,
+  50% {
+    opacity: 0;
+    width: 0;
+  }
+
+  75% {
+    opacity: 1;
+    width: 100%;
+  }
+
+  76%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes animateRight {
+  0%,
+  25% {
+    opacity: 0;
+    height: 0;
+  }
+
+  50% {
+    opacity: 1;
+    height: 100%;
+  }
+
+  55%,
+  100% {
+    height: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes animateLeft {
+  0%,
+  75% {
+    opacity: 0;
+    bottom: 0;
+    height: 0;
+  }
+
+  100% {
+    opacity: 1;
+    height: 100%;
+  }
 }
