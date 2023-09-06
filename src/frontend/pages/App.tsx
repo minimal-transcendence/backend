@@ -55,9 +55,9 @@ export default function App() {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
-  const [messages, setMessages] = useState<any>([]);
+  const [messages, setMessages] = useState<any>(new Array());
   const [roomInfo, setRoomInfo] = useState<any>(null);
-  const [blocklist, setBlocklist] = useState<any>([]);
+  const [blocklist, setBlocklist] = useState<any>(new Array());
 
   const [alertModal, setAlertModal] = useState<boolean>(false);
   const [alertModalTitle, setAlertModalTitle] = useState<string>("");
@@ -77,7 +77,7 @@ export default function App() {
 
   const [lastMessageList, setLastMessageList] = useState<any>(new Map());
   const [directMessageMap, setDirectMessageMap] = useState<any>(new Map());
-  const [directMessageList, setDirectMessageList] = useState<any>([]);
+  const [directMessageList, setDirectMessageList] = useState<any>(new Array());
   useEffect(() => {
     function reloadNick(userId: number, newNick: string) {
       console.log("in useEffect ChatRoom nicknameupdate " + userId + newNick);
@@ -136,12 +136,49 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    let blockListItem = localStorage.getItem("blocklist");
+
+    if (typeof blockListItem === "string") {
+      blockListItem = blockListItem.substr(1, blockListItem.length - 2);
+      const arr = blockListItem.split(",");
+      const numberArray: any = [];
+
+      // Store length of array of string
+      // in variable length
+      const length = arr.length;
+
+      // Iterate through array of string using
+      // for loop
+      // push all elements of array of string
+      // in array of numbers by typecasting
+      // them to integers using parseInt function
+      for (var i = 0; i < length; i++)
+        // Instead of parseInt(), Number()
+        // can also be used
+        numberArray.push(parseInt(arr[i]));
+
+      console.log(
+        `BlockLIST SETTTTTT  ${JSON.stringify(
+          blockListItem,
+          null,
+          2
+        )}   <${JSON.stringify(arr, null, 2)}
+        <${JSON.stringify(numberArray, null, 2)}
+        >`
+      );
+      setBlocklist(() => numberArray);
+    }
+  }, []);
+
+  useEffect(() => {
     function sendBlocklist(result: any) {
       console.log("sendBlocklist update + " + JSON.stringify(result));
-      setBlocklist(() => result);
+      localStorage.setItem("blocklist", JSON.stringify(result));
+      setBlocklist(() => [...result]);
     }
     function updateBlocklist(target: number) {
       console.log("updateBlocklist update");
+      localStorage.setItem("blocklist", JSON.stringify([...blocklist, target]));
       setBlocklist(() => [...blocklist, target]);
     }
     function sendRoomMembers(result: any) {
@@ -223,7 +260,7 @@ export default function App() {
 
       let max = directMessageMap;
 
-      if (data?.from !== tmpLoginnickname)
+      if (data?.from !== tmpLoginnickname && !blocklist.includes(data?.from))
         max.set(data?.from, {
           data,
           messageNew: false,

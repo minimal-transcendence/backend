@@ -28,9 +28,14 @@ const ChatBody = ({
   function filter(messages: any) {
     // console.log("messages : " + JSON.stringify(messages));
     messages?.forEach((message: any) => {
-      // console.log("message " + JSON.stringify(message, null, 2));
+      console.log(
+        `Array.isArray(blocklist) : <${Array.isArray(
+          blocklist
+        )}> type <${typeof blocklist}>`
+      );
       if (
-        !blocklist.find((b: any) => {
+        Array.isArray(blocklist) &&
+        !blocklist?.find((b: any) => {
           return b === message.fromId;
         })
       )
