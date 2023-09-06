@@ -36,7 +36,7 @@ export class NullableTargetDto {
 
 export class UserInfoDto {
 	@IsOptional()
-	@IsNumber()	//or IsNumberString?
+	@IsNumber()
 	userId : number;
 
 	@IsOptional()
@@ -44,7 +44,6 @@ export class UserInfoDto {
 	targetId : number;
 }
 
-// export type RoomEventDto = RoomDto & TargetDto;
 export class RoomEventDto extends IntersectionType (
 	RoomDto,
 	TargetDto
