@@ -64,6 +64,7 @@ export default function App() {
   const [alertModalTitle, setAlertModalTitle] = useState<string>("");
   const [alertModalBody, setAlertModalBody] = useState<string>("");
   const [isDM, setIsDM] = useState<boolean>(false);
+  const [DMTargetId, setDMTargetId] = useState<number>(-1);
   // seunchoi - for socket connection
   const [gameLoad, setGameLoad] = useState<boolean>(false);
   // Get Empty Socket Instance
@@ -78,19 +79,6 @@ export default function App() {
 
   const router = useRouter();
 
-  // useEffect(() => {
-  //   async function refresh() {
-  //     try {
-  //       const responseDetail = await axiosApi.get(
-  //         // `http://localhost/api/user/${message?.fromId}/photo`
-  //         `http://localhost/api/auth/refresh`
-  //       );
-  //     } catch {
-  //       console.log("test errrrr");
-  //     }
-  //   }
-  //   setInterval(refresh, 25000);
-  // }, []);
   const [lastMessageList, setLastMessageList] = useState<any>(new Map());
   const [directMessageMap, setDirectMessageMap] = useState<any>(new Map());
   const [directMessageList, setDirectMessageList] = useState<any>(new Array());
@@ -265,6 +253,7 @@ export default function App() {
         setMessages(() => [...messages, data]);
       }
     }
+
     function sendDM(to: string, data: any) {
       console.log(
         `in useEffect sendDM 
@@ -280,12 +269,18 @@ export default function App() {
 
       let max = directMessageMap;
 
-      if (data?.from !== tmpLoginnickname && !blocklist.includes(data?.fromId))
+      if (
+        data?.from !== tmpLoginnickname &&
+        !blocklist.includes(data?.fromId) &&
+        data?.fromId !== DMTargetId
+      )
         max.set(data?.fromId, {
           data,
           messageNew: false,
         });
-
+      if (data?.fromId === DMTargetId) {
+        socket.emit("checkDMAlert", { fromId: data?.fromId });
+      }
       max.forEach((value: any, key: any) => {
         console.log(
           `In SEND DM   value <${JSON.stringify(
@@ -602,8 +597,7 @@ export default function App() {
               myNickName={tmpLoginnickname}
               blocklist={blocklist}
               gameLoad={gameLoad}
-              lastMessageList={lastMessageList}
-              setLastMessageList={setLastMessageList}
+              setDMTargetId={setDMTargetId}
             />
 
             <Box>

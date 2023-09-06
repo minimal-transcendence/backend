@@ -135,11 +135,8 @@ export default function SearchList({
       });
       max.forEach((value: any, key: any) => {
         console.log(
-          `value <${JSON.stringify(value, null, 2)}>  key <${JSON.stringify(
-            key,
-            null,
-            2
-          )}>`
+          `value <${JSON.stringify(value, null, 2)}>  
+          key <${JSON.stringify(key, null, 2)}>`
         );
       });
 

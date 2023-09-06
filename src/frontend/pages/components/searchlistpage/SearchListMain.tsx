@@ -6,7 +6,7 @@ import SearchSelect from "./SearchSelect";
 import SearchResult from "./SearchResult";
 import ErrorMessage from "./ErrorMessage";
 const NO_SEARCH_RESULT_ERROR = "There is no room! : ";
-const pageHeight = 6;
+const pageHeight = 5;
 export default function SearchListHeader({
   results,
   query,
