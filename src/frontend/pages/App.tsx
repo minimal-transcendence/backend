@@ -232,23 +232,20 @@ export default function App() {
     }
     function sendDM(to: string, data: any) {
       console.log(
-        `in useEffect sendDM  to<${to}> data<${JSON.stringify(
-          data,
-          null,
-          2
-        )}> 내 방은 <${currentRoomName}>`
-      );
-      console.log(
-        "in useEffect sendDM to, curretRoomName, isDM  chk",
-        to,
-        currentRoomName,
-        isDM,
-        data?.from === currentRoomName || to === currentRoomName
+        `in useEffect sendDM 
+        to <${to}> 
+        data<${JSON.stringify(data, null, 2)}>
+        curretRoomName <${currentRoomName}>
+        isDM <${isDM}>
+        chk <${data?.from === currentRoomName || to === currentRoomName}>
+        !blocklist.includes(data?.fromId) <${!blocklist.includes(
+          data?.fromId
+        )}>`
       );
 
       let max = directMessageMap;
 
-      if (data?.from !== tmpLoginnickname && !blocklist.includes(data?.from))
+      if (data?.from !== tmpLoginnickname && !blocklist.includes(data?.fromId))
         max.set(data?.from, {
           data,
           messageNew: false,

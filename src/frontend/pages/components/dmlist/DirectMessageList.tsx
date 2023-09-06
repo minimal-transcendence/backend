@@ -37,6 +37,20 @@ export default function DirectMessageList({
     if (page === 1) setLeftArrow(() => false);
   }, [directMessageList, page]);
 
+  useEffect(() => {
+    if (messageInfo?.[1]?.data?.from === currentRoomName && isDM) {
+      const tmpList: any = [];
+      directMessageList?.map((e: any) => {
+        if (e?.[1].data.from !== messageInfo?.[1]?.data?.from) tmpList.push(e);
+      });
+      let tmpMap = directMessageMap;
+      tmpMap?.delete(messageInfo?.[1]?.data?.from);
+
+      setDirectMessageList(() => tmpList);
+      setDirectMessageMap(() => tmpMap);
+    }
+  }, [currentRoomName, directMessageMap, directMessageList]);
+
   if (!directMessageList) return;
   else {
     let tmpList;

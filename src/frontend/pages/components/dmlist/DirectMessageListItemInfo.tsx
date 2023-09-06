@@ -32,29 +32,7 @@ export default function DirectMessageListItemInfo({
     " len ",
     messageInfo?.[1]?.data?.body?.length
   );
-  useEffect(() => {
-    console.log(`해당 방 입장 채크 messageInfo?.[1]?.data?.from === currentRoomName <${
-      messageInfo?.[1]?.data?.from === currentRoomName
-    }>
-    messageInfo?.[1]?.data?.from <${messageInfo?.[1]?.data?.from}> 
-    currentRoomName <${currentRoomName}>
-    `);
-    if (messageInfo?.[1]?.data?.from === currentRoomName && isDM) {
-      console.log("해당 방 입장");
-      const tmpList: any = [];
-      directMessageList?.map((e: any) => {
-        if (e?.[1].data.from !== messageInfo?.[1]?.data?.from) tmpList.push(e);
-      });
-      let tmpMap = directMessageMap;
-      tmpMap?.delete(messageInfo?.[1]?.data?.from);
-      console.log(`in if after from <${messageInfo?.[1]?.data?.from}>
-    tmpList <${JSON.stringify(tmpList, null, 2)}>
-    tmpMap <${JSON.stringify(tmpMap, null, 2)}>
-    `);
-      setDirectMessageList(() => tmpList);
-      setDirectMessageMap(() => tmpMap);
-    }
-  }, [currentRoomName, directMessageMap, directMessageList]);
+
   function handleAccept(event: any) {
     console.log(`in handleAccept before from <${messageInfo?.[1]?.data?.from}>
     directMessageList <${JSON.stringify(directMessageList, null, 2)}>
