@@ -810,17 +810,19 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       <>
         {showProfile && (
           <div>
-            {showprofileOption === false && (
-              <button onClick={() => setShowprofileOption(true)}>
-                전체 보기
-              </button>
-            )}
-            {showprofileOption === true && (
-              <button onClick={() => setShowprofileOption(false)}>
-                친구만 보기
-              </button>
-            )}
-            <button onClick={() => reloadData()}>새로 고침</button>
+            <div className={styles.listButtons}>
+              {showprofileOption === false && (
+                <button onClick={() => setShowprofileOption(true)}>
+                  전체 보기
+                </button>
+              )}
+              {showprofileOption === true && (
+                <button onClick={() => setShowprofileOption(false)}>
+                  친구만 보기
+                </button>
+              )}
+              <button onClick={() => reloadData()}>새로 고침</button>
+            </div>
             <div className={styles.profileMainBox}>
               {userData.map((item, index) => (
                 <div key={index} className={styles_profile.fontSet}>
