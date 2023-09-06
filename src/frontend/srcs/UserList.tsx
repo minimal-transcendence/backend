@@ -271,7 +271,6 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   async function follow(index: number) {
     const apiUrl = "http://localhost/api/user/" + userId + "/friend";
     const dataToUpdate = {
-      id: Number(userId),
       isAdd: true,
       friend: Number(userData[index].id),
     };
@@ -301,7 +300,6 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   async function unFollow(index: number) {
     const apiUrl = "http://localhost/api/user/" + userId + "/friend";
     const dataToUpdate = {
-      id: Number(userId),
       isAdd: false,
       friend: Number(userData[index].id),
     };
