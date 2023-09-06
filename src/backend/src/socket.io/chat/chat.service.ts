@@ -598,7 +598,7 @@ export class ChatService {
 	}
 
 	checkedDM(io: Namespace, clientId: number, targetId: number) {
-		io.in(`$${clientId}`).emit("userCheckedDM", { "fromId": targetId });
+		io.in(`$${clientId}`).emit("userCheckedDM", targetId);
 	}
 
 
