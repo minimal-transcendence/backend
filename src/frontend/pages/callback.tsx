@@ -25,10 +25,10 @@ function Callback() {
     // const response = await(await fetch('http://localhost/api/auth/login?code=' + code)).json();
 
     if (!response.ok) {
-      alert("response not OK");
+      alert("다시 시도해주세요");
       router.push("/");
     } else if (response.status === 500) {
-      alert("500 Internal Server Error");
+      alert("다시 시도해주세요");
       router.push("/");
     }
 

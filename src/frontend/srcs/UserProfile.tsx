@@ -227,9 +227,9 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   async function follow(index: number) {
     const apiUrl = "http://localhost/api/user/" + userId + "/friend";
     const dataToUpdate = {
-      id: userId,
+      id: Number(userId),
       isAdd: true,
-      friend: userData[0].id,
+      friend: Number(userData[0].id),
     };
 
     await axiosApi
@@ -257,9 +257,9 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   async function unFollow(index: number) {
     const apiUrl = "http://localhost/api/user/" + userId + "/friend";
     const dataToUpdate = {
-      id: userId,
+      id: Number(userId),
       isAdd: false,
-      friend: userData[0].id,
+      friend: Number(userData[0].id),
     };
 
     await axiosApi

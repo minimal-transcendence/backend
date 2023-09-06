@@ -103,6 +103,17 @@
 	cursor: pointer;
   }
 
+  .listButtons button {
+	padding: 8px 8px;
+	width: 140px;
+	height: 35px;
+	border: none;
+	font-size: 20px;
+	padding-left: 10px;
+	border-radius: 5px;
+	cursor: pointer;
+  }
+
   .followIn{
 	background: #4193EF;
 	color:white;

@@ -584,7 +584,7 @@ export class ChatService {
 				client.join(`$${targetId}$`);
 				client.currRoom = `$${targetId}$`;
 			}
-			client.emit("sendDMRoomInfo", username, DMs);
+			client.emit("sendDMRoomInfo", username, targetId, DMs);
 			if (client.userId !== targetId) {
 				const DMRoomMembers = this.makeDMRoomUserInfo(client.userId, targetId);
 				client.emit("sendRoomMembers", DMRoomMembers);
