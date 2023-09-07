@@ -35,7 +35,7 @@ export default function Search({
           </button>
         </div>
       </div>
-      <div>{matchStartCheck && <TempRandomMatch />}</div>
+      {matchStartCheck && <TempRandomMatch />}
     </div>
   );
 }

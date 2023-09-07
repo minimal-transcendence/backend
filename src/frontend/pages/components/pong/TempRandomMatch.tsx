@@ -70,7 +70,7 @@ export default function TempRandomMatch() {
 
   return (
     <div className={styles_profile.small_div}>
-      <div className={styles_profile.buttons_small}>
+      <div className={styles_profile.buttons_middle}>
         {/* <button onClick={handleRandom}>
                 랜덤매치
             </button>
