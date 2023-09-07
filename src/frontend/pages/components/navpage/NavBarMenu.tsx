@@ -136,14 +136,19 @@ export default function Menu({
               height="35"
               alt="contesticon"
             /> */}
-
-              <Image
-                className="dropbtn"
-                src={contestIcon}
-                width="35"
-                height="35"
-                alt="contesticon"
-              />
+              <article className={randomMatch ? "card" : ""}>
+                <Image
+                  className="dropbtn"
+                  src={contestIcon}
+                  width="35"
+                  height="35"
+                  alt="contesticon"
+                />
+                <span className={randomMatch ? "top" : ""}></span>
+                <span className={randomMatch ? "right" : ""}></span>
+                <span className={randomMatch ? "bottom" : ""}></span>
+                <span className={randomMatch ? "left" : ""}></span>
+              </article>
               {!block && (
                 <div
                   onClick={() => handleMenu(event)}
