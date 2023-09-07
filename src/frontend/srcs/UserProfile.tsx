@@ -130,7 +130,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     }
 
     if (socket){
-      socket.emit("requestTargetMember", { userId : Number(userId), targetId : Number(id) });
+      socket.emit("requestTargetMember", { targetId : id });
       socket.once("responseTargetMember", async (data:any) => getListBySocket(data))
     }
 
@@ -209,19 +209,19 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   }
 
   function blockUser(){
-    let copiedData = [...userData];
+    //let copiedData = [...userData];
     if (userData[0].isBlocked == 0){
-      copiedData[0].isBlocked = 1;
+      //copiedData[0].isBlocked = 1;
       socket.emit("blockUser", {target : userData[0].nickname});
       if (userData[0].isFriend == 1){
         unFollow(0);
       }
     }
     else if (userData[0].isBlocked == 1){
-      copiedData[0].isBlocked = 0;
+      //copiedData[0].isBlocked = 0;
       socket.emit("unblockUser", {target : userData[0].nickname});
     }
-    setData(copiedData);
+    //setData(copiedData);
   }
 
   async function follow(index: number) {
@@ -390,20 +390,68 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
         setData(copiedData);
       }
     }
-    if (socket){
-      socket.on("updateUserStatus", (userId : number, isConnected : boolean) => reloadStatus(userId, isConnected));
-      socket.on("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
-      socket.on("updateUserAvatar", (userId : number) => reloadAvatar(userId));
-      socket.on('inGame', (userId : any) => reloadGameStatusIn(userId));
-      socket.on('NotInGame', (userId : any) => reloadGameStatusOut(userId));
+
+    async function reloadFollowStatus(targetId : number){
+      console.log(`${targetId} / friend status update`);
+      let copiedData = [...userData];
+      for(let i = 0 ; i < userData.length ; i++){
+        if (userData[i].id == targetId.toString()){
+            copiedData[i].isFriend = 1;
+        }
+      }
+      setData(copiedData);
     }
-    return () => {
-      if (socket) {
-        socket.removeAllListeners("updateUserStatus");
-        socket.removeAllListeners("updateUserNick");
-        socket.removeAllListeners("updateUserAvatar");
-        socket.removeAllListeners('inGame');
-        socket.removeAllListeners('NotInGame');
+
+    async function reloadUnFollowStatus(targetId : number){
+      console.log(`${targetId} / friend status update`);
+      let copiedData = [...userData];
+      for(let i = 0 ; i < userData.length ; i++){
+        if (userData[i].id == targetId.toString()){
+            copiedData[i].isFriend = 0;
+        }
+      }
+      setData(copiedData);
+    }
+    
+    async function reloadBlockStatus(targetId : number){
+      console.log("block update!:", targetId);
+      let copiedData = [...userData];
+      for(let i = 0 ; i < userData.length ; i++){
+        //copiedData[i].isBlocked = checkIsInclude(result, copiedData[i].id);
+        if (userData[i].id == targetId.toString()){
+          if(copiedData[i].isBlocked == 0){
+            copiedData[i].isBlocked = 1;
+          } 
+          else if(copiedData[i].isBlocked == 1){
+            copiedData[i].isBlocked = 0;
+          } 
+        }
+      }
+      setData(copiedData);
+    }
+
+    if (socket){
+      if (socket){
+        socket.on("updateUserStatus", reloadStatus);
+        socket.on("updateUserNick", reloadNick);
+        socket.on("updateUserAvatar", reloadAvatar);
+        socket.on("follow", reloadFollowStatus);
+        socket.on("unfollow", reloadUnFollowStatus);
+        socket.on("updateBlocklist", reloadBlockStatus);
+        socket.on('inGame', reloadGameStatusIn);
+        socket.on('NotInGame', reloadGameStatusOut);
+      }
+      return () => {
+        if (socket) {
+          socket.off("updateUserStatus", reloadStatus);
+          socket.off("updateUserNick", reloadNick);
+          socket.off("updateUserAvatar", reloadAvatar);
+          socket.off("follow", reloadFollowStatus);
+          socket.off("unfollow", reloadUnFollowStatus);
+          socket.off("updateBlocklist", reloadBlockStatus);
+          socket.off('inGame', reloadGameStatusIn);
+          socket.off('NotInGame', reloadGameStatusOut);
+        }
       }
     };
   }, [socket, userData, gameSocket]);

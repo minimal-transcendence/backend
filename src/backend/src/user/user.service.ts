@@ -197,6 +197,9 @@ export class UserService {
 						push: data.friend,
 					}
 				}
+			}).then((res) => {
+				this.chatGateway.updateUserFriend(id, data.friend, data.isAdd);
+				return (res);
 			})
 		}
 		else {
