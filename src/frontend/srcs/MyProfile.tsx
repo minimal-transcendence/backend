@@ -18,6 +18,7 @@ function MyProfile({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [QRUrl, setQRUrl] = useState<string>(" ");
+  const [showQR, setShowQR] = useState(false);
   const [userNickname, setUserNickname] = useState<string | null>(
     localStorage.getItem("nickname")
   );
@@ -97,6 +98,10 @@ function MyProfile({
         }
       })
   }
+
+  useEffect(() => {
+
+  }, [checkIs2Fa])
 
   useEffect(() => {
     const jwtExpItem = localStorage.getItem("access_token_exp");
@@ -354,27 +359,29 @@ function MyProfile({
           <label htmlFor="toggle" className={styles.toggleSwitch}>
               <span className={styles.toggleButton}></span>
           </label>
-          <div>
-            {QRUrl != ' ' && (
-              <img
-              src={QRUrl}
-              alt="qr image"
-              width="150"
-              height="150"
-              onError={(e: React.SyntheticEvent<HTMLImageElement>) => e.currentTarget.style.display = 'none'}
-              />
-              )}
-          </div>
           <div className={styles.OTPAlert}>
               {(is2Fa === 'true' && checkIs2Fa === false || is2Fa === 'false' && checkIs2Fa === true) && (
-                  <span>변경사항 적용을 위해 OTP코드를 입력하세요</span>
+                <>
+                  <div>
+                    {QRUrl != ' ' &&(
+                      <img
+                      src={QRUrl}
+                      alt="qr image"
+                      width="150"
+                      height="150"
+                      onError={(e: React.SyntheticEvent<HTMLImageElement>) => e.currentTarget.style.display = 'none'}
+                      />
+                      )}
+                  </div>
+                  <span>변경사항 적용을 위해 구글 OTP 코드를 입력하세요</span>
+                  <div>
+                    <input className={styles.nicknameInput} placeholder="띄워쓰기 제외한 6자리" type="text" value={verCode} onChange={(e) => setVerCode(e.target.value)} />
+                  </div>
+                </>
               )}
               {(is2Fa === 'true' && checkIs2Fa === true || is2Fa === 'false' && checkIs2Fa === false) && (
                   <br/>
               )}
-          </div>
-          <div>
-              <input className={styles.nicknameInput} placeholder="띄워쓰기 제외한 6자리" type="text" value={verCode} onChange={(e) => setVerCode(e.target.value)} />
           </div>
         </div>
         <button className={styles.Button} onClick={fixProfile}>저장</button>
