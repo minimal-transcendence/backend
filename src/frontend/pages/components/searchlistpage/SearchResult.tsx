@@ -17,7 +17,7 @@ export default function SearchResult({
       </div>
       <div>
         <p>
-          {!blocklist?.includes(el?.lastMessageFromId) ? (
+          {!blocklist?.includes(el?.fromId) ? (
             <>
               <span>{el?.messageNew ? "🆕" : "☑️"}</span>
               <span>
