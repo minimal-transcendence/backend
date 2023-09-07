@@ -22,7 +22,6 @@ export default function DirectMessageListBody({
 }) {
   // const socket = useContext(SocketContext).chatSocket;
   if (tmpList?.length === 0 || !tmpList) {
-    console.log("gamelengh 0");
     return;
   } else {
     console.log("DMlist", JSON.stringify(tmpList, null, 2));

@@ -64,7 +64,7 @@ body {
 .nav-bar-menu {
   display: grid;
   grid-template-columns: 1fr;
-  align-items: center;
+  align-items: flex-end;
 }
 .nav-bar-menu-l {
   width: 15rem;
@@ -92,7 +92,7 @@ body {
   position: relative;
   padding-right: 0rem;
   display: grid;
-  grid-template-rows: 400px 1fr;
+  grid-template-rows: 500px 1fr;
 }
 
 .box-user-list {
@@ -253,6 +253,7 @@ body {
 .message-recipient-nick {
   word-break: keep-all;
   font-weight: 400;
+  font-size: 0.8rem;
 }
 
 .message-recipient-avatar {
@@ -373,10 +374,11 @@ body {
   gap: 0.8rem;
   width: 50rem;
   min-width: 20rem;
+  padding-top: 1rem;
+  font-size: 1.6rem;
 }
 
 .logo h1 {
-  font-size: 1.4rem;
   font-weight: 600;
   color: var(--color-text);
 }
@@ -414,11 +416,14 @@ body {
 .nav-logout {
   text-align: center;
   font-size: 1.4rem;
+  cursor: pointer;
 }
+
 .nav-randmatch {
   justify-self: center;
   align-self: center;
   display: flex;
+  cursor: pointer;
 }
 
 .list {
@@ -559,7 +564,7 @@ body {
   padding: 0.2rem 0.4rem;
 }
 .dmlist-button-x {
-  font-size: 0.4rem;
+  font-size: 0.8rem;
 }
 .gamelist-avatar img,
 .dmlist-avatar img {
@@ -584,7 +589,7 @@ body {
 
 .gamelist-textInfo,
 .dmlist-textInfo {
-  font-size: 0.8em;
+  font-size: 0.8rem;
 }
 .userlist-lists {
   list-style: none;
@@ -1153,43 +1158,33 @@ label:active:after {
   gap: 24px;
 }
 
-*,
-::before,
-::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  display: flex;
+.card-no {
+  height: 64px;
+  width: 64px;
   justify-content: center;
-  align-items: center;
-  height: 100vh;
-  /* background-color: #111111; */
+  display: flex;
+  padding-top: 14px;
 }
-
 .card {
   position: relative;
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   color: #fff;
   background: transparent;
   overflow: hidden;
-  border-radius: 50%;
-  border-top: 2px solid rgba(0, 0, 0, 0.5);
-  border-right: 2px solid rgba(200, 200, 200, 0.5);
-  border-bottom: 2px solid rgba(150, 150, 150, 0.5);
-  border-left: 2px solid rgba(50, 50, 50, 0.5);
+  /* border-top: 1px solid rgba(0, 0, 0, 0.5);
+  border-right: 1px solid rgba(80, 80, 80, 0.5);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+  border-left: 1px solid rgba(80, 80, 80, 0.5); */
   font-family: sans-serif;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
-  padding: 1em;
+  padding: 2em;
 }
 
-p {
+.card p {
   font-size: 0.95rem;
   text-align: center;
 }
@@ -1199,7 +1194,7 @@ p {
   border-radius: 100vmax;
 }
 
-.top {
+.top-card {
   top: 0;
   left: 0;
   width: 0;
@@ -1212,19 +1207,19 @@ p {
   );
 }
 
-.bottom {
+.bottom-card {
   right: 0;
   bottom: 0;
   height: 5px;
   background: linear-gradient(
     90deg,
-    rgb(200, 200, 200),
-    rgba(200, 200, 200, 0.5),
+    rgb(80, 80, 80),
+    rgba(80, 80, 80, 0.5),
     transparent 50%
   );
 }
 
-.right {
+.right-card {
   top: 0;
   right: 0;
   width: 5px;
@@ -1232,37 +1227,37 @@ p {
   background: linear-gradient(
     180deg,
     transparent 30%,
-    rgba(150, 150, 150, 0.5),
-    rgb(150, 150, 150)
+    rgba(0, 0, 0, 0.5),
+    rgb(0, 0, 0)
   );
 }
 
-.left {
+.left-card {
   left: 0;
   bottom: 0;
   width: 5px;
   height: 0;
   background: linear-gradient(
     180deg,
-    rgb(50, 50, 50),
-    rgba(50, 50, 50, 0.5),
+    rgb(80, 80, 80),
+    rgba(80, 80, 80, 0.5),
     transparent 70%
   );
 }
 
-.top {
+.top-card {
   animation: animateTop 3s ease-in-out infinite;
 }
 
-.bottom {
+.bottom-card {
   animation: animateBottom 3s ease-in-out infinite;
 }
 
-.right {
+.right-card {
   animation: animateRight 3s ease-in-out infinite;
 }
 
-.left {
+.left-card {
   animation: animateLeft 3s ease-in-out infinite;
 }
 

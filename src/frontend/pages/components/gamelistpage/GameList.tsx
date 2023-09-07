@@ -28,18 +28,14 @@ export default function GameList({
 
   useEffect(() => {
     function updateInvitationList(result: any) {
-      console.log(
-        "in useEffect updateInvitationList ",
-        JSON.stringify(result, null, 2)
-      );
       setGameList(() => result);
     }
 
     function matchStartCheck(result: any) {
-      console.log(
-        "in useEffect matchStartCheck ",
-        JSON.stringify(result, null, 2)
-      );
+      // console.log(
+      //   "in useEffect matchStartCheck ",
+      //   JSON.stringify(result, null, 2)
+      // );
     }
     if (gameSocket) {
       gameSocket.on("updateInvitationList", updateInvitationList);
@@ -57,12 +53,8 @@ export default function GameList({
   else {
     let tmpList;
     if (gameList?.length <= pageHeight) {
-      console.log(`gamelists length가 ${gameList.length}이므로 1페이지 미만.`);
       tmpList = gameList;
     } else {
-      console.log(`users length가 ${gameList.length}이므로 1페이지 이상가능.`);
-
-      console.log(`현재 페이지는 ${page}이므로, `);
       const startIndex = (page - 1) * pageHeight;
       tmpList = gameList.slice(startIndex, startIndex + pageHeight);
     }

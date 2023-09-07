@@ -100,12 +100,39 @@ export default function App() {
       }
     }
 
+    function updateUserNick(userId: number, newNick: string) {
+      let max = directMessageMap;
+
+      console.log(
+        `####In App updateUserNick userId <${userId}> newNick <${newNick}>
+        max.get(userId)  <${JSON.stringify(max.get(userId), null, 2)}>
+        list <${JSON.stringify(directMessageList, null, 2)}>
+        `
+      );
+      if (max.get(userId)) {
+        const tmpData = max.get(userId);
+        tmpData.data.from = newNick;
+        max.set(userId, {
+          data: tmpData.data,
+        });
+      }
+
+      console.log(
+        `####In App updateUserNick 
+        changed max.get(userId)  <${JSON.stringify(max.get(userId), null, 2)}>
+        list <${JSON.stringify([...max], null, 2)}>
+        `
+      );
+
+      setDirectMessageMap(() => max);
+      setDirectMessageList(() => [...max]);
+    }
     if (socket) {
-      socket.on("updateUserNick", reloadNick);
+      socket.on("updateUserNick", updateUserNick);
     }
     return () => {
       if (socket) {
-        socket.off("updateUserNick", reloadNick);
+        socket.off("updateUserNick", updateUserNick);
       }
     };
   }, [socket]);
@@ -188,9 +215,31 @@ export default function App() {
       setBlocklist(() => [...result]);
     }
     function updateBlocklist(target: number) {
-      console.log("updateBlocklist update");
-      localStorage.setItem("blocklist", JSON.stringify([...blocklist, target]));
-      setBlocklist(() => [...blocklist, target]);
+      if (blocklist.includes(target)) {
+        const index = blocklist.indexOf(String(target));
+
+        const x = blocklist;
+        x.splice(index, 1);
+        console.log("index ", index, " x ", x);
+        setBlocklist(() => x);
+        localStorage.setItem("blocklist", JSON.stringify(x));
+        console.log(
+          "updateBlocklist includes",
+          localStorage.getItem("blocklist"),
+          x
+        );
+      } else {
+        localStorage.setItem(
+          "blocklist",
+          JSON.stringify([...blocklist, target])
+        );
+        setBlocklist(() => [...blocklist, target]);
+        console.log(
+          "updateBlocklist no includes",
+          localStorage.getItem("blocklist"),
+          [...blocklist, target]
+        );
+      }
     }
     function sendRoomMembers(result: any) {
       console.log(
@@ -224,9 +273,13 @@ export default function App() {
           );
           result.messageNew = false;
           result.lastMessage = data.body;
+          result.fromId = data.fromId;
+          result.at = data.at;
           max.set(result.roomname, {
+            fromId: result?.fromId,
             lastMessage: result.lastMessage,
             messageNew: false,
+            at: result?.at,
           });
           return result;
         }
@@ -278,9 +331,18 @@ export default function App() {
           data,
           messageNew: false,
         });
-      // if (data?.fromId === DMTargetId) {
-      //   socket.emit("userCheckedDM", data?.fromId);
-      // }
+      const chk = data?.fromId === DMTargetId && isDM;
+      console.log(`in userCheckedDM
+        data?.fromId <${data?.fromId}>
+        DMTargetId <${DMTargetId}>
+        isDM <${isDM}>
+        chk <${chk}>
+        data <${data}>
+        `);
+      if (data?.fromId === DMTargetId && isDM) {
+        console.log("i have send userChckedDM ", data?.fromId);
+        socket.emit("userCheckedDM", data?.fromId);
+      }
       max.forEach((value: any, key: any) => {
         console.log(
           `In SEND DM   value <${JSON.stringify(
@@ -315,7 +377,6 @@ export default function App() {
         ((data?.from === currentRoomName && to === tmpLoginnickname) ||
           (to === currentRoomName && data?.from === tmpLoginnickname))
       ) {
-        console.log("same froom!", currentRoomName, to);
         setMessages(() => [...messages, data]);
       }
     }
@@ -345,9 +406,11 @@ export default function App() {
       setAlertModal(() => true);
     }
 
-    function userCheckedDM(fromId: number) {
+    function userCheckedDM(fromId: any) {
       const tmpList: any = [];
       directMessageList.map((e: any) => {
+        console.log(`e?.[1].data.fromId <${e?.[1].data.fromId}>
+        fromId <${fromId}>`);
         if (e?.[1].data.fromId !== fromId) tmpList.push(e);
       });
       let tmpMap = directMessageMap;
@@ -519,9 +582,7 @@ export default function App() {
             )}
           </>
           {/* seunchoi - TEST */}
-          <button disabled={!isGameConnected} onClick={handleGameOnOff}>
-            game on/off
-          </button>
+
           <GameContext.Provider
             value={{
               isGameConnected: isGameConnected,
@@ -530,16 +591,15 @@ export default function App() {
               gameData: gameData,
             }}
           >
-            {
-              matchStartCheck && (
-                <TempRandomMatch />
-              ) /*todo - match accept modal*/
-            }
             <NavBar
               setIsLoading={setIsLoading}
               setTmpLoginnickname={setTmpLoginnickname}
               setLeftHeader={setLeftHeader}
               setError={setError}
+              isGameConnected={isGameConnected}
+              matchStartCheck={matchStartCheck}
+              handleGameOnOff={handleGameOnOff}
+              gameLoad={gameLoad}
             />
           </GameContext.Provider>
           <Main>
@@ -608,6 +668,7 @@ export default function App() {
                 <ChatRoomUser
                   id={tmpLoginID}
                   isDM={isDM}
+                  isGameConnected={isGameConnected}
                   blocklist={blocklist}
                   roomInfo={roomInfo}
                   setRoomInfo={setRoomInfo}

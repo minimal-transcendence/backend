@@ -20,19 +20,10 @@ const ChatBody = ({
   // const socket = useContext(SocketContext).chatSocket;
   const [avatarURL, setAvatarURL] = useState<string | undefined>("");
   const filteredMessage: any[] = [];
-  console.log(
-    "blocklist : ",
-    blocklist
-    // "messages1 : " + JSON.stringify(messages)
-  );
+
   function filter(messages: any) {
     // console.log("messages : " + JSON.stringify(messages));
     messages?.forEach((message: any) => {
-      console.log(
-        `Array.isArray(blocklist) : <${Array.isArray(
-          blocklist
-        )}> type <${typeof blocklist}>`
-      );
       if (
         Array.isArray(blocklist) &&
         !blocklist?.find((b: any) => {
@@ -43,7 +34,6 @@ const ChatBody = ({
     });
   }
   filter(messages);
-  console.log("filteredMessage ", filteredMessage);
 
   if (messages?.length === 0) return;
 

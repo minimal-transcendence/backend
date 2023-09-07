@@ -25,6 +25,8 @@ export default function SearchListCreateRoom({
     event.preventDefault();
     if (roomname.length < 1) {
       alert("채팅창 이름 입력해라");
+    } else if (roomname[0] === "$") {
+      alert("첫글자 $로 하하지지마라");
     } else {
       await new Promise((r) => setTimeout(r, 10));
       alert(`입력된 채팅창 이름: ${roomname}`);

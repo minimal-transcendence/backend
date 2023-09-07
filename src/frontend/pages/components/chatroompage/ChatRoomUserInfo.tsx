@@ -17,6 +17,7 @@ export default function ChatRoomUserInfo({
   id,
   changedID,
   changedNickName,
+  isGameConnected,
 }: {
   user: any;
   roomInfo: any;
@@ -26,17 +27,12 @@ export default function ChatRoomUserInfo({
   id: any;
   changedID: number;
   changedNickName: string;
+  isGameConnected: boolean;
 }) {
   const socket = useContext(SocketContext).chatSocket;
   const gameSocket = useContext(SocketContext).gameSocket;
   const [userProfileModal, setUserProfileModal] = useState<boolean>(false);
 
-  console.log("in ChatRoomUserInfo user: ", JSON.stringify(user, null, 2));
-  console.log(
-    "in ChatRoomUserInfo ",
-    JSON.stringify(user?.nickname),
-    JSON.stringify(myNickName)
-  );
   function handleMenu(event: any) {
     console.log("in handleMenu");
     if (event.target.dataset.name) {
@@ -52,9 +48,7 @@ export default function ChatRoomUserInfo({
         });
       } else if (event.target.dataset.name === "profile") {
         console.log("in profileUser ", targetnickname, user?.id, id);
-        // socket.emit("profileUser", roomname, targetnickname);
         setUserProfileModal(() => !userProfileModal);
-        // setUserProfileID(()=> user?.id)
       } else if (event.target.dataset.name === "ban") {
         console.log("in banUser ", roomname, targetnickname);
         socket.emit("banUser", {
@@ -203,6 +197,10 @@ export default function ChatRoomUserInfo({
                   <div className="dropdown-item" data-name="dmApply">
                     1:1 Chat
                   </div>
+                </>
+              )}
+              {user?.nickname !== myNickName && isGameConnected && (
+                <>
                   <div className="dropdown-item dropdown-second">
                     1:1 Game
                     <div className="dropdown-content-second">

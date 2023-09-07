@@ -8,20 +8,30 @@ export default function NavBar({
   setTmpLoginnickname,
   setLeftHeader,
   setError,
+  isGameConnected,
+  matchStartCheck,
+  handleGameOnOff,
+  gameLoad,
 }: {
   setIsLoading: any;
   setTmpLoginnickname: any;
   setLeftHeader: any;
   setError: any;
+  isGameConnected: boolean;
+  matchStartCheck: boolean;
+  handleGameOnOff: any;
+  gameLoad: any;
 }) {
-  console.log("navebar ");
-
   return (
     <nav className="nav-bar">
       <Search
         setIsLoading={setIsLoading}
         setLeftHeader={setLeftHeader}
         setError={setError}
+        isGameConnected={isGameConnected}
+        matchStartCheck={matchStartCheck}
+        handleGameOnOff={handleGameOnOff}
+        gameLoad={gameLoad}
       />
       <Logo />
       <Menu setTmpLoginnickname={setTmpLoginnickname} />

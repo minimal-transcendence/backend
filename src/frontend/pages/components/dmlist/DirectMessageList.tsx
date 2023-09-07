@@ -41,17 +41,8 @@ export default function DirectMessageList({
   else {
     let tmpList;
     if (directMessageList?.length <= pageHeight) {
-      console.log(
-        `directMessageList length가 ${directMessageList.length}이므로 1페이지 미만.
-        directMessageList <${directMessageList}>`
-      );
       tmpList = directMessageList;
-    } else {
-      console.log(
-        `users length가 ${directMessageList.length}이므로 1페이지 이상가능.`
-      );
 
-      console.log(`현재 페이지는 ${page}이므로, `);
       const startIndex = (page - 1) * pageHeight;
       tmpList = directMessageList.slice(startIndex, startIndex + pageHeight);
     }
