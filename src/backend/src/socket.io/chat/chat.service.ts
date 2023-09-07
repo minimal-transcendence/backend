@@ -152,7 +152,6 @@ export class ChatService {
 		client.leave(client.currRoom)
 		client.join(roomname);
 		client.currRoom = roomname;
-		console.log(`update Room  + `, roomname);
 		this.updateChatScreen(client, clientId, roomname);
 	}
 
@@ -239,7 +238,6 @@ export class ChatService {
 			}
 		}
 		else {
-			console.log("Is not Owner");
 			client.emit("sendAlert", "[ Act Error ]", "Only owner can set room status");
 		}
 	}
@@ -647,7 +645,6 @@ export class ChatService {
 			nickname: fromUser.nickname,
 			isGaming: fromUser.isGaming
 		})
-		console.log(userInfo);
 		return (userInfo);
 	}
 
@@ -728,19 +725,10 @@ export class ChatService {
 		return (true);
 	}
 
-	// //TODO : 되는지 확인 // 이거 쓸건지...? -> 문제없으면 빼자
-	// async emitEventsToAllSockets(io: Namespace, targetId: number, eventname: string, args1?: any, args2?: any): Promise<void> {
-	// 	const sockets = await io.in(`$${targetId}`).fetchSockets();
-	// 	sockets.forEach((socket) => {
-	// 		socket.emit(eventname, args1, args2);
-	// 	})
-	// }
-
-
 	getAllUserInfo(userId: number): userInfo[] {
 		const thisUser = this.storeUser.findUserById(Number(userId));
 		if (!thisUser) {
-			console.log('no user data');	//error handling
+			//error handling
 			return;
 		}
 		const blocklist = thisUser.blocklist;
