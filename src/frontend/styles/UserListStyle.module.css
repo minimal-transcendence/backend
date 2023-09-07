@@ -173,7 +173,7 @@
   font-family: Pretendard, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
 }
-.big_div {
+.small_div {
   text-align: center;
   display: flex;
   justify-content: center;

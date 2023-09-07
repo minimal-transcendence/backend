@@ -389,6 +389,7 @@ body {
   min-width: 15rem;
   display: grid;
   grid-template-columns: 3fr 2fr;
+  padding-top: 1rem;
 }
 .search::placeholder {
   color: var(--color-text-very-light);

@@ -205,32 +205,6 @@
 /* ///////////////////////////////////// */
 
 /* ysungwon */
-.buttons_small {
-  display: flex;
-  flex-direction: row; /* 버튼들을 세로로 배치 */
-  gap: 5px; /* 버튼 간격 */
-  padding: 5px;
-}
-
-.buttons_small button {
-  padding: 4px 4px;
-  width: 30px;
-  height: 20px;
-  border: none;
-  border-radius: 2px;
-  cursor: pointer;
-  font-size: 8px;
-  font-weight: bold;
-  font-family: Pretendard, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
-}
-
-.small_div {
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 
 .buttons_middle {
   display: flex;
@@ -251,7 +225,8 @@
   font-family: Pretendard, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
 }
-.big_div {
+
+.small_div {
   text-align: center;
   display: flex;
   justify-content: center;
