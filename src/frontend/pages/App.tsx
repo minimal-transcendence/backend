@@ -112,19 +112,18 @@ export default function App() {
 
   useEffect(()=>{
     async function checkLogout(userId:number, isConnected:boolean){
+      console.log("get logout event", userId, " ", isConnected);
       if (isConnected == false && userId == Number(tmpLoginID)){
         alert("로그인 정보가 만료되었습니다");
         setTimeout(()=>router.push("/"), 10);
       }
     }
     if (socket) {
-      socket.on("updateUserStatus", (userId: number, isConnected: boolean) =>
-        checkLogout(userId, isConnected)
-      );
+      socket.on("updateUserStatus", checkLogout);
     }
     return () => {
       if (socket) {
-        socket.removeAllListeners("updateUserStatus");
+        socket.off("updateUserStatus", checkLogout);
       }
     };
   }, [socket, tmpLoginID]);
