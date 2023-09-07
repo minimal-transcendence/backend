@@ -15,7 +15,7 @@ export default function DirectMessageListHeader({
 }) {
   return (
     <div className="gamelist-header">
-      <h4>{myNickName} 님의 DM-List</h4>
+      <h4>Direct</h4>
 
       <button
         onClick={() => setPage(() => page - 1)}

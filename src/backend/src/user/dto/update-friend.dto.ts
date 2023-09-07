@@ -1,11 +1,9 @@
+import { Type } from 'class-transformer';
 import { IsBoolean, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class UpdateFriendDto {
   @IsNotEmpty()
-  @IsNumber()
-  id : number;
-
-  @IsNotEmpty()
+  @Type(() => Number)
   @IsNumber()
   friend: number;
   

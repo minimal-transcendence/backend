@@ -4,15 +4,11 @@ import Search from "./NavBarSearch";
 // import { SocketContext } from "@/context/socket";
 import { useState, useContext } from "react";
 export default function NavBar({
-  query,
-  setQuery,
   setIsLoading,
   setTmpLoginnickname,
   setLeftHeader,
   setError,
 }: {
-  query: string;
-  setQuery: any;
   setIsLoading: any;
   setTmpLoginnickname: any;
   setLeftHeader: any;
@@ -46,14 +42,12 @@ export default function NavBar({
 
   return (
     <nav className="nav-bar">
-      <Logo />
       <Search
-        query={query}
-        setQuery={setQuery}
         setIsLoading={setIsLoading}
         setLeftHeader={setLeftHeader}
         setError={setError}
       />
+      <Logo />
       <Menu setTmpLoginnickname={setTmpLoginnickname} />
     </nav>
   );

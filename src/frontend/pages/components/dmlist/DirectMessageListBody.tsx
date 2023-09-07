@@ -27,8 +27,8 @@ export default function DirectMessageListBody({
   } else {
     console.log("DMlist", JSON.stringify(tmpList, null, 2));
     return (
-      <div className="gamelist-body">
-        <ul className="gamelist-lists">
+      <div className="dmlist-body">
+        <ul className="dmlist-lists">
           {tmpList.map((messageInfo: any, i: number) => (
             <DirectMessageListItemInfo
               messageInfo={messageInfo}
