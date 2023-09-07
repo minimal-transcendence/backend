@@ -130,7 +130,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     }
 
     if (socket){
-      socket.emit("requestTargetMember", { userId : Number(userId), targetId : Number(id) });
+      socket.emit("requestTargetMember", { targetId : id });
       socket.once("responseTargetMember", async (data:any) => getListBySocket(data))
     }
 

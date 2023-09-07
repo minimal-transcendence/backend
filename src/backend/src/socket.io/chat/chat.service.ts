@@ -152,7 +152,6 @@ export class ChatService {
 		client.leave(client.currRoom)
 		client.join(roomname);
 		client.currRoom = roomname;
-		console.log(`update Room  + `, roomname);
 		this.updateChatScreen(client, clientId, roomname);
 	}
 
@@ -239,7 +238,6 @@ export class ChatService {
 			}
 		}
 		else {
-			console.log("Is not Owner");
 			client.emit("sendAlert", "[ Act Error ]", "Only owner can set room status");
 		}
 	}
@@ -429,7 +427,8 @@ export class ChatService {
 		// client.emit("sendBlocklist", blocklist);	//++
 		io.in(`$${client.userId}`).emit("sendBlocklist", blocklist);
 		io.in(`$${client.userId}`).emit("updateBlocklist", targetId);
-		const sockets = await io.in(`$${targetId}$`).fetchSockets()
+		const dmRoom = this.getDMRoomname(client.userId, targetId);
+		const sockets = await io.in(dmRoom).fetchSockets()
 			.then((res) => { return (res) })
 			.catch((error) => {
 				return (error.message);	//사실 문제있는 코드인데...
@@ -546,7 +545,8 @@ export class ChatService {
 			at: message.at
 		};
 		this.storeMessage.saveMessage(message);
-		io.to([`$${from}$`, `$${to}$`, `$${to}`]).emit("sendDM", this.storeUser.getNicknameById(to), res);	//if you touch ${} here is going to change the most
+		const dmRoom = this.getDMRoomname(from, to);
+		io.to([dmRoom, `$${to}`]).emit("sendDM", this.storeUser.getNicknameById(to), res);	//if you touch ${} here is going to change the most
 	}
 
 	//need alert?
@@ -577,17 +577,78 @@ export class ChatService {
 		}
 	}
 
+	// getDMRoomname(from : number, to : number) : string {
+	// 	const roomname = from > to ? `$${from}-${to}$` : `$${to}-${from}$`;
+	// 	return (roomname)
+	// }
+
+	// getTargetIdFromDMRoom(dmRoom : string, userId : number) : string | null {
+	// 	const trim = dmRoom.slice(1, dmRoom.length - 1);
+	// 	console.log("trim : " + trim);
+	// 	const parts = trim.split('-');
+	// 	if (parts[0] === `${userId}`)
+	// 	return (parts[1]);
+	// 	else if (parts[1] === `${userId}`)
+	// 	return (parts[2]);
+	// 	else
+	// 	return (null);
+	// }
+	getDMRoomname(from : number, to : number) : string {
+		return (`$${from}-${to}$`);
+	}
+
+	getToIdFromDMRoom(dmRoom : string, userId : number) : string | null {
+		const trim = dmRoom.slice(1, dmRoom.length - 1);
+		const parts = trim.split('-');
+		if (parts[0] === `${userId}`)
+			return (parts[1]);
+		else
+			return (null);
+	}
+
+	getFromIdFromDMRoom(dmRoom : string, userId : number) : string | null {
+		const trim = dmRoom.slice(1, dmRoom.length - 1);
+		const parts = trim.split('-');
+		if (parts[1] === `${userId}`)
+			return (parts[0]);
+		else
+			return (null);
+	}
+
+	isDMRoom(roomname : string) : boolean {
+		if (roomname[0] === '$' && roomname[roomname.length - 1] === '$'){
+			if (/^(\d+)\-(\d+)$/.test(roomname.substring(1, roomname.length - 1))){
+				console.log("isDMRoom : " + roomname);
+				return (true);
+			}
+		}
+		console.log("isNotDMRoom : " + roomname);
+		return (false);
+	}
+	
+	// IsUserInDMRoom(dmRoom : string, userId : number) : boolean {
+	// 	const trim = dmRoom.slice(1, dmRoom.length - 1);
+	// 	const parts = dmRoom.split('-');
+	// 	if (parts[0] === `${userId}` || parts[1] === `${userId}`)
+	// 		return true;
+	// 	else
+	// 		return false;
+	// }
+
 	fetchUserToDMRoom(io: Namespace, client: ChatSocket, username: string) {
 		const DMs = this.makeDMRoomMessages(client, username);
+		console.log(DMs);
 		const targetId = this.storeUser.getIdByNickname(username);
 		if (DMs != null) {
-			if (client.currRoom !== `$${targetId}`) {
+			const dmRoom = this.getDMRoomname(client.userId, targetId);
+			if (client.currRoom !== dmRoom) {
 				client.leave(client.currRoom);
-				client.join(`$${targetId}$`);
-				client.currRoom = `$${targetId}$`;
+				client.join(dmRoom);	//
+				client.currRoom = dmRoom;	//
 			}
 			client.emit("sendDMRoomInfo", username, targetId, DMs);
 			if (client.userId !== targetId) {
+				console.log("different! : " + dmRoom + " " + client.userId + " " + targetId);
 				const DMRoomMembers = this.makeDMRoomUserInfo(client.userId, targetId);
 				client.emit("sendRoomMembers", DMRoomMembers);
 			}
@@ -649,7 +710,6 @@ export class ChatService {
 			nickname: fromUser.nickname,
 			isGaming: fromUser.isGaming
 		})
-		console.log(userInfo);
 		return (userInfo);
 	}
 
@@ -730,19 +790,10 @@ export class ChatService {
 		return (true);
 	}
 
-	// //TODO : 되는지 확인 // 이거 쓸건지...? -> 문제없으면 빼자
-	// async emitEventsToAllSockets(io: Namespace, targetId: number, eventname: string, args1?: any, args2?: any): Promise<void> {
-	// 	const sockets = await io.in(`$${targetId}`).fetchSockets();
-	// 	sockets.forEach((socket) => {
-	// 		socket.emit(eventname, args1, args2);
-	// 	})
-	// }
-
-
 	getAllUserInfo(userId: number): userInfo[] {
 		const thisUser = this.storeUser.findUserById(Number(userId));
 		if (!thisUser) {
-			console.log('no user data');	//error handling
+			//error handling
 			return;
 		}
 		const blocklist = thisUser.blocklist;
@@ -772,42 +823,37 @@ export class ChatService {
 	}
 
 	async triggerWindowUpdate(io: Namespace, user: User) {
+		console.log("user nickname : " + user.nickname);
 		user.joinlist.forEach((room) => {
 			const currRoomInfo = this.makeCurrRoomInfo(room);
 			const roomMembers = this.makeRoomUserInfo(room);
 			io.in(room).emit("sendRoomMembers", roomMembers);
 			io.in(room).emit("sendCurrRoomInfo", currRoomInfo);
-			console.log(`send change nick event ${user.nickname} in room ${room}`); 0
 		})
-		const sockets = await io.in(`$${user.id}$`).fetchSockets()
-			.catch((error) => {
-				return (error.message);
-			});
-		sockets.forEach((socket: ChatSocket) => {
-			this.fetchUserToDMRoom(io, socket, user.nickname);
-		})
-		//본인도 update
-		const sockets2 = await io.in(`$${user.id}`).fetchSockets()
-			.catch((error) => {
-				// throw new InternalServerErrorException()	//웨.. 안 돼 흑흑
-				return (error.message);
-			});
-		sockets2.forEach((socket: ChatSocket) => {
-			socket.nickname = user.nickname;
-			const isDMRoom = (param: string): boolean => {
-				if (param[0] === '$'
-					&& param[param.length - 1] === '$'
-					&& /^(\d+)$/.test(param.substring(1, param.length - 1)))
-					return true;
-				else
-					return false;
-			};
-			if (isDMRoom(socket.currRoom)) {
-				const targetId = Number(socket.currRoom.substring(1, socket.currRoom.length - 1));
-				const target = this.storeUser.getNicknameById(targetId);
-				this.fetchUserToDMRoom(io, socket, target);
+		const dmRooms = [];
+		console.log(io.adapter.rooms);
+		io.adapter.rooms.forEach(async (_, key) => {
+			if (this.isDMRoom(key)){
+				const fromId = this.getFromIdFromDMRoom(key, user.id);
+				if (fromId){
+					const sockets = await io.in(key).fetchSockets()
+							.catch((error) => { return error });
+					sockets.forEach((socket : ChatSocket) => {
+						this.fetchUserToDMRoom(io, socket, user.nickname);
+					})
+				}
+				else {
+					const toId = this.getToIdFromDMRoom(key, user.id);
+					if (toId){
+						const sockets = await io.in(key).fetchSockets()
+									.catch((error) => { return error });
+						sockets.forEach((socket : ChatSocket) => {
+							this.fetchUserToDMRoom(io, socket, this.storeUser.getNicknameById(Number(toId)));
+						})
+					}
+				}			
 			}
-		})
+		});
 	}
 
 	async userChangeNick(io: Namespace, clientId: number, newNick: string) {
