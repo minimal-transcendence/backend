@@ -65,6 +65,7 @@ body {
   display: grid;
   grid-template-columns: 1fr;
   align-items: flex-end;
+  padding-top: 0.7rem;
 }
 .nav-bar-menu-l {
   width: 15rem;
