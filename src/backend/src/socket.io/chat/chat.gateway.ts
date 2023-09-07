@@ -213,6 +213,13 @@ export class ChatGateway
 		this.chatService.userChangeAvatar(this.io, userId);
 	}
 
+	updateUserFriend(userId : number, targetId : number, isAdd : boolean){
+		if (isAdd)
+			this.io.in(`$${userId}`).emit("follow", targetId);
+		else
+			this.io.in(`$${userId}`).emit("unfollow", targetId);
+	}
+
 	logout(clientId: number) {
 		this.chatService.updateUserStatus(this.io, clientId, false);
 		this.io.in(`$${clientId}`).disconnectSockets(true);
