@@ -63,6 +63,7 @@ export default function SearchList({
         if (!max.get(result.roomname)) {
           console.log(`result.roomname <${result.roomname}>
           max.get(result.roomname) <${max.get(result.roomname)}>`);
+          result.messageNew = true;
           max.set(result.roomname, {
             fromId: result?.fromId,
             lastMessage: result?.lastMessage,
@@ -75,7 +76,6 @@ export default function SearchList({
               2
             )}>`
           );
-          result.messageNew = true;
         }
         if (currentRoomName === result.roomname) {
           console.log(
