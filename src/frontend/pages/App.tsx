@@ -273,10 +273,13 @@ export default function App() {
           );
           result.messageNew = false;
           result.lastMessage = data.body;
+          result.fromId = data.fromId;
+          result.at = data.at;
           max.set(result.roomname, {
             fromId: result?.fromId,
             lastMessage: result.lastMessage,
             messageNew: false,
+            at: result?.at,
           });
           return result;
         }
