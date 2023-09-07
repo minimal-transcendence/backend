@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useLayoutEffect, useState, useContext, useRef } from "react";
 import { SocketContext } from "@/context/socket";
 const ChatFooter = ({
   currentRoomName,
@@ -9,6 +9,16 @@ const ChatFooter = ({
   isDM: boolean;
   DMtarget: string;
 }) => {
+  const inputRef = useRef<any>();
+
+  useLayoutEffect(() => {
+    console.log("in useLayoutEffect!!!!!!");
+    if (inputRef.current !== null && inputRef.current !== undefined) {
+      console.log("in useLayoutEffect in if!!!");
+      inputRef.current.focus();
+    }
+  }, [currentRoomName, isDM, DMtarget]);
+
   const socket = useContext(SocketContext).chatSocket;
   const [textareaValue, setTextareaValue] = useState("");
   function handleSubmit(e: any) {
@@ -83,6 +93,7 @@ const ChatFooter = ({
         cols={33}
         className="input2"
         value={textareaValue}
+        ref={inputRef}
         onChange={(e) => setTextareaValue(e.target.value)}
       />
       <button type="submit"> Send </button>
