@@ -107,6 +107,13 @@ export class ChatGateway
 		);
 	}
 
+	@SubscribeMessage('userCheckedDM')
+	handleCheckDM(client: ChatSocket, target: number) {
+		this.chatService.checkedDM(
+			this.io, client.userId, target
+		);
+	}
+
 	@SubscribeMessage('blockUser')
 	handleBlockUser(client: ChatSocket, payload: TargetDto) {
 		this.chatService.blockUser(
@@ -183,7 +190,7 @@ export class ChatGateway
 	}
 
 	@SubscribeMessage('requestTargetMember')
-	handleReqTargetMember(client: ChatSocket, payload : UserInfoDto){
+	handleReqTargetMember(client: ChatSocket, payload: UserInfoDto) {
 		const member = this.chatService.getUserInfoById(client.userId, payload.targetId);
 		console.log("responseTargetMember");
 		console.log(member);

@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useRef, useContext } from "react";
 import ChatHeader from "./ChatHeader";
 import ChatBody from "./ChatBody";
-// import ChatBody from "./ChatBody";
 import ChatFooter from "./ChatFooter";
-
 import { SocketContext } from "@/context/socket";
+
 const ChatMain = ({
   roomInfo,
   setRoomInfo,
@@ -17,8 +16,7 @@ const ChatMain = ({
   gameLoad,
   isDM,
   setIsDM,
-  lastMessageList,
-  setLastMessageList,
+  setDMTargetId,
 }: {
   roomInfo: any;
   setRoomInfo: any;
@@ -31,13 +29,9 @@ const ChatMain = ({
   gameLoad: boolean;
   isDM: boolean;
   setIsDM: any;
-  lastMessageList: any;
-  setLastMessageList: any;
+  setDMTargetId: any;
 }) => {
-  // const [typingStatus, setTypingStatus] = useState("");
-
   const [DMtarget, setDMtarget] = useState<string>("");
-
   const [roomState, setRoomState] = useState<string>("");
   const lastMessageRef = useRef<null | HTMLElement>(null);
   const socket = useContext(SocketContext).chatSocket;
@@ -58,22 +52,29 @@ const ChatMain = ({
       setMessages(() => result.messages);
       setIsDM(() => false);
       setRoomState(() => (result?.isPrivate ? "Private" : "Public"));
+      setDMTargetId(() => -3);
     }
 
-    function sendDMRoomInfo(target: any, messages: any) {
+    function sendDMRoomInfo(target: any, targetId: number, messages: any) {
       console.log(
         `in useEffect sendDMRoomInfo  
-        target <${JSON.stringify(target, null, 2)}> messages <${JSON.stringify(
+        target <${JSON.stringify(
+          target,
+          null,
+          2
+        )}> targetId <${targetId}> messages <${JSON.stringify(
           messages,
           null,
           2
         )}> currentRoomName : <${currentRoomName}>`
       );
 
+      socket.emit("userCheckedDM", targetId);
       setCurrentRoomName(() => target);
       setMessages(() => messages);
       setIsDM(() => true);
       setDMtarget(() => target);
+      setDMTargetId(() => targetId);
     }
     socket.on("sendCurrRoomInfo", sendCurrRoomInfo);
     socket.on("sendDMRoomInfo", sendDMRoomInfo);
@@ -90,18 +91,7 @@ const ChatMain = ({
     socket,
   ]);
 
-  // useEffect(() => {f
-  //   socket.on("messageResponse", (data: any) =>
-  //     setMessages([...messages, data])
-  //   );
-  // }, [socket, messages]);
-
-  // useEffect(() => {
-  //   socket.on("typingResponse", (data: any) => setTypingStatus(data));
-  // }, [socket]);
-
   useEffect(() => {
-    // 👇️ scroll to bottom every time messages change
     lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
@@ -130,15 +120,6 @@ const ChatMain = ({
           currentRoomName={currentRoomName}
         />
       </div>
-
-      {/* <div className="chat__main">
-        <ChatBody
-          messages={messages}
-          typingStatus={typingStatus}
-          lastMessageRef={lastMessageRef}
-        />
-        <ChatFooter socket={socket} />
-      </div> */}
     </div>
   );
 };

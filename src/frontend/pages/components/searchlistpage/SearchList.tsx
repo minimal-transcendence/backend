@@ -7,21 +7,24 @@ import SearchListMain from "./SearchListMain";
 
 export default function SearchList({
   results,
-  query,
+
   leftHeader,
-  setLeftHeader,
-  setroomnameModal,
   isOpenModal,
-  setIsOpenModal,
-  setTempSearchList,
   blocklist,
   currentRoomName,
-  setCurrentRoomName,
   lastMessageList,
   setLastMessageList,
+  setError,
+  setIsLoading,
+
+  setLeftHeader,
+  setroomnameModal,
+  setIsOpenModal,
+  setTempSearchList,
+  setCurrentRoomName,
 }: {
   results: any;
-  query: any;
+
   leftHeader: any;
   setLeftHeader: any;
   setroomnameModal: any;
@@ -33,8 +36,11 @@ export default function SearchList({
   setCurrentRoomName: any;
   lastMessageList: any;
   setLastMessageList: any;
+  setError: any;
+  setIsLoading: any;
 }) {
   const socket = useContext(SocketContext).chatSocket;
+  const [query, setQuery] = useState("");
   console.log("in searchList ", results);
   useEffect(() => {
     function requestPassword(roomname: string) {
@@ -135,11 +141,8 @@ export default function SearchList({
       });
       max.forEach((value: any, key: any) => {
         console.log(
-          `value <${JSON.stringify(value, null, 2)}>  key <${JSON.stringify(
-            key,
-            null,
-            2
-          )}>`
+          `value <${JSON.stringify(value, null, 2)}>  
+          key <${JSON.stringify(key, null, 2)}>`
         );
       });
 
@@ -176,6 +179,9 @@ export default function SearchList({
           setLeftHeader={setLeftHeader}
           setroomnameModal={setroomnameModal}
           setCurrentRoomName={setCurrentRoomName}
+          setError={setError}
+          setIsLoading={setIsLoading}
+          setQuery={setQuery}
         />
       </div>
     </>
