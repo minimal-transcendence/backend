@@ -8,11 +8,17 @@ export default function NavBar({
   setTmpLoginnickname,
   setLeftHeader,
   setError,
+  isGameConnected,
+  matchStartCheck,
+  handleGameOnOff,
 }: {
   setIsLoading: any;
   setTmpLoginnickname: any;
   setLeftHeader: any;
   setError: any;
+  isGameConnected: boolean;
+  matchStartCheck: boolean;
+  handleGameOnOff: any;
 }) {
   // const socket = useContext(SocketContext).chatSocket;
   console.log("navebar ");
@@ -46,6 +52,9 @@ export default function NavBar({
         setIsLoading={setIsLoading}
         setLeftHeader={setLeftHeader}
         setError={setError}
+        isGameConnected={isGameConnected}
+        matchStartCheck={matchStartCheck}
+        handleGameOnOff={handleGameOnOff}
       />
       <Logo />
       <Menu setTmpLoginnickname={setTmpLoginnickname} />

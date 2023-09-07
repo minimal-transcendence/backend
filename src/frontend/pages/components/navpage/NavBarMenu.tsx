@@ -136,7 +136,7 @@ export default function Menu({
               height="35"
               alt="contesticon"
             /> */}
-              <article className={randomMatch ? "card" : ""}>
+              <article className={randomMatch ? "card" : "card-no"}>
                 <Image
                   className="dropbtn"
                   src={contestIcon}
@@ -187,30 +187,30 @@ export default function Menu({
               alt="logouticon"
             />
           </p>
-        </div>
-        <div>
-          <>
-            <ModalOverlay isOpenModal={myProfileModal} />
-            {myProfileModal && (
-              <>
-                <MyProfile
-                  setIsOpenModal={setMyProfileModal}
-                  setTmpLoginnickname={setTmpLoginnickname}
-                />
-              </>
-            )}
-          </>
-        </div>
+          <div>
+            <>
+              <ModalOverlay isOpenModal={myProfileModal} />
+              {myProfileModal && (
+                <>
+                  <MyProfile
+                    setIsOpenModal={setMyProfileModal}
+                    setTmpLoginnickname={setTmpLoginnickname}
+                  />
+                </>
+              )}
+            </>
+          </div>
 
-        <div>
-          <>
-            <ModalOverlay isOpenModal={userListModal} />
-            {userListModal && (
-              <>
-                <UserList setIsOpenModal={setUserListModal} />
-              </>
-            )}
-          </>
+          <div>
+            <>
+              <ModalOverlay isOpenModal={userListModal} />
+              {userListModal && (
+                <>
+                  <UserList setIsOpenModal={setUserListModal} />
+                </>
+              )}
+            </>
+          </div>
         </div>
       </div>
     </>

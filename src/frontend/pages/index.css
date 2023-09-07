@@ -64,7 +64,7 @@ body {
 .nav-bar-menu {
   display: grid;
   grid-template-columns: 1fr;
-  align-items: center;
+  align-items: flex-end;
 }
 .nav-bar-menu-l {
   width: 15rem;
@@ -372,7 +372,7 @@ body {
   width: 50rem;
   min-width: 20rem;
   padding-top: 1rem;
-  font-size: 2rem;
+  font-size: 1.6rem;
 }
 
 .logo h1 {
@@ -414,6 +414,7 @@ body {
   text-align: center;
   font-size: 1.4rem;
 }
+
 .nav-randmatch {
   justify-self: center;
   align-self: center;
@@ -558,7 +559,7 @@ body {
   padding: 0.2rem 0.4rem;
 }
 .dmlist-button-x {
-  font-size: 0.4rem;
+  font-size: 0.8rem;
 }
 .gamelist-avatar img,
 .dmlist-avatar img {
@@ -1152,6 +1153,13 @@ label:active:after {
   gap: 24px;
 }
 
+.card-no {
+  height: 64px;
+  width: 64px;
+  justify-content: center;
+  display: flex;
+  padding-top: 14px;
+}
 .card {
   position: relative;
   width: 50px;
@@ -1262,17 +1270,17 @@ label:active:after {
 
 @keyframes animateBottom {
   0%,
-  25% {
+  50% {
     opacity: 0;
     width: 0;
   }
 
-  50% {
+  75% {
     opacity: 1;
     width: 100%;
   }
 
-  55%,
+  76%,
   100% {
     opacity: 0;
   }

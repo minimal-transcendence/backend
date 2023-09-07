@@ -519,9 +519,7 @@ export default function App() {
             )}
           </>
           {/* seunchoi - TEST */}
-          <button disabled={!isGameConnected} onClick={handleGameOnOff}>
-            game on/off
-          </button>
+
           <GameContext.Provider
             value={{
               isGameConnected: isGameConnected,
@@ -530,16 +528,14 @@ export default function App() {
               gameData: gameData,
             }}
           >
-            {
-              matchStartCheck && (
-                <TempRandomMatch />
-              ) /*todo - match accept modal*/
-            }
             <NavBar
               setIsLoading={setIsLoading}
               setTmpLoginnickname={setTmpLoginnickname}
               setLeftHeader={setLeftHeader}
               setError={setError}
+              isGameConnected={isGameConnected}
+              matchStartCheck={matchStartCheck}
+              handleGameOnOff={handleGameOnOff}
             />
           </GameContext.Provider>
           <Main>
