@@ -386,6 +386,7 @@ body {
 .gameAccept-div {
   width: 15rem;
   min-width: 15rem;
+  grid-template-rows: 2fr 1fr;
 }
 .search::placeholder {
   color: var(--color-text-very-light);

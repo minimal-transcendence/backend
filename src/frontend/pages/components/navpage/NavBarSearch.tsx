@@ -23,18 +23,19 @@ export default function Search({
 
   return (
     <div className="gameAccept-div">
-      <div className={styles_profile.buttons}>
-        <button
-          onClick={handleGameOnOff}
-          className={
-            gameLoad ? styles_profile.followIn : styles_profile.unfollowIn
-          }
-        >
-          GameWindow ON / OFF
-        </button>
-
-        {matchStartCheck && <TempRandomMatch />}
+      <div className={styles_profile.big_div}>
+        <div className={styles_profile.buttons_middle}>
+          <button
+            onClick={handleGameOnOff}
+            className={
+              gameLoad ? styles_profile.followIn : styles_profile.unfollowIn
+            }
+          >
+            GameWindow ON / OFF
+          </button>
+        </div>
       </div>
+      <div>{matchStartCheck && <TempRandomMatch />}</div>
     </div>
   );
 }

@@ -341,7 +341,7 @@ export default function App() {
         `);
       if (data?.fromId === DMTargetId && isDM) {
         console.log("i have send userChckedDM ", data?.fromId);
-        socket.emit("userCheckedDM", data?.fromId);
+        socket.emit("userCheckedDM", { targetId: data?.fromId });
       }
       max.forEach((value: any, key: any) => {
         console.log(
