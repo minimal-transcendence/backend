@@ -413,12 +413,14 @@ body {
 .nav-logout {
   text-align: center;
   font-size: 1.4rem;
+  cursor: pointer;
 }
 
 .nav-randmatch {
   justify-self: center;
   align-self: center;
   display: flex;
+  cursor: pointer;
 }
 
 .list {
