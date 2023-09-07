@@ -144,10 +144,10 @@ export default function Menu({
                   height="35"
                   alt="contesticon"
                 />
-                <span className={randomMatch ? "top" : ""}></span>
-                <span className={randomMatch ? "right" : ""}></span>
-                <span className={randomMatch ? "bottom" : ""}></span>
-                <span className={randomMatch ? "left" : ""}></span>
+                <span className={randomMatch ? "top-card" : ""}></span>
+                <span className={randomMatch ? "right-card" : ""}></span>
+                <span className={randomMatch ? "bottom-card" : ""}></span>
+                <span className={randomMatch ? "left-card" : ""}></span>
               </article>
               {!block && (
                 <div
