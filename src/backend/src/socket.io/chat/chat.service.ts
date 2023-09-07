@@ -669,6 +669,7 @@ export class ChatService {
 			const message = this.storeRoom.findRoom(room).getLastMessage(blocklist);
 			res.push({
 				roomname: room,
+				fromId: message.from,
 				lastMessage: message.body
 			})
 		})
