@@ -274,6 +274,7 @@ export default function App() {
           result.messageNew = false;
           result.lastMessage = data.body;
           max.set(result.roomname, {
+            fromId: result?.fromId,
             lastMessage: result.lastMessage,
             messageNew: false,
           });
@@ -327,9 +328,9 @@ export default function App() {
           data,
           messageNew: false,
         });
-      // if (data?.fromId === DMTargetId) {
-      //   socket.emit("userCheckedDM", data?.fromId);
-      // }
+      if (data?.fromId === DMTargetId) {
+        socket.emit("userCheckedDM", data?.fromId);
+      }
       max.forEach((value: any, key: any) => {
         console.log(
           `In SEND DM   value <${JSON.stringify(

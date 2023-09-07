@@ -9,6 +9,7 @@ export default function SearchResult({
   onSelectRoom: any;
   blocklist: any;
 }) {
+  console.log("^^^el ", JSON.stringify(el, null, 2));
   return (
     <li onClick={() => onSelectRoom(event, el)}>
       <div>
@@ -16,7 +17,7 @@ export default function SearchResult({
       </div>
       <div>
         <p>
-          {!blocklist?.includes(el?.lastMessageFrom) ? (
+          {!blocklist?.includes(el?.lastMessageFromId) ? (
             <>
               <span>{el?.messageNew ? "🆕" : "☑️"}</span>
               <span>

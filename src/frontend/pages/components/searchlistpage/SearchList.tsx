@@ -64,6 +64,7 @@ export default function SearchList({
           console.log(`result.roomname <${result.roomname}>
           max.get(result.roomname) <${max.get(result.roomname)}>`);
           max.set(result.roomname, {
+            fromId: result?.fromId,
             lastMessage: result?.lastMessage,
             messageNew: true,
           });
@@ -82,6 +83,7 @@ export default function SearchList({
           );
           result.messageNew = false;
           max.set(result.roomname, {
+            fromId: result?.fromId,
             lastMessage: result.lastMessage,
             messageNew: false,
           });
@@ -108,6 +110,7 @@ export default function SearchList({
             );
             result.messageNew = false;
             max.set(result.roomname, {
+              fromId: result?.fromId,
               lastMessage: result.lastMessage,
               messageNew: false,
             });
@@ -132,6 +135,7 @@ export default function SearchList({
             );
             result.messageNew = true;
             max.set(result.roomname, {
+              fromId: result?.fromId,
               lastMessage: result.lastMessage,
               messageNew: true,
             });
