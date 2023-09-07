@@ -536,6 +536,7 @@ export default function App() {
               isGameConnected={isGameConnected}
               matchStartCheck={matchStartCheck}
               handleGameOnOff={handleGameOnOff}
+              gameLoad={gameLoad}
             />
           </GameContext.Provider>
           <Main>

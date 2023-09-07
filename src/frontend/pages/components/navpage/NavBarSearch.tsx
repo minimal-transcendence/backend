@@ -1,6 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import { SocketContext } from "@/context/socket";
 import TempRandomMatch from "../../components/pong/TempRandomMatch";
+import styles_profile from "../../../styles/UserListStyle.module.css";
 export default function Search({
   setIsLoading,
   setLeftHeader,
@@ -8,6 +9,7 @@ export default function Search({
   isGameConnected,
   handleGameOnOff,
   matchStartCheck,
+  gameLoad,
 }: {
   setIsLoading: any;
   setLeftHeader: any;
@@ -15,19 +17,24 @@ export default function Search({
   isGameConnected: any;
   matchStartCheck: boolean;
   handleGameOnOff: any;
+  gameLoad: any;
 }) {
   const socket = useContext(SocketContext).chatSocket;
 
   return (
-    <div>
-      <button
-        disabled={!isGameConnected}
-        onClick={handleGameOnOff}
-        className="gameAccept-div"
-      >
-        Game ON / OFF
-      </button>
-      {matchStartCheck && <TempRandomMatch />}
+    <div className="gameAccept-div">
+      <div className={styles_profile.buttons}>
+        <button
+          onClick={handleGameOnOff}
+          className={
+            gameLoad ? styles_profile.followIn : styles_profile.unfollowIn
+          }
+        >
+          GameWindow ON / OFF
+        </button>
+
+        {matchStartCheck && <TempRandomMatch />}
+      </div>
     </div>
   );
 }
