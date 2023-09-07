@@ -670,7 +670,8 @@ export class ChatService {
 			res.push({
 				roomname: room,
 				fromId: message.from,
-				lastMessage: message.body
+				lastMessage: message.body,
+				at : message.at
 			})
 		})
 		return res;
