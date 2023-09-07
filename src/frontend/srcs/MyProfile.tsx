@@ -18,7 +18,6 @@ function MyProfile({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [QRUrl, setQRUrl] = useState<string>(" ");
-  const [showQR, setShowQR] = useState(false);
   const [userNickname, setUserNickname] = useState<string | null>(
     localStorage.getItem("nickname")
   );
@@ -98,10 +97,6 @@ function MyProfile({
         }
       })
   }
-
-  useEffect(() => {
-
-  }, [checkIs2Fa])
 
   useEffect(() => {
     const jwtExpItem = localStorage.getItem("access_token_exp");

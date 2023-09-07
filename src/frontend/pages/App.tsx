@@ -125,8 +125,8 @@ export default function App() {
   useEffect(()=>{
     async function checkLogout(userId:number, isConnected:boolean){
       if (isConnected == false && userId == Number(tmpLoginID)){
-        alert("로그인 정보가 만료되었습니다");
-        setTimeout(()=>router.push("/"), 1000)
+        alert("로그인 정보가 만료되었습니다, 3초 후 로그인 화면으로 돌아갑니다");
+        setTimeout(()=>router.push("/"), 3000);
       }
     }
     if(socket){
