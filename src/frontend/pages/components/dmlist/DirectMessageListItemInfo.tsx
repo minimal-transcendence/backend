@@ -1,5 +1,6 @@
 import { SocketContext } from "@/context/socket";
 import { useContext, useEffect } from "react";
+
 export default function DirectMessageListItemInfo({
   messageInfo,
   myNickName,
@@ -21,7 +22,7 @@ export default function DirectMessageListItemInfo({
   currentRoomName: string;
   isDM: boolean;
 }) {
-  const gameSocket = useContext(SocketContext).gameSocket;
+  const socket = useContext(SocketContext).chatSocket;
 
   console.log(
     "in DirectMessageLististItemInfo ",
@@ -32,44 +33,31 @@ export default function DirectMessageListItemInfo({
     " len ",
     messageInfo?.[1]?.data?.body?.length
   );
-  useEffect(() => {
-    console.log(`해당 방 입장 채크 messageInfo?.[1]?.data?.from === currentRoomName <${
-      messageInfo?.[1]?.data?.from === currentRoomName
-    }>
-    messageInfo?.[1]?.data?.from <${messageInfo?.[1]?.data?.from}> 
-    currentRoomName <${currentRoomName}>
-    `);
-    if (messageInfo?.[1]?.data?.from === currentRoomName && isDM) {
-      console.log("해당 방 입장");
-      const tmpList: any = [];
-      directMessageList?.map((e: any) => {
-        if (e?.[1].data.from !== messageInfo?.[1]?.data?.from) tmpList.push(e);
-      });
-      let tmpMap = directMessageMap;
-      tmpMap?.delete(messageInfo?.[1]?.data?.from);
-      console.log(`in if after from <${messageInfo?.[1]?.data?.from}>
-    tmpList <${JSON.stringify(tmpList, null, 2)}>
-    tmpMap <${JSON.stringify(tmpMap, null, 2)}>
-    `);
-      setDirectMessageList(() => tmpList);
-      setDirectMessageMap(() => tmpMap);
-    }
-  }, [currentRoomName, directMessageMap, directMessageList]);
+
   function handleAccept(event: any) {
+    console.log("event name ", event.target.dataset.name);
     console.log(`in handleAccept before from <${messageInfo?.[1]?.data?.from}>
     directMessageList <${JSON.stringify(directMessageList, null, 2)}>
     directMessageMap <${JSON.stringify(directMessageMap, null, 2)}>
     `);
     const tmpList: any = [];
     directMessageList.map((e: any) => {
-      if (e?.[1].data.from !== messageInfo?.[1]?.data?.from) tmpList.push(e);
+      if (e?.[1].data.fromId !== messageInfo?.[1]?.data?.fromId)
+        tmpList.push(e);
     });
     let tmpMap = directMessageMap;
-    tmpMap.delete(messageInfo?.[1]?.data?.from);
+    tmpMap.delete(messageInfo?.[1]?.data?.fromId);
     console.log(`in handleAccept after from <${messageInfo?.[1]?.data?.from}>
     tmpList <${JSON.stringify(tmpList, null, 2)}>
     tmpMap <${JSON.stringify(tmpMap, null, 2)}>
+    fromId: messageInfo?.[1]?.data?.fromId <${messageInfo?.[1]?.data?.fromId}>
     `);
+    // socket.emit("checkDMAlert", { fromId: messageInfo?.[1]?.data?.fromId });
+
+    if (event.target.dataset.name !== "x")
+      socket.emit("selectDMRoom", { target: messageInfo?.[1]?.data?.from });
+    else socket.emit("userCheckedDM", messageInfo?.[1]?.data?.fromId);
+
     setDirectMessageList(() => tmpList);
     setDirectMessageMap(() => tmpMap);
   }
@@ -86,8 +74,8 @@ export default function DirectMessageListItemInfo({
 
     return (
       <>
-        <li>
-          <div className="gamelist-avatar left">
+        <li onClick={() => handleAccept(event)} className="gameAccept">
+          <div className="dmlist-avatar left">
             <img
               src={`http://localhost/api/user/${messageInfo?.[1]?.data?.fromId}/photo`}
               width="35"
@@ -95,20 +83,22 @@ export default function DirectMessageListItemInfo({
               alt="avataricon"
             />
           </div>
-          <div className="gamelist-textInfo">{`${
-            messageInfo?.[1]?.data?.from
-          } :  ${
-            messageInfo?.[1]?.data?.body?.length >= 14
-              ? (messageInfo?.[1]?.data?.body).substr(0, 14) + "..."
-              : messageInfo?.[1]?.data?.body
-          }`}</div>
-          <div className="gamelist-confirm">
-            <span onClick={() => handleAccept(event)} className="gameAccept">
-              확인
-            </span>
+          <div className="dmlist-nickname" data-name="nick">
+            <span>{messageInfo?.[1]?.data?.from}</span>
           </div>
-          <div className="gamelist-avatar right">
-            <></>
+          <div className="dmlist-textInfo" data-name="info">
+            {`${
+              messageInfo?.[1]?.data?.body?.length >= 14
+                ? (messageInfo?.[1]?.data?.body).substr(0, 14) + "..."
+                : messageInfo?.[1]?.data?.body
+            }`}
+          </div>
+
+          <div className="dmlist-button-div" data-name="x">
+            <span className="dmlist-button-x" data-name="x">
+              {" "}
+              X{" "}
+            </span>
           </div>
         </li>
       </>

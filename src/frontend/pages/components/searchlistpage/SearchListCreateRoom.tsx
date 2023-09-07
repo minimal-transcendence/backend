@@ -2,9 +2,19 @@ import { useEffect, useState, useContext } from "react";
 import { SocketContext } from "@/context/socket";
 
 export default function SearchListCreateRoom({
+  setIsLoading,
+  setLeftHeader,
+  setError,
+  query,
   setroomnameModal,
+  setQuery,
 }: {
+  setIsLoading: any;
+  setLeftHeader: any;
+  setError: any;
+  query: string;
   setroomnameModal: any;
+  setQuery: any;
 }) {
   const socket = useContext(SocketContext).chatSocket;
   const [roomname, setroomname] = useState("");
@@ -22,9 +32,47 @@ export default function SearchListCreateRoom({
       socket.emit("selectRoom", { roomname: roomname });
     }
     setroomname("");
+    setQuery(() => "");
     setDisabled(false);
   };
 
+  useEffect(
+    function () {
+      function fetchResults() {
+        try {
+          setIsLoading(true);
+
+          if (query === "#all") {
+            socket.emit("requestAllRoomList");
+
+            setLeftHeader("all");
+            setError("");
+          } else if (!query) {
+            console.log("!query");
+            socket.emit("requestMyRoomList");
+
+            setLeftHeader("joined");
+
+            setError("");
+          } else {
+            console.log("in requestMyRoomList if <", query);
+            socket.emit("requestSearchResultRoomList", { target: query });
+
+            setLeftHeader("result");
+            setError("");
+          }
+        } catch (err: any) {
+          console.error(err.message);
+          setError(err.message);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+      fetchResults();
+    },
+    // [query, setError, setIsLoading, setLeftHeader, socket]
+    [query, socket]
+  );
   return (
     <form onSubmit={handleSubmit}>
       <div className="div-form">
@@ -34,7 +82,10 @@ export default function SearchListCreateRoom({
               type="text"
               value={roomname}
               placeholder="Create or Join room"
-              onChange={(e) => setroomname(e.target.value)}
+              onChange={(e) => {
+                setroomname(e.target.value);
+                setQuery(e.target.value);
+              }}
             />
           </div>
         </span>
