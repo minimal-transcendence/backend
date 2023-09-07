@@ -31,7 +31,7 @@ export default function Search({
               gameLoad ? styles_profile.followIn : styles_profile.unfollowIn
             }
           >
-            GameWindow ON / OFF
+            Game
           </button>
         </div>
       </div>
