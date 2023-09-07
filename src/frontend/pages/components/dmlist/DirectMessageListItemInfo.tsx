@@ -56,7 +56,7 @@ export default function DirectMessageListItemInfo({
 
     if (event.target.dataset.name !== "x")
       socket.emit("selectDMRoom", { target: messageInfo?.[1]?.data?.from });
-    else socket.emit("userCheckedDM", messageInfo?.[1]?.data?.fromId);
+    else socket.emit("userCheckedDM", { targetId : messageInfo?.[1]?.data?.fromId });
 
     setDirectMessageList(() => tmpList);
     setDirectMessageMap(() => tmpMap);

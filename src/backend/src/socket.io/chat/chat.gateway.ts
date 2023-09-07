@@ -19,6 +19,8 @@ import { WsExceptionFilter } from '../ws-exception.filter';
 @UseFilters(WsExceptionFilter)
 @WebSocketGateway({
 	namespace: 'chat',
+	pingInterval: 250000,
+	pingTimeout: 250000,
 })
 export class ChatGateway
 	implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
@@ -108,9 +110,9 @@ export class ChatGateway
 	}
 
 	@SubscribeMessage('userCheckedDM')
-	handleCheckDM(client: ChatSocket, target: number) {
+	handleCheckDM(client: ChatSocket, target: UserInfoDto) {
 		this.chatService.checkedDM(
-			this.io, client.userId, target
+			this.io, client.userId, target.targetId
 		);
 	}
 
@@ -192,8 +194,6 @@ export class ChatGateway
 	@SubscribeMessage('requestTargetMember')
 	handleReqTargetMember(client: ChatSocket, payload: UserInfoDto) {
 		const member = this.chatService.getUserInfoById(client.userId, payload.targetId);
-		console.log("responseTargetMember");
-		console.log(member);
 		client.emit('responseTargetMember', member);
 	}
 
