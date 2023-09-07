@@ -100,12 +100,39 @@ export default function App() {
       }
     }
 
+    function updateUserNick(userId: number, newNick: string) {
+      let max = directMessageMap;
+
+      console.log(
+        `####In App updateUserNick userId <${userId}> newNick <${newNick}>
+        max.get(userId)  <${JSON.stringify(max.get(userId), null, 2)}>
+        list <${JSON.stringify(directMessageList, null, 2)}>
+        `
+      );
+      if (max.get(userId)) {
+        const tmpData = max.get(userId);
+        tmpData.data.from = newNick;
+        max.set(userId, {
+          data: tmpData.data,
+        });
+      }
+
+      console.log(
+        `####In App updateUserNick 
+        changed max.get(userId)  <${JSON.stringify(max.get(userId), null, 2)}>
+        list <${JSON.stringify([...max], null, 2)}>
+        `
+      );
+
+      setDirectMessageMap(() => max);
+      setDirectMessageList(() => [...max]);
+    }
     if (socket) {
-      socket.on("updateUserNick", reloadNick);
+      socket.on("updateUserNick", updateUserNick);
     }
     return () => {
       if (socket) {
-        socket.off("updateUserNick", reloadNick);
+        socket.off("updateUserNick", updateUserNick);
       }
     };
   }, [socket]);
@@ -188,9 +215,31 @@ export default function App() {
       setBlocklist(() => [...result]);
     }
     function updateBlocklist(target: number) {
-      console.log("updateBlocklist update");
-      localStorage.setItem("blocklist", JSON.stringify([...blocklist, target]));
-      setBlocklist(() => [...blocklist, target]);
+      if (blocklist.includes(target)) {
+        const index = blocklist.indexOf(String(target));
+
+        const x = blocklist;
+        x.splice(index, 1);
+        console.log("index ", index, " x ", x);
+        setBlocklist(() => x);
+        localStorage.setItem("blocklist", JSON.stringify(x));
+        console.log(
+          "updateBlocklist includes",
+          localStorage.getItem("blocklist"),
+          x
+        );
+      } else {
+        localStorage.setItem(
+          "blocklist",
+          JSON.stringify([...blocklist, target])
+        );
+        setBlocklist(() => [...blocklist, target]);
+        console.log(
+          "updateBlocklist no includes",
+          localStorage.getItem("blocklist"),
+          [...blocklist, target]
+        );
+      }
     }
     function sendRoomMembers(result: any) {
       console.log(

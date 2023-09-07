@@ -74,7 +74,7 @@ export default function ChatRoomUser({
       }
       a();
     },
-    [page, filtered]
+    [page, filtered, blocklist]
     // [users, page, filtered]
   );
 
