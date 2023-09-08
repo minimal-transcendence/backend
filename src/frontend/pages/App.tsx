@@ -214,33 +214,33 @@ export default function App() {
       localStorage.setItem("blocklist", JSON.stringify(result));
       setBlocklist(() => [...result]);
     }
-    function updateBlocklist(target: number) {
-      if (blocklist.includes(target)) {
-        const index = blocklist.indexOf(String(target));
+    // function updateBlocklist(target: number) {
+    //   if (blocklist.includes(target)) {
+    //     const index = blocklist.indexOf(String(target));
 
-        const x = blocklist;
-        x.splice(index, 1);
-        console.log("index ", index, " x ", x);
-        setBlocklist(() => x);
-        localStorage.setItem("blocklist", JSON.stringify(x));
-        console.log(
-          "updateBlocklist includes",
-          localStorage.getItem("blocklist"),
-          x
-        );
-      } else {
-        localStorage.setItem(
-          "blocklist",
-          JSON.stringify([...blocklist, target])
-        );
-        setBlocklist(() => [...blocklist, target]);
-        console.log(
-          "updateBlocklist no includes",
-          localStorage.getItem("blocklist"),
-          [...blocklist, target]
-        );
-      }
-    }
+    //     const x = blocklist;
+    //     x.splice(index, 1);
+    //     console.log("index ", index, " x ", x);
+    //     setBlocklist(() => x);
+    //     localStorage.setItem("blocklist", JSON.stringify(x));
+    //     console.log(
+    //       "updateBlocklist includes",
+    //       localStorage.getItem("blocklist"),
+    //       x
+    //     );
+    //   } else {
+    //     localStorage.setItem(
+    //       "blocklist",
+    //       JSON.stringify([...blocklist, target])
+    //     );
+    //     setBlocklist(() => [...blocklist, target]);
+    //     console.log(
+    //       "updateBlocklist no includes",
+    //       localStorage.getItem("blocklist"),
+    //       [...blocklist, target]
+    //     );
+    //   }
+    // }
     function sendRoomMembers(result: any) {
       console.log(
         "in useEffect sendRoomMembers zzzzz",
@@ -439,7 +439,7 @@ export default function App() {
       socket.on("userCheckedDM", userCheckedDM);
       socket.on("sendAlert", sendAlert);
       socket.on("sendBlocklist", sendBlocklist);
-      socket.on("updateBlocklist", updateBlocklist);
+      // socket.on("updateBlocklist", updateBlocklist);
       socket.on("youAreKickedOut", youAreKickedOut);
       socket.on("youAreBanned", youAreBanned);
       socket.on("wrongPassword", wrongPassword);
@@ -453,7 +453,7 @@ export default function App() {
         socket.off("userCheckedDM", userCheckedDM);
         socket.off("sendAlert", sendAlert);
         socket.off("sendBlocklist", sendBlocklist);
-        socket.off("updateBlocklist", updateBlocklist);
+        // socket.off("updateBlocklist", updateBlocklist);
         socket.off("youAreKickedOut", youAreKickedOut);
         socket.off("youAreBanned", youAreBanned);
         socket.off("wrongPassword", wrongPassword);

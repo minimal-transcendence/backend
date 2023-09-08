@@ -666,7 +666,9 @@ export class ChatService {
 	makeRoomInfo(blocklist: Set<number>, roomlist: string[] | Set<string>): roomInfo[] {
 		const res = [];
 		roomlist.forEach((room: string) => {
-			const message = this.storeRoom.findRoom(room).getLastMessage(blocklist);
+			// const message = this.storeRoom.findRoom(room).getLastMessage(blocklist);
+			const messages = this.storeRoom.findRoom(room).messages;
+			const message = messages[messages.length - 1];
 			res.push({
 				roomname: room,
 				fromId: message.from,
