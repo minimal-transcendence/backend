@@ -157,9 +157,9 @@ export class ChatService {
 
 
 
-	BanCheck(io: Namespace, client: ChatSocket, room: Room): boolean {
+	BanCheck(io: Namespace, client: ChatSocket, room: Room, roomname: string): boolean {
 		if (room.isBanned(client.userId)) {
-			client.emit("sendAlert", "[ Act Error ]", `You are banned from room ${room}`);
+			client.emit("sendAlert", "[ Act Error ]", `You are banned from room ${roomname}`);
 			return (false);
 		}
 		return (true);
@@ -186,7 +186,7 @@ export class ChatService {
 			if (pwExist) {
 				if (password) {
 					if (await room.isPassword(password)) {
-						if (this.BanCheck(io, client, room))
+						if (this.BanCheck(io, client, room, roomname))
 							this.userJoinRoomAct(io, client, userId, roomname);
 					}
 					else
@@ -196,7 +196,7 @@ export class ChatService {
 					client.emit("requestPassword", roomname);
 			}
 			else {
-				if (this.BanCheck(io, client, room))
+				if (this.BanCheck(io, client, room, roomname))
 					this.userJoinRoomAct(io, client, userId, roomname);
 			}
 		}
@@ -559,7 +559,7 @@ export class ChatService {
 			return null;
 		}
 		else if (toUser?.blocklist?.has(client.userId)) {
-			client.emit("sendAlert", "[ Act Error ]", `You are blocked by ${fromUser.nickname}`)
+			client.emit("sendAlert", "[ Act Error ]", `You are blocked by ${toUser.nickname}`)
 			return null;
 		}
 		else {

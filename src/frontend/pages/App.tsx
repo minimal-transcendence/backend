@@ -123,7 +123,10 @@ export default function App() {
         list <${JSON.stringify([...max], null, 2)}>
         `
       );
-
+      if (userId === Number(tmpLoginID)) {
+        setTmpLoginnickname(() => newNick);
+        console.log("my nick changed from ", tmpLoginnickname, " to ", newNick);
+      }
       setDirectMessageMap(() => max);
       setDirectMessageList(() => [...max]);
     }
@@ -137,12 +140,12 @@ export default function App() {
     };
   }, [socket]);
 
-  useEffect(()=>{
-    async function checkLogout(userId:number, isConnected:boolean){
+  useEffect(() => {
+    async function checkLogout(userId: number, isConnected: boolean) {
       console.log("get logout event", userId, " ", isConnected);
-      if (isConnected == false && userId == Number(tmpLoginID)){
+      if (isConnected == false && userId == Number(tmpLoginID)) {
         alert("로그인 정보가 만료되었습니다");
-        setTimeout(()=>router.push("/"), 10);
+        setTimeout(() => router.push("/"), 10);
       }
     }
     if (socket) {
@@ -213,33 +216,7 @@ export default function App() {
       localStorage.setItem("blocklist", JSON.stringify(result));
       setBlocklist(() => [...result]);
     }
-    // function updateBlocklist(target: number) {
-    //   if (blocklist.includes(target)) {
-    //     const index = blocklist.indexOf(String(target));
 
-    //     const x = blocklist;
-    //     x.splice(index, 1);
-    //     console.log("index ", index, " x ", x);
-    //     setBlocklist(() => x);
-    //     localStorage.setItem("blocklist", JSON.stringify(x));
-    //     console.log(
-    //       "updateBlocklist includes",
-    //       localStorage.getItem("blocklist"),
-    //       x
-    //     );
-    //   } else {
-    //     localStorage.setItem(
-    //       "blocklist",
-    //       JSON.stringify([...blocklist, target])
-    //     );
-    //     setBlocklist(() => [...blocklist, target]);
-    //     console.log(
-    //       "updateBlocklist no includes",
-    //       localStorage.getItem("blocklist"),
-    //       [...blocklist, target]
-    //     );
-    //   }
-    // }
     function sendRoomMembers(result: any) {
       console.log(
         "in useEffect sendRoomMembers zzzzz",
