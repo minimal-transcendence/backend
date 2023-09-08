@@ -165,7 +165,6 @@ export default function App() {
 
     // Run whenever jwt state updated
     if (nicknameItem && jwtItem) {
-      console.log("Try Web Socket Connection");
       chatConnection = getSocket("chat", jwtItem, nicknameItem)
       gameConnection = getSocket("game", jwtItem, nicknameItem)
       setSocket(chatConnection);
@@ -384,13 +383,6 @@ export default function App() {
       setAlertModal(() => true);
     }
     if (socket) {
-      //test seunchoi
-      socket.on("inGame", (userId) => {
-        console.log(`${userId} is in game`);
-      });
-      socket.on("NotInGame", (userId) => {
-        console.log(`${userId} is not in game`);
-      });
 
       socket.on("sendAlert", sendAlert);
       socket.on("sendBlocklist", sendBlocklist);
@@ -427,7 +419,7 @@ export default function App() {
     directMessageList,
   ]);
 
-  // seunchoi
+  // Game
   const handleGameOnOff = () => {
     setGameLoad(!gameLoad);
   };
@@ -451,25 +443,20 @@ export default function App() {
 
   useEffect(() => {
     gameSocket.on("hello", () => {
-      console.log("In hello");
       setIsGameConnected(true);
     });
 
     gameSocket.on("matchStartCheck", (payload: AutoSave) => {
-      console.log(`${payload.roomName} is checking`);
       setRoomName(payload.roomName);
       setMatchStartCheck(true);
-      // setGameLoad(true);
     });
 
     gameSocket.on("matchDecline", (payload: string) => {
-      console.log(`${payload} is declined`);
       setRoomName("");
       setMatchStartCheck(false);
     });
 
     gameSocket.on("startGame", (payload: StartGameData) => {
-      console.log("In startGame", payload.player);
       setMatchStartCheck(false);
       setGameLoad(true);
 

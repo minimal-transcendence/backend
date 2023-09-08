@@ -43,11 +43,10 @@ function Home() {
           localStorage.setItem("access_token", json.access_token);
           const jwtDecode = jwt_decode<JwtPayload>(json.access_token);
           localStorage.setItem("access_token_exp", jwtDecode.exp.toString());
-          console.log("Response from refresh", json);
           setValidToken(true); // success
         })
         .catch((error) => {
-          console.log(error);
+          console.error(error);
           localStorage.setItem("isLoggedIn", "false");
           localStorage.removeItem("id");
           localStorage.removeItem("nickname");
