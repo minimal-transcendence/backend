@@ -426,6 +426,7 @@ export class ChatService {
 		// client의 모든 소켓을 찾아서, 그 소켓의 currRoom에 block된 유저가 있는지 찾아서 --> 차선
 		// client.emit("sendBlocklist", blocklist);	//++
 		io.in(`$${client.userId}`).emit("sendBlocklist", blocklist);
+		io.in(`$${client.userId}`).emit("updateBlocklist", targetId);
 		const dmRoom = this.getDMRoomname(client.userId, targetId);
 		const sockets = await io.in(dmRoom).fetchSockets()
 			.then((res) => { return (res) })
@@ -455,6 +456,7 @@ export class ChatService {
 				blocklist.push(user));
 			// client.emit("sendBlocklist", blocklist);
 			io.in(`$${client.userId}`).emit("sendBlocklist", blocklist);
+			io.in(`$${client.userId}`).emit("updateBlocklist", targetId);
 			thisUser.joinlist.forEach((room) => {
 				const currRoomInfo = this.makeCurrRoomInfo(room);
 				const roomMembers = this.makeRoomUserInfo(room);
