@@ -40,6 +40,11 @@ const ChatFooter = ({
   function handleSubmit2(e: any) {
     // Prevent the browser from reloading the page
     e.preventDefault();
+    if (textareaValue.length > 500) {
+      setTextareaValue("");
+      console.log("too long");
+      return;
+    }
     if (!isDM) {
       socket.emit("sendChatMessage", {
         to: currentRoomName,
