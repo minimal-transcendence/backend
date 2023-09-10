@@ -63,6 +63,7 @@ export const socketRefreshToken = async (setValidToken:Function, jwtExp: number)
 			localStorage.removeItem("is2fa");
 			localStorage.removeItem("access_token");
 			localStorage.removeItem("avatar");
+			sessionStorage.removeItem("gamesocket");
 			window.location.href = '/'; //fail
 		}
 	} else {
