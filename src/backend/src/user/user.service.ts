@@ -6,6 +6,7 @@ import { createReadStream } from 'fs';
 import * as fs from 'fs';
 import { ChatGateway } from 'src/socket.io/chat/chat.gateway';
 import { GameGateway } from 'src/socket.io/game/game.gateway';
+import { UpdateFriendDto } from './dto/update-friend.dto';
 
 @Injectable()
 export class UserService {
@@ -167,10 +168,7 @@ export class UserService {
 	// 권한 체크! -> 완료
 	// HTTP EXCEPTION -> 완료
 	// validation 필요//
-	async updateFriendsById(id: number, data: {
-		friend: number;
-		isAdd: boolean;
-	}): Promise<object> {
+	async updateFriendsById(id: number, data: UpdateFriendDto): Promise<object> {
 		if (id == data.friend)
 			throw new HttpException(
 				"I am a good friend of myself...",
@@ -199,6 +197,9 @@ export class UserService {
 						push: data.friend,
 					}
 				}
+			}).then((res) => {
+				this.chatGateway.updateUserFriend(id, data.friend, data.isAdd);
+				return (res);
 			})
 		}
 		else {

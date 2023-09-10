@@ -19,6 +19,8 @@ import { WsExceptionFilter } from '../ws-exception.filter';
 @UseFilters(WsExceptionFilter)
 @WebSocketGateway({
 	namespace: 'chat',
+	pingInterval: 250000,
+	pingTimeout: 250000,
 })
 export class ChatGateway
 	implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
@@ -107,6 +109,13 @@ export class ChatGateway
 		);
 	}
 
+	@SubscribeMessage('userCheckedDM')
+	handleCheckDM(client: ChatSocket, target: UserInfoDto) {
+		this.chatService.checkedDM(
+			this.io, client.userId, target.targetId
+		);
+	}
+
 	@SubscribeMessage('blockUser')
 	handleBlockUser(client: ChatSocket, payload: TargetDto) {
 		this.chatService.blockUser(
@@ -183,10 +192,8 @@ export class ChatGateway
 	}
 
 	@SubscribeMessage('requestTargetMember')
-	handleReqTargetMember(client: ChatSocket, payload : UserInfoDto){
+	handleReqTargetMember(client: ChatSocket, payload: UserInfoDto) {
 		const member = this.chatService.getUserInfoById(client.userId, payload.targetId);
-		console.log("responseTargetMember");
-		console.log(member);
 		client.emit('responseTargetMember', member);
 	}
 
@@ -204,6 +211,13 @@ export class ChatGateway
 	updateUserAvatar(userId: number, filePath: string) {
 		this.io.emit("updateUserAvatar", userId, filePath);
 		this.chatService.userChangeAvatar(this.io, userId);
+	}
+
+	updateUserFriend(userId : number, targetId : number, isAdd : boolean){
+		if (isAdd)
+			this.io.in(`$${userId}`).emit("follow", targetId);
+		else
+			this.io.in(`$${userId}`).emit("unfollow", targetId);
 	}
 
 	logout(clientId: number) {

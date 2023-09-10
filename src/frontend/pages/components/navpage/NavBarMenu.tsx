@@ -75,6 +75,7 @@ export default function Menu({
     localStorage.removeItem("access_token");
     localStorage.removeItem("access_token_exp");
     localStorage.removeItem("avatar");
+    sessionStorage.removeItem("gamesocket");
     const ApiUrl = "http://localhost/api/auth/logout";
     axiosApi.post(ApiUrl, {}).catch((error) => {
       console.log("here i am"); //TODO: error handling check
@@ -136,14 +137,19 @@ export default function Menu({
               height="35"
               alt="contesticon"
             /> */}
-
-              <Image
-                className="dropbtn"
-                src={contestIcon}
-                width="35"
-                height="35"
-                alt="contesticon"
-              />
+              <article className={randomMatch ? "card" : ""}>
+                <Image
+                  className="dropbtn"
+                  src={contestIcon}
+                  width="35"
+                  height="35"
+                  alt="contesticon"
+                />
+                <span className={randomMatch ? "top-card" : ""}></span>
+                <span className={randomMatch ? "right-card" : ""}></span>
+                <span className={randomMatch ? "bottom-card" : ""}></span>
+                <span className={randomMatch ? "left-card" : ""}></span>
+              </article>
               {!block && (
                 <div
                   onClick={() => handleMenu(event)}
@@ -183,25 +189,30 @@ export default function Menu({
             />
           </p>
         </div>
-      </div>
-      <ModalOverlay isOpenModal={myProfileModal} />
-      <div>
-        {myProfileModal && (
+        <div>
           <>
-            <MyProfile
-              setIsOpenModal={setMyProfileModal}
-              setTmpLoginnickname={setTmpLoginnickname}
-            />
+            <ModalOverlay isOpenModal={myProfileModal} />
+            {myProfileModal && (
+              <>
+                <MyProfile
+                  setIsOpenModal={setMyProfileModal}
+                  setTmpLoginnickname={setTmpLoginnickname}
+                />
+              </>
+            )}
           </>
-        )}
-      </div>
-      <ModalOverlay isOpenModal={userListModal} />
-      <div>
-        {userListModal && (
+        </div>
+
+        <div>
           <>
-            <UserList setIsOpenModal={setUserListModal} />
+            <ModalOverlay isOpenModal={userListModal} />
+            {userListModal && (
+              <>
+                <UserList setIsOpenModal={setUserListModal} />
+              </>
+            )}
           </>
-        )}
+        </div>
       </div>
     </>
   );

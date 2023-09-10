@@ -47,7 +47,7 @@ export default function App() {
   const [tmpIsLoggedIn, setTmpIsLoggedIn] = useState<boolean>(false);
 
   const [results, setTempSearchList] = useState<TempSearch[]>([]);
-  const [query, setQuery] = useState("");
+
   const [roomUserList, setRoomUserList] = useState<any>(null);
 
   const [roomnameModal, setroomnameModal] = useState<string>("");
@@ -64,6 +64,7 @@ export default function App() {
   const [alertModalTitle, setAlertModalTitle] = useState<string>("");
   const [alertModalBody, setAlertModalBody] = useState<string>("");
   const [isDM, setIsDM] = useState<boolean>(false);
+  const [DMTargetId, setDMTargetId] = useState<number>(-1);
   // seunchoi - for socket connection
   const [gameLoad, setGameLoad] = useState<boolean>(false);
   // Get Empty Socket Instance
@@ -79,19 +80,6 @@ export default function App() {
 
   const router = useRouter();
 
-  // useEffect(() => {
-  //   async function refresh() {
-  //     try {
-  //       const responseDetail = await axiosApi.get(
-  //         // `http://localhost/api/user/${message?.fromId}/photo`
-  //         `http://localhost/api/auth/refresh`
-  //       );
-  //     } catch {
-  //       console.log("test errrrr");
-  //     }
-  //   }
-  //   setInterval(refresh, 25000);
-  // }, []);
   const [lastMessageList, setLastMessageList] = useState<any>(new Map());
   const [directMessageMap, setDirectMessageMap] = useState<any>(new Map());
   const [directMessageList, setDirectMessageList] = useState<any>(new Array());
@@ -125,20 +113,21 @@ export default function App() {
 
   useEffect(()=>{
     async function checkLogout(userId:number, isConnected:boolean){
+      console.log("get logout event", userId, " ", isConnected);
       if (isConnected == false && userId == Number(tmpLoginID)){
         alert("로그인 정보가 만료되었습니다");
-        setTimeout(()=>router.push("/"), 1000)
+        setTimeout(()=>router.push("/"), 10);
       }
     }
-    if(socket){
-      socket.on("updateUserStatus", (userId : number, isConnected : boolean) => checkLogout(userId, isConnected));
+    if (socket) {
+      socket.on("updateUserStatus", checkLogout);
     }
-    return() => {
-      if(socket){
-        socket.removeAllListeners("updateUserStatus");
+    return () => {
+      if (socket) {
+        socket.off("updateUserStatus", checkLogout);
       }
-    }
-  }, [socket, tmpLoginID])
+    };
+  }, [socket, tmpLoginID]);
 
   useEffect(() => {
     const getSocket = (namespace: string, jwt: string, nickname: string) => {
@@ -195,20 +184,8 @@ export default function App() {
       blockListItem = blockListItem.substr(1, blockListItem.length - 2);
       const arr = blockListItem.split(",");
       const numberArray: any = [];
-
-      // Store length of array of string
-      // in variable length
       const length = arr.length;
-
-      // Iterate through array of string using
-      // for loop
-      // push all elements of array of string
-      // in array of numbers by typecasting
-      // them to integers using parseInt function
-      for (var i = 0; i < length; i++)
-        // Instead of parseInt(), Number()
-        // can also be used
-        numberArray.push(parseInt(arr[i]));
+      for (var i = 0; i < length; i++) numberArray.push(parseInt(arr[i]));
 
       console.log(
         `BlockLIST SETTTTTT  ${JSON.stringify(
@@ -242,7 +219,7 @@ export default function App() {
 
       setRoomUserList(() => result);
       setLeftHeader(() => "joined");
-      setQuery("");
+      // setQuery("");
     }
 
     function sendMessage(roomname: string, data: any) {
@@ -295,30 +272,34 @@ export default function App() {
         setMessages(() => [...messages, data]);
       }
     }
+
     function sendDM(to: string, data: any) {
       console.log(
-        `in useEffect sendDM  to<${to}> data<${JSON.stringify(
-          data,
-          null,
-          2
-        )}> 내 방은 <${currentRoomName}>`
-      );
-      console.log(
-        "in useEffect sendDM to, curretRoomName, isDM  chk",
-        to,
-        currentRoomName,
-        isDM,
-        data?.from === currentRoomName || to === currentRoomName
+        `in useEffect sendDM
+        to <${to}>
+        data<${JSON.stringify(data, null, 2)}>
+        curretRoomName <${currentRoomName}>
+        isDM <${isDM}>
+        chk <${data?.from === currentRoomName || to === currentRoomName}>
+        !blocklist.includes(data?.fromId) <${!blocklist.includes(
+          data?.fromId
+        )}>`
       );
 
       let max = directMessageMap;
 
-      if (data?.from !== tmpLoginnickname && !blocklist.includes(data?.from))
-        max.set(data?.from, {
+      if (
+        data?.from !== tmpLoginnickname &&
+        !blocklist.includes(data?.fromId) &&
+        data?.fromId !== DMTargetId
+      )
+        max.set(data?.fromId, {
           data,
           messageNew: false,
         });
-
+      // if (data?.fromId === DMTargetId) {
+      //   socket.emit("userCheckedDM", data?.fromId);
+      // }
       max.forEach((value: any, key: any) => {
         console.log(
           `In SEND DM   value <${JSON.stringify(
@@ -382,8 +363,29 @@ export default function App() {
       setAlertModalBody(() => alertBody);
       setAlertModal(() => true);
     }
+
+    function userCheckedDM(fromId: number) {
+      const tmpList: any = [];
+      directMessageList.map((e: any) => {
+        if (e?.[1].data.fromId !== fromId) tmpList.push(e);
+      });
+      let tmpMap = directMessageMap;
+      tmpMap.delete(fromId);
+
+      console.log(`in userCheckedDM after fromId <${JSON.stringify(
+        fromId,
+        null,
+        2
+      )}>
+      tmpList <${JSON.stringify(tmpList, null, 2)}>
+      tmpMap <${JSON.stringify(tmpMap, null, 2)}>
+      `);
+      setDirectMessageList(() => tmpList);
+      setDirectMessageMap(() => tmpMap);
+    }
     if (socket) {
 
+      socket.on("userCheckedDM", userCheckedDM);
       socket.on("sendAlert", sendAlert);
       socket.on("sendBlocklist", sendBlocklist);
       socket.on("updateBlocklist", updateBlocklist);
@@ -397,6 +399,7 @@ export default function App() {
 
     return () => {
       if (socket) {
+        socket.off("userCheckedDM", userCheckedDM);
         socket.off("sendAlert", sendAlert);
         socket.off("sendBlocklist", sendBlocklist);
         socket.off("updateBlocklist", updateBlocklist);
@@ -440,6 +443,16 @@ export default function App() {
     winner: "",
     loser: "",
   });
+
+  useEffect(() => {
+    if (isGameConnected == true){
+      sessionStorage.setItem("gamesocket", "true");
+    }
+    else
+    {
+      sessionStorage.setItem("gamesocket", "false");
+    }
+  }, [isGameConnected]);
 
   useEffect(() => {
     gameSocket.on("hello", () => {
@@ -503,7 +516,7 @@ export default function App() {
       {
         <>
           <ModalOverlay isOpenModal={alertModal} />
-          <div>
+          <>
             {alertModal && (
               <ModalAlert
                 alertTitle={alertModalTitle}
@@ -511,9 +524,9 @@ export default function App() {
                 setIsOpenModal={setAlertModal}
               />
             )}
-          </div>
+          </>
           <ModalOverlay isOpenModal={isOpenModal} />
-          <div>
+          <>
             {isOpenModal && (
               <ModalBasic
                 roomname={roomnameModal}
@@ -521,7 +534,7 @@ export default function App() {
                 innerText={"방클릭해서 드갈때 비번입력 ㄱ"}
               />
             )}
-          </div>
+          </>
           {/* seunchoi - TEST */}
           <button disabled={!isGameConnected} onClick={handleGameOnOff}>
             game on/off
@@ -540,8 +553,6 @@ export default function App() {
               ) /*todo - match accept modal*/
             }
             <NavBar
-              query={query}
-              setQuery={setQuery}
               setIsLoading={setIsLoading}
               setTmpLoginnickname={setTmpLoginnickname}
               setLeftHeader={setLeftHeader}
@@ -554,7 +565,6 @@ export default function App() {
                 <>
                   <SearchList
                     results={results}
-                    query={query}
                     setTempSearchList={setTempSearchList}
                     isOpenModal={isOpenModal}
                     setIsOpenModal={setIsOpenModal}
@@ -566,6 +576,8 @@ export default function App() {
                     setCurrentRoomName={setCurrentRoomName}
                     lastMessageList={lastMessageList}
                     setLastMessageList={setLastMessageList}
+                    setError={setError}
+                    setIsLoading={setIsLoading}
                   />
                   <DirectMessageList
                     myNickName={tmpLoginnickname}
@@ -605,8 +617,7 @@ export default function App() {
               myNickName={tmpLoginnickname}
               blocklist={blocklist}
               gameLoad={gameLoad}
-              lastMessageList={lastMessageList}
-              setLastMessageList={setLastMessageList}
+              setDMTargetId={setDMTargetId}
             />
 
             <Box>

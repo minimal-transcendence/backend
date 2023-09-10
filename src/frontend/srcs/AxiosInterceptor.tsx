@@ -40,6 +40,7 @@ export async function getLogout(): Promise<any> {
   localStorage.removeItem("access_token_exp");
   localStorage.removeItem("access_token");
   localStorage.removeItem("avatar");
+  sessionStorage.removeItem("gamesocket");
 }
 
 const axiosApi = axios.create({

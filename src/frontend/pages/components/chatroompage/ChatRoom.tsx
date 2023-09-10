@@ -95,7 +95,7 @@ export default function ChatRoomUser({
       <>
         <div className="wrp">
           <div className="userlist-header">
-            <h4>{isDM ? `${roomname}과의 DM` : `${roomname}방 유저목록`}</h4>
+            <h4>{isDM ? `DM with ${roomname}` : `Users in ${roomname}`}</h4>
 
             <button
               onClick={() => setPage(() => page - 1)}

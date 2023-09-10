@@ -14,6 +14,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   const [showDetailProfile, setDetailShowprofile] = useState(false);
   const [showMatchList, setShowMatchList] = useState<boolean[]>([]);
   const [reloadCheck, setReloadCheck] = useState<boolean>(false);
+  const [gameConnected, setGameConnected] = useState<boolean>(false);
   const [userNickname, setUserNickname] = useState<string | null>(
     localStorage.getItem("nickname")
   );
@@ -87,6 +88,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
           localStorage.removeItem("is2fa");
           localStorage.removeItem("access_token");
           localStorage.removeItem("access_token_exp");
+          sessionStorage.removeItem("gamesocket");
           const ApiUrl = "http://localhost/api/auth/logout";
           axiosApi.post(ApiUrl, {}).catch((error:any) => {
             console.log("logout send fail: ", error); //TODO: error handling check
@@ -100,6 +102,9 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
 		if (!jwtExpItem){
       logout("로그인 정보가 맞지않습니다 다시 로그인해주세요.");
 		}
+    if(sessionStorage.getItem("gamesocket") == "true"){
+      setGameConnected(true);
+    }
   }, [])
 
   function checkIsInclude(id: string[], userid: string) {
@@ -253,29 +258,27 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   }
 
   function blockUser(index:number){
-    let copiedData = [...userData];
+    //let copiedData = [...userData];
     if (userData[index].isBlocked == 0){
-      copiedData[index].isBlocked = 1;
+      //copiedData[index].isBlocked = 1;
       socket.emit("blockUser", {target : userData[index].nickname})
       if (userData[index].isFriend == 1){
         unFollow(index);
       }
     }
     else if (userData[index].isBlocked == 1){
-      copiedData[index].isBlocked = 0;
+      //copiedData[index].isBlocked = 0;
       socket.emit("unblockUser", {target : userData[index].nickname})
     }
-    setData(copiedData);
+    //setData(copiedData);
   }
 
   async function follow(index: number) {
     const apiUrl = "http://localhost/api/user/" + userId + "/friend";
     const dataToUpdate = {
-      id: userId,
       isAdd: true,
-      friend: userData[index].id,
+      friend: Number(userData[index].id),
     };
-
     await axiosApi
       .patch(apiUrl, JSON.stringify(dataToUpdate), {
         headers: {
@@ -302,9 +305,8 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
   async function unFollow(index: number) {
     const apiUrl = "http://localhost/api/user/" + userId + "/friend";
     const dataToUpdate = {
-      id: userId,
       isAdd: false,
-      friend: userData[index].id,
+      friend: Number(userData[index].id),
     };
 
     await axiosApi
@@ -485,20 +487,65 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         setData(copiedData);
       }
     }
+    async function reloadFollowStatus(targetId : number){
+      console.log(`${targetId} / friend status update`);
+      let copiedData = [...userData];
+      for(let i = 0 ; i < userData.length ; i++){
+        if (userData[i].id == targetId.toString()){
+            copiedData[i].isFriend = 1;
+        }
+      }
+      setData(copiedData);
+    }
+
+    async function reloadUnFollowStatus(targetId : number){
+      console.log(`${targetId} / friend status update`);
+      let copiedData = [...userData];
+      for(let i = 0 ; i < userData.length ; i++){
+        if (userData[i].id == targetId.toString()){
+            copiedData[i].isFriend = 0;
+        }
+      }
+      setData(copiedData);
+    }
+
+    async function reloadBlockStatus(targetId : number){
+      console.log("block update!:", targetId);
+      let copiedData = [...userData];
+      for(let i = 0 ; i < userData.length ; i++){
+        //copiedData[i].isBlocked = checkIsInclude(result, copiedData[i].id);
+        if (userData[i].id == targetId.toString()){
+          if(copiedData[i].isBlocked == 0){
+            copiedData[i].isBlocked = 1;
+          }
+          else if(copiedData[i].isBlocked == 1){
+            copiedData[i].isBlocked = 0;
+          }
+        }
+      }
+      setData(copiedData);
+    }
+
     if (socket){
-      socket.on("updateUserStatus", (userId:number, isConnected:boolean) => reloadStatus(userId, isConnected));
-      socket.on("updateUserNick", (userId : number, newNick : string) => reloadNick(userId, newNick));
-      socket.on("updateUserAvatar", (userId : number) => reloadAvatar(userId));
-      socket.on('inGame', (userId : any) => reloadGameStatusIn(userId));
-      socket.on('NotInGame', (userId : any) => reloadGameStatusOut(userId));
+      socket.on("updateUserStatus", reloadStatus);
+      socket.on("updateUserNick", reloadNick);
+      socket.on("updateUserAvatar", reloadAvatar);
+      socket.on("follow", reloadFollowStatus);
+      socket.on("unfollow", reloadUnFollowStatus);
+      socket.on("updateBlocklist", reloadBlockStatus);
+      socket.on('inGame', reloadGameStatusIn);
+      socket.on('NotInGame', reloadGameStatusOut);
     }
     return () => {
       if (socket) {
-        socket.removeAllListeners("updateUserStatus");
-        socket.removeAllListeners("updateUserNick");
-        socket.removeAllListeners("updateUserAvatar");
-        socket.removeAllListeners('inGame');
-        socket.removeAllListeners('NotInGame');
+        socket.off("updateUserStatus", reloadStatus);
+        socket.off("updateUserNick", reloadNick);
+        socket.off("updateUserAvatar", reloadAvatar);
+        socket.off("follow", reloadFollowStatus);
+        socket.off("unfollow", reloadUnFollowStatus);
+        socket.off("updateBlocklist", reloadBlockStatus);
+        socket.off('inGame', reloadGameStatusIn);
+        socket.off('NotInGame', reloadGameStatusOut);
       }
     };
   }, [socket, userData, gameSocket, reloadCheck]);
@@ -584,11 +631,15 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
                 >
                     차단 중
                 </button>)}
-                {userData[index].id != userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && userData[index].isBlocked == 0 &&(
+                {userData[index].id != userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && userData[index].isBlocked == 0 && gameConnected == true &&(
                 <button className={styles_profile.gameButton}
                 onClick={() => {
                 openMatchList(index);
                 }}>
+                    게임 신청
+                </button>)}
+                {userData[index].id != userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && userData[index].isBlocked == 0 && gameConnected == false &&(
+                <button className={styles_profile.disabled}>
                     게임 신청
                 </button>)}
                 {userData[index].id != userId && userData[index].isGaming == 1 && userData[index].isLogin == 1 && userData[index].isBlocked == 0 &&(
@@ -694,21 +745,21 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
           {userData[index].score}
         </h3>
         <div className={styles.buttons}>
-          {userData[index].id == userId && (
+          {userData[index].id == userId && ( // 내 프로필의 팔로우 버튼
             <button
               className={styles.disabled}
             >
               팔로우
             </button>
           )}
-          {userData[index].id != userId && userData[index].isBlocked === 1 &&(
+          {userData[index].id != userId && userData[index].isBlocked === 1 &&( //다른 프로필 팔로우버튼 차단중
             <button
               className={styles.disabled}
             >
               차단 중
             </button>
           )}
-          {userData[index].id != userId && userData[index].isFriend === 1 && userData[index].isBlocked === 0 &&(
+          {userData[index].id != userId && userData[index].isFriend === 1 && userData[index].isBlocked === 0 &&( // 다른 프로필 언팔로우 버튼
           <button
             className={styles.unfollowIn}
             onClick={() => {
@@ -718,7 +769,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             언팔로우
           </button>
           )}
-          {userData[index].id != userId && userData[index].isFriend === 0 && userData[index].isBlocked === 0 &&(
+          {userData[index].id != userId && userData[index].isFriend === 0 && userData[index].isBlocked === 0 &&( // 다른 프로필 팔로우 버튼
           <button
             className={styles.followIn}
             onClick={() => {
@@ -728,14 +779,14 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             팔로우
           </button>
           )}
-          {userData[index].isLogin == 0 && (
+          {userData[index].isLogin == 0 && ( // 다른 프로필 미접속중일때 게임버튼
           <button
             className={styles.disabled}
           >
             미 접속
           </button>
           )}
-          {userData[index].isLogin == 1 && userData[index].isBlocked == 1 &&(
+          {userData[index].isLogin == 1 && userData[index].isBlocked == 1 &&( // 다른 프로필 차단중일때 게임버튼
           <button
             className={styles.disabled}
           >
@@ -756,7 +807,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             게임 중
           </button>
           )}
-          {userData[index].id != userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && userData[index].isBlocked == 0 &&(
+          {userData[index].id != userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && userData[index].isBlocked == 0 && gameConnected == true &&(
             <button
               className={styles.normalIn}
               onClick={() => {
@@ -766,12 +817,15 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
               게임 신청
             </button>
           )}
+          {userData[index].id != userId && userData[index].isGaming == 0 && userData[index].isLogin == 1 && userData[index].isBlocked == 0 && gameConnected == false &&(
+            <button
+              className={styles.disabled}>
+              게임 신청
+            </button>
+          )}
           {userData[index].id != userId && userData[index].isGaming == 1 && userData[index].isLogin == 1 && userData[index].isBlocked == 0 &&(
             <button
-              className={styles.disabled}
-              onClick={() => {
-              openMatchList(index);
-              }}>
+              className={styles.disabled}>
               게임 중
             </button>
           )}
@@ -810,17 +864,19 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       <>
         {showProfile && (
           <div>
-            {showprofileOption === false && (
-              <button onClick={() => setShowprofileOption(true)}>
-                전체 보기
-              </button>
-            )}
-            {showprofileOption === true && (
-              <button onClick={() => setShowprofileOption(false)}>
-                친구만 보기
-              </button>
-            )}
-            <button onClick={() => reloadData()}>새로 고침</button>
+            <div className={styles.listButtons}>
+              {showprofileOption === false && (
+                <button onClick={() => setShowprofileOption(true)}>
+                  전체 보기
+                </button>
+              )}
+              {showprofileOption === true && (
+                <button onClick={() => setShowprofileOption(false)}>
+                  친구만 보기
+                </button>
+              )}
+              <button onClick={() => reloadData()}>새로 고침</button>
+            </div>
             <div className={styles.profileMainBox}>
               {userData.map((item, index) => (
                 <div key={index} className={styles_profile.fontSet}>
