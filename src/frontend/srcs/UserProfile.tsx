@@ -15,6 +15,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
   const [userData, setData] = useState<userDataInterface[]>([]);
   const [friendList, setFriendList] = useState<string[]>([]);
   const [showProfile, setShowProfile] = useState<Boolean>(false);
+  const [gameConnected, setGameConnected] = useState<boolean>(false);
   const [showMatchList, setShowMatchList] = useState(false);
 
   const closeModal = () => {
@@ -88,6 +89,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
           localStorage.removeItem("is2fa");
           localStorage.removeItem("access_token");
           localStorage.removeItem("access_token_exp");
+          sessionStorage.removeItem("gamesocket");
           const ApiUrl = "http://localhost/api/auth/logout";
           axiosApi.post(ApiUrl, {}).catch((error:any) => {
             console.log("logout send fail: ", error); //TODO: error handling check
@@ -100,7 +102,10 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
     const jwtExpItem = localStorage.getItem("access_token_exp");
 		if (!jwtExpItem){
       logout("로그인 정보가 맞지않습니다 다시 로그인해주세요.");
-		}
+		};
+    if(sessionStorage.getItem("gamesocket") == "true"){
+      setGameConnected(true);
+    }
   }, [])
 
   const reloadData = async () => {
@@ -412,7 +417,7 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       }
       setData(copiedData);
     }
-    
+
     async function reloadBlockStatus(targetId : number){
       console.log("block update!:", targetId);
       let copiedData = [...userData];
@@ -421,10 +426,10 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
         if (userData[i].id == targetId.toString()){
           if(copiedData[i].isBlocked == 0){
             copiedData[i].isBlocked = 1;
-          } 
+          }
           else if(copiedData[i].isBlocked == 1){
             copiedData[i].isBlocked = 0;
-          } 
+          }
         }
       }
       setData(copiedData);
@@ -537,12 +542,18 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
                     >
                       차단 중
                   </button>)}
-                {userData[0].id != userId && userData[0].isGaming == 0 && userData[0].isLogin == 1 && userData[0].isBlocked == 0 &&(
+                {userData[0].id != userId && userData[0].isGaming == 0 && userData[0].isLogin == 1 && userData[0].isBlocked == 0 && gameConnected == true &&(
                   <button
                     className={styles_profile.gameButton}
                     onClick={() => {
                             openMatchList();
                           }}
+                    >
+                    게임 신청
+                  </button>)}
+                  {userData[0].id != userId && userData[0].isGaming == 0 && userData[0].isLogin == 1 && userData[0].isBlocked == 0 && gameConnected == false &&(
+                  <button
+                    className={styles_profile.disabled}
                     >
                     게임 신청
                   </button>)}

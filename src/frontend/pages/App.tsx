@@ -255,8 +255,8 @@ export default function App() {
 
     function sendDM(to: string, data: any) {
       console.log(
-        `in useEffect sendDM 
-        to <${to}> 
+        `in useEffect sendDM
+        to <${to}>
         data<${JSON.stringify(data, null, 2)}>
         curretRoomName <${currentRoomName}>
         isDM <${isDM}>
@@ -430,6 +430,16 @@ export default function App() {
     winner: "",
     loser: "",
   });
+
+  useEffect(() => {
+    if (isGameConnected == true){
+      sessionStorage.setItem("gamesocket", "true");
+    }
+    else
+    {
+      sessionStorage.setItem("gamesocket", "false");
+    }
+  }, [isGameConnected]);
 
   useEffect(() => {
     gameSocket.on("hello", () => {

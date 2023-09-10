@@ -9,6 +9,7 @@ function Log() {
 
   // 이미 로그인되었는지 확인
   useEffect(() => {
+    sessionStorage.setItem("gamesocket", "false");
     const storedIsLoggedIn = localStorage.getItem("isLoggedIn");
     if (storedIsLoggedIn === "true") {
       setIsLoggedIn(true);

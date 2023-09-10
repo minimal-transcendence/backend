@@ -37,6 +37,7 @@ function Callback() {
     console.log(data);
     localStorage.setItem("nickname", data.nickname);
     localStorage.setItem("id", data.id);
+    sessionStorage.setItem("gamesocket", "false");
     setUserId(data.id);
     if (data.is2faEnabled === false) {
       const detailResponse = await (
