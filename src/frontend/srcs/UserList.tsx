@@ -103,7 +103,6 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       logout("로그인 정보가 맞지않습니다 다시 로그인해주세요.");
 		}
     if(sessionStorage.getItem("gamesocket") == "true"){
-      console.log("메인 소켓");
       setGameConnected(true);
     }
   }, [])
