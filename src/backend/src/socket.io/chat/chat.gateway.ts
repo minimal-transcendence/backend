@@ -14,8 +14,13 @@ import { ChatSocket } from './types';
 import { MessageDto, NullableTargetDto, RoomDto, RoomEventDto, TargetDto, UserInfoDto } from './dto/chat-events.dto';
 import { WsExceptionFilter } from '../ws-exception.filter';
 
-
-@UsePipes(new ValidationPipe())
+//이렇게 해야 막힌다...!
+@UsePipes(new ValidationPipe({
+	forbidNonWhitelisted: true,
+	whitelist: true,
+	transform: true,
+	transformOptions : { enableImplicitConversion: true }
+  }))
 @UseFilters(WsExceptionFilter)
 @WebSocketGateway({
 	namespace: 'chat',
