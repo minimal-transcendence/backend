@@ -69,9 +69,8 @@ export class ChatService {
 		if (save && to) {
 			msg = new Message(fromId, body);
 			const room = this.storeRoom.findRoom(to);
-			if (!room)	//ERROR
-				return;
-			room.messages.push(msg);
+			if (room)
+				room.messages.push(msg);
 		}
 		const format = {
 			fromId: fromId,
@@ -202,7 +201,6 @@ export class ChatService {
 		}
 	}
 
-	//TODO : Alert message 일관성 있게 정리하기
 	async setPassword(io: Namespace, client: ChatSocket, roomname: string, password: string) {
 		const room = this.storeRoom.findRoom(roomname);
 		if (room.isOwner(client.userId)) {
@@ -273,8 +271,8 @@ export class ChatService {
 		const room = this.storeRoom.findRoom(roomname);
 		const thisUser = this.storeUser.findUserById(userId);
 		if (room === undefined) {
-			//혹은 socket에 emit? TODO : 일관성 있는 처리
-			throw new Error("Error : Room does not exist");
+			console.log("userLeaveRoom : no room found");
+			return ;
 		}
 		if (room.userlist.has(userId) && thisUser.joinlist.has(roomname)) {
 			if (room.userlist.size == 1 && roomname != "DEFAULT") {
@@ -283,7 +281,6 @@ export class ChatService {
 				thisUser.joinlist.delete(roomname);
 			}
 			else {
-				//CHECK
 				if (room.isOwner(userId)) {
 					const newOwner = room.userlist.values().next().value;
 					room.updateOwner(newOwner);
@@ -299,7 +296,6 @@ export class ChatService {
 				room.deleteUserFromUserlist(userId);
 				const body = `Good bye ${thisUser.nickname}`;
 				this.sendMsgToRoom(io, 0, roomname, body, true);
-				//CHECK : except 잘 작동하는지 확인
 				io.to(roomname).except(`$${userId}`).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
 			}
 		}
@@ -316,8 +312,7 @@ export class ChatService {
 				})
 			})
 			.catch((error) => {
-				//return 이냐 error냐...!
-				throw new Error(error.message);
+				console.log()
 			});
 	}
 
@@ -329,12 +324,11 @@ export class ChatService {
 
 
 
-	//kickUser TODO & CHECK : 이 부분 logic 다시 봐야됨!
-	//banUser 랑 하부 로직이 완전히 같다...!
 	async kickUser(io: Namespace, client: ChatSocket, roomname: string, targetName: string) {
 		const targetId = this.storeUser.getIdByNickname(targetName);
 		const room = this.storeRoom.findRoom(roomname);
 		if (this.checkActValidity(client, roomname, targetId, "kick")) {
+			
 			// delete user from room & room from user
 			const targetUser = this.storeUser.findUserById(targetId);
 			room.deleteUserFromUserlist(targetId);
@@ -346,14 +340,12 @@ export class ChatService {
 				room.deleteUserFromOperators(targetId);
 				io.to(roomname).emit("sendCurrRoomInfo", this.makeCurrRoomInfo(roomname));
 			}
-			//저장할건가...? (현재 false)
 			const body = `${targetUser.nickname} is Kicked Out`;
 			this.sendMsgToRoom(io, 0, roomname, body, false);
 			io.to(roomname).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
 		}
 	}
 
-	//ban을 할 수 있는가?
 	async banUser(io: Namespace, client: ChatSocket, roomname: string, targetName: string) {
 		const targetId = this.storeUser.getIdByNickname(targetName);
 		const room = this.storeRoom.findRoom(roomname);
@@ -371,7 +363,6 @@ export class ChatService {
 				room.deleteUserFromOperators(targetId);
 				io.to(roomname).emit("sendCurrRoomInfo", this.makeCurrRoomInfo(roomname));
 			}
-			//저장할건가...? (현재 false)
 			const body = `${targetUser.nickname} is banned`;
 			this.sendMsgToRoom(io, 0, roomname, body, false);
 			io.to(roomname).emit("sendRoomMembers", this.makeRoomUserInfo(roomname));
@@ -388,8 +379,6 @@ export class ChatService {
 			this.sendMsgToSocket(client, msg, roomname);
 		}
 		else {
-			// if (room.isOperator(targetId))
-			// 	room.deleteUserFromOperators(targetId);	//TODO & CHECK	//혹은 여기서는 그냥 해제 안 하는건?
 			room.addUserToMutelist(targetId);
 			let msg = this.makeMessageFormat(0, `${targetName} is now muted`, false);
 			this.sendMsgToSocket(client, msg, roomname);
@@ -410,50 +399,38 @@ export class ChatService {
 
 	async blockUser(io: Namespace, client: ChatSocket, target: string) {
 		if (client.nickname === target) {
-			// client.emit("sendAlert", "[ Act Error ]", "You can't block yourself");
-			return;
+			return ;
 		}
 		const thisUser = this.storeUser.findUserById(client.userId);
 		const targetId = this.storeUser.getIdByNickname(target);
-		// if (thisUser.blocklist.has(targetId))
-		// 	client.emit("sendAlert", "[ Notice ]", "You've already blocked this user");
-		// else {
 		(thisUser.addUserToBlocklist(targetId));
-		// client.emit("sendAlert", "[ Notice ]", `Successfully block ${target}`);
 		const blocklist = [];
 		thisUser.blocklist.forEach((user) =>
 			blocklist.push(user));
-		// client의 모든 소켓을 찾아서, 그 소켓의 currRoom에 block된 유저가 있는지 찾아서 --> 차선
-		// client.emit("sendBlocklist", blocklist);	//++
 		io.in(`$${client.userId}`).emit("sendBlocklist", blocklist);
 		const dmRoom = this.getDMRoomname(client.userId, targetId);
 		const sockets = await io.in(dmRoom).fetchSockets()
 			.then((res) => { return (res) })
 			.catch((error) => {
-				return (error.message);	//사실 문제있는 코드인데...
+				return (error.message);
 			})
 		sockets.forEach((socket: ChatSocket) => {
 			if (socket.userId === client.userId)
 				this.userJoinRoomAct(io, client, client.userId, 'DEFAULT');
 		})
-		//client의 currentRoom 중
-		// }
 	}
 
 	unblockUser(io: Namespace, client: ChatSocket, target: string) {
 		if (client.nickname === target) {
-			// client.emit("sendAlert", "[ Act Error ]", "You don't need to unblock yourself");
 			return;
 		}
 		const thisUser = this.storeUser.findUserById(client.userId);
 		const targetId = this.storeUser.getIdByNickname(target);
 		if (thisUser.blocklist.has(targetId)) {
 			(thisUser.deleteUserFromBlockList(targetId));
-			// client.emit("sendAlert", "[ Notice ]", `Successfully unblock ${target}`);
 			const blocklist = [];
 			thisUser.blocklist.forEach((user) =>
 				blocklist.push(user));
-			// client.emit("sendBlocklist", blocklist);
 			io.in(`$${client.userId}`).emit("sendBlocklist", blocklist);
 			thisUser.joinlist.forEach((room) => {
 				const currRoomInfo = this.makeCurrRoomInfo(room);
@@ -462,9 +439,6 @@ export class ChatService {
 				io.in(room).emit("sendCurrRoomInfo", currRoomInfo);
 			})
 		}
-		// else {
-		// 	client.emit("sendAlert", "[ Notice ]", `${target} is not blocked yet`);
-		// }
 	}
 
 	addOperator(io: Namespace, client: ChatSocket, roomname: string, target: string) {
@@ -508,14 +482,14 @@ export class ChatService {
 				roomlist.push(key);
 		})
 		if (!roomlist || !blocklist)
-			return null;	//null? or throw Error?
+			return null;
 		return (this.makeRoomInfo(blocklist, roomlist));
 	}
 
 	getUserRoomList(userId: number): roomInfo[] | null {
 		const thisUser = this.storeUser.findUserById(userId);
 		if (!thisUser)
-			return null;	//null? or throw Error?
+			return null;
 		return (this.makeRoomInfo(thisUser.blocklist, thisUser.joinlist));
 	}
 
@@ -575,22 +549,6 @@ export class ChatService {
 		}
 	}
 
-	// getDMRoomname(from : number, to : number) : string {
-	// 	const roomname = from > to ? `$${from}-${to}$` : `$${to}-${from}$`;
-	// 	return (roomname)
-	// }
-
-	// getTargetIdFromDMRoom(dmRoom : string, userId : number) : string | null {
-	// 	const trim = dmRoom.slice(1, dmRoom.length - 1);
-	// 	console.log("trim : " + trim);
-	// 	const parts = trim.split('-');
-	// 	if (parts[0] === `${userId}`)
-	// 	return (parts[1]);
-	// 	else if (parts[1] === `${userId}`)
-	// 	return (parts[2]);
-	// 	else
-	// 	return (null);
-	// }
 	getDMRoomname(from : number, to : number) : string {
 		return (`$${from}-${to}$`);
 	}
@@ -623,15 +581,6 @@ export class ChatService {
 		console.log("isNotDMRoom : " + roomname);
 		return (false);
 	}
-	
-	// IsUserInDMRoom(dmRoom : string, userId : number) : boolean {
-	// 	const trim = dmRoom.slice(1, dmRoom.length - 1);
-	// 	const parts = dmRoom.split('-');
-	// 	if (parts[0] === `${userId}` || parts[1] === `${userId}`)
-	// 		return true;
-	// 	else
-	// 		return false;
-	// }
 
 	fetchUserToDMRoom(io: Namespace, client: ChatSocket, username: string) {
 		const DMs = this.makeDMRoomMessages(client, username);
@@ -641,8 +590,8 @@ export class ChatService {
 			const dmRoom = this.getDMRoomname(client.userId, targetId);
 			if (client.currRoom !== dmRoom) {
 				client.leave(client.currRoom);
-				client.join(dmRoom);	//
-				client.currRoom = dmRoom;	//
+				client.join(dmRoom);
+				client.currRoom = dmRoom;
 			}
 			client.emit("sendDMRoomInfo", username, targetId, DMs);
 			if (client.userId !== targetId) {
@@ -693,7 +642,6 @@ export class ChatService {
 		return (userInfo);
 	}
 
-	//Error catch?
 	makeDMRoomUserInfo(fromId: number, toId?: number): userInfo[] {
 		const fromUser = this.storeUser.findUserById(fromId);
 		const userInfo = [];
@@ -790,11 +738,10 @@ export class ChatService {
 		return (true);
 	}
 
-	getAllUserInfo(userId: number): userInfo[] {
+	getAllUserInfo(userId: number): userInfo[] | null {
 		const thisUser = this.storeUser.findUserById(Number(userId));
 		if (!thisUser) {
-			//error handling
-			return;
+			return null;
 		}
 		const blocklist = thisUser.blocklist;
 		const users = this.storeUser.findAllUser();
@@ -823,7 +770,6 @@ export class ChatService {
 	}
 
 	async triggerWindowUpdate(io: Namespace, user: User) {
-		console.log("user nickname : " + user.nickname);
 		user.joinlist.forEach((room) => {
 			const currRoomInfo = this.makeCurrRoomInfo(room);
 			const roomMembers = this.makeRoomUserInfo(room);

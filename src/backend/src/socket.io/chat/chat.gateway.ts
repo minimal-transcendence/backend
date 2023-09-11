@@ -170,22 +170,28 @@ export class ChatGateway
 		);
 	}
 
+	//or throw internal server error?
 	@SubscribeMessage('requestAllRoomList')
 	handleReqAllRoomList(client: ChatSocket) {
 		const roomInfo = this.chatService.getAllRoomList(client.userId);
+		if (!roomInfo)
+			return ;
 		client.emit('sendRoomList', roomInfo);
 	}
 
 	@SubscribeMessage('requestMyRoomList')
 	handleReqUserRoomList(client: ChatSocket) {
 		const roomInfo = this.chatService.getUserRoomList(client.userId);
+		if (!roomInfo)
+			return ;
 		client.emit('sendRoomList', roomInfo);
-
 	}
 
 	@SubscribeMessage('requestAllMembers')
 	handleReqAllMembers(client: ChatSocket) {
 		const members = this.chatService.getAllUserInfo(client.userId);
+		if (!members)
+			return ;
 		client.emit('responseAllMembers', members);
 	}
 
@@ -193,18 +199,24 @@ export class ChatGateway
 	@SubscribeMessage('requestRoomMembers')
 	handleReqRoomMembers(client: ChatSocket, payload: RoomDto) {
 		const roomMembers = this.chatService.makeRoomUserInfo(payload.roomname);
+		if (!roomMembers)
+			return ;
 		client.emit('sendRoomMembers', roomMembers);
 	}
 
 	@SubscribeMessage('requestTargetMember')
 	handleReqTargetMember(client: ChatSocket, payload: UserInfoDto) {
 		const member = this.chatService.getUserInfoById(client.userId, payload.targetId);
+		if (!member)
+			return ;
 		client.emit('responseTargetMember', member);
 	}
 
 	@SubscribeMessage('requestSearchResultRoomList')
 	handleReqQueryRes(client: ChatSocket, payload: NullableTargetDto) {
 		const roomInfo = this.chatService.getQueryRoomList(client.userId, payload.target);
+		if (!roomInfo)
+			return ;
 		client.emit('responseRoomQuery', roomInfo);
 	}
 
