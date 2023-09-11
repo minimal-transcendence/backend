@@ -57,7 +57,7 @@ export default function SearchListHeader({
   }
 
   function handleChk(event: any) {
-    if (new Date().getTime() - lastClicked < 1000) {
+    if (new Date().getTime() - lastClicked < 500) {
       return; // dont do anything
     }
     setLastClicked(() => new Date().getTime());
