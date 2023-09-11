@@ -6,7 +6,6 @@ import ModalOverlay from "../../components/modalpage/ModalOverlay";
 import axios from "axios";
 import UserProfile from "../../../srcs/UserProfile";
 import Image from "next/image";
-import axiosApi from "@/srcs/AxiosInterceptor";
 
 export default function ChatRoomUserInfo({
   user,

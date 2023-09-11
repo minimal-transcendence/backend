@@ -12,22 +12,22 @@ async function refreshToken(): Promise<any> {
 		localStorage.setItem("access_token", access_token);
 		const jwtDecode = jwt_decode<JwtPayload>(access_token);
 		localStorage.setItem("access_token_exp", jwtDecode.exp.toString());
-	})
-    .catch(function (error) {
-      if (error.response && error.response.status === 401) {
-	        getLogout();
-        	// window.location.href = "/";
-          Router.push("/");
+	});
+    // .catch(function (error) {
+    //   if (error.response && error.response.status === 401) {
+	  //       getLogout();
+    //     	// window.location.href = "/";
+    //       Router.push("/");
 
-		}
-		else if (error.request) {
-			//namkim : 요청은 있었지만 응답이 없었음.. LOGOUT 하게 하는게 적합한 행동인지...?
-			console.log(error.request);
-			getLogout();
-			// window.location.href = "/";
-      Router.push("/");
-		}
-    });
+		// }
+		// else if (error.request) {
+		// 	//namkim : 요청은 있었지만 응답이 없었음.. LOGOUT 하게 하는게 적합한 행동인지...?
+		// 	console.log(error.request);
+		// 	getLogout();
+		// 	// window.location.href = "/";
+    //   Router.push("/");
+		// }
+    // });
   return res;
 }
 

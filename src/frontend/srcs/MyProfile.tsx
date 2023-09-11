@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
 import { useRouter } from "next/router";
-import axiosApi from "./AxiosInterceptor";
+import axiosApi, { getLogout } from "./AxiosInterceptor";
 import axios, { AxiosError } from "axios";
 import jwt_decode from "jwt-decode";
 import "../pages/index.css";
@@ -81,7 +81,7 @@ function MyProfile({
             console.log("logout send fail: ", error); //TODO: error handling check
           });
           alert(message);
-          router.push("/");
+          //router.push("/");
   }
 
   async function refreshToken() : Promise<any> {
@@ -162,6 +162,19 @@ function MyProfile({
           }
         })
         .catch((error) => {
+          if (error.response && error.response.status === 401) {
+            getLogout();
+            chatSocket.emit('logout');
+            //router.push("/");
+          }
+          else if (error.request) {
+            //namkim : 요청은 있었지만 응답이 없었음.. LOGOUT 하게 하는게 적합한 행동인지...?
+            console.log(error.request);
+            getLogout();
+            chatSocket.emit('logout');
+            //router.push("/");
+          }
+
           alert("닉네임 변경에 실패했습니다");
           console.error("에러 발생:", error);
           setNewNickname("");
@@ -213,6 +226,18 @@ function MyProfile({
             alert("프로필 사진이 변경되었습니다");
           })
         .catch((error:any) => {
+          if (error.response && error.response.status === 401) {
+            getLogout();
+            chatSocket.emit('logout');
+            //router.push("/");
+          }
+          else if (error.request) {
+            //namkim : 요청은 있었지만 응답이 없었음.. LOGOUT 하게 하는게 적합한 행동인지...?
+            console.log(error.request);
+            getLogout();
+            chatSocket.emit('logout');
+            //router.push("/");
+          }
           alert("이미지 업로드에 실패했습니다1.");
           throw(error);
         })
@@ -264,11 +289,14 @@ function MyProfile({
               localStorage.removeItem("access_token");
               localStorage.removeItem("access_token_exp");
               sessionStorage.removeItem("gamesocket");
+
+              chatSocket.emit('logout');
+
               const ApiUrl = "http://localhost/api/auth/logout";
               axiosApi.post(ApiUrl, {}).catch((error:any) => {
                 console.log("logout send fail: ", error); //TODO: error handling check
               });
-              router.push("/");
+              //router.push("/");
             }
             else{
               alert("다시 시도해주세요.");

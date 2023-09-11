@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { useRouter } from "next/router";
-import axiosApi from "./AxiosInterceptor";
+import axiosApi, { getLogout } from "./AxiosInterceptor";
 import styles from "../styles/UserListStyle.module.css";
 import styles_profile from "../styles/UserProfileStyle.module.css";
 import "../pages/index.css";
@@ -97,7 +97,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             console.log("logout send fail: ", error); //TODO: error handling check
           });
           alert(message);
-          router.push("/");
+          //router.push("/");
   }
 
   useEffect(() => {
@@ -158,16 +158,44 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
     //const responseFriend = await (await fetch_refresh ('http://localhost/api/user/' + userId + '/friend')).json();
     const responseData = await axiosApi.get(
       "http://localhost/api/user/" + userId + "/friend"
-    );
-    const responseFriend = responseData.data;
+    ).catch((error) => {
+      if (error.response && error.response.status === 401) {
+        getLogout();
+        socket.emit('logout');
+        //router.push("/");
+      }
+      else if (error.request) {
+        //namkim : 요청은 있었지만 응답이 없었음.. LOGOUT 하게 하는게 적합한 행동인지...?
+        console.log(error.request);
+        getLogout();
+        socket.emit('logout');
+        //router.push("/");
+      }
+      // todo
+    });
+    const responseFriend = responseData?.data;
     const friendCount = responseFriend.friendList.length;
     for (let i = 0; i < friendCount; i++) {
       idList.push(responseFriend.friendList[i].id.toString());
     }
     setFriendList(idList);
     console.log("friend response: ", idList);
-    const responseUserData = await axiosApi.get("http://localhost/api/user");
-    const response = responseUserData.data;
+    const responseUserData = await axiosApi.get("http://localhost/api/user").catch((error) => {
+      if (error.response && error.response.status === 401) {
+        getLogout();
+        socket.emit('logout');
+        //router.push("/");
+      }
+      else if (error.request) {
+        //namkim : 요청은 있었지만 응답이 없었음.. LOGOUT 하게 하는게 적합한 행동인지...?
+        console.log(error.request);
+        getLogout();
+        socket.emit('logout');
+        //router.push("/");
+      }
+      // todo
+    });;
+    const response = responseUserData?.data;
     const useridx = response.length;
 
     const newDataList: userDataInterface[] = [];
@@ -177,12 +205,40 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
       if(response[i].id != 0){
         const responseDetail = await axiosApi.get(
           "http://localhost/api/user/" + response[i].id
-        );
-        const detailResponse = responseDetail.data;
+        ).catch((error) => {
+          if (error.response && error.response.status === 401) {
+            getLogout();
+            socket.emit('logout');
+            //router.push("/");
+          }
+          else if (error.request) {
+            //namkim : 요청은 있었지만 응답이 없었음.. LOGOUT 하게 하는게 적합한 행동인지...?
+            console.log(error.request);
+            getLogout();
+            socket.emit('logout');
+            //router.push("/");
+          }
+          // todo
+        });;
+        const detailResponse = responseDetail?.data;
         const responseMatch = await axiosApi.get(
           "http://localhost/api/user/" + response[i].id + "/matchhistory"
-        );
-        const matchResponse = responseMatch.data;
+        ).catch((error) => {
+          if (error.response && error.response.status === 401) {
+            getLogout();
+            socket.emit('logout');
+            //router.push("/");
+          }
+          else if (error.request) {
+            //namkim : 요청은 있었지만 응답이 없었음.. LOGOUT 하게 하는게 적합한 행동인지...?
+            console.log(error.request);
+            getLogout();
+            socket.emit('logout');
+            //router.push("/");
+          }
+          // todo
+        });;
+        const matchResponse = responseMatch?.data;
         const matchCount = matchResponse.length;
         const newData: userDataInterface = {
           id: detailResponse.id,
@@ -301,6 +357,18 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         }
       })
       .catch((error) => {
+          if (error.response && error.response.status === 401) {
+            getLogout();
+            socket.emit('logout');
+            //router.push("/");
+          }
+          else if (error.request) {
+            //namkim : 요청은 있었지만 응답이 없었음.. LOGOUT 하게 하는게 적합한 행동인지...?
+            console.log(error.request);
+            getLogout();
+            socket.emit('logout');
+            //router.push("/");
+          }
         alert("Follow에 실패했습니다");
         console.error("에러 발생:", error);
       });
@@ -330,6 +398,18 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
         }
       })
       .catch((error) => {
+        if (error.response && error.response.status === 401) {
+          getLogout();
+          socket.emit('logout');
+          //router.push("/");
+        }
+        else if (error.request) {
+          //namkim : 요청은 있었지만 응답이 없었음.. LOGOUT 하게 하는게 적합한 행동인지...?
+          console.log(error.request);
+          getLogout();
+          socket.emit('logout');
+          //router.push("/");
+        }
         alert("UnFollow에 실패했습니다");
         console.error("에러 발생:", error);
       });

@@ -4,7 +4,6 @@ import UserList from "../srcs/UserList";
 import MyProfile from "../srcs/MyProfile";
 import UserProfile from "../srcs/UserProfile";
 import App from "./App";
-// import axiosApi from "@/srcs/AxiosInterceptor";
 // import { refreshToken, setItems } from "@/srcs/SocketRefresh";
 // import { socketRefreshToken } from "@/srcs/SocketRefresh";
 import jwt_decode from "jwt-decode";
@@ -60,7 +59,7 @@ function Home() {
 
           chatSocket.emit('logout');
 
-          router.push("/");
+          //router.push("/");
         })
       } else {
         console.log("Doesn't need to refresh");
