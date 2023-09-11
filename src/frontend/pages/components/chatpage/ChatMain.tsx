@@ -38,15 +38,6 @@ const ChatMain = ({
 
   useEffect(() => {
     function sendCurrRoomInfo(result: any) {
-      console.log(
-        `in useEffect sendCurrRoomInfo  <${JSON.stringify(result, null, 2)}>
-        방이름 <${JSON.stringify(
-          result.roomname,
-          null,
-          2
-        )}>  currentRoomName : <${currentRoomName}>`
-      );
-
       setRoomInfo(() => result);
       setCurrentRoomName(() => result.roomname);
       setMessages(() => result.messages);
@@ -56,20 +47,7 @@ const ChatMain = ({
     }
 
     function sendDMRoomInfo(target: any, targetId: number, messages: any) {
-      console.log(
-        `in useEffect sendDMRoomInfo  
-        target <${JSON.stringify(
-          target,
-          null,
-          2
-        )}> targetId <${targetId}> messages <${JSON.stringify(
-          messages,
-          null,
-          2
-        )}> currentRoomName : <${currentRoomName}>`
-      );
-
-      socket.emit("userCheckedDM", { targetId : targetId });
+      socket.emit("userCheckedDM", { targetId: targetId });
       setCurrentRoomName(() => target);
       setMessages(() => messages);
       setIsDM(() => true);

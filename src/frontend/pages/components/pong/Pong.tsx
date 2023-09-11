@@ -62,41 +62,18 @@ export default function Pong() {
   const gameData = gameContext.gameData;
   const socket: any = socketContext.gameSocket;
 
-  // const [gameOver, setGameOver] = useState<boolean>(gameContext.startGame);
-  // console.log("In Pong", gameContext.startGame);
-
   useEffect(() => {
-    //Socket
-    console.log("In Pong", socket);
-    // console.log("In Pong", gameData);
-
-    // setInGame(gameContext.startGame);
-
-    // console.log(socket);
     // Initialize Canvas
     if (!canvasRef.current) {
       return;
     }
     const canvas: HTMLCanvasElement = canvasRef.current;
 
-    // Component
-    // canvas.width = canvas.clientWidth;
-    // canvas.height = canvas.clientHeight;
-    // Window
-    // canvas.width = window.innerWidth;
-    // canvas.height = window.innerHeight;
-    // Literal
-    // canvas.width = 900;
-    // canvas.height = 1600;
-    // 해상도(사이즈)가 window에 맞게 설정되면 게임에 영향이 있을 수 있음.
-    // 상수를 할당해야 하나? 화면비를 맞춰야 하나?
-
     const context = canvas.getContext("2d");
     if (!context) {
       return;
     }
     /*-----------------------------------------------------*/
-    // let inGame: boolean = false;
     let interval: ReturnType<typeof setInterval> | undefined;
 
     let roomName: string;
@@ -153,9 +130,6 @@ export default function Pong() {
     const drawBackground = () => {
       context.fillStyle = "black";
       context.fillRect(0, 0, canvas.width, canvas.height);
-      // if (width) {
-      //   context.strokeRect(canvas.width / 2 - width / 2, 0, width, height)
-      // }
     };
 
     // Draw Lobby
@@ -184,7 +158,6 @@ export default function Pong() {
       context.font = "40px monospace";
       context.fillText(`Winner: ${winner}`, canvas.width / 2, canvas.height * 0.5);
       context.fillText(`Loser: ${loser}`, canvas.width / 2, canvas.height * 0.5 + 50);
-      // context.fill();
     };
 
     let angleA = Math.random() * 360; // start angle (for HSL)
@@ -205,8 +178,6 @@ export default function Pong() {
 
     // Draw Paddle
     const drawPaddle = () => {
-      // context.fillStyle = "white";
-
       // Bottom Paddle
       if (powerUp[0]) {
         createGradient(
@@ -362,11 +333,8 @@ export default function Pong() {
       score = payload.playerScore;
     });
 
-    console.log("EVERYTING RE RENDER");
-
     // clean up
     return () => {
-      console.log("clearInterval");
       clearInterval(interval);
       canvas.removeEventListener("keydown", handleKeydown);
       canvas.removeEventListener("keyup", handleKeyup);

@@ -5,7 +5,7 @@ import axios, { AxiosError } from "axios";
 import jwt_decode from "jwt-decode";
 import "../pages/index.css";
 import styles from "../styles/MyProfileStyle.module.css";
-import { JwtPayload } from "./SocketRefresh";
+import { JwtPayload } from "@/pages/callback";
 
 function MyProfile({
   setIsOpenModal,

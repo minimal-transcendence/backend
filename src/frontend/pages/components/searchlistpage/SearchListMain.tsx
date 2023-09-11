@@ -53,28 +53,24 @@ export default function SearchListHeader({
   function handleSelectRoom(event: any, room: any) {
     setroomnameModal(room.roomname);
 
-    console.log("in Selectroomname handle ", room?.roomname);
     socket.emit("selectRoom", { roomname: room?.roomname });
   }
 
   function handleChk(event: any) {
     if (new Date().getTime() - lastClicked < 1000) {
-      console.log("Last Click ", lastClicked);
       return; // dont do anything
     }
     setLastClicked(() => new Date().getTime());
     if (event.target.dataset.name) {
-      console.log("in handleChk ", event.target.dataset.name);
       setLeftHeader(event.target.dataset.name);
       if (event.target.dataset.name === "all")
         socket.emit("requestAllRoomList");
       else if (event.target.dataset.name === "result") {
-        console.log("wehn click result ", query);
         socket.emit("requestSearchResultRoomList", { target: query });
       } else if (event.target.dataset.name === "joined")
         socket.emit("requestMyRoomList");
       setQuery(() => "");
-    } else console.log("in handleChk other");
+    }
   }
 
   let tmpResults;

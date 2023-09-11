@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, Req, Res, UseGuards, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Query, Req, Res, UseGuards, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtGuard } from './guards/jwt.guard';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -8,6 +8,7 @@ import { ChatGateway } from 'src/socket.io/chat/chat.gateway';
 
 @Controller('auth')
 export class AuthController {
+    private readonly logger = new Logger(AuthController.name);
     constructor(
         private authService: AuthService,
 		private userService: UserService,
@@ -20,7 +21,7 @@ export class AuthController {
             throw new UnauthorizedException('No code in query string');
         }
 
-        console.log("Nest code:", code);
+        this.logger.log("42api callback code:", code);
 
         // get user data from api
         const apiData = await this.authService.getUserFromApi(code);

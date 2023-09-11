@@ -20,21 +20,16 @@ const ChatHeader = ({
 
   const handleExit = (event: any, currentroomname: string) => {
     event.preventDefault();
-    console.log("방나감 ", currentroomname);
     socket.emit("sendRoomLeave", { roomname: currentroomname });
   };
   const onSubmit = (event: any, value: string, currentRoomName: string) => {
     event.preventDefault();
-    console.log("패스워드바꾸려고 ", value);
 
     const chkAuth =
       myNickName === roomInfo.owner || roomInfo.operators.includes(myNickName);
 
     if (chkAuth) {
-      console.log("비번 바꾸기 가능");
-
       if (roomState !== "Public") {
-        console.log("test!!!!!public!!!!!");
         setRoomState("Public");
         socket.emit("setRoomPublic", {
           roomname: currentRoomName,
@@ -49,59 +44,32 @@ const ChatHeader = ({
     setPassword("");
   };
 
-  console.log("in ChatHeader");
   function handleMenu(event: any, currentRoomName: string) {
     if (event.target.dataset.name) {
-      console.log("hi");
       if (
         event.target.dataset.name === "exit" &&
-        currentRoomName !== "전체채팅방"
+        currentRoomName !== "DEFAULT"
       ) {
-        console.log(
-          "you want to out",
-          currentRoomName,
-          event.target.dataset.name
-        );
         setRoomState("");
         handleExit(event, currentRoomName);
       } else if (event.target.dataset.name === "public") {
         {
-          console.log(
-            "you want to public",
-            currentRoomName,
-            event.target.dataset.name
-          );
           const chkAuth =
             myNickName === roomInfo.owner ||
             roomInfo.operators.includes(myNickName);
           if (chkAuth) {
-            console.log("권한있음. public으로 전환");
             setRoomState("Public");
           }
           socket.emit("setRoomPublic", {
             roomname: currentRoomName,
           });
         }
-      } else if (event.target.dataset.name === "password") {
-        {
-          console.log(
-            "you want to password",
-            currentRoomName,
-            event.target.dataset.name
-          );
-        }
       } else if (event.target.dataset.name === "private") {
         {
-          console.log(
-            "you want to private",
-            currentRoomName,
-            event.target.dataset.name
-          );
           const chkAuth =
             myNickName === roomInfo.owner ||
             roomInfo.operators.includes(myNickName);
           if (chkAuth) {
-            console.log("권한있음. private로 전환");
             setRoomState("Private");
           }
           socket.emit("setRoomPrivate", {
@@ -109,8 +77,6 @@ const ChatHeader = ({
           });
         }
       }
-    } else {
-      console.log("you click other");
     }
   }
   return (

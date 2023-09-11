@@ -14,7 +14,6 @@ function Log() {
     if (storedIsLoggedIn === "true") {
       setIsLoggedIn(true);
     }
-    console.log("Login Page");
   }, []);
 
   useEffect(() => {

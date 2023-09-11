@@ -7,7 +7,6 @@ export default function ErrorMessage({
   message2: string;
   query: string;
 }) {
-  console.log("errmessga called");
   return (
     <>
       {query ? (

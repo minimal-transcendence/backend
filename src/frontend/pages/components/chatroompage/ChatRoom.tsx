@@ -14,13 +14,8 @@ export default function ChatRoomUser({
   myNickName,
   changedID,
   changedNickName,
-}: // alertModal,
-// setAlertModal,
-// alertModalTitle,
-// setAlertModalTitle,
-// alertModalBody,
-// setAlertModalBody,
-{
+  isGameConnected,
+}: {
   id: any;
   isDM: boolean;
   users: any;
@@ -31,29 +26,14 @@ export default function ChatRoomUser({
   myNickName: string;
   changedID: number;
   changedNickName: string;
-  // alertModal: any;
-  // setAlertModal: any;
-  // alertModalTitle: string;
-  // setAlertModalTitle: any;
-  // alertModalBody: string;
-  // setAlertModalBody: any;
+  isGameConnected: boolean;
 }) {
-  // console.log("in chatroomUser, users", users);
-  // console.log("in chatroomUser, roomname", roomname);
-  // const socket = useContext(SocketContext).chatSocket;
   const [page, setPage] = useState<number>(1);
   const [leftArrow, setLeftArrow] = useState<boolean>(false);
   const [rightArrow, setRightArrow] = useState<boolean>(false);
 
   const filtered: string[] = [];
   users?.forEach((user: any) => {
-    console.log("blocklist in user : " + JSON.stringify(blocklist));
-    console.log(
-      `Room Array.isArray(blocklist) : <${Array.isArray(
-        blocklist
-      )}> type <${typeof blocklist}>`
-    );
-    console.log("user ", JSON.stringify(user, null, 2));
     if (
       Array.isArray(blocklist) &&
       !blocklist?.find((b: number) => {
@@ -62,7 +42,6 @@ export default function ChatRoomUser({
     )
       filtered.push(user);
   });
-  //console.log("filtered : " + JSON.stringify(filtered));
 
   useEffect(
     function () {
@@ -74,20 +53,15 @@ export default function ChatRoomUser({
       }
       a();
     },
-    [page, filtered]
-    // [users, page, filtered]
+    [page, filtered, blocklist]
   );
 
   if (!users || !roomname) return;
   else {
     let tmpUsers;
     if (filtered.length <= pageHeight) {
-      console.log(`users length if가 ${filtered.length}이므로 1페이지 미만.`);
       tmpUsers = filtered;
     } else {
-      console.log(`users length가 ${users.length}이므로 1페이지 이상가능.`);
-
-      console.log(`현재 페이지는 ${page}이므로, `);
       const startIndex = (page - 1) * pageHeight;
       tmpUsers = filtered.slice(startIndex, startIndex + 8);
     }
@@ -123,6 +97,7 @@ export default function ChatRoomUser({
                 myNickName={myNickName}
                 changedID={changedID}
                 changedNickName={changedNickName}
+                isGameConnected={isGameConnected}
               />
             ))}
           </ul>

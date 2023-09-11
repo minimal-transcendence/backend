@@ -38,7 +38,6 @@ const createJwtMiddleware = (jwtService: JwtService, logger: Logger) =>
         if (!token) {
             throw new Error();
         }
-        logger.debug(`Validating jwt token before connection: ${token}`);
         const payload = jwtService.verify(token, {
             secret: process.env.JWT_ACCESS_TOKEN_SECRET
         });
@@ -61,7 +60,6 @@ const createGameMiddleware = (io: Namespace, jwtService: JwtService, logger: Log
         if (!token) {
             throw new Error();
         }
-        logger.debug(`Validating jwt token before connection: ${token}`);
         const payload = jwtService.verify(token, {
             secret: process.env.JWT_ACCESS_TOKEN_SECRET
         });
@@ -70,10 +68,8 @@ const createGameMiddleware = (io: Namespace, jwtService: JwtService, logger: Log
         socket.nickname = nickname;
         // Enforce Only One Connection
         io.sockets.forEach((e: GameSocket) => {
-            console.log(e.userId);
-            console.log(socket.userId);
             if (e.userId === socket.userId) {
-                console.log("you already have connection");
+                logger.warn("you already have connection");
                 throw new Error();
             }
         })

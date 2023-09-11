@@ -107,19 +107,19 @@ export class GameService {
       } else {
         // Add to Computer Score
         room.playerScore[1]++;
-        console.log(room.playerScore);
+        // console.log(room.playerScore);
         // Game Over
         if (room.playerScore[1] >= 3) {
           clearInterval(room.interval);
           room.winner = room.player[1];
           room.loser = room.player[0];
           room.gameOver = true;
-          console.log("-----Game Over-----");
-          console.log("Winner:", room.winner.nickname);
-          console.log("Loser:", room.loser.nickname);
-          console.log("-------Score-------");
-          console.log(`${room.playerScore[0]} - ${room.player[0].nickname}`);
-          console.log(`${room.playerScore[1]} - ${room.player[1].nickname}`);
+          // console.log("-----Game Over-----");
+          // console.log("Winner:", room.winner.nickname);
+          // console.log("Loser:", room.loser.nickname);
+          // console.log("-------Score-------");
+          // console.log(`${room.playerScore[0]} - ${room.player[0].nickname}`);
+          // console.log(`${room.playerScore[1]} - ${room.player[1].nickname}`);
           return;
         }
         // Reset Ball
@@ -157,19 +157,19 @@ export class GameService {
       } else {
         // Add to Player Score
         room.playerScore[0]++;
-        console.log(room.playerScore);
+        // console.log(room.playerScore);
         // Game Over
         if (room.playerScore[0] >= 3) {
           clearInterval(room.interval);
           room.winner = room.player[0];
           room.loser = room.player[1];
           room.gameOver = true;
-          console.log("-----Game Over-----");
-          console.log("Winner:", room.winner.nickname);
-          console.log("Loser:", room.loser.nickname);
-          console.log("-------Score-------");
-          console.log(`${room.playerScore[0]} - ${room.player[0].nickname}`);
-          console.log(`${room.playerScore[1]} - ${room.player[1].nickname}`);
+          // console.log("-----Game Over-----");
+          // console.log("Winner:", room.winner.nickname);
+          // console.log("Loser:", room.loser.nickname);
+          // console.log("-------Score-------");
+          // console.log(`${room.playerScore[0]} - ${room.player[0].nickname}`);
+          // console.log(`${room.playerScore[1]} - ${room.player[1].nickname}`);
           return;
         }
         // Reset Ball

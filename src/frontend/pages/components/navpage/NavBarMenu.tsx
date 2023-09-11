@@ -77,9 +77,7 @@ export default function Menu({
     localStorage.removeItem("avatar");
     sessionStorage.removeItem("gamesocket");
     const ApiUrl = "http://localhost/api/auth/logout";
-    axiosApi.post(ApiUrl, {}).catch((error) => {
-      console.log("here i am"); //TODO: error handling check
-    });
+    axiosApi.post(ApiUrl, {}).catch((error) => {});
     setIsLoggedIn(false);
     alert("로그아웃 되었습니다.");
     router.push("/");
@@ -87,41 +85,32 @@ export default function Menu({
 
   function handleMenu(event: any) {
     if (event.target.dataset.name) {
-      console.log(`${event.target.dataset.name}클릭!!!`);
-
       if (event.target.dataset.name === "easy") {
         if (randomMatch !== "easy") {
           gameSocket.emit("randomMatchApply", "easy");
-          console.log("random Easy apply");
           setRandomMatch(() => "easy");
         } else {
           gameSocket.emit("randomMatchCancel");
-          console.log("random Easy Cancel");
           setRandomMatch(() => "");
         }
       } else if (event.target.dataset.name === "normal") {
         if (randomMatch !== "normal") {
           gameSocket.emit("randomMatchApply", "normal");
-          console.log("random Normal apply");
           setRandomMatch(() => "normal");
         } else {
           gameSocket.emit("randomMatchCancel");
-          console.log("random Normal Cancel");
           setRandomMatch(() => "");
         }
       } else if (event.target.dataset.name === "hard") {
         if (randomMatch !== "hard") {
           gameSocket.emit("randomMatchApply", "hard");
-          console.log("random Hard apply");
           setRandomMatch(() => "hard");
         } else {
           gameSocket.emit("randomMatchCancel");
-          console.log("random Hard Cancel");
           setRandomMatch(() => "");
         }
       }
     } else {
-      console.log("you click other");
     }
   }
   return (
@@ -137,7 +126,7 @@ export default function Menu({
               height="35"
               alt="contesticon"
             /> */}
-              <article className={randomMatch ? "card" : ""}>
+              <article className={randomMatch ? "card" : "card-no"}>
                 <Image
                   className="dropbtn"
                   src={contestIcon}
@@ -188,30 +177,30 @@ export default function Menu({
               alt="logouticon"
             />
           </p>
-        </div>
-        <div>
-          <>
-            <ModalOverlay isOpenModal={myProfileModal} />
-            {myProfileModal && (
-              <>
-                <MyProfile
-                  setIsOpenModal={setMyProfileModal}
-                  setTmpLoginnickname={setTmpLoginnickname}
-                />
-              </>
-            )}
-          </>
-        </div>
+          <div>
+            <>
+              <ModalOverlay isOpenModal={myProfileModal} />
+              {myProfileModal && (
+                <>
+                  <MyProfile
+                    setIsOpenModal={setMyProfileModal}
+                    setTmpLoginnickname={setTmpLoginnickname}
+                  />
+                </>
+              )}
+            </>
+          </div>
 
-        <div>
-          <>
-            <ModalOverlay isOpenModal={userListModal} />
-            {userListModal && (
-              <>
-                <UserList setIsOpenModal={setUserListModal} />
-              </>
-            )}
-          </>
+          <div>
+            <>
+              <ModalOverlay isOpenModal={userListModal} />
+              {userListModal && (
+                <>
+                  <UserList setIsOpenModal={setUserListModal} />
+                </>
+              )}
+            </>
+          </div>
         </div>
       </div>
     </>

@@ -1,34 +1,37 @@
+import { JwtPayload } from "@/pages/callback";
 import axios, { AxiosError } from "axios";
 import jwt_decode from "jwt-decode";
-import { JwtPayload } from "./SocketRefresh";
+import Router from "next/router";
 
 async function refreshToken(): Promise<any> {
-	console.log("in refresh");
+  console.log("in refresh");
   const res = await axios
     .get("http://localhost/api/auth/refresh", { withCredentials: true })
-	.then((res) => {
-		const access_token = res.data.access_token;
-		localStorage.setItem("access_token", access_token);
-		const jwtDecode = jwt_decode<JwtPayload>(access_token);
-		localStorage.setItem("access_token_exp", jwtDecode.exp.toString());
-	})
+    .then((res) => {
+      const access_token = res.data.access_token;
+      localStorage.setItem("access_token", access_token);
+      const jwtDecode = jwt_decode<JwtPayload>(access_token);
+      localStorage.setItem("access_token_exp", jwtDecode.exp.toString());
+    })
     .catch(function (error) {
       if (error.response && error.response.status === 401) {
-	        getLogout();
-        	window.location.href = "/";
-		}
-		else if (error.request) {
-			//namkim : 요청은 있었지만 응답이 없었음.. LOGOUT 하게 하는게 적합한 행동인지...?
-			console.log(error.request);
-			getLogout();
-			window.location.href = "/";
-		}
+        getLogout();
+        // window.location.href = "/";
+        Router.push("/");
+      } else if (error.request) {
+        //namkim : 요청은 있었지만 응답이 없었음.. LOGOUT 하게 하는게 적합한 행동인지...?
+        console.log(error.request);
+        getLogout();
+        // window.location.href = "/";
+        Router.push("/");
+      }
     });
   return res;
 }
 
 export async function getLogout(): Promise<any> {
   console.log("try logout!");
+  alert("로그인 정보가 만료되었습니다");
   localStorage.setItem("isLoggedIn", "false");
   localStorage.removeItem("id");
   localStorage.removeItem("nickname");
