@@ -18,7 +18,12 @@ import { Invitation } from './dto/invitation.dto';
 import { OneOnOnePayload } from './dto/one-on-on.dto';
 import { KeydownPayload } from './dto/keydown.dto';
 
-@UsePipes(new ValidationPipe())
+@UsePipes(new ValidationPipe({
+  whitelist: true,
+  forbidNonWhitelisted: true,
+  transform: true,
+  transformOptions: { enableImplicitConversion: true },
+}))
 @UseFilters(WsExceptionFilter)
 @WebSocketGateway({
 	namespace: 'game',
@@ -50,10 +55,11 @@ export class GameGateway
 		// Monitoring finished Game - clear game room instance
 		setInterval(() => {
 			for (let e in this.gameRooms) {
-				console.log("GameRoom:", e);
+				// console.log("GameRoom:", e);
 				if (this.gameRooms[e].gameOver) {
 				const room: GameRoom = this.gameRooms[e];
 				if (room.gameStart) {
+          this.logger.log(`Game Over - Winner: ${room.winner.nickname} Loser: ${room.loser.nickname}`);
 					// Save Game Result in DB
 					this.matchService.createMatchHistory({
 						winnerId: room.winner.userId,
@@ -99,13 +105,11 @@ export class GameGateway
       return Math.floor(Math.random() * (max - min + 1) + min);
     }
     const randomNumber = getRandom(0, 36);
-    console.log("Random Number:", randomNumber);
     client.color = "hsl(" + (randomNumber * 10) + ",100%, 50%)"
-    console.log("Color:", client.color);
 
 		const sockets = this.io.sockets;
 		this.logger.log(`Game Client Connected : ${client.nickname}`);
-		this.logger.debug(`Number of connected Game sockets: ${sockets.size}`)
+		this.logger.log(`Number of connected Game sockets: ${sockets.size}`)
   }
 
 	handleDisconnect(@ConnectedSocket() client: GameSocket) {
@@ -127,12 +131,13 @@ export class GameGateway
 						room.winner = client === room.player[0] ? room.player[1] : room.player[0];
 						room.loser = client;
 
-						console.log("-----Game Over-----");
-						console.log("Winner:", room.winner.nickname);
-						console.log("Loser:", room.loser.nickname);
-						console.log("-------Score-------");
-						console.log(`${room.playerScore[0]} - ${room.player[0].id}`);
-						console.log(`${room.playerScore[1]} - ${room.player[1].id}`);
+            this.logger.log(`Game Over - Winner: ${room.winner.nickname} Loser: ${room.loser.nickname}`);
+						// console.log("-----Game Over-----");
+						// console.log("Winner:", room.winner.nickname);
+						// console.log("Loser:", room.loser.nickname);
+						// console.log("-------Score-------");
+						// console.log(`${room.playerScore[0]} - ${room.player[0].id}`);
+						// console.log(`${room.playerScore[1]} - ${room.player[1].id}`);
             
             this.gameService.updateInGameStatus(
               this.io.server.of('chat'),
@@ -167,7 +172,7 @@ export class GameGateway
     });
 
 		this.logger.log(`Game Client Disconnected : ${client.nickname}`);
-		this.logger.debug(`Number of connected Game sockets: ${sockets.size}`)
+		this.logger.log(`Number of connected Game sockets: ${sockets.size}`)
 	}
 
   /*-------------Random Match-----------------------*/
@@ -175,7 +180,7 @@ export class GameGateway
   @SubscribeMessage('randomMatchApply')
   handleRandomMatchApply(client: GameSocket, mode: string) {
     // client is in game
-    console.log(mode);
+    // console.log(mode);
     if (client.inGame) {
       return;
     }
@@ -183,7 +188,7 @@ export class GameGateway
 	// if no matched mode, set default mode to normal
 	if (!mode || (mode !== "easy" && mode !== "normal" && mode !== "hard")) {
 		mode = "normal";
-		console.log(`mode set to default: ${mode}`);
+		this.logger.log(`mode set to default: ${mode}`);
 	}
 
     // set random match queue
@@ -204,9 +209,9 @@ export class GameGateway
     // push client in queue
     matchQueue.push(client);
 
-	console.log(this.randomMatchQueue["easy"].length);
-	console.log(this.randomMatchQueue["normal"].length);
-	console.log(this.randomMatchQueue["hard"].length);
+	// console.log(this.randomMatchQueue["easy"].length);
+	// console.log(this.randomMatchQueue["normal"].length);
+	// console.log(this.randomMatchQueue["hard"].length);
 
     // More than 2 players in queue
     if (matchQueue.length >= 2) {
@@ -239,7 +244,7 @@ export class GameGateway
         true
       )
 
-      console.log("create game room:", roomName);
+      this.logger.log(`Create Game Room - ${roomName}`);
 
       // Add Players into Game Room
       playerOne.join(roomName);
@@ -261,9 +266,9 @@ export class GameGateway
 		this.randomMatchQueue[e] = this.randomMatchQueue[e].filter(item => item !== client);
 	}
 
-	console.log(this.randomMatchQueue["easy"].length);
-	console.log(this.randomMatchQueue["normal"].length);
-	console.log(this.randomMatchQueue["hard"].length);
+	// console.log(this.randomMatchQueue["easy"].length);
+	// console.log(this.randomMatchQueue["normal"].length);
+	// console.log(this.randomMatchQueue["hard"].length);
   }
 
   /*-------------Match Accept-----------------------*/
@@ -319,7 +324,6 @@ export class GameGateway
 
   @SubscribeMessage('oneOnOneApply')
   handleOneOnOneApply(client: GameSocket, payload: OneOnOnePayload) {
-	console.log(payload);
     if (payload.to === client.nickname) {
       return `ERR you invite yourself: ${payload.to}`;
     }
@@ -354,8 +358,8 @@ export class GameGateway
     client.emit('updateInvitationList', client.invitationList);
     toClient.emit('updateInvitationList', toClient.invitationList);
 
-    console.log(`${client.nickname} - list size: ${client.invitationList.length}`);
-    console.log(`${toClient.nickname} - list size: ${toClient.invitationList.length}`);
+    // console.log(`${client.nickname} - list size: ${client.invitationList.length}`);
+    // console.log(`${toClient.nickname} - list size: ${toClient.invitationList.length}`);
   }
 
   @SubscribeMessage('oneOnOneAccept')
@@ -400,7 +404,7 @@ export class GameGateway
         fromClient.join(roomName);
         client.join(roomName);
 
-        console.log("create game room:", roomName);
+        this.logger.log(`Create Game Room - ${roomName}`);
 
         // Delete Invitations from fromClient
         fromClient.invitationList = fromClient.invitationList.filter((item: Invitation) => 
@@ -415,8 +419,8 @@ export class GameGateway
           mode: payload.mode
         });
 
-        console.log(`${fromClient.id} - list size: ${fromClient.invitationList.length}`);
-        console.log(`${client.id} - list size: ${client.invitationList.length}`);
+        // console.log(`${fromClient.id} - list size: ${fromClient.invitationList.length}`);
+        // console.log(`${client.id} - list size: ${client.invitationList.length}`);
         
         return;
       }
@@ -551,7 +555,7 @@ export class GameGateway
 	// });
 
 	// Set client's new nickname
-	console.log(`${client.nickname} is now ${nickname}`);
+	this.logger.log(`${client.nickname} is now ${nickname}`);
 	client.nickname = nickname;
   }
 
@@ -594,7 +598,7 @@ export class GameGateway
     //   });
     // });
 
-    console.log(`${client.nickname} is now ${newNick}`);
+    this.logger.log(`${client.nickname} is now ${newNick}`);
     client.nickname = newNick;
 	}
 }

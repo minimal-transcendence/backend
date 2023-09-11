@@ -1,7 +1,8 @@
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class Invitation {
     @IsNotEmpty()
+    @IsString()
     from: string;
 
     @IsNotEmpty()
@@ -9,6 +10,7 @@ export class Invitation {
     fromId: number;
 
     @IsNotEmpty()
+    @IsString()
     to: string;
 
     @IsNotEmpty()
@@ -16,5 +18,6 @@ export class Invitation {
     toId: number;
     
     @IsNotEmpty()
+    @IsString()
     mode: string;
 }

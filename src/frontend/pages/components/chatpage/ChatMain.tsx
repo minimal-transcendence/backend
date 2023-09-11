@@ -69,7 +69,7 @@ const ChatMain = ({
         )}> currentRoomName : <${currentRoomName}>`
       );
 
-      socket.emit("userCheckedDM", targetId);
+      socket.emit("userCheckedDM", { targetId : targetId });
       setCurrentRoomName(() => target);
       setMessages(() => messages);
       setIsDM(() => true);

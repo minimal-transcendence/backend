@@ -74,6 +74,7 @@ export default function App() {
   const [gameSocket, setGameSocket] = useState<Socket>(
     io.connect("", { query: { nickname: "" }, autoConnect: false })
   );
+
   const [changedID, setChangedID] = useState<number>(-2);
   const [changedNickName, setChangedNickName] = useState<string>("");
 
@@ -112,25 +113,23 @@ export default function App() {
 
   useEffect(()=>{
     async function checkLogout(userId:number, isConnected:boolean){
+      console.log("get logout event", userId, " ", isConnected);
       if (isConnected == false && userId == Number(tmpLoginID)){
         alert("로그인 정보가 만료되었습니다");
-        setTimeout(()=>router.push("/"), 100);
+        setTimeout(()=>router.push("/"), 10);
       }
     }
     if (socket) {
-      socket.on("updateUserStatus", (userId: number, isConnected: boolean) =>
-        checkLogout(userId, isConnected)
-      );
+      socket.on("updateUserStatus", checkLogout);
     }
     return () => {
       if (socket) {
-        socket.removeAllListeners("updateUserStatus");
+        socket.off("updateUserStatus", checkLogout);
       }
     };
   }, [socket, tmpLoginID]);
 
   useEffect(() => {
-    console.log("Run only mount");
     const getSocket = (namespace: string, jwt: string, nickname: string) => {
       return io.connect(`http://localhost/${namespace}`, {
         query: { nickname: nickname },
@@ -150,13 +149,33 @@ export default function App() {
     }
     const jwtItem = localStorage.getItem("access_token");
 
+    let chatConnection: Socket;
+    let gameConnection: Socket;
+
     // Run whenever jwt state updated
     if (nicknameItem && jwtItem) {
-      console.log("Try Web Socket Connection");
-      setSocket(getSocket("chat", jwtItem, nicknameItem));
-      setGameSocket(getSocket("game", jwtItem, nicknameItem));
+      chatConnection = getSocket("chat", jwtItem, nicknameItem)
+      gameConnection = getSocket("game", jwtItem, nicknameItem)
+      setSocket(chatConnection);
+      setGameSocket(gameConnection);
     }
+
+    return (() => {
+      chatConnection.disconnect();
+      gameConnection.disconnect();
+    })
   }, []);
+
+  //TEST
+  // useEffect(() => {
+  //   const interval: any = setInterval(() => {
+  //     const e = Date.now();
+  //     setQuery(e.toString());
+  //   }, 100);
+  //   setTimeout(() => {
+  //     clearInterval(interval);
+  //   }, 100000)
+  // }, [])
 
   useEffect(() => {
     let blockListItem = localStorage.getItem("blocklist");
@@ -256,8 +275,8 @@ export default function App() {
 
     function sendDM(to: string, data: any) {
       console.log(
-        `in useEffect sendDM 
-        to <${to}> 
+        `in useEffect sendDM
+        to <${to}>
         data<${JSON.stringify(data, null, 2)}>
         curretRoomName <${currentRoomName}>
         isDM <${isDM}>
@@ -365,13 +384,6 @@ export default function App() {
       setDirectMessageMap(() => tmpMap);
     }
     if (socket) {
-      //test seunchoi
-      socket.on("inGame", (userId) => {
-        console.log(`${userId} is in game`);
-      });
-      socket.on("NotInGame", (userId) => {
-        console.log(`${userId} is not in game`);
-      });
 
       socket.on("userCheckedDM", userCheckedDM);
       socket.on("sendAlert", sendAlert);
@@ -410,7 +422,7 @@ export default function App() {
     directMessageList,
   ]);
 
-  // seunchoi
+  // Game
   const handleGameOnOff = () => {
     setGameLoad(!gameLoad);
   };
@@ -433,26 +445,31 @@ export default function App() {
   });
 
   useEffect(() => {
+    if (isGameConnected == true){
+      sessionStorage.setItem("gamesocket", "true");
+    }
+    else
+    {
+      sessionStorage.setItem("gamesocket", "false");
+    }
+  }, [isGameConnected]);
+
+  useEffect(() => {
     gameSocket.on("hello", () => {
-      console.log("In hello");
       setIsGameConnected(true);
     });
 
     gameSocket.on("matchStartCheck", (payload: AutoSave) => {
-      console.log(`${payload.roomName} is checking`);
       setRoomName(payload.roomName);
       setMatchStartCheck(true);
-      // setGameLoad(true);
     });
 
     gameSocket.on("matchDecline", (payload: string) => {
-      console.log(`${payload} is declined`);
       setRoomName("");
       setMatchStartCheck(false);
     });
 
     gameSocket.on("startGame", (payload: StartGameData) => {
-      console.log("In startGame", payload.player);
       setMatchStartCheck(false);
       setGameLoad(true);
 

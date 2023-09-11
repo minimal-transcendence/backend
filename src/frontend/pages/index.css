@@ -371,10 +371,11 @@ body {
   gap: 0.8rem;
   width: 50rem;
   min-width: 20rem;
+  padding-top: 1rem;
+  font-size: 2rem;
 }
 
 .logo h1 {
-  font-size: 1.4rem;
   font-weight: 600;
   color: var(--color-text);
 }
@@ -582,7 +583,7 @@ body {
 
 .gamelist-textInfo,
 .dmlist-textInfo {
-  font-size: 0.8em;
+  font-size: 0.8rem;
 }
 .userlist-lists {
   list-style: none;
@@ -1180,7 +1181,7 @@ label:active:after {
   border-radius: 100vmax;
 }
 
-.top {
+.top-card {
   top: 0;
   left: 0;
   width: 0;
@@ -1193,7 +1194,7 @@ label:active:after {
   );
 }
 
-.bottom {
+.bottom-card {
   right: 0;
   bottom: 0;
   height: 5px;
@@ -1205,7 +1206,7 @@ label:active:after {
   );
 }
 
-.right {
+.right-card {
   top: 0;
   right: 0;
   width: 5px;
@@ -1218,7 +1219,7 @@ label:active:after {
   );
 }
 
-.left {
+.left-card {
   left: 0;
   bottom: 0;
   width: 5px;
@@ -1231,19 +1232,19 @@ label:active:after {
   );
 }
 
-.top {
+.top-card {
   animation: animateTop 3s ease-in-out infinite;
 }
 
-.bottom {
+.bottom-card {
   animation: animateBottom 3s ease-in-out infinite;
 }
 
-.right {
+.right-card {
   animation: animateRight 3s ease-in-out infinite;
 }
 
-.left {
+.left-card {
   animation: animateLeft 3s ease-in-out infinite;
 }
 
@@ -1261,17 +1262,17 @@ label:active:after {
 
 @keyframes animateBottom {
   0%,
-  50% {
+  25% {
     opacity: 0;
     width: 0;
   }
 
-  75% {
+  50% {
     opacity: 1;
     width: 100%;
   }
 
-  76%,
+  55%,
   100% {
     opacity: 0;
   }

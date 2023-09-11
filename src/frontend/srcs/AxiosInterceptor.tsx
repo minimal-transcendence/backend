@@ -1,6 +1,7 @@
+import { JwtPayload } from "@/pages/callback";
 import axios, { AxiosError } from "axios";
 import jwt_decode from "jwt-decode";
-import { JwtPayload } from "./SocketRefresh";
+import Router from 'next/router';
 
 async function refreshToken(): Promise<any> {
 	console.log("in refresh");
@@ -15,13 +16,16 @@ async function refreshToken(): Promise<any> {
     .catch(function (error) {
       if (error.response && error.response.status === 401) {
 	        getLogout();
-        	window.location.href = "/";
+        	// window.location.href = "/";
+          Router.push("/");
+
 		}
 		else if (error.request) {
 			//namkim : 요청은 있었지만 응답이 없었음.. LOGOUT 하게 하는게 적합한 행동인지...?
 			console.log(error.request);
 			getLogout();
-			window.location.href = "/";
+			// window.location.href = "/";
+      Router.push("/");
 		}
     });
   return res;
@@ -36,6 +40,7 @@ export async function getLogout(): Promise<any> {
   localStorage.removeItem("access_token_exp");
   localStorage.removeItem("access_token");
   localStorage.removeItem("avatar");
+  sessionStorage.removeItem("gamesocket");
 }
 
 const axiosApi = axios.create({

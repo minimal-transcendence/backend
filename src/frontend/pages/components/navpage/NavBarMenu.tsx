@@ -75,6 +75,7 @@ export default function Menu({
     localStorage.removeItem("access_token");
     localStorage.removeItem("access_token_exp");
     localStorage.removeItem("avatar");
+    sessionStorage.removeItem("gamesocket");
     const ApiUrl = "http://localhost/api/auth/logout";
     axiosApi.post(ApiUrl, {}).catch((error) => {
       console.log("here i am"); //TODO: error handling check
@@ -144,10 +145,10 @@ export default function Menu({
                   height="35"
                   alt="contesticon"
                 />
-                <span className={randomMatch ? "top" : ""}></span>
-                <span className={randomMatch ? "right" : ""}></span>
-                <span className={randomMatch ? "bottom" : ""}></span>
-                <span className={randomMatch ? "left" : ""}></span>
+                <span className={randomMatch ? "top-card" : ""}></span>
+                <span className={randomMatch ? "right-card" : ""}></span>
+                <span className={randomMatch ? "bottom-card" : ""}></span>
+                <span className={randomMatch ? "left-card" : ""}></span>
               </article>
               {!block && (
                 <div

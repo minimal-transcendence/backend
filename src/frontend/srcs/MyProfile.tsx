@@ -5,7 +5,7 @@ import axios, { AxiosError } from "axios";
 import jwt_decode from "jwt-decode";
 import "../pages/index.css";
 import styles from "../styles/MyProfileStyle.module.css";
-import { JwtPayload } from "./SocketRefresh";
+import { JwtPayload } from "@/pages/callback";
 
 function MyProfile({
   setIsOpenModal,
@@ -69,6 +69,7 @@ function MyProfile({
           localStorage.removeItem("is2fa");
           localStorage.removeItem("access_token");
           localStorage.removeItem("access_token_exp");
+          sessionStorage.removeItem("gamesocket");
           const ApiUrl = "http://localhost/api/auth/logout";
           axiosApi.post(ApiUrl, {}).catch((error:any) => {
             console.log("logout send fail: ", error); //TODO: error handling check
@@ -256,6 +257,7 @@ function MyProfile({
               localStorage.removeItem("is2fa");
               localStorage.removeItem("access_token");
               localStorage.removeItem("access_token_exp");
+              sessionStorage.removeItem("gamesocket");
               const ApiUrl = "http://localhost/api/auth/logout";
               axiosApi.post(ApiUrl, {}).catch((error:any) => {
                 console.log("logout send fail: ", error); //TODO: error handling check
