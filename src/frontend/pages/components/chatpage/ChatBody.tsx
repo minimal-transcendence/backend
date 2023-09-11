@@ -4,6 +4,7 @@ import Image from "next/image";
 // import { SocketContext } from "@/context/socket";
 // import { SocketContext } from "@/context/socket";
 import axiosApi from "../../../srcs/AxiosInterceptor";
+import { SocketContext } from "@/context/socket";
 const ChatBody = ({
   messages,
   blocklist,
@@ -18,7 +19,28 @@ const ChatBody = ({
   myNickName: string;
 }) => {
   // const socket = useContext(SocketContext).chatSocket;
-  const [avatarURL, setAvatarURL] = useState<string | undefined>("");
+  const [imgURL, setImgURL] = useState<string | undefined>("");
+  const socket = useContext(SocketContext).chatSocket;
+  useEffect(() => {}, []);
+  useEffect(() => {
+    function reloadAvatar(userId: number) {
+      console.log(
+        "in useEffect my updateUserAvataer ",
+        userId,
+        String(new Date())
+      );
+      setImgURL(() => String(new Date()));
+    }
+
+    if (socket) {
+      socket.on("updateUserAvatar", reloadAvatar);
+    }
+    return () => {
+      if (socket) {
+        socket.off("updateUserAvatar", reloadAvatar);
+      }
+    };
+  }, [socket]);
   const filteredMessage: any[] = [];
 
   function filter(messages: any) {
@@ -64,9 +86,7 @@ const ChatBody = ({
           >
             <div className="message-recipient-avatar">
               <Image
-                src={`http://localhost/api/user/${
-                  message?.fromId
-                }/photo?timestamp=${Date.now()}`}
+                src={`http://localhost/api/user/${message?.fromId}/photo?timestamp=${imgURL}`}
                 width="35"
                 height="35"
                 alt="usericon"
