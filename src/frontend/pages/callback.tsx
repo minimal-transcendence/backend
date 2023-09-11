@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import jwt_decode from "jwt-decode";
 import styles from "../styles/CallBackStyle.module.css";
 
-type JwtPayload = {
+export type JwtPayload = {
   id: number;
   email: string;
   iat: number;
@@ -37,6 +37,7 @@ function Callback() {
     console.log(data);
     localStorage.setItem("nickname", data.nickname);
     localStorage.setItem("id", data.id);
+    sessionStorage.setItem("gamesocket", "false");
     setUserId(data.id);
     if (data.is2faEnabled === false) {
       const detailResponse = await (
