@@ -53,6 +53,7 @@ function Home() {
           localStorage.removeItem("is2fa");
           localStorage.removeItem("access_token");
           localStorage.removeItem("avatar");
+          sessionStorage.removeItem("gamesocket");
           router.push("/");
         })
       } else {
