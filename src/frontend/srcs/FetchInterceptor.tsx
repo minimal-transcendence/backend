@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import axios, { AxiosError } from "axios";
+import Router from 'next/router';
 
 export async function fetch_refresh(url : string, ...args : any) : Promise<any> {
 	const jwtExpItem = localStorage.getItem("access_token_exp");
@@ -15,7 +16,8 @@ export async function fetch_refresh(url : string, ...args : any) : Promise<any> 
 			return await fetch(url, args);
 	}
 	else
-		window.location.href = '/'; 
+		Router.push("/");
+		// window.location.href = '/'; 
 }
 
 async function refreshToken() : Promise<any> {
@@ -25,7 +27,8 @@ async function refreshToken() : Promise<any> {
 		).catch((error) => {
 			if (error.response.status === 401) {
 				getLogout();
-				window.location.href = '/';
+				// window.location.href = '/';
+				Router.push("/");
 			}
 		})
 	return (res);
