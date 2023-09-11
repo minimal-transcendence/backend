@@ -48,7 +48,7 @@ const ChatHeader = ({
     if (event.target.dataset.name) {
       if (
         event.target.dataset.name === "exit" &&
-        currentRoomName !== "전체채팅방"
+        currentRoomName !== "DEFAULT"
       ) {
         setRoomState("");
         handleExit(event, currentRoomName);
