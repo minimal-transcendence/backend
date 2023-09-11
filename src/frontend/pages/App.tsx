@@ -280,7 +280,9 @@ export default function App() {
 
     function userCheckedDM(fromId: any) {
       const tmpList: any = [];
-
+      directMessageList.map((e: any) => {
+        if (e?.[1].data.fromId !== fromId) tmpList.push(e);
+      });
       let tmpMap = directMessageMap;
       tmpMap.delete(fromId);
 
