@@ -203,11 +203,6 @@ export class ChatGateway
 		client.emit('responseRoomQuery', roomInfo);
 	}
 
-	@SubscribeMessage('forceLogout')
-	handleForceLogout(client: ChatSocket) {
-		this.logout(client.userId);
-	}
-
 	updateUserNick(userId: number, newNick: string) {
 		this.io.emit("updateUserNick", userId, newNick);
 		this.chatService.userChangeNick(this.io, userId, newNick);
