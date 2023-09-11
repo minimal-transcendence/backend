@@ -8,7 +8,7 @@ import App from "./App";
 // import { socketRefreshToken } from "@/srcs/SocketRefresh";
 import jwt_decode from "jwt-decode";
 import { JwtPayload } from "./callback";
-import { SocketContext } from "@/context/socket";
+import { SocketContent, SocketContext } from "@/context/socket";
 
 // type JwtPayload = {
 //     id: number;
@@ -27,7 +27,7 @@ function Home() {
 
   const [validToken, setValidToken] = useState<boolean>(false);
 
-  const chatSocket = useContext(SocketContext).chatSocket;
+  const chatSocket = useContext<SocketContent>(SocketContext).chatSocket;
 
   // 이미 로그인되었는지 확인
   useEffect(() => {
