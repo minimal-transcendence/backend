@@ -69,7 +69,7 @@ export default function ChatRoomUserInfo({
         if (targetnickname !== myNickName) {
           console.log("in blockUser222222222222222 ", targetnickname);
         }
-        socket.emit("blockUser", { target: targetnickname, modal: true });
+        socket.emit("blockUser", { target: targetnickname });
       } else if (event.target.dataset.name === "opAdd") {
         console.log("in addOperator ", roomname, targetnickname);
         socket.emit("addOperator", {

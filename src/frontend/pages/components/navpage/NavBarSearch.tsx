@@ -22,20 +22,22 @@ export default function Search({
   const socket = useContext(SocketContext).chatSocket;
 
   return (
-    <div className="gameAccept-div">
-      <div className={styles_profile.small_div}>
-        <div className={styles_profile.buttons_middle}>
-          <button
-            onClick={handleGameOnOff}
-            className={
-              gameLoad ? styles_profile.followIn : styles_profile.unfollowIn
-            }
-          >
-            Game
-          </button>
+    isGameConnected && (
+      <div className="gameAccept-div">
+        <div className={styles_profile.small_div}>
+          <div className={styles_profile.buttons_middle}>
+            <button
+              onClick={handleGameOnOff}
+              className={
+                gameLoad ? styles_profile.followIn : styles_profile.unfollowIn
+              }
+            >
+              Game
+            </button>
+          </div>
         </div>
+        {matchStartCheck && <TempRandomMatch />}
       </div>
-      {matchStartCheck && <TempRandomMatch />}
-    </div>
+    )
   );
 }
