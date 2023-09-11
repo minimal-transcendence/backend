@@ -11,7 +11,6 @@ export default function ModalAlert({
   alertTitle: string;
   alertBody: string;
 }) {
-  console.log("ModalAlert start!");
   // 모달 끄기
   const socket = useContext(SocketContext).chatSocket;
   const [passWord, setPassWord] = useState("");

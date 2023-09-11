@@ -50,14 +50,12 @@ export default function SearchListCreateRoom({
             setLeftHeader("all");
             setError("");
           } else if (!query) {
-            console.log("!query");
             socket.emit("requestMyRoomList");
 
             setLeftHeader("joined");
 
             setError("");
           } else {
-            console.log("in requestMyRoomList if <", query);
             socket.emit("requestSearchResultRoomList", { target: query });
 
             setLeftHeader("result");

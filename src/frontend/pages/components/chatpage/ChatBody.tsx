@@ -22,9 +22,6 @@ const ChatBody = ({
   const filteredMessage: any[] = [];
 
   function filter(messages: any) {
-    console.log(
-      `messages :  <${JSON.stringify(messages)}>  myNickName : <${myNickName}>`
-    );
     messages?.forEach((message: any) => {
       if (
         Array.isArray(blocklist) &&

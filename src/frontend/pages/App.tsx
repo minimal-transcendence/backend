@@ -85,8 +85,6 @@ export default function App() {
   const [directMessageList, setDirectMessageList] = useState<any>(new Array());
   useEffect(() => {
     function reloadNick(userId: number, newNick: string) {
-      console.log("in useEffect ChatRoom nicknameupdate " + userId + newNick);
-
       setChangedID(() => userId);
       setChangedNickName(() => newNick);
 
@@ -94,9 +92,6 @@ export default function App() {
       const loginIdItem = localStorage.getItem("id");
 
       if (loginIdItem === String(userId)) {
-        console.log(
-          `id same so nick changed! FROM ${nicknameItem} to ${newNick}`
-        );
         setTmpLoginnickname(newNick);
       }
     }
@@ -104,12 +99,6 @@ export default function App() {
     function updateUserNick(userId: number, newNick: string) {
       let max = directMessageMap;
 
-      console.log(
-        `####In App updateUserNick userId <${userId}> newNick <${newNick}>
-        max.get(userId)  <${JSON.stringify(max.get(userId), null, 2)}>
-        list <${JSON.stringify(directMessageList, null, 2)}>
-        `
-      );
       if (max.get(userId)) {
         const tmpData = max.get(userId);
         tmpData.data.from = newNick;
@@ -118,15 +107,8 @@ export default function App() {
         });
       }
 
-      console.log(
-        `####In App updateUserNick 
-        changed max.get(userId)  <${JSON.stringify(max.get(userId), null, 2)}>
-        list <${JSON.stringify([...max], null, 2)}>
-        `
-      );
       if (userId === Number(tmpLoginID)) {
         setTmpLoginnickname(() => newNick);
-        console.log("my nick changed from ", tmpLoginnickname, " to ", newNick);
       }
       setDirectMessageMap(() => max);
       setDirectMessageList(() => [...max]);
@@ -143,7 +125,6 @@ export default function App() {
 
   useEffect(() => {
     async function checkLogout(userId: number, isConnected: boolean) {
-      console.log("get logout event", userId, " ", isConnected);
       if (isConnected == false && userId == Number(tmpLoginID)) {
         alert("로그인 정보가 만료되었습니다");
         setTimeout(() => router.push("/"), 10);
@@ -173,9 +154,6 @@ export default function App() {
       setTmpLoginnickname(nicknameItem);
       setTmpLoginID(loginIdItem);
       setTmpIsLoggedIn(true);
-      console.log(
-        `in first useEffect nickname : ${nicknameItem} id: ${loginIdItem}`
-      );
     }
     const jwtItem = localStorage.getItem("access_token");
 
@@ -184,16 +162,16 @@ export default function App() {
 
     // Run whenever jwt state updated
     if (nicknameItem && jwtItem) {
-      chatConnection = getSocket("chat", jwtItem, nicknameItem)
-      gameConnection = getSocket("game", jwtItem, nicknameItem)
+      chatConnection = getSocket("chat", jwtItem, nicknameItem);
+      gameConnection = getSocket("game", jwtItem, nicknameItem);
       setSocket(chatConnection);
       setGameSocket(gameConnection);
     }
 
-    return (() => {
+    return () => {
       chatConnection.disconnect();
       gameConnection.disconnect();
-    })
+    };
   }, []);
 
   //TEST
@@ -217,56 +195,28 @@ export default function App() {
       const length = arr.length;
       for (var i = 0; i < length; i++) numberArray.push(parseInt(arr[i]));
 
-      console.log(
-        `BlockLIST SETTTTTT  ${JSON.stringify(
-          blockListItem,
-          null,
-          2
-        )}   <${JSON.stringify(arr, null, 2)}
-        <${JSON.stringify(numberArray, null, 2)}
-        >`
-      );
       setBlocklist(() => numberArray);
     }
   }, []);
 
   useEffect(() => {
     function sendBlocklist(result: any) {
-      console.log("sendBlocklist update + " + JSON.stringify(result));
       localStorage.setItem("blocklist", JSON.stringify(result));
       setBlocklist(() => [...result]);
     }
 
     function sendRoomMembers(result: any) {
-      console.log(
-        "in useEffect sendRoomMembers zzzzz",
-        JSON.stringify(result, null, 2)
-      );
-
       setRoomUserList(() => result);
       setLeftHeader(() => "joined");
       // setQuery("");
     }
 
     function sendMessage(roomname: string, data: any) {
-      console.log(
-        `in useEffect sendMessage ??111  from<${
-          data?.from
-        }> roomname<${roomname}> body<${JSON.stringify(
-          data,
-          null,
-          2
-        )}> 내 방은 <${currentRoomName}>`
-      );
-
       let max = lastMessageList;
       results.map((result: any) => {
         let chkNew;
 
         if (currentRoomName === result.roomname) {
-          console.log(
-            `in sendMessage  currentRoomName <${currentRoomName}> result.roomname <${result.roomname}>`
-          );
           result.messageNew = false;
           result.lastMessage = data.body;
           result.fromId = data.fromId;
@@ -281,41 +231,16 @@ export default function App() {
         }
         return result;
       });
-      max.forEach((value: any, key: any) => {
-        console.log(
-          `value <${JSON.stringify(value, null, 2)}>  key <${JSON.stringify(
-            key,
-            null,
-            2
-          )}>`
-        );
-      });
 
-      console.log(
-        `in sendMessage,  results <${JSON.stringify(results, null, 2)}>`
-      );
       setLastMessageList(() => max);
       setTempSearchList(() => results);
 
       if (roomname === currentRoomName && !isDM) {
-        console.log("same room!", currentRoomName, roomname);
         setMessages(() => [...messages, data]);
       }
     }
 
     function sendDM(to: string, data: any) {
-      console.log(
-        `in useEffect sendDM
-        to <${to}>
-        data<${JSON.stringify(data, null, 2)}>
-        curretRoomName <${currentRoomName}>
-        isDM <${isDM}>
-        chk <${data?.from === currentRoomName || to === currentRoomName}>
-        !blocklist.includes(data?.fromId) <${!blocklist.includes(
-          data?.fromId
-        )}>`
-      );
-
       let max = directMessageMap;
 
       if (
@@ -328,43 +253,11 @@ export default function App() {
           messageNew: false,
         });
       const chk = data?.fromId === DMTargetId && isDM;
-      console.log(`in userCheckedDM
-        data?.fromId <${data?.fromId}>
-        DMTargetId <${DMTargetId}>
-        isDM <${isDM}>
-        chk <${chk}>
-        data <${data}>
-        `);
+
       if (data?.fromId === DMTargetId && isDM) {
-        console.log("i have send userChckedDM ", data?.fromId);
         socket.emit("userCheckedDM", { targetId: data?.fromId });
       }
-      max.forEach((value: any, key: any) => {
-        console.log(
-          `In SEND DM   value <${JSON.stringify(
-            value,
-            null,
-            2
-          )}>  key <${JSON.stringify(key, null, 2)}>`
-        );
-      });
 
-      console.log(
-        `!!!!!!!!!!! directMessageList <${JSON.stringify(
-          directMessageList,
-          null,
-          2
-        )}>`
-      );
-      directMessageMap?.forEach((value: any, key: any) => {
-        console.log(
-          `In directMessageMapLSIT   value <${JSON.stringify(
-            value,
-            null,
-            2
-          )}>  key <${JSON.stringify(key, null, 2)}>`
-        );
-      });
       setDirectMessageList(() => [...directMessageMap]);
       setDirectMessageMap(() => max);
 
@@ -376,27 +269,10 @@ export default function App() {
         setMessages(() => [...messages, data]);
       }
     }
-    function youAreKickedOut(result: any) {
-      console.log(
-        "in useEffect youAreKickedOut",
-        JSON.stringify(result, null, 2)
-      );
-    }
-    function youAreBanned(result: any) {
-      console.log("in useEffect youAreBanned", JSON.stringify(result, null, 2));
-    }
-    function wrongPassword(result: any) {
-      console.log(
-        "in useEffect wrongPassword",
-        JSON.stringify(result, null, 2)
-      );
-    }
+    function youAreKickedOut(result: any) {}
+    function youAreBanned(result: any) {}
+    function wrongPassword(result: any) {}
     function sendAlert(alertTitle: string, alertBody: string) {
-      console.log(
-        "in useEffect sendAlert",
-        alertTitle,
-        JSON.stringify(alertBody, null, 2)
-      );
       setAlertModalTitle(() => alertTitle);
       setAlertModalBody(() => alertBody);
       setAlertModal(() => true);
@@ -404,27 +280,14 @@ export default function App() {
 
     function userCheckedDM(fromId: any) {
       const tmpList: any = [];
-      directMessageList.map((e: any) => {
-        console.log(`e?.[1].data.fromId <${e?.[1].data.fromId}>
-        fromId <${fromId}>`);
-        if (e?.[1].data.fromId !== fromId) tmpList.push(e);
-      });
+
       let tmpMap = directMessageMap;
       tmpMap.delete(fromId);
 
-      console.log(`in userCheckedDM after fromId <${JSON.stringify(
-        fromId,
-        null,
-        2
-      )}>
-      tmpList <${JSON.stringify(tmpList, null, 2)}>
-      tmpMap <${JSON.stringify(tmpMap, null, 2)}>
-      `);
       setDirectMessageList(() => tmpList);
       setDirectMessageMap(() => tmpMap);
     }
     if (socket) {
-
       socket.on("userCheckedDM", userCheckedDM);
       socket.on("sendAlert", sendAlert);
       socket.on("sendBlocklist", sendBlocklist);
@@ -485,11 +348,9 @@ export default function App() {
   });
 
   useEffect(() => {
-    if (isGameConnected == true){
+    if (isGameConnected == true) {
       sessionStorage.setItem("gamesocket", "true");
-    }
-    else
-    {
+    } else {
       sessionStorage.setItem("gamesocket", "false");
     }
   }, [isGameConnected]);

@@ -31,12 +31,7 @@ export default function GameList({
       setGameList(() => result);
     }
 
-    function matchStartCheck(result: any) {
-      // console.log(
-      //   "in useEffect matchStartCheck ",
-      //   JSON.stringify(result, null, 2)
-      // );
-    }
+    function matchStartCheck(result: any) {}
     if (gameSocket) {
       gameSocket.on("updateInvitationList", updateInvitationList);
       gameSocket.on("matchStartCheck", matchStartCheck);

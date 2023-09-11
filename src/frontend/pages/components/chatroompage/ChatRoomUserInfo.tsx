@@ -34,50 +34,27 @@ export default function ChatRoomUserInfo({
   const [userProfileModal, setUserProfileModal] = useState<boolean>(false);
 
   function handleMenu(event: any) {
-    console.log("in handleMenu");
     if (event.target.dataset.name) {
-      console.log(
-        `${myNickName}가 ${user?.nickname}를 ${roomname}에서 ${event.target.dataset.name}클릭!!!`
-      );
       const targetnickname = user?.nickname;
       if (event.target.dataset.name === "kick") {
-        console.log("target nickname : " + targetnickname);
-        socket.emit("kickUser", {
-          roomname: roomname,
-          target: targetnickname,
-        });
       } else if (event.target.dataset.name === "profile") {
-        console.log("in profileUser ", targetnickname, user?.id, id);
         setUserProfileModal(() => !userProfileModal);
       } else if (event.target.dataset.name === "ban") {
-        console.log("in banUser ", roomname, targetnickname);
-        socket.emit("banUser", {
-          roomname: roomname,
-          target: targetnickname,
-        });
       } else if (event.target.dataset.name === "mute") {
-        console.log("in muteUser ", {
-          roomname: roomname,
-          target: targetnickname,
-        });
         socket.emit("muteUser", {
           roomname: roomname,
           target: targetnickname,
         });
       } else if (event.target.dataset.name === "block") {
-        console.log("in blockUser111111111111111 ", targetnickname);
         if (targetnickname !== myNickName) {
-          console.log("in blockUser222222222222222 ", targetnickname);
         }
         socket.emit("blockUser", { target: targetnickname });
       } else if (event.target.dataset.name === "opAdd") {
-        console.log("in addOperator ", roomname, targetnickname);
         socket.emit("addOperator", {
           roomname: roomname,
           target: targetnickname,
         });
       } else if (event.target.dataset.name === "opDelete") {
-        console.log("in deleteOperator ", roomname, targetnickname);
         socket.emit("deleteOperator", {
           roomname: roomname,
           target: targetnickname,
@@ -85,21 +62,18 @@ export default function ChatRoomUserInfo({
       } else if (event.target.dataset.name === "dmApply")
         socket.emit("selectDMRoom", { target: targetnickname });
       else if (event.target.dataset.name === "oneVsOneEasy") {
-        console.log("easy");
         gameSocket.emit("oneOnOneApply", {
           from: myNickName,
           to: targetnickname,
           mode: "easy",
         });
       } else if (event.target.dataset.name === "oneVsOneNormal") {
-        console.log("normal");
         gameSocket.emit("oneOnOneApply", {
           from: myNickName,
           to: targetnickname,
           mode: "normal",
         });
       } else if (event.target.dataset.name === "oneVsOneHard") {
-        console.log("hard");
         gameSocket.emit("oneOnOneApply", {
           from: myNickName,
           to: targetnickname,
@@ -107,7 +81,6 @@ export default function ChatRoomUserInfo({
         });
       }
     } else {
-      console.log("you click other");
     }
   }
   return (

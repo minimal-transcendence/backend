@@ -24,7 +24,6 @@ export default function DirectMessageListBody({
   if (tmpList?.length === 0 || !tmpList) {
     return;
   } else {
-    console.log("DMlist", JSON.stringify(tmpList, null, 2));
     return (
       <div className="dmlist-body">
         <ul className="dmlist-lists">

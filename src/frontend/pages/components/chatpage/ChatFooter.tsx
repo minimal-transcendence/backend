@@ -42,7 +42,6 @@ const ChatFooter = ({
     e.preventDefault();
     if (textareaValue.length > 500) {
       setTextareaValue("");
-      console.log("too long");
       return;
     }
     if (!isDM) {

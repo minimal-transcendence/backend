@@ -11,31 +11,19 @@ export default function GameListItemInfo({
 }) {
   const gameSocket = useContext(SocketContext).gameSocket;
 
-  console.log(
-    "in GameListItemInfo ",
-    JSON.stringify(game, null, 2),
-    myNickName
-  );
-
   function handleCancle(event: any) {
-    console.log("in handleCancel", game);
     gameSocket.emit("oneOnOneDecline", game);
   }
   function handleAccept(event: any) {
-    console.log("in handleAccept");
     gameSocket.emit("oneOnOneAccept", game);
     // setMatchStartCheck(() => true);
   }
   function handleDecline(event: any) {
-    console.log("in handleDecline");
     gameSocket.emit("oneOnOneDecline", game);
   }
   if (!game?.to || !game?.from || !game?.mode) {
-    console.log("ㅏ무것도 ㄷ없나보다");
     return;
   } else {
-    console.log("return ㅏㄴ오는데???");
-
     return (
       <>
         {game?.to === myNickName ? (

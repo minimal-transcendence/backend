@@ -48,27 +48,11 @@ export default function SearchList({
     }
     function sendRoomList(newResults: any) {
       let max = lastMessageList;
-      console.log(
-        `in useEffect sendRoomList <${JSON.stringify(newResults, null, 2)}>
-        ${Date.now()}
-        currentRoomName <${currentRoomName}>
-        `
-      );
-      max.forEach((value: any, key: any) => {
-        console.log(
-          `value1 <${JSON.stringify(value, null, 2)}>  
-          key1 <${JSON.stringify(key, null, 2)}>`
-        );
-      });
+
+      max.forEach((value: any, key: any) => {});
       newResults.map((result: any) => {
-        console.log(
-          `in neewReuslt Map start 
-          result <${JSON.stringify(result, null, 2)}>`
-        );
         let chkNew;
         if (!max.get(result.roomname)) {
-          console.log(`result.roomname <${result.roomname}>
-          max.get(result.roomname) <${max.get(result.roomname)}>`);
           result.messageNew = true;
           max.set(result.roomname, {
             fromId: result?.fromId,
@@ -76,18 +60,8 @@ export default function SearchList({
             messageNew: true,
             at: result?.at,
           });
-          console.log(
-            `after get,set, map <${JSON.stringify(
-              max.get(result.roomname),
-              null,
-              2
-            )}>`
-          );
         }
         if (currentRoomName === result.roomname) {
-          console.log(
-            `curRoom === result.roomname currentRoomname <${currentRoomName}> result.roomname <${result.roomname}>`
-          );
           result.messageNew = false;
           max.set(result.roomname, {
             fromId: result?.fromId,
@@ -101,21 +75,6 @@ export default function SearchList({
             max.get(result.roomname)?.at === result?.at &&
             result.messageNew === false
           ) {
-            console.log(
-              `when same,,??? 
-              smaechk <${
-                max.get(result.roomname)?.lastMessage === result?.lastMessage
-              }>
-              result.roomname <${result.roomname}>
-              max[result.roomname] <${JSON.stringify(
-                max.get(result.roomname),
-                null,
-                2
-              )}>
-              max[result.roomname]?.lastMessage  <${
-                max.get(result.roomname)?.lastMessage
-              }> result?.lastMessage <${result?.lastMessage}>`
-            );
             result.messageNew = false;
             max.set(result.roomname, {
               fromId: result?.fromId,
@@ -128,21 +87,6 @@ export default function SearchList({
             max.get(result.roomname)?.at === result?.at &&
             result.messageNew === true
           ) {
-            console.log(
-              `when same,,??? 
-              smaechk <${
-                max.get(result.roomname)?.lastMessage === result?.lastMessage
-              }>
-              result.roomname <${result.roomname}>
-              max[result.roomname] <${JSON.stringify(
-                max.get(result.roomname),
-                null,
-                2
-              )}>
-              max[result.roomname]?.lastMessage  <${
-                max.get(result.roomname)?.lastMessage
-              }> result?.lastMessage <${result?.lastMessage}>`
-            );
             result.messageNew = true;
             max.set(result.roomname, {
               fromId: result?.fromId,
@@ -152,21 +96,6 @@ export default function SearchList({
             });
             return result;
           } else if (max.get(result.roomname)?.at !== result?.at) {
-            console.log(
-              `not smae, 
-              chk <${
-                max.get(result.roomname)?.lastMessage !== result?.lastMessage
-              }>
-              result.roomname <${result.roomname}>
-              max[result.roomname] <${JSON.stringify(
-                max.get(result.roomname),
-                null,
-                2
-              )}>
-              max[result.roomname]?.lastMessage  <${
-                max.get(result.roomname)?.lastMessage
-              }> result?.lastMessage <${result?.lastMessage}>`
-            );
             result.messageNew = true;
             max.set(result.roomname, {
               fromId: result?.fromId,
@@ -178,21 +107,12 @@ export default function SearchList({
           }
         }
       });
-      max.forEach((value: any, key: any) => {
-        console.log(
-          `value2 <${JSON.stringify(value, null, 2)}>  
-          key2 <${JSON.stringify(key, null, 2)}>`
-        );
-      });
+      max.forEach((value: any, key: any) => {});
 
-      console.log(`newResults <${JSON.stringify(newResults, null, 2)}>`);
       setLastMessageList(() => max);
       setTempSearchList(() => newResults);
     }
     function responseRoomQuery(result: any) {
-      console.log(
-        `in useEffect responseRoomQuery <${JSON.stringify(result, null, 2)}>`
-      );
       setTempSearchList(() => result);
     }
 
