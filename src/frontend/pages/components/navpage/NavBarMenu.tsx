@@ -33,6 +33,7 @@ export default function Menu({
   //seunchoi
   const isGameConnected = useContext(GameContext).isGameConnected;
   const socketContext = useContext(SocketContext);
+  const chatSocket = socketContext.chatSocket;
   const gameSocket = socketContext.gameSocket;
   const [block, setBlock] = useState<boolean>(true);
 
@@ -76,6 +77,9 @@ export default function Menu({
     localStorage.removeItem("access_token_exp");
     localStorage.removeItem("avatar");
     sessionStorage.removeItem("gamesocket");
+
+    chatSocket.emit('logout');
+
     const ApiUrl = "http://localhost/api/auth/logout";
     axiosApi.post(ApiUrl, {}).catch((error) => {
       console.log("here i am"); //TODO: error handling check

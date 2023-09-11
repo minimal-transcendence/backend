@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import { useRouter } from "next/router";
 import axiosApi from "./AxiosInterceptor";
 import axios, { AxiosError } from "axios";
@@ -6,6 +6,7 @@ import jwt_decode from "jwt-decode";
 import "../pages/index.css";
 import styles from "../styles/MyProfileStyle.module.css";
 import { JwtPayload } from "@/pages/callback";
+import { SocketContext } from "@/context/socket";
 
 function MyProfile({
   setIsOpenModal,
@@ -39,6 +40,8 @@ function MyProfile({
   const modalRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
+  const chatSocket = useContext(SocketContext).chatSocket;
+
   useEffect(() => {
     // 이벤트 핸들러 함수
     const handler = () => {
@@ -70,6 +73,9 @@ function MyProfile({
           localStorage.removeItem("access_token");
           localStorage.removeItem("access_token_exp");
           sessionStorage.removeItem("gamesocket");
+
+          chatSocket.emit('logout');
+
           const ApiUrl = "http://localhost/api/auth/logout";
           axiosApi.post(ApiUrl, {}).catch((error:any) => {
             console.log("logout send fail: ", error); //TODO: error handling check

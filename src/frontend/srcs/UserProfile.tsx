@@ -90,6 +90,9 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
           localStorage.removeItem("access_token");
           localStorage.removeItem("access_token_exp");
           sessionStorage.removeItem("gamesocket");
+
+          socket.emit('logout');
+
           const ApiUrl = "http://localhost/api/auth/logout";
           axiosApi.post(ApiUrl, {}).catch((error:any) => {
             console.log("logout send fail: ", error); //TODO: error handling check

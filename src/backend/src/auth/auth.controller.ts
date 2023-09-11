@@ -103,7 +103,7 @@ export class AuthController {
 		})
         res.clearCookie('access_token');
         res.clearCookie('refresh_token');
-        this.chatGateway.logout(req.user.id);
+        // this.chatGateway.logout(req.user.id);
         return res.send({
             message: 'logout success'
         });

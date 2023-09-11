@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useRouter } from "next/router";
 import UserList from "../srcs/UserList";
 import MyProfile from "../srcs/MyProfile";
@@ -9,6 +9,7 @@ import App from "./App";
 // import { socketRefreshToken } from "@/srcs/SocketRefresh";
 import jwt_decode from "jwt-decode";
 import { JwtPayload } from "./callback";
+import { SocketContext } from "@/context/socket";
 
 // type JwtPayload = {
 //     id: number;
@@ -26,6 +27,8 @@ function Home() {
   // const [jwtExp, setJwtExp] = useState<string>('');
 
   const [validToken, setValidToken] = useState<boolean>(false);
+
+  const chatSocket = useContext(SocketContext).chatSocket;
 
   // 이미 로그인되었는지 확인
   useEffect(() => {
@@ -54,6 +57,9 @@ function Home() {
           localStorage.removeItem("access_token");
           localStorage.removeItem("avatar");
           sessionStorage.removeItem("gamesocket");
+
+          chatSocket.emit('logout');
+
           router.push("/");
         })
       } else {

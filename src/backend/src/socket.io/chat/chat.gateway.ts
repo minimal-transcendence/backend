@@ -220,8 +220,14 @@ export class ChatGateway
 			this.io.in(`$${userId}`).emit("unfollow", targetId);
 	}
 
-	logout(clientId: number) {
-		this.chatService.updateUserStatus(this.io, clientId, false);
-		this.io.in(`$${clientId}`).disconnectSockets(true);
+	// logout(clientId: number) {
+	// 	this.chatService.updateUserStatus(this.io, clientId, false);
+	// 	this.io.in(`$${clientId}`).disconnectSockets(true);
+	// }
+
+	@SubscribeMessage('logout')
+	handleLogout(client: ChatSocket) {
+		this.chatService.updateUserStatus(this.io, client.userId, false);
+		this.io.in(`$${client.userId}`).disconnectSockets(true);
 	}
 }
