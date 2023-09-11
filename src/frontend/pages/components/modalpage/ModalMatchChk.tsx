@@ -9,7 +9,6 @@ export default function ModalMatchChk({
   setIsOpenModal: any;
   result: any;
 }) {
-  console.log("ModalMatchChk start!");
   // 모달 끄기
   const socket = useContext(SocketContext).chatSocket;
   const [passWord, setPassWord] = useState("");

@@ -38,7 +38,6 @@ function TempLogin({
       setTmpLoginID(() => id);
       setTmpLoginnickname(() => nickname);
       setTmpIsLoggedIn(() => true);
-      console.log("id nickname : ", id, nickname);
     }
     setDisabled(false);
   };

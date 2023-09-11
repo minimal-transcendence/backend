@@ -24,22 +24,7 @@ export default function DirectMessageListItemInfo({
 }) {
   const socket = useContext(SocketContext).chatSocket;
 
-  console.log(
-    "in DirectMessageLististItemInfo ",
-    JSON.stringify(messageInfo, null, 2),
-    myNickName,
-    "message body ",
-    messageInfo?.[1]?.data?.body,
-    " len ",
-    messageInfo?.[1]?.data?.body?.length
-  );
-
   function handleAccept(event: any) {
-    console.log("event name ", event.target.dataset.name);
-    console.log(`in handleAccept before from <${messageInfo?.[1]?.data?.from}>
-    directMessageList <${JSON.stringify(directMessageList, null, 2)}>
-    directMessageMap <${JSON.stringify(directMessageMap, null, 2)}>
-    `);
     const tmpList: any = [];
     directMessageList.map((e: any) => {
       if (e?.[1].data.fromId !== messageInfo?.[1]?.data?.fromId)
@@ -47,31 +32,21 @@ export default function DirectMessageListItemInfo({
     });
     let tmpMap = directMessageMap;
     tmpMap.delete(messageInfo?.[1]?.data?.fromId);
-    console.log(`in handleAccept after from <${messageInfo?.[1]?.data?.from}>
-    tmpList <${JSON.stringify(tmpList, null, 2)}>
-    tmpMap <${JSON.stringify(tmpMap, null, 2)}>
-    fromId: messageInfo?.[1]?.data?.fromId <${messageInfo?.[1]?.data?.fromId}>
-    `);
-    // socket.emit("checkDMAlert", { fromId: messageInfo?.[1]?.data?.fromId });
 
     if (event.target.dataset.name !== "x")
       socket.emit("selectDMRoom", { target: messageInfo?.[1]?.data?.from });
-    else socket.emit("userCheckedDM", { targetId : messageInfo?.[1]?.data?.fromId });
+    else
+      socket.emit("userCheckedDM", {
+        targetId: messageInfo?.[1]?.data?.fromId,
+      });
 
     setDirectMessageList(() => tmpList);
     setDirectMessageMap(() => tmpMap);
   }
 
   if (messageInfo?.length < 2) {
-    console.log(
-      "ㅏ무것도 ㄷ없나보다",
-      messageInfo?.[1]?.data?.from,
-      myNickName
-    );
     return;
   } else {
-    console.log("return ㅏㄴ오는데???");
-
     return (
       <>
         <li onClick={() => handleAccept(event)} className="gameAccept">
