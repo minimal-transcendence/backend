@@ -1,6 +1,8 @@
 import axios, { AxiosError } from "axios";
+import React, { useContext } from "react";
 import jwt_decode from "jwt-decode";
 import { JwtPayload } from "./SocketRefresh";
+import { SocketContent, SocketContext } from "@/context/socket";
 
 async function refreshToken(): Promise<any> {
 	console.log("in refresh");
@@ -28,7 +30,9 @@ async function refreshToken(): Promise<any> {
 }
 
 export async function getLogout(): Promise<any> {
+  const socket = useContext<SocketContent>(SocketContext).chatSocket;
   console.log("try logout!");
+  socket.emit("forceLogout");
   localStorage.setItem("isLoggedIn", "false");
   localStorage.removeItem("id");
   localStorage.removeItem("nickname");
