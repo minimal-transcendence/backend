@@ -23,20 +23,23 @@ export default function Search({
 
   return (
     <div className="gameAccept-div">
-      isGameConnected && (
-      <div className={styles_profile.small_div}>
-        <div className={styles_profile.buttons_middle}>
-          <button
-            onClick={handleGameOnOff}
-            className={
-              gameLoad ? styles_profile.followIn : styles_profile.unfollowIn
-            }
-          >
-            Game
-          </button>
-        </div>
-      </div>
-      {matchStartCheck && <TempRandomMatch />})
+      {isGameConnected && (
+        <>
+          <div className={styles_profile.small_div}>
+            <div className={styles_profile.buttons_middle}>
+              <button
+                onClick={handleGameOnOff}
+                className={
+                  gameLoad ? styles_profile.followIn : styles_profile.unfollowIn
+                }
+              >
+                Game
+              </button>
+            </div>
+          </div>
+          {matchStartCheck && <TempRandomMatch />}
+        </>
+      )}
     </div>
   );
 }
