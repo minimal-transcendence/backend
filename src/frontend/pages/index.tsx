@@ -6,7 +6,7 @@ const Home = () => {
   const router = useRouter();
 
   useEffect(() => {
-    router.push("Log");
+    router.push("/Log");
   }, []);
 
   return <div></div>;

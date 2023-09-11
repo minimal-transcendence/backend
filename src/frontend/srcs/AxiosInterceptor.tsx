@@ -17,13 +17,13 @@ async function refreshToken(): Promise<any> {
       if (error.response && error.response.status === 401) {
         getLogout();
         // window.location.href = "/";
-        Router.push("/");
+        Router.push("/", undefined, { shallow : true });
       } else if (error.request) {
         //namkim : 요청은 있었지만 응답이 없었음.. LOGOUT 하게 하는게 적합한 행동인지...?
         console.log(error.request);
         getLogout();
         // window.location.href = "/";
-        Router.push("/");
+        Router.push("/", undefined, { shallow : true });
       }
     });
   return res;
