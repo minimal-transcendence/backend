@@ -28,7 +28,7 @@ export default function SearchListCreateRoom({
     } else if (roomname[0] === "$") {
       alert("첫글자 $로 하하지지마라");
     } else if (roomname.length > 20) {
-      alert("채팅방 이름이 너무 길다");
+      alert("채팅방 이름은 20글자 미만");
     } else {
       await new Promise((r) => setTimeout(r, 10));
       alert(`입력된 채팅창 이름: ${roomname}`);

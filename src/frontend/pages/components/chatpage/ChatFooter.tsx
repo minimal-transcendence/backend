@@ -42,6 +42,7 @@ const ChatFooter = ({
     e.preventDefault();
     if (textareaValue.length > 500) {
       setTextareaValue("");
+      alert("채팅 내용은 500글자 미만");
       return;
     }
     if (!isDM) {
