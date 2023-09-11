@@ -37,9 +37,17 @@ export default function ChatRoomUserInfo({
     if (event.target.dataset.name) {
       const targetnickname = user?.nickname;
       if (event.target.dataset.name === "kick") {
+        socket.emit("kickUser", {
+          roomname: roomname,
+          target: targetnickname,
+        });
       } else if (event.target.dataset.name === "profile") {
         setUserProfileModal(() => !userProfileModal);
       } else if (event.target.dataset.name === "ban") {
+        socket.emit("banUser", {
+          roomname: roomname,
+          target: targetnickname,
+        });
       } else if (event.target.dataset.name === "mute") {
         socket.emit("muteUser", {
           roomname: roomname,
@@ -81,6 +89,7 @@ export default function ChatRoomUserInfo({
         });
       }
     } else {
+      console.log("you click other");
     }
   }
   return (
