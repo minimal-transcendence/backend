@@ -26,7 +26,7 @@ import Image from "next/image";
 import TempRandomMatch from "./components/pong/TempRandomMatch";
 import { SocketContext } from "@/context/socket";
 import { GameContext, GameData } from "@/context/game";
-import axiosApi from "../srcs/AxiosInterceptor";
+import axiosApi from "./AxiosInterceptor";
 export type UserOnChat = {
   id: string;
   isCreator: boolean;

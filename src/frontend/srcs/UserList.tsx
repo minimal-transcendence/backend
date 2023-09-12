@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import axiosApi from "./AxiosInterceptor";
 import styles from "../styles/UserListStyle.module.css";
 import styles_profile from "../styles/UserProfileStyle.module.css";
-import "../pages/index.css";
+import "../pages/";
 import { SocketContent, SocketContext } from "@/context/socket";
 // import { SocketContext, SocketContent } from "@/pages/App";
 

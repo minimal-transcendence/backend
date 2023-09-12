@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "../../index.css";
+import "../../../pages/index.css";
 
 function TempLogin({
   tmpIsLoggedIn,
