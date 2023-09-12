@@ -17,21 +17,17 @@ export class MatchService {
 				},
 				createdTime : true
 			},
-			orderBy : { createdTime : 'desc' }	//or you can use id
+			orderBy : { createdTime : 'desc' }
 		});
 	}
 
-	//increment 1 or 10
 	async createMatchHistory(data : Prisma.MatchHistoryUncheckedCreateInput) : Promise<object> {
 		return await this.prisma.$transaction([
 			this.prisma.matchHistory.create({ data }),
 			this.prisma.user.update({
 				where : { id : data.winnerId },
-				data: { score: { increment: 1 } }
+				data: { score: { increment: 10 } }
 			})
-		]).catch((error) => {
-			console.log("failed to update matchhistory")
-			return { error : "failed to update matchhistory"};
-		});
+		]);
 	}
 }

@@ -26,7 +26,7 @@ import { GameModule } from 'src/socket.io/game/game.module';
   providers: [
     TwoFactorAuthService,
     AuthService,
-	UserService,
+	  UserService,
     PrismaService,
   ],
   controllers: [TwoFactorAuthController],
