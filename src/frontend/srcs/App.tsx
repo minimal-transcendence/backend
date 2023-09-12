@@ -132,6 +132,7 @@ export default function App() {
         localStorage.removeItem("is2fa");
         localStorage.removeItem("access_token");
         localStorage.removeItem("access_token_exp");
+        localStorage.removeItem("avatar");
         sessionStorage.removeItem("gamesocket");
         setTimeout(() => router.push("/", undefined, { shallow : true }), 10);
       }
@@ -175,8 +176,12 @@ export default function App() {
     }
 
     return () => {
-      chatConnection.disconnect();
-      gameConnection.disconnect();
+      if (chatConnection.connected) {
+        chatConnection.disconnect();
+      }
+      if (gameConnection.connected) {
+        gameConnection.disconnect();
+      }
     };
   }, []);
 

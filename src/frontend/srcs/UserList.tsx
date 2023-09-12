@@ -88,6 +88,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
           localStorage.removeItem("is2fa");
           localStorage.removeItem("access_token");
           localStorage.removeItem("access_token_exp");
+          localStorage.removeItem("avatar");
           sessionStorage.removeItem("gamesocket");
           const ApiUrl = "http://localhost/api/auth/logout";
           axiosApi.post(ApiUrl, {}).catch((error:any) => {
