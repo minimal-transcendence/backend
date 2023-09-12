@@ -64,7 +64,7 @@ export class GameRoom {
         this.playerAccept = [false, false];
         // Power Up
         this.powerUp = [false, false];
-        this.powerPoint = [1, 1];
+        this.powerPoint = this.mode === "normal" ? [0, 0] : [1, 1];
         this.powerBall = false;
         // Score
         this.playerScore = [0, 0];
