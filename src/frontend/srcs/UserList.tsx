@@ -94,7 +94,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
             console.log("logout send fail: ", error); //TODO: error handling check
           });
           alert(message);
-          router.push("/");
+          router.push("/", undefined, { shallow : true });
   }
 
   useEffect(() => {

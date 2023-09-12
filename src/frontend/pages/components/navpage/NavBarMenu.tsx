@@ -63,7 +63,7 @@ export default function Menu({
       setIsLoggedIn(true);
     } else {
       alert("로그인이 필요합니다");
-      router.push("/");
+      router.push("/", undefined, { shallow : true });
     }
   }, []);
 
@@ -80,7 +80,7 @@ export default function Menu({
     axiosApi.post(ApiUrl, {}).catch((error) => {});
     setIsLoggedIn(false);
     alert("로그아웃 되었습니다.");
-    router.push("/");
+    router.push("/", undefined, { shallow : true });
   };
 
   function handleMenu(event: any) {

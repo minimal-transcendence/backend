@@ -56,7 +56,7 @@ function Home() {
             localStorage.removeItem("access_token");
             localStorage.removeItem("avatar");
             sessionStorage.removeItem("gamesocket");
-            router.push("/");
+            router.push("/", undefined, { shallow : true });
           });
       } else {
         setValidToken(true); // success
@@ -82,7 +82,7 @@ function Home() {
     return (
       <div>
         <p>로그인이 필요합니다. 로그인 페이지로 이동합니다.</p>
-        <button onClick={() => router.push("/")}>Go to Home</button>
+        <button onClick={() => router.push("/", undefined, { shallow : true })}>Go to Home</button>
       </div>
     );
   } else {
@@ -98,7 +98,7 @@ function Home() {
             <>
               <button onClick={() => setUserListModal(false)}>닫기</button>
               <UserList />
-            </> 
+            </>
           )}
         </div>
         <div>

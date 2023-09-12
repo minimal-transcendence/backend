@@ -127,7 +127,14 @@ export default function App() {
     async function checkLogout(userId: number, isConnected: boolean) {
       if (isConnected == false && userId == Number(tmpLoginID)) {
         alert("로그인 정보가 만료되었습니다");
-        setTimeout(() => router.push("/"), 10);
+        localStorage.setItem("isLoggedIn", "false"); //다른 브라우저에서 내 계정으로 로그아웃 했을 시
+        localStorage.removeItem("id");
+        localStorage.removeItem("nickname");
+        localStorage.removeItem("is2fa");
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("access_token_exp");
+        sessionStorage.removeItem("gamesocket");
+        setTimeout(() => router.push("/", undefined, { shallow : true }), 10);
       }
     }
     if (socket) {

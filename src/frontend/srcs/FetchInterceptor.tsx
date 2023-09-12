@@ -16,8 +16,8 @@ export async function fetch_refresh(url : string, ...args : any) : Promise<any> 
 			return await fetch(url, args);
 	}
 	else
-		Router.push("/");
-		// window.location.href = '/'; 
+		Router.push("/", undefined, { shallow : true });
+		// window.location.href = '/';
 }
 
 async function refreshToken() : Promise<any> {
@@ -28,7 +28,7 @@ async function refreshToken() : Promise<any> {
 			if (error.response.status === 401) {
 				getLogout();
 				// window.location.href = '/';
-				Router.push("/");
+				Router.push("/", undefined, { shallow : true });
 			}
 		})
 	return (res);
