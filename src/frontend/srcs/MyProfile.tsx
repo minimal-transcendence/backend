@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/router";
 import axiosApi from "./AxiosInterceptor";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import jwt_decode from "jwt-decode";
 import "../pages/index.css";
 import styles from "../styles/MyProfileStyle.module.css";
@@ -69,6 +69,7 @@ function MyProfile({
           localStorage.removeItem("is2fa");
           localStorage.removeItem("access_token");
           localStorage.removeItem("access_token_exp");
+          localStorage.removeItem("avatar");
           sessionStorage.removeItem("gamesocket");
           const ApiUrl = "http://localhost/api/auth/logout";
           axiosApi.post(ApiUrl, {}).catch((error:any) => {
@@ -257,6 +258,7 @@ function MyProfile({
               localStorage.removeItem("is2fa");
               localStorage.removeItem("access_token");
               localStorage.removeItem("access_token_exp");
+              localStorage.removeItem("avatar");
               sessionStorage.removeItem("gamesocket");
               const ApiUrl = "http://localhost/api/auth/logout";
               axiosApi.post(ApiUrl, {}).catch((error:any) => {

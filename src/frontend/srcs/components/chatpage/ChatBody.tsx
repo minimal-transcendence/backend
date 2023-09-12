@@ -1,10 +1,7 @@
 import { useState, useContext, useEffect } from "react";
-import ysungwonIcon from "../../../assets/ysungwon.jpg";
 import Image from "next/image";
-// import { SocketContext } from "@/context/socket";
-// import { SocketContext } from "@/context/socket";
-import axiosApi from "../../../srcs/AxiosInterceptor";
 import { SocketContext } from "@/context/socket";
+
 const ChatBody = ({
   messages,
   blocklist,

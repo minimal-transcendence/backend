@@ -8,12 +8,12 @@ import { GameContext } from "@/context/game";
 import Image from "next/image";
 
 import { useRouter } from "next/router";
-import UserList from "../../../srcs/UserList";
-import MyProfile from "../../../srcs/MyProfile";
-import UserProfile from "../../../srcs/UserProfile";
-import ModalOverlay from "../../components/modalpage/ModalOverlay";
+import UserList from "../../UserList";
+import MyProfile from "../../MyProfile";
+import UserProfile from "../../UserProfile";
+import ModalOverlay from "../modalpage/ModalOverlay";
 
-import axiosApi from "../../../srcs/AxiosInterceptor";
+import axiosApi from "../../AxiosInterceptor";
 
 export default function Menu({
   setTmpLoginnickname,

@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import UserList from "../srcs/UserList";
 import MyProfile from "../srcs/MyProfile";
 import UserProfile from "../srcs/UserProfile";
-import App from "./App";
+import App from "../srcs/App";
 // import axiosApi from "@/srcs/AxiosInterceptor";
 // import { refreshToken, setItems } from "@/srcs/SocketRefresh";
 // import { socketRefreshToken } from "@/srcs/SocketRefresh";

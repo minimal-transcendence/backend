@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import axiosApi from "./AxiosInterceptor";
 import styles from "../styles/UserListStyle.module.css";
 import styles_profile from "../styles/UserProfileStyle.module.css";
-import "../pages/index.css";
+import "../pages/";
 import { SocketContent, SocketContext } from "@/context/socket";
 // import { SocketContext, SocketContent } from "@/pages/App";
 
@@ -88,6 +88,7 @@ function UserList({ setIsOpenModal }: { setIsOpenModal: any }) {
           localStorage.removeItem("is2fa");
           localStorage.removeItem("access_token");
           localStorage.removeItem("access_token_exp");
+          localStorage.removeItem("avatar");
           sessionStorage.removeItem("gamesocket");
           const ApiUrl = "http://localhost/api/auth/logout";
           axiosApi.post(ApiUrl, {}).catch((error:any) => {
