@@ -26,7 +26,7 @@ const ChatHeader = ({
     event.preventDefault();
 
     if (value.length === 0) {
-      alert("비번 입력해");
+      alert("비밀번호 입력해주세요");
       setPassword("");
       return;
     }
@@ -110,7 +110,7 @@ const ChatHeader = ({
                   <input
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="패스워드입력하세요"
+                    placeholder="비밀번호 입력하세요"
                   ></input>
                 </form>
               </div>

@@ -47,10 +47,10 @@ export default function ModalBasic({
     setDisabled(true);
     event.preventDefault();
     if (passWord.length < 1) {
-      alert("비번 입력해라");
+      alert("비밀번호를 입력해주세요");
     } else {
       await new Promise((r) => setTimeout(r, 100));
-      alert(`입력된 비번: ${roomname} ${passWord}`);
+      alert(`${roomname} 방의 비밀번호는 <${passWord}> 입니다.`);
       setIsOpenModal(false);
       socket.emit("sendRoomPass", {
         roomname: roomname,
@@ -78,7 +78,7 @@ export default function ModalBasic({
           </span>
           <span>
             <button className="btn-add" type="submit" disabled={disabled}>
-              비번 입력
+              비밀번호 입력
             </button>
           </span>
         </div>
