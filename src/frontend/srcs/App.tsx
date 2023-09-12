@@ -5,7 +5,6 @@ import * as io from "socket.io-client";
 import { Socket } from "socket.io-client";
 import ModalBasic from "./components/modalpage/modal";
 import ModalOverlay from "./components/modalpage/ModalOverlay";
-import TempLogin from "./components/temploginpage/tempLogin";
 import NavBar from "./components/navpage/NavBar";
 import GameList from "./components/gamelistpage/GameList";
 import ChatMain from "./components/chatpage/ChatMain";

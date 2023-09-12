@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/router";
 import axiosApi from "./AxiosInterceptor";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import jwt_decode from "jwt-decode";
 import "../pages/index.css";
 import styles from "../styles/MyProfileStyle.module.css";
