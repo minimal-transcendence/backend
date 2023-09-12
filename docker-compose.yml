@@ -26,7 +26,6 @@ services:
         condition: service_healthy
     restart: always
     ports:
-      - 3001:3001
       - 5555:5555
     env_file:
       - .env
@@ -50,11 +49,5 @@ networks:
 volumes:
   postgresql_volume:
     external: false
-#     name: postgresql_volume
-#     driver_opts:
-#       type: none
-#       device: /Users/seunchoi/app-docker/pgdata
-#       o: bind
-
   photo_volume:
-      external: false
+    external: false

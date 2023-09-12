@@ -24,13 +24,11 @@ export class UserController {
 		return (this.userService.getUserById(id));
 	}
 
-	//TODO : error code & error msg customize
-	//TODO : catch HttpException
 	@UseGuards(JwtGuard)
 	@UseInterceptors(FileInterceptor(
 		'avatar',
 		{
-			dest: '/photo',	//없는 폴더면 자동 생성
+			dest: '/photo',
 		})
 	)
 	@Post(':id')
@@ -50,7 +48,6 @@ export class UserController {
 		) : Promise<any>{
 		if (req.user.id != id)
 			throw new HttpException("Unauthorized action", HttpStatus.BAD_REQUEST);
-		
 		return this.userService.updateUserById(id, data, file);
 	}
 
@@ -68,7 +65,6 @@ export class UserController {
 		return this.userService.getUserFriendsById(id);
 	}
 
-	//dto 검증 필요
 	@UseGuards(JwtGuard)
 	@Patch(':id/friend')
 	updateUserFriends(
@@ -89,7 +85,6 @@ export class UserController {
 			return this.userService.getUserMatchHistoryById(id);
 	}
 
-	// seunchoi: no guard here
 	@Get(':id/photo')
 	async streamUserImage(@Param('id', ParseIntPipe) id : number) {
 		return await this.userService.getUserImageById(id)
@@ -99,7 +94,6 @@ export class UserController {
 	}
 }
 
-//TODO : 얘는 가드를 하는 건 좀 이상한 것 같은데..
 @UseGuards(JwtGuard)
 @Controller('photo/:img')
 export class avatarController {
