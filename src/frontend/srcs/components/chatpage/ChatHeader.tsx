@@ -25,6 +25,11 @@ const ChatHeader = ({
   const onSubmit = (event: any, value: string, currentRoomName: string) => {
     event.preventDefault();
 
+    if (value.length === 0) {
+      alert("비번 입력해");
+      setPassword("");
+      return;
+    }
     const chkAuth =
       myNickName === roomInfo.owner || roomInfo.operators.includes(myNickName);
 
