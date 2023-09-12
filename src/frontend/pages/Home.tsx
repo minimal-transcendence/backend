@@ -48,7 +48,8 @@ function Home() {
             setValidToken(true); // success
           })
           .catch((error) => {
-            console.error(error);
+            alert("로그인 정보가 만료되었습니다");
+            console.log("refresh토큰이 만료되었습니다");
             localStorage.setItem("isLoggedIn", "false");
             localStorage.removeItem("id");
             localStorage.removeItem("nickname");

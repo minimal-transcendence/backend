@@ -43,7 +43,7 @@ export default function SearchList({
   const [query, setQuery] = useState("");
   useEffect(() => {
     function requestPassword(roomname: string) {
-      alert(`requestPassword이벤트가 왔어요zx. ${roomname} ${isOpenModal}`);
+      alert(`<${roomname}> 방의 비밀번호를 입력하세요 `);
       setIsOpenModal(true);
     }
     function sendRoomList(newResults: any) {
