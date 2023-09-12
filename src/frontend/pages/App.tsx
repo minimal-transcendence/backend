@@ -434,7 +434,7 @@ export default function App() {
               <ModalBasic
                 roomname={roomnameModal}
                 setIsOpenModal={setIsOpenModal}
-                innerText={"방클릭해서 드갈때 비번입력 ㄱ"}
+                innerText={"비밀번호 입력하세요"}
               />
             )}
           </>
