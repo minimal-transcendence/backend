@@ -246,7 +246,6 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       .then((response) => {
         if (response.data.error) {
           alert("Follow에 실패했습니다");
-          console.error("에러 발생:", response.data.error);
         } else {
           console.log("Follow 성공 데이터:", response.data);
           let copiedData = [...userData];
@@ -256,7 +255,6 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       })
       .catch((error) => {
         alert("Follow에 실패했습니다");
-        console.error("에러 발생:", error);
       });
   }
   async function unFollow(index: number) {
@@ -275,7 +273,6 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       .then((response) => {
         if (response.data.error) {
           alert("UnFollow에 실패했습니다");
-          console.error("에러 발생:", response.data.error);
         } else {
           console.log("UnFollow 성공 데이터:", response.data);
           let copiedData = [...userData];
@@ -285,7 +282,6 @@ function UserProfile({ id, setIsOpenModal }: { id: any; setIsOpenModal: any }) {
       })
       .catch((error) => {
         alert("UnFollow에 실패했습니다");
-        console.error("에러 발생:", error);
       });
   }
 

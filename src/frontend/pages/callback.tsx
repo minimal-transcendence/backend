@@ -114,7 +114,6 @@ useEffect( () => {
       localStorage.setItem("isLoggedIn", "true");
       setIsReady(true);
     } catch (error) {
-      console.error("인증 오류: ", error);
       alert("인증 오류: " + error);
     }
   }
