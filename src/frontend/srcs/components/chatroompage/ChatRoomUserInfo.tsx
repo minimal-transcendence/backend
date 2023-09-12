@@ -2,9 +2,9 @@ import { useEffect, useState, useContext } from "react";
 import { SocketContext } from "@/context/socket";
 import menuIcon from "../../../assets/menu.png";
 import ysungwonIcon from "../../../assets/ysungwon.jpg";
-import ModalOverlay from "../../components/modalpage/ModalOverlay";
+import ModalOverlay from "../modalpage/ModalOverlay";
 import axios from "axios";
-import UserProfile from "../../../srcs/UserProfile";
+import UserProfile from "../../UserProfile";
 import Image from "next/image";
 import axiosApi from "@/srcs/AxiosInterceptor";
 

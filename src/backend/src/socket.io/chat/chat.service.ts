@@ -282,8 +282,8 @@ export class ChatService {
 			}
 			else {
 				if (room.isOwner(userId)) {
-					thisUser.joinlist.delete(roomname);
-					const newOwner = room.userlist.values().next().value;
+					room.deleteUserFromUserlist(userId);
+					const newOwner : number = room.userlist.values().next().value;
 					room.updateOwner(newOwner);
 					if (room.isOperator(newOwner))
 						room.deleteUserFromOperators(newOwner);

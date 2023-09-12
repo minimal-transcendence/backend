@@ -5,7 +5,6 @@ import * as io from "socket.io-client";
 import { Socket } from "socket.io-client";
 import ModalBasic from "./components/modalpage/modal";
 import ModalOverlay from "./components/modalpage/ModalOverlay";
-import TempLogin from "./components/temploginpage/tempLogin";
 import NavBar from "./components/navpage/NavBar";
 import GameList from "./components/gamelistpage/GameList";
 import ChatMain from "./components/chatpage/ChatMain";
@@ -26,7 +25,7 @@ import Image from "next/image";
 import TempRandomMatch from "./components/pong/TempRandomMatch";
 import { SocketContext } from "@/context/socket";
 import { GameContext, GameData } from "@/context/game";
-import axiosApi from "../srcs/AxiosInterceptor";
+import axiosApi from "./AxiosInterceptor";
 export type UserOnChat = {
   id: string;
   isCreator: boolean;
@@ -127,7 +126,15 @@ export default function App() {
     async function checkLogout(userId: number, isConnected: boolean) {
       if (isConnected == false && userId == Number(tmpLoginID)) {
         alert("로그인 정보가 만료되었습니다");
-        setTimeout(() => router.push("/"), 10);
+        localStorage.setItem("isLoggedIn", "false"); //다른 브라우저에서 내 계정으로 로그아웃 했을 시
+        localStorage.removeItem("id");
+        localStorage.removeItem("nickname");
+        localStorage.removeItem("is2fa");
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("access_token_exp");
+        localStorage.removeItem("avatar");
+        sessionStorage.removeItem("gamesocket");
+        setTimeout(() => router.push("/", undefined, { shallow : true }), 10);
       }
     }
     if (socket) {
@@ -169,8 +176,12 @@ export default function App() {
     }
 
     return () => {
-      chatConnection.disconnect();
-      gameConnection.disconnect();
+      if (chatConnection.connected) {
+        chatConnection.disconnect();
+      }
+      if (gameConnection.connected) {
+        gameConnection.disconnect();
+      }
     };
   }, []);
 
