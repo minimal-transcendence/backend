@@ -75,7 +75,7 @@ function MyProfile({
             console.log("logout send fail: ", error); //TODO: error handling check
           });
           alert(message);
-          router.push("/");
+          router.push("/", undefined, { shallow : true });
   }
 
   async function refreshToken() : Promise<any> {
@@ -262,7 +262,7 @@ function MyProfile({
               axiosApi.post(ApiUrl, {}).catch((error:any) => {
                 console.log("logout send fail: ", error); //TODO: error handling check
               });
-              router.push("/");
+              router.push("/", undefined, { shallow : true });
             }
             else{
               alert("다시 시도해주세요.");

@@ -43,7 +43,7 @@ function Log() {
           </div>
           <button
             className={styles.button2}
-            onClick={() => router.push("/Home")}
+            onClick={() => router.push("/Home", undefined, { shallow : true })}
           >
             {" "}
             확인
