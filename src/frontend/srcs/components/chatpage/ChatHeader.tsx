@@ -109,7 +109,7 @@ const ChatHeader = ({
                 >
                   <input
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => setPassword(e?.target.value)}
                     placeholder="비밀번호 입력하세요"
                   ></input>
                 </form>

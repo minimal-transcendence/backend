@@ -85,8 +85,8 @@ export default function SearchListCreateRoom({
               value={roomname}
               placeholder="Create or Join room"
               onChange={(e) => {
-                setroomname(e.target.value);
-                setQuery(e.target.value);
+                setroomname(e?.target.value);
+                setQuery(e?.target.value);
               }}
             />
           </div>
