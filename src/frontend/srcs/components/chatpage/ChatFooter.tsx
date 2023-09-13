@@ -20,8 +20,8 @@ const ChatFooter = ({
   const socket = useContext(SocketContext).chatSocket;
   const [textareaValue, setTextareaValue] = useState("");
   function handleSubmit(e: any) {
-    e.preventDefault();
-    const form = e.target;
+    e?.preventDefault();
+    const form = e?.target;
     const formData = new FormData(form);
     const formJson = Object.fromEntries(formData.entries());
     if (!isDM) {
@@ -39,10 +39,14 @@ const ChatFooter = ({
   }
   function handleSubmit2(e: any) {
     // Prevent the browser from reloading the page
-    e.preventDefault();
+    e?.preventDefault();
     if (textareaValue.length > 500) {
       setTextareaValue("");
       alert("채팅 내용은 500글자 미만");
+      return;
+    } else if (textareaValue.length === 0) {
+      setTextareaValue("");
+      alert("채팅 내용을 입력하세요");
       return;
     }
     if (!isDM) {
@@ -59,12 +63,12 @@ const ChatFooter = ({
     setTextareaValue("");
   }
   const handleOnKeyPress = (e: any) => {
-    if (e.isComposing || e.keyCode === 229) {
+    if (e?.isComposing || e?.keyCode === 229) {
       return;
     }
 
-    if (e.key === "Enter") {
-      e.preventDefault();
+    if (e?.key === "Enter") {
+      e?.preventDefault();
       handleSubmit2(e); // Enter 입력이 되면 클릭 이벤트 실행
     }
   };
@@ -82,7 +86,7 @@ const ChatFooter = ({
         className="input2"
         value={textareaValue}
         ref={inputRef}
-        onChange={(e) => setTextareaValue(e.target.value)}
+        onChange={(e) => setTextareaValue(e?.target.value)}
       />
       <button type="submit"> Send </button>
     </form>

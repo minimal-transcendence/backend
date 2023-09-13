@@ -98,6 +98,7 @@ export default function ChatRoomUser({
                 changedID={changedID}
                 changedNickName={changedNickName}
                 isGameConnected={isGameConnected}
+                isDM={isDM}
               />
             ))}
           </ul>

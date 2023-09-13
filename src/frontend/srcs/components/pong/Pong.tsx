@@ -143,7 +143,11 @@ export default function Pong() {
       context.fillText("PONG", canvas.width / 2, canvas.height * 0.4);
       context.font = "40px monospace";
       context.fillText("← → : MOVE", canvas.width / 2, canvas.height * 0.5);
-      context.fillText("SPACE ⎵ : POWER-UP", canvas.width / 2, canvas.height * 0.5 + 50);
+      context.fillText(
+        "SPACE ⎵ : POWER-UP",
+        canvas.width / 2,
+        canvas.height * 0.5 + 50
+      );
     };
 
     // Draw Game Over
@@ -155,8 +159,16 @@ export default function Pong() {
       context.font = "140px fantasy";
       context.fillText("Game Over", canvas.width / 2, canvas.height * 0.4);
       context.font = "40px monospace";
-      context.fillText(`Winner: ${winner}`, canvas.width / 2, canvas.height * 0.5);
-      context.fillText(`Loser: ${loser}`, canvas.width / 2, canvas.height * 0.5 + 50);
+      context.fillText(
+        `Winner: ${winner}`,
+        canvas.width / 2,
+        canvas.height * 0.5
+      );
+      context.fillText(
+        `Loser: ${loser}`,
+        canvas.width / 2,
+        canvas.height * 0.5 + 50
+      );
     };
 
     let angleA = Math.random() * 360; // start angle (for HSL)
@@ -212,7 +224,7 @@ export default function Pong() {
       context.beginPath();
       context.arc(ballX, ballY, ballRadius, 0, 2 * Math.PI);
       if (powerBall) {
-        context.fillStyle = "yellow";  
+        context.fillStyle = "yellow";
       } else {
         context.fillStyle = "white";
       }
@@ -234,16 +246,8 @@ export default function Pong() {
       context.textAlign = "left";
       context.font = "120px monospace";
       context.fillStyle = "grey";
-      context.fillText(
-        score[1].toString(),
-        10,
-        canvas.height / 2 - 30
-      );
-      context.fillText(
-        score[0].toString(),
-        10,
-        canvas.height / 2 + 110
-      );
+      context.fillText(score[1].toString(), 10, canvas.height / 2 - 30);
+      context.fillText(score[0].toString(), 10, canvas.height / 2 + 110);
     };
 
     // Draw All Context
@@ -289,7 +293,7 @@ export default function Pong() {
 
     // Listen Key Event - keydown
     const handleKeydown = (e: KeyboardEvent) => {
-      switch (e.key) {
+      switch (e?.key) {
         case "ArrowLeft":
           keys.left.pressed = true;
           break;
@@ -308,7 +312,7 @@ export default function Pong() {
     };
 
     const handleKeyup = (e: KeyboardEvent) => {
-      switch (e.key) {
+      switch (e?.key) {
         case "ArrowLeft":
           keys.left.pressed = false;
           break;
