@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState, useContext } from "react";
 import { SocketContext } from "@/context/socket";
-import "../../index.css";
+import "../../../pages/index.css";
 
-export default function ModalBasic({
+export default function ModalMatchChk({
   setIsOpenModal,
-  roomname,
-  innerText,
+  result,
 }: {
   setIsOpenModal: any;
-  roomname: string;
-  innerText: string;
+  result: any;
 }) {
   // 모달 끄기
   const socket = useContext(SocketContext).chatSocket;
@@ -43,46 +41,9 @@ export default function ModalBasic({
     };
   });
 
-  const handleSubmit = async (event: any) => {
-    setDisabled(true);
-    event.preventDefault();
-    if (passWord.length < 1) {
-      alert("비번 입력해라");
-    } else {
-      await new Promise((r) => setTimeout(r, 100));
-      alert(`입력된 비번: ${roomname} ${passWord}`);
-      setIsOpenModal(false);
-      socket.emit("sendRoomPass", {
-        roomname: roomname,
-        password: passWord,
-      }); //0813
-    }
-    setDisabled(false);
-  };
-
   return (
-    <div ref={modalRef} className="modal modal-basic">
-      <button className="close" onClick={closeModal}>
-        X
-      </button>
-      <p>{innerText}</p>
-      <form onSubmit={handleSubmit}>
-        <div className="div-form">
-          <span>
-            {" "}
-            <input
-              type="text"
-              value={passWord}
-              onChange={(e) => setPassWord(e.target.value)}
-            />
-          </span>
-          <span>
-            <button className="btn-add" type="submit" disabled={disabled}>
-              비번 입력
-            </button>
-          </span>
-        </div>
-      </form>
+    <div ref={modalRef} className="modal modal-matchchk">
+      <div>{JSON.stringify(result, null, 2)}</div>
     </div>
   );
 }

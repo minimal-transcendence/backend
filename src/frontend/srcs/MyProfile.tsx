@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/router";
 import axiosApi from "./AxiosInterceptor";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import jwt_decode from "jwt-decode";
 import "../pages/index.css";
 import styles from "../styles/MyProfileStyle.module.css";
@@ -69,13 +69,14 @@ function MyProfile({
           localStorage.removeItem("is2fa");
           localStorage.removeItem("access_token");
           localStorage.removeItem("access_token_exp");
+          localStorage.removeItem("avatar");
           sessionStorage.removeItem("gamesocket");
           const ApiUrl = "http://localhost/api/auth/logout";
           axiosApi.post(ApiUrl, {}).catch((error:any) => {
             console.log("logout send fail: ", error); //TODO: error handling check
           });
           alert(message);
-          router.push("/");
+          router.push("/", undefined, { shallow : true });
   }
 
   async function refreshToken() : Promise<any> {
@@ -145,7 +146,6 @@ function MyProfile({
             alert(
               "닉네임 변경에 실패했습니다. 새로운 닉네임으로 다시 시도해주세요"
             );
-            console.error("에러 발생:", response.data);
             setNewNickname("");
           } else {
             setUserNickname(newNickname);
@@ -157,37 +157,12 @@ function MyProfile({
         })
         .catch((error) => {
           alert("닉네임 변경에 실패했습니다");
-          console.error("에러 발생:", error);
           setNewNickname("");
         });
     }
     if (selectedFile) {
       const formData = new FormData();
       formData.append("avatar", selectedFile);
-      /*try {
-        const response = await fetch(apiUrl, {
-          method: "POST",
-          body: formData,
-        });
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-
-        const responseData = await response.json();
-        if (responseData.error) {
-          throw new Error(responseData.error);
-        }
-        console.log("profile 변경 응답 데이터:", responseData);
-        localStorage.setItem("avatar", `/api/user/${userId}/photo?timestamp=${Date.now()}`,);
-        setAvatarURL(`/api/user/${userId}/photo?timestamp=${Date.now()}`);
-        console.log("URL change: " + avatarURL);
-        setImageUrl(null);
-        setSelectedFile(null);
-        alert("프로필 사진이 변경되었습니다");
-      } catch (error) {
-        console.error("Error uploading image:", error);
-        alert("에러 발생 :" + error);
-      }*/
       try{
         await axiosApi.post(apiUrl, formData,{
           headers: {
@@ -207,12 +182,12 @@ function MyProfile({
             alert("프로필 사진이 변경되었습니다");
           })
         .catch((error:any) => {
-          alert("이미지 업로드에 실패했습니다1.");
+          alert("이미지 업로드에 실패했습니다.");
           throw(error);
         })
       }
       catch(error){
-        console.error("이미지 업로드 실패: ", error);
+        console.log("이미지 업로드 실패: ", error);
       }
     }
 
@@ -257,12 +232,13 @@ function MyProfile({
               localStorage.removeItem("is2fa");
               localStorage.removeItem("access_token");
               localStorage.removeItem("access_token_exp");
+              localStorage.removeItem("avatar");
               sessionStorage.removeItem("gamesocket");
               const ApiUrl = "http://localhost/api/auth/logout";
               axiosApi.post(ApiUrl, {}).catch((error:any) => {
                 console.log("logout send fail: ", error); //TODO: error handling check
               });
-              router.push("/");
+              router.push("/", undefined, { shallow : true });
             }
             else{
               alert("다시 시도해주세요.");
@@ -272,7 +248,6 @@ function MyProfile({
         catch(error){
           alert("qr인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
           setVerCode('');
-          console.error('에러 발생:', error);
         }
     } else if (is2Fa === "true" && checkIs2Fa === false) {
       const jwtExpItem = localStorage.getItem("access_token_exp");
@@ -316,7 +291,6 @@ function MyProfile({
       catch(error){
         alert("qr인증에 실패했습니다, 코드 또는 OTP인증을 확인해주세요");
         setVerCode('');
-        console.error('에러 발생:', error);
       }
     }
   }

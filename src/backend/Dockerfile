@@ -45,21 +45,8 @@ RUN npm install -g npm-check-updates && \
 
 # prisma
 COPY ./prisma ./prisma
+EXPOSE 3001
 
 CMD ["npm", "run", "start:migrate:prod"]
 
 #----------------------------------------#
-
-# # dev stage
-# FROM node:18-alpine
-
-# WORKDIR /app
-
-# COPY package*.json ./
-
-# RUN npm install
-
-# COPY . .
-
-# # CMD ["npm", "run", "start:migrate:dev"]
-# CMD ["tail", "-f", "/dev/null"]

@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { SocketContext } from "@/context/socket";
-import TempRandomMatch from "../../components/pong/TempRandomMatch";
+import TempRandomMatch from "../pong/TempRandomMatch";
 import styles_profile from "../../../styles/UserListStyle.module.css";
 export default function Search({
   setIsLoading,

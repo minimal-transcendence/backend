@@ -8,12 +8,12 @@ import { GameContext } from "@/context/game";
 import Image from "next/image";
 
 import { useRouter } from "next/router";
-import UserList from "../../../srcs/UserList";
-import MyProfile from "../../../srcs/MyProfile";
-import UserProfile from "../../../srcs/UserProfile";
-import ModalOverlay from "../../components/modalpage/ModalOverlay";
+import UserList from "../../UserList";
+import MyProfile from "../../MyProfile";
+import UserProfile from "../../UserProfile";
+import ModalOverlay from "../modalpage/ModalOverlay";
 
-import axiosApi from "../../../srcs/AxiosInterceptor";
+import axiosApi from "../../AxiosInterceptor";
 
 export default function Menu({
   setTmpLoginnickname,
@@ -63,7 +63,7 @@ export default function Menu({
       setIsLoggedIn(true);
     } else {
       alert("로그인이 필요합니다");
-      router.push("/");
+      router.push("/", undefined, { shallow : true });
     }
   }, []);
 
@@ -80,7 +80,7 @@ export default function Menu({
     axiosApi.post(ApiUrl, {}).catch((error) => {});
     setIsLoggedIn(false);
     alert("로그아웃 되었습니다.");
-    router.push("/");
+    router.push("/", undefined, { shallow : true });
   };
 
   function handleMenu(event: any) {

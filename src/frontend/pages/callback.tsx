@@ -15,10 +15,18 @@ function Callback() {
   const [showCodeInput, setShowCodeInput] = useState<boolean>(false);
   const [verCode, setVerCode] = useState("");
   const [userId, setUserId] = useState<number | null>(null);
+  const [isReady, setIsReady] = useState<Boolean>(false);
 
   const code = router.query.code as string;
 
+useEffect( () => {
+  if(isReady){
+    router.push("Home", undefined, { shallow : true });
+  }
+}, [isReady])
+
   const authLogin = async () => {
+    setIsReady(false);
     const response = await fetch(
       "http://localhost/api/auth/login?code=" + code
     );
@@ -26,10 +34,10 @@ function Callback() {
 
     if (!response.ok) {
       alert("다시 시도해주세요");
-      router.push("/");
+      router.push("/", undefined, { shallow : true });
     } else if (response.status === 500) {
       alert("다시 시도해주세요");
-      router.push("/");
+      router.push("/", undefined, { shallow : true });
     }
 
     const data = await response.json();
@@ -50,7 +58,7 @@ function Callback() {
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("is2fa", "false");
       localStorage.setItem("avatar",`/api/user/${data.id}/photo?timestamp=${Date.now()}`);
-      router.push("Home");
+      setIsReady(true);
     } else if (data.is2faEnabled === true) {
       setShowCodeInput(true);
       localStorage.setItem("is2fa", "true");
@@ -61,7 +69,7 @@ function Callback() {
     const storedIsLoggedIn = localStorage.getItem("isLoggedIn");
     if (storedIsLoggedIn === "true") {
       console.log("already logedin");
-      router.push("Home");
+      setIsReady(true);
       return;
     } else if (!router.isReady) return;
     authLogin();
@@ -104,9 +112,8 @@ function Callback() {
       localStorage.setItem("access_token_exp", jwtDecode.exp.toString());
       localStorage.setItem("avatar", `/api/user/${userId}/photo?timestamp=${Date.now()}`);
       localStorage.setItem("isLoggedIn", "true");
-      router.push("Home");
+      setIsReady(true);
     } catch (error) {
-      console.error("인증 오류: ", error);
       alert("인증 오류: " + error);
     }
   }

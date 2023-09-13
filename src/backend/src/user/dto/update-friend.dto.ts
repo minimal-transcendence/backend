@@ -3,7 +3,6 @@ import { IsBoolean, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class UpdateFriendDto {
   @IsNotEmpty()
-  @Type(() => Number)
   @IsNumber()
   friend: number;
   

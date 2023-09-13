@@ -24,9 +24,9 @@ export default function SearchListCreateRoom({
     setDisabled(true);
     event.preventDefault();
     if (roomname.length < 1) {
-      alert("채팅창 이름 입력해라");
+      alert("채팅창 이름 입력하세요");
     } else if (roomname[0] === "$") {
-      alert("첫글자 $로 하하지지마라");
+      alert("채팅창 이름의 시작은 $로 하실 수 없습니다");
     } else if (roomname.length > 14) {
       alert("채팅방 이름은 14글자 미만");
     } else {

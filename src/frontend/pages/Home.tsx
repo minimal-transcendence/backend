@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import UserList from "../srcs/UserList";
 import MyProfile from "../srcs/MyProfile";
 import UserProfile from "../srcs/UserProfile";
-import App from "./App";
+import App from "../srcs/App";
 // import axiosApi from "@/srcs/AxiosInterceptor";
 // import { refreshToken, setItems } from "@/srcs/SocketRefresh";
 // import { socketRefreshToken } from "@/srcs/SocketRefresh";
@@ -48,7 +48,8 @@ function Home() {
             setValidToken(true); // success
           })
           .catch((error) => {
-            console.error(error);
+            alert("로그인 정보가 만료되었습니다");
+            console.log("refresh토큰이 만료되었습니다");
             localStorage.setItem("isLoggedIn", "false");
             localStorage.removeItem("id");
             localStorage.removeItem("nickname");
@@ -56,7 +57,7 @@ function Home() {
             localStorage.removeItem("access_token");
             localStorage.removeItem("avatar");
             sessionStorage.removeItem("gamesocket");
-            router.push("/");
+            router.push("/", undefined, { shallow : true });
           });
       } else {
         setValidToken(true); // success
@@ -82,7 +83,7 @@ function Home() {
     return (
       <div>
         <p>로그인이 필요합니다. 로그인 페이지로 이동합니다.</p>
-        <button onClick={() => router.push("/")}>Go to Home</button>
+        <button onClick={() => router.push("/", undefined, { shallow : true })}>Go to Home</button>
       </div>
     );
   } else {
@@ -98,7 +99,7 @@ function Home() {
             <>
               <button onClick={() => setUserListModal(false)}>닫기</button>
               <UserList />
-            </> 
+            </>
           )}
         </div>
         <div>
