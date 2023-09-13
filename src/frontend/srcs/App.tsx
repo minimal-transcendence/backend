@@ -68,10 +68,18 @@ export default function App() {
   const [gameLoad, setGameLoad] = useState<boolean>(false);
   // Get Empty Socket Instance
   const [socket, setSocket] = useState<Socket>(
-    io.connect("", { query: { nickname: "" }, autoConnect: false })
+    io.connect("", {
+      query: { nickname: "" },
+      autoConnect: false,
+      transports: ["websocket"]
+    })
   );
   const [gameSocket, setGameSocket] = useState<Socket>(
-    io.connect("", { query: { nickname: "" }, autoConnect: false })
+    io.connect("", {
+      query: { nickname: "" },
+      autoConnect: false,
+      transports: ["websocket"]
+    })
   );
 
   const [changedID, setChangedID] = useState<number>(-2);
@@ -152,6 +160,7 @@ export default function App() {
       return io.connect(`http://localhost/${namespace}`, {
         query: { nickname: nickname },
         auth: { token: jwt },
+        transports: ["websocket"]
       });
     };
 
