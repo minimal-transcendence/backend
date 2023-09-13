@@ -215,6 +215,17 @@ export class ChatRoomStoreService implements RoomStore{
 			return (false);
 	}
 
+	parseIdsOfDMRoom(dmRoom : string) : number[] | null {
+		if (!this.isDMRoom(dmRoom))
+			return (null);
+		const trim = dmRoom.slice(1, dmRoom.length - 1);
+		const parts = trim.split('-');
+		const res = [];
+		res.push(Number(parts[0]));
+		res.push(Number(parts[1]));
+		return (res);
+	}
+
 	// getFromId(dmRoomName : string) : number {
 
 	// }
