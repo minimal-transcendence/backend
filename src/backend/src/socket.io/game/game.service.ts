@@ -277,6 +277,28 @@ this.rooms.forEach((_, key) => {
   })
   io.in(roomname).emit("sendRoomMembers", userInfo);
   })
+  const  dmRooms = [];
+  io.adapter.rooms.forEach((room : string) => {
+    if (this.storeRoom.isDMRoom(room)) {
+      if (this.storeRoom.isUserInDMRoom(playerOneId, room)
+         || this.storeRoom.isUserInDMRoom(playerTwoId, room))
+         dmRooms.push(room);
+    }
+    dmRooms.forEach(async (room) => {
+      const sockets = await io.in(room).fetchSockets()
+                    .error((error) => {return (error)});
+      const userInfo = [];
+      sockets.forEach((socket : GameSocket) => {
+        const user = this.storeUser.findUserById(socket.userId);
+        userInfo.push({
+          id: user.id,
+			    nickname: user.nickname,
+			    isGaming: user.isGaming
+        })
+      })
+			io.in(room).emit("sendRoomMembers", userInfo);
+    })
+  })
 }
 
 
