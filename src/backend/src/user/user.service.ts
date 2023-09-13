@@ -17,6 +17,7 @@ export class UserService {
 	) { }
 
 	async createUser(data: Prisma.UserCreateInput): Promise<User> {
+		const isNewUser = data.nickname? true : false;
 		while (!data.nickname) {
 			data.nickname = `user_${Math.floor(Math.random() * 1000)}`;
 			const isUnique = await this.prisma.user.findUnique({
@@ -36,6 +37,9 @@ export class UserService {
 				nickname: data.nickname,
 				email: data.email
 			}
+		}).then((res) => {
+			res.isNewUser = isNewUser;
+			return (res);
 		})
 	}
 
