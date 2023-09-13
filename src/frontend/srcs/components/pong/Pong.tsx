@@ -76,29 +76,28 @@ export default function Pong() {
     /*-----------------------------------------------------*/
     let interval: ReturnType<typeof setInterval> | undefined;
 
-    let roomName: string;
-    let mode: string;
-    let winner: string;
-    let loser: string;
-    let player: string[];
-    let playerColor: string[];
+    let roomName: string = "";
+    let winner: string = "";
+    let loser: string = "";
+    let player: string[] = ["", ""];
+    let playerColor: string[] = ["", ""];
 
     // Power-Up
-    let powerUp: boolean[];
-    let powerBall: boolean;
+    let powerUp: boolean[] = [false, false];
+    let powerBall: boolean = false;
 
     // Score
     let score: number[] = [0, 0];
 
     // Paddle
-    let paddleHeight: number;
-    let paddleWidth: number;
-    let paddleX: number[];
+    let paddleHeight: number = 0;
+    let paddleWidth: number = 0;
+    let paddleX: number[] = [0, 0];
 
     // Ball
-    let ballX: number;
-    let ballY: number;
-    let ballRadius: number;
+    let ballX: number = 0;
+    let ballY: number = 0;
+    let ballRadius: number = 0;
 
     // Key Event
     const keys = {
