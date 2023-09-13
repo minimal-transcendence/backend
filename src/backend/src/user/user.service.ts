@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import { ChatGateway } from 'src/socket.io/chat/chat.gateway';
 import { GameGateway } from 'src/socket.io/game/game.gateway';
 import { UpdateFriendDto } from './dto/update-friend.dto';
+import { Login } from 'src/auth/types';
 
 @Injectable()
 export class UserService {
@@ -16,8 +17,8 @@ export class UserService {
 		private readonly gameGateway: GameGateway
 	) { }
 
-	async createUser(data: Prisma.UserCreateInput): Promise<User> {
-		const isNewUser = data.nickname? true : false;
+	async createUser(data: Prisma.UserCreateInput): Promise<Login> {
+		const isNewUser = data.nickname? false : true;
 		while (!data.nickname) {
 			data.nickname = `user_${Math.floor(Math.random() * 1000)}`;
 			const isUnique = await this.prisma.user.findUnique({
@@ -27,7 +28,7 @@ export class UserService {
 			if (isUnique)
 				data.nickname = null;
 		}
-		return await this.prisma.user.upsert({
+		const res = await this.prisma.user.upsert({
 			where: {
 				id: data.id,
 			},
@@ -37,15 +38,15 @@ export class UserService {
 				nickname: data.nickname,
 				email: data.email
 			}
-		}).then((res) => {
-			const data = {
-				id: res.id,
-				email: res.email,
-				nickname: res.nickname,
-				isNewUser: isNewUser,
-			}
-			return (data);
 		})
+		const returnData = {
+			id: res.id,
+			email: res.email,
+			nickname: res.nickname,
+			is2faEnabled: res.is2faEnabled,
+			isNewUser: isNewUser,
+		}
+		return (returnData);
 	}
 
 	async findUserById(userId: number): Promise<any | undefined> {
