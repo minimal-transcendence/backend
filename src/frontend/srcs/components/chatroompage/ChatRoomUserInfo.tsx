@@ -18,6 +18,7 @@ export default function ChatRoomUserInfo({
   changedID,
   changedNickName,
   isGameConnected,
+  isDM,
 }: {
   user: any;
   roomInfo: any;
@@ -28,6 +29,7 @@ export default function ChatRoomUserInfo({
   changedID: number;
   changedNickName: string;
   isGameConnected: boolean;
+  isDM: boolean;
 }) {
   const socket = useContext(SocketContext).chatSocket;
   const gameSocket = useContext(SocketContext).gameSocket;
@@ -213,12 +215,7 @@ export default function ChatRoomUserInfo({
         </div>
         <p className="userlist-userstatus-text">
           {(() => {
-            // const num = Math.trunc(Math.random() * 5);
-            // if (num === 0) return "밥 먹는 중";
-            // else if (num === 1) return "GOD님과 게임 하는 중";
-            // else if (num === 2) return "온라인";
-            // else if (num === 3) return "오프라인";
-            // else if (num === 4) return "자리비움";
+            if (isDM) return;
             if (user?.isGaming) return "게임중";
             return "온라인";
           })()}
