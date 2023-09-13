@@ -37,6 +37,7 @@ export class AuthController {
                 id: user.id,
                 email: user.email,
                 nickname: user.nickname,
+                isNewUser: user.isNewUser,
                 is2faEnabled: true,
             });
         }
@@ -70,6 +71,7 @@ export class AuthController {
             id: user.id,
             email: user.email,
             nickname: user.nickname,
+            isNewUser: user.isNewUser,
             is2faEnabled: false,
             access_token: access_token
         });

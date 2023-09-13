@@ -38,8 +38,13 @@ export class UserService {
 				email: data.email
 			}
 		}).then((res) => {
-			res.isNewUser = isNewUser;
-			return (res);
+			const data = {
+				id: res.id,
+				email: res.email,
+				nickname: res.nickname,
+				isNewUser: isNewUser,
+			}
+			return (data);
 		})
 	}
 
