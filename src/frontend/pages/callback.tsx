@@ -44,6 +44,9 @@ useEffect( () => {
 
     console.log(data);
     localStorage.setItem("nickname", data.nickname);
+    if(data.isNewUser == true){
+      alert(`당신의 닉네임은 ${data.nickname} 입니다 \n 변경을 원한다면 메인화면 상단의 MY버튼을 눌러 변경해주세요`);
+    }
     localStorage.setItem("id", data.id);
     sessionStorage.setItem("gamesocket", "false");
     setUserId(data.id);
