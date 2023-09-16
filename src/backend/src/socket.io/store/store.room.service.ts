@@ -110,7 +110,7 @@ export class Room {
 			if (!blocklist.has(this.messages[i]?.from))
 				return (this.messages[i]);
 		}
-		return (null);	//might cause error
+		return (null);
 	}
 }
 
@@ -123,26 +123,9 @@ interface RoomStore {
   deleteRoom(roomName : string): void;
 }
 
-// //아니면 dm방을 class로 관리하는 것도 가능하다 //근데 굳이?
-// interface DMRoomStore {
-// 	dmrooms: string[];
-// 	_trimRoomName(dmRoomName : string) : number[];
-// 	isDMRoom(dmRoomName: string) : boolean;
-// 	isUserInRoom(userId : number, dmRoomName : string) : boolean;
-// 	getFromId(dmRoomName : string) : number ;
-// 	getToId(dmRoomName : string) : number ;
-// 	getFromIdByCondition(dmRoomName : string, toUserId : number) : number;
-// 	getToIdByCondition(dmRoomName : string, fromUserId : number) : number;
-// 	makeDMRoomName(from : number, to : number) : string;
-// 	addNewDmRoom(dmRoomName : string) : boolean ;
-// 	deleteDMRoom(dmRoomName : string) : boolean ;
-// }
-
 @Injectable()
 export class ChatRoomStoreService implements RoomStore{
-// export class ChatRoomStoreService implements RoomStore, DMRoomStore{
 	rooms = new Map();
-	// dmrooms = [];
 
 	findRoom(roomName: string): Room {
 		return this.rooms.get(roomName);
@@ -225,17 +208,4 @@ export class ChatRoomStoreService implements RoomStore{
 		res.push(Number(parts[1]));
 		return (res);
 	}
-
-	// getFromId(dmRoomName : string) : number {
-
-	// }
-
-	// getToId(dmRoomName : string) : number {
-
-	// }
-	// getFromIdByCondition(dmRoomName : string, toUserId : number) : number;
-	// getToIdByCondition(dmRoomName : string, fromUserId : number) : number;
-	// addNewDmRoom(dmRoomName : string) : boolean ;
-	// deleteDMRoom(dmRoomName : string) : boolean ;
-
 }

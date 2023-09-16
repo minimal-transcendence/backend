@@ -25,10 +25,6 @@ export class ChatService {
 		this.storeRoom.saveRoom('DEFAULT', new Room()); //owner id 0 as server
 	}
 
-	// updateUserStatus(io: Namespace, userId: number, isConnected: boolean) {
-	// 	io.emit("updateUserStatus", userId, isConnected);
-	// }
-
 	updateChatScreen(client: Socket, clientId: number, roomname: string) {
 		const user = this.storeUser.findUserById(clientId);
 		const currRoomInfo = this.makeCurrRoomInfo(roomname);
@@ -271,7 +267,6 @@ export class ChatService {
 		const room = this.storeRoom.findRoom(roomname);
 		const thisUser = this.storeUser.findUserById(userId);
 		if (room === undefined) {
-			console.log("userLeaveRoom : no room found");
 			return ;
 		}
 		if (room.userlist.has(userId) && thisUser.joinlist.has(roomname)) {
@@ -312,9 +307,6 @@ export class ChatService {
 						socket.emit("sendAlert", "[ Alert ]", `${alertMsg}`)
 				})
 			})
-			.catch((error) => {
-				console.log()
-			});
 	}
 
 	userLeaveRooms(io: Namespace, client: ChatSocket, roomlist: Set<string>) {
@@ -521,10 +513,9 @@ export class ChatService {
 		};
 		this.storeMessage.saveMessage(message);
 		const dmRoom = this.storeRoom.getDMRoomname(from, to);
-		io.to([dmRoom, `$${to}`]).emit("sendDM", this.storeUser.getNicknameById(to), res);	//if you touch ${} here is going to change the most
+		io.to([dmRoom, `$${to}`]).emit("sendDM", this.storeUser.getNicknameById(to), res);
 	}
 
-	//need alert?
 	makeDMRoomMessages(client: ChatSocket, to: string): formedMessage[] | null {
 		const toId = this.storeUser.getIdByNickname(to);
 		const fromUser = this.storeUser.findUserById(client.userId);
@@ -552,42 +543,8 @@ export class ChatService {
 		}
 	}
 
-	// getDMRoomname(from : number, to : number) : string {
-	// 	return (`$${from}-${to}$`);
-	// }
-
-	// getToIdFromDMRoom(dmRoom : string, userId : number) : string | null {
-	// 	const trim = dmRoom.slice(1, dmRoom.length - 1);
-	// 	const parts = trim.split('-');
-	// 	if (parts[0] === `${userId}`)
-	// 		return (parts[1]);
-	// 	else
-	// 		return (null);
-	// }
-
-	// getFromIdFromDMRoom(dmRoom : string, userId : number) : string | null {
-	// 	const trim = dmRoom.slice(1, dmRoom.length - 1);
-	// 	const parts = trim.split('-');
-	// 	if (parts[1] === `${userId}`)
-	// 		return (parts[0]);
-	// 	else
-	// 		return (null);
-	// }
-
-	// isDMRoom(roomname : string) : boolean {
-	// 	if (roomname[0] === '$' && roomname[roomname.length - 1] === '$'){
-	// 		if (/^(\d+)\-(\d+)$/.test(roomname.substring(1, roomname.length - 1))){
-	// 			console.log("isDMRoom : " + roomname);
-	// 			return (true);
-	// 		}
-	// 	}
-	// 	console.log("isNotDMRoom : " + roomname);
-	// 	return (false);
-	// }
-
 	fetchUserToDMRoom(io: Namespace, client: ChatSocket, username: string) {
 		const DMs = this.makeDMRoomMessages(client, username);
-		console.log(DMs);
 		const targetId = this.storeUser.getIdByNickname(username);
 		if (DMs != null) {
 			const dmRoom = this.storeRoom.getDMRoomname(client.userId, targetId);
@@ -598,7 +555,6 @@ export class ChatService {
 			}
 			client.emit("sendDMRoomInfo", username, targetId, DMs);
 			if (client.userId !== targetId) {
-				console.log("different! : " + dmRoom + " " + client.userId + " " + targetId);
 				const DMRoomMembers = this.makeDMRoomUserInfo(client.userId, targetId);
 				client.emit("sendRoomMembers", DMRoomMembers);
 			}
@@ -618,7 +574,6 @@ export class ChatService {
 	makeRoomInfo(blocklist: Set<number>, roomlist: string[] | Set<string>): roomInfo[] {
 		const res = [];
 		roomlist.forEach((room: string) => {
-			// const message = this.storeRoom.findRoom(room).getLastMessage(blocklist);
 			const messages = this.storeRoom.findRoom(room).messages;
 			const message = messages[messages.length - 1];
 			res.push({
@@ -642,7 +597,7 @@ export class ChatService {
 				id: user,
 				nickname: target.nickname,
 				isGaming: target.isGaming,
-				isConnected: target.connected
+				isConnected: target.connected,
 			})
 		})
 		return (userInfo);
@@ -783,7 +738,6 @@ export class ChatService {
 			io.in(room).emit("sendCurrRoomInfo", currRoomInfo);
 		})
 		const dmRooms = [];
-		console.log(io.adapter.rooms);
 		io.adapter.rooms.forEach(async (_, key) => {
 			if (this.storeRoom.isDMRoom(key)){
 				const fromId = this.storeRoom.getFromIdFromDMRoom(key, user.id);

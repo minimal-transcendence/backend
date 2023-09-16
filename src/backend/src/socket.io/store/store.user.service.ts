@@ -77,9 +77,8 @@ export class ChatUserStoreService implements UserStore{
 			return (user.nickname);
 	}
 
-	//TODO: 이건 안되면 through를 해야하나...? -> throw하는 방향으로
 	getIdByNickname(nickname : string) : number {
 		const res = this.findAllUser().find((user) => user.nickname === nickname);
-		return (res ? res.id : -1);	//id error code
+		return (res ? res.id : -1);
 	}
 }
