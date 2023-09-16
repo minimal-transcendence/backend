@@ -273,6 +273,7 @@ this.rooms.forEach((_, key) => {
     id : user,
     nickname : target.nickname,
     isGaming : target.isGaming,
+    isConnected : target.connected,
     })
   })
   io.in(roomname).emit("sendRoomMembers", userInfo);
