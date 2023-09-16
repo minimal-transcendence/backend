@@ -611,13 +611,15 @@ export class ChatService {
 			userInfo.push({
 				id: toUser.id,
 				nickname: toUser.nickname,
-				isGaming: toUser.isGaming
+				isGaming: toUser.isGaming,
+				isConnected: toUser.connected,
 			})
 		}
 		userInfo.push({
 			id: fromUser.id,
 			nickname: fromUser.nickname,
-			isGaming: fromUser.isGaming
+			isGaming: fromUser.isGaming,
+			isConnected: fromUser.connected,
 		})
 		return (userInfo);
 	}

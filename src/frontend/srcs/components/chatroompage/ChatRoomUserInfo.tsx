@@ -215,7 +215,7 @@ export default function ChatRoomUserInfo({
         </div>
         <p className="userlist-userstatus-text">
           {(() => {
-            if (isDM) return;
+            // if (isDM) return;
             if (user?.isGaming) return "게임중";
             if (user?.isConnected) return "온라인";
             return "오프라인";
