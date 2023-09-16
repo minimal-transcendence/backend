@@ -217,7 +217,8 @@ export default function ChatRoomUserInfo({
           {(() => {
             if (isDM) return;
             if (user?.isGaming) return "게임중";
-            return "온라인";
+            if (user?.isConnected) return "온라인";
+            return "오프라인";
           })()}
         </p>
       </li>

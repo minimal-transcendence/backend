@@ -277,6 +277,43 @@ this.rooms.forEach((_, key) => {
   })
   io.in(roomname).emit("sendRoomMembers", userInfo);
   })
+  // const  dmRooms = [];
+  io.adapter.rooms.forEach(async (_, room : string) => {
+    if (this.storeRoom.isDMRoom(room)) {
+      if (this.storeRoom.isUserInDMRoom(playerOneId, room)
+         || this.storeRoom.isUserInDMRoom(playerTwoId, room)){
+          // console.log(room);
+          const userInfo = [];
+          const usersInDMRoom = this.storeRoom.parseIdsOfDMRoom(room);
+          usersInDMRoom.forEach((userId) => {
+            const user = this.storeUser.findUserById(userId);
+            if (user){
+              userInfo.push({
+                id: user.id,
+                nickname: user.nickname,
+                isGaming: user.isGaming,
+                isConnected: user.connected,
+             })
+            }
+          })
+			    io.in(room).emit("sendRoomMembers", userInfo);
+      }
+        //  dmRooms.push(room);
+    }
+    // dmRooms.forEach(async (room) => {
+    //   const sockets = await io.in(room).fetchSockets();
+    //   const userInfo = [];
+    //   sockets.forEach((socket : GameSocket) => {
+    //     const user = this.storeUser.findUserById(socket.userId);
+    //     userInfo.push({
+    //       id: user.id,
+		// 	    nickname: user.nickname,
+		// 	    isGaming: user.isGaming
+    //     })
+    //   })
+		// 	io.in(room).emit("sendRoomMembers", userInfo);
+    // })
+  })
 }
 
 

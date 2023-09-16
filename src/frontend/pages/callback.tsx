@@ -45,6 +45,9 @@ useEffect( () => {
     console.log(data);
     localStorage.setItem("nickname", data.nickname);
     localStorage.setItem("id", data.id);
+    if (data.isNewUser){
+      alert(`당신의 닉네임은 ${data.nickname} 입니다 \n 닉네임과 아바타를 변경하려면 메인페이지의 MY 버튼을 눌러주세요.`);
+    }
     sessionStorage.setItem("gamesocket", "false");
     setUserId(data.id);
     if (data.is2faEnabled === false) {

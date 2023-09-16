@@ -120,11 +120,29 @@ interface RoomStore {
   findRoom(roomName: string): Room;
   saveRoom(roomName: string, room: Room): void;
   findAllRoom(): Room[];
+  deleteRoom(roomName : string): void;
 }
+
+// //아니면 dm방을 class로 관리하는 것도 가능하다 //근데 굳이?
+// interface DMRoomStore {
+// 	dmrooms: string[];
+// 	_trimRoomName(dmRoomName : string) : number[];
+// 	isDMRoom(dmRoomName: string) : boolean;
+// 	isUserInRoom(userId : number, dmRoomName : string) : boolean;
+// 	getFromId(dmRoomName : string) : number ;
+// 	getToId(dmRoomName : string) : number ;
+// 	getFromIdByCondition(dmRoomName : string, toUserId : number) : number;
+// 	getToIdByCondition(dmRoomName : string, fromUserId : number) : number;
+// 	makeDMRoomName(from : number, to : number) : string;
+// 	addNewDmRoom(dmRoomName : string) : boolean ;
+// 	deleteDMRoom(dmRoomName : string) : boolean ;
+// }
 
 @Injectable()
 export class ChatRoomStoreService implements RoomStore{
+// export class ChatRoomStoreService implements RoomStore, DMRoomStore{
 	rooms = new Map();
+	// dmrooms = [];
 
 	findRoom(roomName: string): Room {
 		return this.rooms.get(roomName);
@@ -155,4 +173,69 @@ export class ChatRoomStoreService implements RoomStore{
 		})
 		return (res);
 	}
+
+	/* dmRooms */
+	isDMRoom(dmRoomName: string) : boolean {
+		if (dmRoomName[0] === '$' && dmRoomName[dmRoomName.length - 1] === '$'){
+			if (/^(\d+)\-(\d+)$/.test(dmRoomName.substring(1, dmRoomName.length - 1))){
+				return (true);
+			}
+		}
+		return (false);
+	}
+
+	getDMRoomname(from : number, to : number) : string {
+		return (`$${from}-${to}$`);
+	}
+
+	getToIdFromDMRoom(dmRoom : string, userId : number) : string | null {
+		const trim = dmRoom.slice(1, dmRoom.length - 1);
+		const parts = trim.split('-');
+		if (parts[0] === `${userId}`)
+			return (parts[1]);
+		else
+			return (null);
+	}
+
+	getFromIdFromDMRoom(dmRoom : string, userId : number) : string | null {
+		const trim = dmRoom.slice(1, dmRoom.length - 1);
+		const parts = trim.split('-');
+		if (parts[1] === `${userId}`)
+			return (parts[0]);
+		else
+			return (null);
+	}
+
+	isUserInDMRoom(userId : number, dmRoom : string) : boolean {
+		const trim = dmRoom.slice(1, dmRoom.length - 1);
+		const parts = trim.split('-');
+		if (parts[0] === `${userId}` || parts[1] === `${userId}`)
+			return (true);
+		else
+			return (false);
+	}
+
+	parseIdsOfDMRoom(dmRoom : string) : number[] | null {
+		if (!this.isDMRoom(dmRoom))
+			return (null);
+		const trim = dmRoom.slice(1, dmRoom.length - 1);
+		const parts = trim.split('-');
+		const res = [];
+		res.push(Number(parts[0]));
+		res.push(Number(parts[1]));
+		return (res);
+	}
+
+	// getFromId(dmRoomName : string) : number {
+
+	// }
+
+	// getToId(dmRoomName : string) : number {
+
+	// }
+	// getFromIdByCondition(dmRoomName : string, toUserId : number) : number;
+	// getToIdByCondition(dmRoomName : string, fromUserId : number) : number;
+	// addNewDmRoom(dmRoomName : string) : boolean ;
+	// deleteDMRoom(dmRoomName : string) : boolean ;
+
 }
