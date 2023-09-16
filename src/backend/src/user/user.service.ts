@@ -18,7 +18,6 @@ export class UserService {
 	) { }
 
 	async createUser(data: Prisma.UserCreateInput): Promise<Login> {
-		const isNewUser = data.nickname? false : true;
 		while (!data.nickname) {
 			data.nickname = `user_${Math.floor(Math.random() * 1000)}`;
 			const isUnique = await this.prisma.user.findUnique({
@@ -37,8 +36,15 @@ export class UserService {
 				id: data.id,
 				nickname: data.nickname,
 				email: data.email
+			},
+			select : {
+				id : true,
+				email : true,
+				nickname : true,
+				is2faEnabled: true,
 			}
 		})
+		const isNewUser = data.nickname === res.nickname? true : false;
 		const returnData = {
 			id: res.id,
 			email: res.email,
@@ -143,7 +149,6 @@ export class UserService {
 		});
 	}
 
-	//만약 Id list 뿐만 아니라 친구들의 정보값이 필요하면 friend[] 로 설정해야
 	async getUserFriendsListById(id: number): Promise<object> {
 		return await this.prisma.user.findUniqueOrThrow({
 			where: { id: id }
@@ -173,25 +178,18 @@ export class UserService {
 		});
 	}
 
-	// 이런 문법 괜찮은가...?
-	// 이이런 구조 괜찮은가....?
-	// 권한 체크! -> 완료
-	// HTTP EXCEPTION -> 완료
-	// validation 필요//
 	async updateFriendsById(id: number, data: UpdateFriendDto): Promise<object> {
 		if (id == data.friend)
 			throw new HttpException(
 				"I am a good friend of myself...",
 				HttpStatus.BAD_REQUEST
 			);
-		//find user
 		const user = await this.prisma.user.findUniqueOrThrow({
 			where: { id },
 			select: { friends: true }
 		});
 
 		if (data.isAdd == true) {
-			//friend validatity check
 			await this.prisma.user.findUniqueOrThrow({
 				where: { id: data.friend },
 			});
