@@ -25,9 +25,9 @@ export class ChatService {
 		this.storeRoom.saveRoom('DEFAULT', new Room()); //owner id 0 as server
 	}
 
-	updateUserStatus(io: Namespace, userId: number, isConnected: boolean) {
-		io.emit("updateUserStatus", userId, isConnected);
-	}
+	// updateUserStatus(io: Namespace, userId: number, isConnected: boolean) {
+	// 	io.emit("updateUserStatus", userId, isConnected);
+	// }
 
 	updateChatScreen(client: Socket, clientId: number, roomname: string) {
 		const user = this.storeUser.findUserById(clientId);
@@ -97,7 +97,7 @@ export class ChatService {
 		return (format);
 	}
 
-	handleNewConnection(io: Namespace, client: ChatSocket) {
+	async handleNewConnection(io: Namespace, client: ChatSocket) {
 		const userId = client.userId;
 		client.join(`$${userId}`);
 		let user: User = this.storeUser.findUserById(userId);
@@ -109,7 +109,7 @@ export class ChatService {
 			}
 			user.connected = true;
 			client.emit("sendBlocklist", [...user.blocklist]);
-			this.updateUserStatus(io, userId, true);
+			await this.updateUserStatus(io, userId, true);	//await...?
 			if (client.nickname !== user.nickname)
 				user.nickname = client.nickname;
 		}
@@ -122,8 +122,8 @@ export class ChatService {
 		if (isLastConn) {
 			const user = this.storeUser.findUserById(userId);
 			user.connected = false;
-			this.userLeaveRooms(io, client, user.joinlist);
-			this.updateUserStatus(io, userId, false);
+			// this.userLeaveRooms(io, client, user.joinlist);
+			await this.updateUserStatus(io, userId, false);
 		}
 	}
 
@@ -641,7 +641,8 @@ export class ChatService {
 			userInfo.push({
 				id: user,
 				nickname: target.nickname,
-				isGaming: target.isGaming
+				isGaming: target.isGaming,
+				isConnected: target.connected
 			})
 		})
 		return (userInfo);
@@ -810,11 +811,18 @@ export class ChatService {
 	async userChangeNick(io: Namespace, clientId: number, newNick: string) {
 		const user = this.storeUser.findUserById(clientId);
 		user.nickname = newNick;
-		this.triggerWindowUpdate(io, user);
+		await this.triggerWindowUpdate(io, user);
 	}
 
 	async userChangeAvatar(io: Namespace, clientId: number) {
 		const user = this.storeUser.findUserById(clientId);
-		this.triggerWindowUpdate(io, user);
+		await this.triggerWindowUpdate(io, user);
+	}
+
+
+	async updateUserStatus(io: Namespace, userId: number, isConnected: boolean) {
+		const user = this.storeUser.findUserById(userId);
+		io.emit("updateUserStatus", userId, isConnected);
+		await this.triggerWindowUpdate(io, user);
 	}
 }

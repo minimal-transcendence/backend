@@ -37,13 +37,13 @@ export class ChatGateway
 		this.chatService.initChatServer();
 	}
 
-	handleConnection(@ConnectedSocket() client: ChatSocket) {
+	async handleConnection(@ConnectedSocket() client: ChatSocket) {
 		this.logger.log(`Client Connected : ${client.nickname}, ${client.id}`);
 
 		client.onAny((any: any) => {
 			this.logger.log(`From Client ${client.nickname}, ${client.id}, event : ${any}`);
 		})
-		this.chatService.handleNewConnection(this.io, client);
+		await this.chatService.handleNewConnection(this.io, client);
 
 	}
 
